@@ -16,6 +16,7 @@ A browser driving game set in a stylised, compressed central Dublin. Three.js (W
 | `L` | Landmark labels |
 | `T`, `1`–`9` | Landmark list / teleport |
 | `H` | Help |
+| `Q` | Graphics quality: low / medium / high |
 | `M` | Sound |
 | `F` | Frame-rate counter |
 | `Backspace` | Put the car back on the road |
@@ -29,9 +30,13 @@ Traffic drives on the **left**.
 - **Area**: roughly 2.2 km × 1.9 km of the city centre from Smithfield to the Docklands and from Parnell Street to St Stephen's Green, compressed to 50% (about 1.15 km × 1.05 km of game world). Road widths are not compressed, so streets keep their proportions.
 - **Streets**: a hand-authored graph in [`src/data/streets.json`](src/data/streets.json) (lat/lon nodes, named ways), traced against OpenStreetMap geometry. It includes both sets of quays, O'Connell St, Westmoreland St, D'Olier St, College Green, Dame St, Grafton St, Nassau St, the Christ Church area, the Temple Bar lanes and the St Stephen's Green perimeter.
 - **Landmarks**: the Spire, GPO, O'Connell Bridge and O'Connell Monument, Ha'penny Bridge, Trinity College front and campanile, Bank of Ireland, Christ Church Cathedral with the Synod Hall bridge, the Custom House, and St Stephen's Green with its pond and Fusiliers' Arch.
-- **Filler city**: about 5,500 procedurally placed buildings. Georgian red-brick terraces with sash windows and coloured doors with fanlights, Victorian shopfronts, colourful Temple Bar render, and glass blocks toward the Docklands. They are drawn as one instanced mesh with a procedural facade shader.
-- **Traffic**: AI cars, taxis and Dublin Bus double-deckers that follow the street graph and keep left, plus a three-car Luas Red Line tram that runs between Mayor Square and Smithfield (Abbey Street, Jervis and the Inns Quay stretch of the quays) and stops at each stop.
-- **Atmosphere**: an overcast Irish sky by default, rain with puddled reflective roads, and evening with lit windows, street lamps and headlights. Soft shadows and fog.
+- **Filler city**: about 5,700 procedurally placed buildings in one instanced draw call. Its facade shader paints Flemish-bond brick with bump shading, recessed sash windows with interior-mapped rooms and curtains behind the glass (lit at night), Georgian granite ground floors with fanlit doors, shopfronts with named fascias, colourful Temple Bar render and glass curtain walls toward the Docklands. Georgian terraces get railings, basement areas and granite steps.
+- **Streets**: raised pavements are real geometry, with granite kerbs and rounded corners contoured from a distance field of the road network. Asphalt, concrete slabs, granite setts (Temple Bar, Grafton St) and grass use high-resolution procedural textures with normal maps. Markings are crisp decals: dashes, double yellows, zebras, stop lines and LOOK RIGHT. Rain makes gutters and dips glossy.
+- **Traffic**: instanced hatchbacks, saloons, SUVs, vans and taxis (with the yellow and blue roof sign and Irish plates), Enviro400-style Dublin Bus double-deckers in the yellow and navy livery with LED destination displays, and about 300 parked cars. AI cars follow the street graph, keep left and stop at working traffic lights. A three-car Luas Red Line tram runs between Mayor Square and Smithfield (Abbey Street, Jervis and the Inns Quay stretch of the quays) and stops at each stop.
+- **People**: about 300 pedestrians with a GPU walk cycle. They walk the footpaths, cross at junctions, pause, step out of the way of your car, and open umbrellas when it rains.
+- **Street furniture**: heritage lanterns on Georgian streets and the quays, bus stops and shelters, bins, An Post pillar boxes, cast-iron bollards and trees along the north quays.
+- **Atmosphere**: an overcast Irish sky by default, rain with wet reflective streets, and evening with lit windows, lanterns and headlights. Soft shadows and fog throughout.
+- **Rendering**: the high tier renders an MSAA HDR scene, then ambient occlusion (GTAO), bloom, tone mapping and a colour grade. Medium drops the AO and MSAA. Phones use a plain forward render. Quality and resolution adapt to the frame rate automatically, or you can pick a tier with Q.
 
 ## Development
 

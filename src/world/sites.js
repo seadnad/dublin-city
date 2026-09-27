@@ -1,7 +1,7 @@
 // Landmark sites, anchored to street-graph nodes so they always sit correctly against the roads.
 // Each site: position, rotation (local +z faces the street), footprint (w along street, d deep),
 // a label height, and a teleport spot on a nearby road looking at it.
-import { world, v2, PAVEMENT, pointInPolygon } from './geo.js';
+import { world, v2, PAVEMENT, pointInPolygon, laneOffset } from './geo.js';
 import { bridges, parkPolys, campusPolys } from './ground.js';
 
 const N = (id) => world.nodes.get(id);
@@ -27,7 +27,7 @@ export function spot(fromId, toId, t) {
   const A = N(fromId), B = N(toId);
   const dir = v2.norm(v2.sub(B, A));
   const way = wayBetween(fromId, toId);
-  const off = way.type === 'boulevard' ? 7 : way.width / 4;
+  const off = laneOffset(way);
   const p = v2.lerp(A, B, t);
   return { x: p.x + dir.z * off, z: p.z - dir.x * off, heading: Math.atan2(dir.x, dir.z) };
 }

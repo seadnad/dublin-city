@@ -1,15 +1,16 @@
-// Ground plane (painted canvas layout), the Liffey, quay walls, parapets and road bridges.
+// Road surface, the Liffey, quay walls, parapets, road bridges and railings.
+// The painted layout canvas is only used for the minimap; 3D streets come from roads.js.
 import * as THREE from 'three';
 import { world, PAVEMENT, v2, offsetPolyline, resample, pointInPolygon, insetPolygon, roadInsetFor } from './geo.js';
-import { IS_MOBILE, makeGrainTexture, makePuddleTexture, makeStoneTexture, makeWaterNormal, fbm, rng } from './textures.js';
+import { makePuddleTexture, makeStoneTexture, makeWaterNormal, fbm, rng } from './textures.js';
 import { addPolyline, addSegment } from '../game/collision.js';
+import { buildStreets, buildMedian, grassPolygon, fieldUniforms, KERB_H } from './roads.js';
 
 export const WATER_Y = -2.6;
 const B = world.bounds;
 
 // ---------------- layout canvas ----------------
-const MAX = IS_MOBILE ? 2048 : 4096;
-export const PPM = MAX / Math.max(B.w, B.h);
+export const PPM = 1.6; // minimap resolution (px per metre)
 const CW = Math.round(B.w * PPM), CH = Math.round(B.h * PPM);
 export const toCanvas = (x, z) => [(x - B.minX) * PPM, (z - B.minZ) * PPM];
 
@@ -182,31 +183,24 @@ export function paintArea(poly, color) {
 }
 
 // ---------------- materials ----------------
-const layoutTex = new THREE.CanvasTexture(layoutCanvas);
-layoutTex.colorSpace = THREE.SRGBColorSpace;
-layoutTex.anisotropy = 8;
-const grain = makeGrainTexture(256); grain.channel = 1;
-const puddles = makePuddleTexture(256); puddles.channel = 1;
+const layoutTex = { needsUpdate: false }; // minimap-only canvas: nothing on the GPU to refresh
+const puddles = makePuddleTexture(256);
+puddles.wrapS = puddles.wrapT = THREE.RepeatWrapping;
+let streets = null;
 
-export const groundMaterial = new THREE.MeshStandardMaterial({
-  map: layoutTex, bumpMap: grain, bumpScale: 0.15, roughness: 0.92, metalness: 0,
-});
-// Rain: patchy roughness so puddles reflect; dry: uniformly matt.
-export function setWet(wet) {
-  groundMaterial.roughnessMap = wet ? puddles : null;
-  groundMaterial.roughness = wet ? 0.55 : 0.92;
-  groundMaterial.color.setScalar(wet ? 0.78 : 1);
-  groundMaterial.needsUpdate = true;
-}
+// Rain: street shaders darken and turn glossy, with puddles collecting in the gutters and dips.
+export function setWet(wet) { fieldUniforms.uWet.value = wet ? 1 : 0; }
+export function getStreets() { return streets; }
 export const stoneTex = makeStoneTexture(256);
 export const stoneMaterial = new THREE.MeshStandardMaterial({ map: stoneTex, roughness: 0.9, color: 0xd8d4cc });
 
+// world-space UVs in metres (the asphalt material's texture repeat turns them into tiles)
 function setGroundUVs(geo) {
   const pos = geo.attributes.position;
   const uv = new Float32Array(pos.count * 2), uv1 = new Float32Array(pos.count * 2);
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i), z = pos.getZ(i);
-    uv[i * 2] = (x - B.minX) / B.w; uv[i * 2 + 1] = 1 - (z - B.minZ) / B.h;
+    uv[i * 2] = x; uv[i * 2 + 1] = z;
     uv1[i * 2] = x / 12; uv1[i * 2 + 1] = z / 12;
   }
   geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
@@ -266,6 +260,10 @@ export function isOverWater(x, z) {
 export function buildGround(scene) {
   const group = new THREE.Group();
   group.name = 'ground';
+  streets = buildStreets(scene, puddles);
+  const groundMaterial = streets.asphaltMat;
+  group.add(buildMedian(streets));
+  for (const pk of [...parkPolys, ...campusPolys]) group.add(grassPolygon(pk.poly, streets.grassMat));
 
   // Ground pieces north and south of the river
   const nb = world.northBank, sb = world.southBank;
@@ -304,7 +302,7 @@ export function buildGround(scene) {
     let u = 0;
     pts.forEach((p, i) => {
       if (i) u += v2.len(v2.sub(p, pts[i - 1])) / 4;
-      pos.push(p.x, 0.02, p.z, p.x, WATER_Y - 1.5, p.z);
+      pos.push(p.x, KERB_H, p.z, p.x, WATER_Y - 1.5, p.z);
       uv.push(u, 1.1, u, 0);
       if (i) { const k = i * 2; side > 0 ? idx.push(k - 2, k - 1, k, k, k - 1, k + 1) : idx.push(k - 2, k, k - 1, k, k + 1, k - 1); }
     });
@@ -344,14 +342,14 @@ export function buildGround(scene) {
   boxes.forEach(([a, b], i) => {
     const d = v2.sub(b, a), L = v2.len(d);
     q.setFromAxisAngle(up, Math.atan2(d.x, d.z));
-    t.set((a.x + b.x) / 2, 0.5, (a.z + b.z) / 2); s.set(0.7, 1.0, L + 0.35);
+    t.set((a.x + b.x) / 2, KERB_H + 0.5, (a.z + b.z) / 2); s.set(0.7, 1.0, L + 0.35);
     parapet.setMatrixAt(i, m4.compose(t, q, s));
   });
   parapet.castShadow = parapet.receiveShadow = true;
   group.add(parapet);
 
   // Road bridges: arched stone body + deck painted with the ground texture + parapets
-  for (const br of bridges) group.add(buildBridge(br));
+  for (const br of bridges) group.add(buildBridge(br, groundMaterial));
 
   // Park railings and Trinity railings
   group.add(buildRailings([...parkPolys, ...campusPolys]));
@@ -366,7 +364,7 @@ export function buildGround(scene) {
   };
 }
 
-function buildBridge(br) {
+function buildBridge(br, groundMaterial) {
   const g = new THREE.Group();
   const L = br.length + 1.2, W = br.width;
   const angle = Math.atan2(br.dir.x, br.dir.z);
@@ -451,7 +449,7 @@ function buildRailings(polys) {
     let u = 0;
     ring.forEach((p, i) => {
       if (i) u += v2.len(v2.sub(p, ring[i - 1])) / 0.9;
-      pos.push(p.x, 0, p.z, p.x, 1.7, p.z);
+      pos.push(p.x, KERB_H, p.z, p.x, KERB_H + 1.7, p.z);
       uv.push(u, 0, u, 1);
       if (i) { const k = base + i * 2; idx.push(k - 2, k, k - 1, k, k + 1, k - 1); }
     });

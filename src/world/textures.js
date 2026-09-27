@@ -17,6 +17,22 @@ function canvas(w, h = w) {
   return c;
 }
 
+// fbm computed at <=256 px and bilinearly upsampled (tileable): the fine detail comes from per-pixel grain anyway.
+export function fbmFast(size, octaves = 4, seed = 7) {
+  const base = Math.min(size, 256);
+  const small = fbm(base, octaves, seed);
+  if (base === size) return small;
+  const out = new Float32Array(size * size), k = base / size;
+  for (let y = 0; y < size; y++) {
+    const fy = y * k, y0 = Math.floor(fy), ty = fy - y0, r0 = y0 * base, r1 = ((y0 + 1) % base) * base;
+    for (let x = 0; x < size; x++) {
+      const fx = x * k, x0 = Math.floor(fx), tx = fx - x0, x1 = (x0 + 1) % base;
+      out[y * size + x] = (small[r0 + x0] * (1 - tx) + small[r0 + x1] * tx) * (1 - ty) + (small[r1 + x0] * (1 - tx) + small[r1 + x1] * tx) * ty;
+    }
+  }
+  return out;
+}
+
 // Tileable value noise, a few octaves.
 function tileNoise(size, cells, rand) {
   const grid = [];

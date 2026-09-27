@@ -1,13 +1,16 @@
 // AI traffic: cars and buses follow the street graph, keeping LEFT, using pure-pursuit steering.
 import * as THREE from 'three';
-import { world, v2 } from '../world/geo.js';
-import { makeCar, makeBus } from './vehicles.js';
+import { world, v2, laneOffset, hasParking } from '../world/geo.js';
+import { createFleet } from './fleet.js';
 import { rng } from '../world/textures.js';
+import { addBox } from './collision.js';
 
 const rand = rng(1916);
-const COLORS = [0xb8262b, 0x2b4e8c, 0xe8e8e8, 0x222222, 0x8a8f96, 0x6b2a5e, 0xc9a227, 0x3d6b4a, 0x9fb7c9, 0x5a3a2a];
-
-const laneOffset = (way) => (way.type === 'boulevard' ? 7 : Math.min(way.width / 4, 3));
+// Irish car colours: mostly silver, grey, black and white, a few darker blues, reds and greens
+const PAINT = ['#b7babd', '#b7babd', '#8d9195', '#5f6368', '#1a1c1e', '#1a1c1e', '#e9e9e6', '#e9e9e6', '#23345a', '#7d1d1f', '#23402f', '#a99a80', '#6d8196', '#4a3b30']
+  .map((h) => new THREE.Color(h));
+const paint = () => PAINT[Math.floor(rand() * PAINT.length)];
+const pickKind = () => { const r = rand(); return r < 0.34 ? 'hatch' : r < 0.62 ? 'saloon' : r < 0.84 ? 'suv' : 'van'; };
 const leftOf = (d) => ({ x: d.z, z: -d.x });
 
 function laneLine(edge) {
@@ -29,10 +32,10 @@ function pickNext(edge, isBus) {
 const drivable = world.edges.filter((e) => e.len > 15 && e.way.type !== 'lane');
 
 class AICar {
-  constructor(mesh, isBus) {
-    this.mesh = mesh;
+  constructor(handle, isBus) {
+    this.h = handle;
     this.isBus = isBus;
-    this.length = mesh.userData.length;
+    this.length = handle.L;
     this.radius = isBus ? 1.3 : 1.0;
     this.pos = { x: 0, z: 0 };
     this.heading = 0;
@@ -80,6 +83,12 @@ class AICar {
     const d1 = v2.norm(v2.sub(this.edge.to, this.edge.from)), d2 = v2.norm(v2.sub(this.next.to, this.next.from));
     const turn = 1 - v2.dot(d1, d2); // 0 straight .. 2 u-turn
     if (turn > 0.15 && remaining < 25) want = Math.min(want, 4 + (1 - Math.min(1, turn)) * 6 + remaining * 0.25);
+    // traffic lights: stop at the line on red, and on amber if there is room to
+    const sig = ctx.signals && ctx.signals.stateFor(this.edge);
+    if (sig && sig.state !== 'green') {
+      const toLine = remaining - sig.stopBack - this.length / 2;
+      if (toLine > -0.5 && (sig.state === 'red' || toLine > 8)) want = Math.min(want, Math.max(0, toLine * 0.55 - 0.3));
+    }
 
     const fx = Math.sin(this.heading), fz = Math.cos(this.heading);
     const clear = ctx.clearAhead(this, fx, fz);
@@ -104,8 +113,7 @@ class AICar {
     this.pos.x += Math.sin(this.heading) * this.speed * dt;
     this.pos.z += Math.cos(this.heading) * this.speed * dt;
 
-    this.mesh.position.set(this.pos.x, 0, this.pos.z);
-    this.mesh.rotation.y = this.heading;
+    ctx.fleet.set(this.h, this.pos.x, this.pos.z, this.heading, this.speed, dt);
   }
 
   // circles approximating the body, for collisions with the player
@@ -121,20 +129,60 @@ class AICar {
   }
 }
 
-export function createTraffic(scene, { cars = 16, buses = 4 } = {}) {
+// Kerbside parking bays along wide streets, away from junction mouths.
+function parkingSpots(max) {
+  const spots = [];
+  for (const way of world.ways) {
+    if (!hasParking(way)) continue;
+    for (let k = 0; k < way.nodeIds.length - 1; k++) {
+      const A = world.nodes.get(way.nodeIds[k]), Bn = world.nodes.get(way.nodeIds[k + 1]);
+      const d = v2.norm(v2.sub(Bn, A)), L = v2.len(v2.sub(Bn, A));
+      const clearA = A.edges.length > 2 ? 16 : 4, clearB = Bn.edges.length > 2 ? 16 : 4;
+      for (const side of [1, -1]) {
+        const left = { x: d.z * side, z: -d.x * side };
+        const off = way.width / 2 - 1.08;
+        for (let s = clearA; s < L - clearB; s += 5.7) {
+          if (rand() < 0.22) continue; // gaps between parked cars
+          const p = v2.add(v2.lerp(A, Bn, s / L), v2.scale(left, off));
+          spots.push({ x: p.x, z: p.z, heading: Math.atan2(d.x * side, d.z * side) });
+        }
+      }
+    }
+  }
+  for (let i = spots.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [spots[i], spots[j]] = [spots[j], spots[i]]; }
+  return spots.slice(0, max);
+}
+
+export function createTraffic(scene, { cars = 16, buses = 4, taxis = 4, parked = 300 } = {}) {
+  const spots = parkingSpots(parked);
+  // decide every vehicle's kind first so the fleet can size its instanced meshes
+  const aiKinds = [];
+  for (let i = 0; i < cars; i++) aiKinds.push(i < taxis ? 'taxi' : pickKind());
+  const parkedKinds = spots.map(() => pickKind());
+  const counts = { hatch: 0, saloon: 0, suv: 0, van: 0, taxi: 0, bus: buses };
+  for (const k of [...aiKinds, ...parkedKinds]) counts[k]++;
+  const fleet = createFleet(scene, counts);
+
   const list = [];
   for (let i = 0; i < cars + buses; i++) {
     const isBus = i >= cars;
-    const mesh = isBus ? makeBus() : makeCar({ color: COLORS[i % COLORS.length], taxi: i % 5 === 0 });
-    scene.add(mesh);
-    const ai = new AICar(mesh, isBus);
+    const kind = isBus ? 'bus' : aiKinds[i];
+    const handle = fleet.add(kind, kind === 'taxi' ? new THREE.Color(rand() < 0.5 ? '#1a1c1e' : '#b7babd') : paint());
+    const ai = new AICar(handle, isBus);
     const e = drivable[Math.floor(rand() * drivable.length)];
     ai.place(e, rand() * e.len);
     list.push(ai);
   }
+  spots.forEach((sp, i) => {
+    const h = fleet.add(parkedKinds[i], paint());
+    fleet.set(h, sp.x, sp.z, sp.heading);
+    addBox(sp.x, sp.z, h.W / 2, h.L / 2, sp.heading);
+  });
 
-  let player = null, tram = null;
+  let player = null, tram = null, signals = null;
   const ctx = {
+    fleet,
+    get signals() { return signals; },
     // distance to the nearest thing in our lane ahead (Infinity if clear)
     clearAhead(me, fx, fz) {
       const res = { dist: Infinity, player: false };
@@ -158,6 +206,10 @@ export function createTraffic(scene, { cars = 16, buses = 4 } = {}) {
     list,
     setPlayer(p) { player = p; },
     setTram(t) { tram = t; },
+    setSignals(s) { signals = s; },
+    fleet,
+    parkedCount: spots.length,
+    setLights: (v) => fleet.setLights(v),
     update(dt, camera) {
       for (const ai of list) {
         ai.update(dt, ctx);
@@ -176,6 +228,7 @@ export function createTraffic(scene, { cars = 16, buses = 4 } = {}) {
           }
         }
       }
+      fleet.commit();
     },
     // push a circle (player) out of AI vehicles
     collide(c, r) {

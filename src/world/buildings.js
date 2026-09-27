@@ -1,11 +1,15 @@
-// Procedural filler city: street-frontage lots on an occupancy grid, drawn as one instanced mesh
-// whose shader paints brick, sash windows, Georgian doors, shopfronts and curtain walls.
+// Procedural filler city: street-frontage lots on an occupancy grid, drawn as one instanced mesh.
+// The facade shader paints Flemish-bond brick with bump, recessed sash windows with interior-mapped rooms,
+// Georgian rusticated ground floors and fanlit doors, named shopfronts and curtain walls, and fades
+// to an average colour in the distance.
 import * as THREE from 'three';
 import { world, PAVEMENT, v2 } from './geo.js';
 import { parkPolys, campusPolys } from './ground.js';
 import { reserved } from './sites.js';
-import { rng, fbm } from './textures.js';
-import { addBox } from '../game/collision.js';
+import { rng, fbmFast } from './textures.js';
+import { addBox, addSegment } from '../game/collision.js';
+import { noiseTexture, KERB_H } from './roads.js';
+import { chunkedInstances } from './chunks.js';
 
 const B = world.bounds;
 const CELL = 0.5;
@@ -74,11 +78,12 @@ for (let i = 1; i < world.luas.pts.length; i++) fillSegment(world.luas.pts[i - 1
 // ---------- styles ----------
 const S = { GEORGIAN: 0, BRICK: 1, STUCCO: 2, TEMPLEBAR: 3, MODERN: 4 };
 const hex = (h) => new THREE.Color(h);
-const BRICKS = ['#8a3b2a', '#9c4a33', '#7a3a2c', '#a3563b', '#6e3326', '#8f4530', '#a0503a'].map(hex);
-const DOORS = ['#b01e23', '#1d3f8a', '#1f6b3a', '#e1b423', '#1a1a1a', '#5b2c6f', '#1f7b7b', '#c2571a', '#f2efe6'].map(hex);
-const STUCCO = ['#d8cfb8', '#c9c3b4', '#b7ad99', '#e3dccb', '#9da3a6', '#d6c7a1', '#c4b8a8'].map(hex);
-const VIVID = ['#b3261e', '#2f5d8a', '#e0b33a', '#3d7a52', '#7b3f8a', '#e8e0d0', '#d87a3a', '#2a2a2a'].map(hex);
-const FASCIA = ['#1e3b2c', '#6b1a1a', '#1a2440', '#2b2b2b', '#8a6a1f', '#3f5f2f', '#732f4a'].map(hex);
+// Dublin brick is a dark, brownish red with grey-brown neighbours (refs: Dame St, Fitzwilliam St)
+const BRICKS = ['#7b4331', '#6c3a2b', '#85503a', '#5f3a2d', '#744a3a', '#8b5a43', '#6a4636', '#7a6a5c', '#8e6049'].map(hex);
+const DOORS = ['#a3201f', '#d9a520', '#1f3f7a', '#1d5a3a', '#161616', '#5a2a66', '#1f6f6f', '#b8521c', '#e9e4d8'].map(hex);
+const STUCCO = ['#d9d0bd', '#b9b5ab', '#e6e2d8', '#9fa7a8', '#cdbf9f', '#c9c0ae', '#aeb1a8'].map(hex);
+const VIVID = ['#9e2b25', '#2c4f78', '#d1a93a', '#2f6b4b', '#6a3b78', '#e3dccb', '#c46a36', '#2a2a2a'].map(hex);
+const FASCIA = ['#17392a', '#1a1a1a', '#5a1a22', '#1b2745', '#e8e0cc', '#d9ae2c', '#1d5d5d', '#3b2a20'].map(hex);
 const GLASS = ['#5f7887', '#4d5f6a', '#7c93a0', '#6c7f7a'].map(hex);
 const PANELS = ['#c8c8c4', '#3a3d40', '#9aa0a3', '#b9b2a4'].map(hex);
 const pick = (arr) => arr[Math.floor(rand() * arr.length)];
@@ -92,19 +97,20 @@ function styleFor(x, z, way) {
   const docks = x > 300 && z < 150; // Docklands: east of the Custom House, north of Pearse Street
   if (docks && !GEORGIAN_ST.test(name)) return S.MODERN;
   if (x > 200 && DOCK_ST.test(name)) return rand() < 0.65 ? S.MODERN : S.BRICK;
-  if (TEMPLE_BAR.test(name)) return S.TEMPLEBAR;
-  if (GEORGIAN_ST.test(name)) return rand() < 0.85 ? S.GEORGIAN : S.BRICK;
+  if (TEMPLE_BAR.test(name)) return rand() < 0.75 ? S.TEMPLEBAR : S.BRICK;
+  if (GEORGIAN_ST.test(name)) return rand() < 0.88 ? S.GEORGIAN : S.BRICK;
   if (/Parnell|Capel|Aungier|Talbot|Marlborough/.test(name)) return rand() < 0.5 ? S.GEORGIAN : S.BRICK;
-  if (/Quay|Bachelors/.test(name)) return rand() < 0.5 ? S.STUCCO : rand() < 0.5 ? S.BRICK : S.TEMPLEBAR;
-  return rand() < 0.55 ? S.STUCCO : S.BRICK;
+  if (/Quay|Bachelors/.test(name)) return rand() < 0.45 ? S.STUCCO : rand() < 0.6 ? S.BRICK : S.TEMPLEBAR;
+  return rand() < 0.5 ? S.STUCCO : S.BRICK;
 }
 
+// Narrow plots like the refs: two or three bays each.
 function lotSpec(style) {
   switch (style) {
-    case S.GEORGIAN: { const bays = rand() < 0.7 ? 3 : 4; return { w: bays * 2.5 + 0.5, d: 12 + rand() * 5, floors: rand() < 0.7 ? 4 : rand() < 0.5 ? 3 : 5, fh: 3.35, bay: 2.5 }; }
-    case S.BRICK: return { w: 7 + rand() * 9, d: 13 + rand() * 7, floors: 4 + Math.floor(rand() * 3), fh: 3.6, bay: 2.9 };
-    case S.STUCCO: return { w: 7 + rand() * 10, d: 13 + rand() * 7, floors: 4 + Math.floor(rand() * 3), fh: 3.6, bay: 3.0 };
-    case S.TEMPLEBAR: return { w: 5.5 + rand() * 6, d: 9 + rand() * 5, floors: 3 + Math.floor(rand() * 2), fh: 3.2, bay: 2.6 };
+    case S.GEORGIAN: { const bays = rand() < 0.75 ? 3 : 4; return { w: bays * 2.4 + 0.6, d: 12 + rand() * 5, floors: rand() < 0.7 ? 4 : rand() < 0.5 ? 3 : 5, fh: 3.4, bay: 2.4 }; }
+    case S.BRICK: { const bays = 2 + Math.floor(rand() * 3); return { w: bays * 2.6 + 0.4, d: 13 + rand() * 7, floors: 4 + Math.floor(rand() * 3), fh: 3.5, bay: 2.6 }; }
+    case S.STUCCO: { const bays = 2 + Math.floor(rand() * 3); return { w: bays * 2.7 + 0.4, d: 13 + rand() * 7, floors: 4 + Math.floor(rand() * 3), fh: 3.6, bay: 2.7 }; }
+    case S.TEMPLEBAR: { const bays = 2 + Math.floor(rand() * 2); return { w: bays * 2.5 + 0.3, d: 9 + rand() * 5, floors: 3 + Math.floor(rand() * 2), fh: 3.2, bay: 2.5 }; }
     default: return { w: 18 + rand() * 18, d: 16 + rand() * 12, floors: 6 + Math.floor(rand() * 5) + (rand() < 0.2 ? 5 : 0), fh: 3.5, bay: 1.6 };
   }
 }
@@ -121,11 +127,13 @@ function colorsFor(style) {
 
 // ---------- lot placement ----------
 const lots = [];
-function place(o, style, spec) {
+function place(o, style, spec, frontage) {
   const [base, trim] = colorsFor(style);
   const parapet = style === S.MODERN ? 0.6 : 0.9;
   const h = spec.floors * spec.fh + parapet;
-  lots.push({ ...o, h, style, fh: spec.fh, bay: spec.bay, base, trim, seed: rand() });
+  const nb = Math.max(1, Math.round(o.w / spec.bay));
+  const doorBay = rand() < 0.5 ? 0 : nb - 1; // Georgian doors sit at one end of the house
+  lots.push({ ...o, h, style, fh: spec.fh, bay: spec.bay, base, trim, seed: rand(), nb, doorBay, sign: Math.floor(rand() * 64), weather: rand(), frontage });
   markOBB(o);
 }
 
@@ -151,7 +159,7 @@ for (const way of ordered) {
           if (d < 6) break;
           const c = v2.add(a, v2.scale(dir, s + spec.w / 2));
           const o = { x: c.x + n.x * (setback + d / 2), z: c.z + n.z * (setback + d / 2), rot, w: spec.w, d };
-          if (testOBB(o)) { place(o, style, spec); placed = true; break; }
+          if (testOBB(o)) { place(o, style, spec, true); placed = true; break; }
         }
         s += placed ? spec.w : 1.5;
       }
@@ -173,33 +181,44 @@ for (let z = B.minZ + 10; z < B.maxZ - 10; z += 11) {
       if (testOBB(o)) {
         const spec = lotSpec(style);
         spec.floors = Math.max(3, spec.floors - 1);
-        place(o, style, spec);
+        place(o, style, spec, false);
         break;
       }
     }
   }
 }
 
-// ---------- instanced mesh ----------
+// ---------- textures ----------
+// Flemish-bond brick, 1.8 m tile. R: brick tone, G: hue variation, B: mortar mask (1 = mortar).
 function brickTexture() {
-  const size = 256, c = document.createElement('canvas');
+  const size = 512, c = document.createElement('canvas');
   c.width = c.height = size;
   const ctx = c.getContext('2d');
-  const n = fbm(size, 4, 17);
+  const n = fbmFast(size, 4, 17);
   const img = ctx.createImageData(size, size);
-  const course = size / 26, brick = course * 3;
+  const courses = 21, ch = size / courses;
+  const unit = size / 5, str = unit * (0.235 / 0.3575), hdr = unit - str;
   const r2 = rng(5);
-  const tones = [];
-  for (let i = 0; i < 400; i++) tones.push(0.78 + r2() * 0.3);
+  const tones = new Float32Array(4096), hues = new Float32Array(4096);
+  for (let i = 0; i < 4096; i++) { tones[i] = r2(); hues[i] = r2(); }
+  const mortar = Math.max(1.6, size / 1.8 * 0.01);
   for (let y = 0; y < size; y++) {
-    const row = Math.floor(y / course), fy = y - row * course;
+    const row = Math.floor(y / ch), fy = y - row * ch;
+    const shift = row % 2 ? unit * 0.25 : 0;
     for (let x = 0; x < size; x++) {
-      const xo = x + (row % 2 ? brick / 2 : 0);
-      const col = Math.floor(xo / brick), fx = xo - col * brick;
-      const mortar = fy < 1.3 || fx < 1.3;
-      const v = mortar ? 0.55 : tones[(row * 13 + col) % 400] * (0.9 + n[y * size + x] * 0.2);
+      const xs = (x + shift) % size;
+      const u = Math.floor(xs / unit), fu = xs - u * unit;
+      const isHeader = fu >= str;
+      const fx = isHeader ? fu - str : fu, bw = isHeader ? hdr : str;
+      const id = (row * 11 + u * 2 + (isHeader ? 1 : 0)) % 4096;
+      const m = fy < mortar || fx < mortar || (bw - fx) < 0.3 ? 1 : 0;
       const i = (y * size + x) * 4;
-      img.data[i] = img.data[i + 1] = img.data[i + 2] = Math.min(255, v * 230); img.data[i + 3] = 255;
+      // headers in Flemish bond are often darker ("burnt" ends)
+      const tone = tones[id] * 0.75 + n[y * size + x] * 0.25 - (isHeader ? 0.12 : 0);
+      img.data[i] = Math.max(0, Math.min(255, tone * 255));
+      img.data[i + 1] = hues[id] * 255;
+      img.data[i + 2] = m * 255;
+      img.data[i + 3] = 255;
     }
   }
   ctx.putImageData(img, 0, 0);
@@ -209,158 +228,408 @@ function brickTexture() {
   return t;
 }
 
-export const buildingUniforms = { uNight: { value: 0 }, uBrick: { value: null }, uWet: { value: 0 } };
+// Shop fascia names (invented), white on transparent: 2 columns x 32 rows of 512 x 64.
+const SHOP_NAMES = [
+  "KAVANAGH'S", "O'REILLY & SONS", 'THE LIFFEY CAFÉ', 'BYRNE PHARMACY', "DOYLE'S BAR", 'MURRAY BOOKS', 'NOLAN OPTICIANS', "FITZGERALD'S",
+  'CASEY & CO.', 'THE GEORGIAN DELI', 'WALSH BUTCHERS', "QUINN'S", "HANLON'S BAR", 'MORAN HARDWARE', "FLANAGAN'S", 'LENNON TAILORS',
+  'GALLAGHER BAKERY', 'HEGARTY NEWS', 'CULLEN & SON', "MAHER'S", 'RYAN JEWELLERS', 'THE COPPER KETTLE', 'TWO BRIDGES CAFÉ', 'SMYTH SHOES',
+  'CONWAY PHARMACY', "DALY'S", 'PURCELL FLOWERS', 'CORCORAN & CO.', "DEVLIN'S", 'MCGRATH BUTCHERS', "SHEEHAN'S", 'KINSELLA WINES',
+  "FARRELL'S BAR", 'LYNCH ELECTRICAL', "TIERNEY'S", "O'DWYER'S", 'GRACE BOOKS', 'HALPIN OPTICIANS', "BURKE'S", 'THE QUAYS BAR',
+  'MOONEY TOBACCONIST', 'CARROLL GIFTS', 'SWEENEY CHEMIST', 'THE BRAZEN LAMP', 'HOGAN & DUNNE', 'CLARKE BICYCLES', "KEEGAN'S", 'THE MARLIN',
+  'DORAN CAFÉ', 'MULLIGAN STATIONERS', 'BARRY PHOTO', 'THE OLD STAND', "GAVIN'S", 'NUGENT OPTICIANS', 'PHELAN TAILORS', "LAWLOR'S",
+  'THE STONE BOWL', 'COYLE BOOKS', "REDMOND'S", 'THE RAG TRADE', 'MOLONEY HATS', 'CAHILL & CO.', "HYNES'S", 'THE BLUE DOOR',
+];
+function signAtlas() {
+  const c = document.createElement('canvas');
+  c.width = 1024; c.height = 2048;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  SHOP_NAMES.forEach((name, i) => {
+    const col = i % 2, row = Math.floor(i / 2);
+    const serif = /'S$|BAR|INN|THE /.test(name) || i % 3 === 0;
+    ctx.font = serif ? 'bold 44px Georgia, "Times New Roman", serif' : 'bold 40px "Arial Narrow", Arial, sans-serif';
+    let w = ctx.measureText(name).width;
+    const sx = Math.min(1, 470 / w);
+    ctx.save(); ctx.translate(col * 512 + 256, row * 64 + 33); ctx.scale(sx, 1); ctx.fillText(name, 0, 0); ctx.restore();
+  });
+  const t = new THREE.CanvasTexture(c);
+  t.anisotropy = 8;
+  return t;
+}
+
+export const buildingUniforms = {
+  uNight: { value: 0 }, uWet: { value: 0 }, uIndoor: { value: 0.22 },
+  uBrick: { value: null }, uSigns: { value: null }, uNoise: { value: null },
+};
+
+const FACADE_GLSL = /* glsl */ `
+  uniform float uNight; uniform float uWet; uniform float uIndoor;
+  uniform sampler2D uBrick; uniform sampler2D uSigns; uniform sampler2D uNoise;
+  varying vec3 vBase; varying vec3 vTrim; varying vec4 vStyle; varying vec4 vExtra; varying vec4 vFacade; varying float vFace;
+  varying vec3 vWPos; varying vec3 vFN;
+  float gGlass; vec3 gEmit; float gH;
+  float bh(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  float inRect(vec2 p, vec2 a, vec2 b) { return step(a.x, p.x) * step(p.x, b.x) * step(a.y, p.y) * step(p.y, b.y); }
+  vec3 hsv(float h, float s, float v) { vec3 k = clamp(abs(mod(h * 6.0 + vec3(0, 4, 2), 6.0) - 3.0) - 1.0, 0.0, 1.0); return v * mix(vec3(1), k, s); }
+
+  // Interior mapping: the room behind a window. q: position on the glass (m, x centred, y above the floor),
+  // rd: view ray in facade space (x along the facade, y up, z into the building).
+  vec3 room(vec2 q, vec3 rd, float rs, float fh, float lit, float shop, float office) {
+    float rw = mix(3.4, 6.0, shop), D = mix(4.5, 7.0, shop);
+    vec3 ro = vec3(q.x, q.y, 0.0);
+    vec3 r = normalize(rd);
+    vec3 inv = 1.0 / max(abs(r), vec3(1e-4));
+    float sgx = r.x >= 0.0 ? 1.0 : -1.0, sgy = r.y >= 0.0 ? 1.0 : -1.0;
+    float tx = max(0.0, (sgx * rw * 0.5 - ro.x) * sgx) * inv.x;
+    float ty = max(0.0, ((r.y >= 0.0 ? fh - 0.25 : 0.0) - ro.y) * sgy) * inv.y;
+    float tz = D * inv.z;
+    float t = min(tx, min(ty, tz));
+    vec3 p = ro + r * t;
+    float h1 = bh(vec2(rs, 1.3)), h2 = bh(vec2(rs, 2.7));
+    vec3 wallC = office > 0.5 ? vec3(0.78, 0.78, 0.76) : hsv(h1 * 0.2 + 0.05, 0.12 + 0.18 * h2, 0.5 + 0.3 * h2);
+    vec3 c;
+    if (t == tz) {
+      c = wallC;
+      // furniture / shelving silhouettes against the back wall
+      float furn = step(p.y, 0.9 + 0.5 * bh(vec2(rs, floor(p.x)))) * step(0.3, fract(p.x * 0.45 + h1));
+      c = mix(c, hsv(h2, 0.3, 0.25), furn * (1.0 - office * 0.5));
+      if (shop > 0.5) c = mix(c, hsv(fract(p.x * 0.37 + h1), 0.5, 0.6), step(0.5, fract(p.y * 2.5)) * step(0.2, fract(p.x * 1.3)));
+      // a framed picture
+      c = mix(c, hsv(h2 + 0.3, 0.4, 0.35), inRect(p.xy, vec2(-0.5 + h1, 1.5), vec2(0.2 + h1, 2.1)) * (1.0 - shop));
+    } else if (t == tx) c = wallC * 0.78;
+    else if (r.y < 0.0) c = office > 0.5 ? vec3(0.35, 0.36, 0.38) : vec3(0.32, 0.2, 0.12) * (0.85 + 0.15 * step(0.5, fract(p.x * 5.0)));
+    else {
+      c = vec3(0.86);
+      // ceiling light fitting
+      float l = office > 0.5 ? step(0.8, fract(p.z * 0.8)) * step(0.3, fract(p.x * 0.6)) : 1.0 - smoothstep(0.1, 0.35, length(p.xz - vec2(0.0, D * 0.5)));
+      c += l * lit * 3.0;
+    }
+    float fall = 1.0 / (1.0 + t * 0.18);
+    vec3 warm = office > 0.5 ? vec3(0.95, 0.97, 1.0) : vec3(1.0, 0.78, 0.5);
+    float day = uIndoor * (1.0 - uNight) * mix(1.0, 0.55, shop);
+    return c * fall * (day + lit * warm * mix(0.75, 0.42, shop));
+  }
+`;
 
 function makeMaterial() {
   buildingUniforms.uBrick.value = brickTexture();
-  const mat = new THREE.MeshStandardMaterial({ roughness: 0.88, metalness: 0.0 });
+  buildingUniforms.uSigns.value = signAtlas();
+  buildingUniforms.uNoise.value = noiseTexture;
+  const mat = new THREE.MeshStandardMaterial({ roughness: 0.9, metalness: 0.0 });
   mat.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, buildingUniforms);
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', `#include <common>
-        attribute vec3 aBase; attribute vec3 aTrim; attribute vec4 aStyle;
-        varying vec3 vBase; varying vec3 vTrim; varying vec4 vStyle; varying vec4 vFacade; varying float vFace;`)
+        attribute vec3 aBase; attribute vec3 aTrim; attribute vec4 aStyle; attribute vec4 aExtra;
+        varying vec3 vBase; varying vec3 vTrim; varying vec4 vStyle; varying vec4 vExtra; varying vec4 vFacade; varying float vFace;
+        varying vec3 vWPos; varying vec3 vFN;`)
       .replace('#include <begin_vertex>', `#include <begin_vertex>
         vec3 sc = vec3(length(instanceMatrix[0].xyz), length(instanceMatrix[1].xyz), length(instanceMatrix[2].xyz));
         float uu = abs(normal.x) > 0.5 ? (normal.x > 0.0 ? 0.5 - position.z : position.z + 0.5) * sc.z
                                        : (normal.z > 0.0 ? position.x + 0.5 : 0.5 - position.x) * sc.x;
         vFacade = vec4(uu, position.y * sc.y, abs(normal.x) > 0.5 ? sc.z : sc.x, sc.y);
         vFace = normal.y > 0.5 ? 0.0 : normal.z > 0.5 ? 1.0 : normal.z < -0.5 ? 2.0 : 3.0;
-        vBase = aBase; vTrim = aTrim; vStyle = aStyle;`);
+        vBase = aBase; vTrim = aTrim; vStyle = aStyle; vExtra = aExtra;
+        vWPos = (modelMatrix * instanceMatrix * vec4(position, 1.0)).xyz;
+        vFN = normalize(mat3(modelMatrix) * (mat3(instanceMatrix) * normal));`);
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', `#include <common>
-        uniform float uNight; uniform float uWet; uniform sampler2D uBrick;
-        varying vec3 vBase; varying vec3 vTrim; varying vec4 vStyle; varying vec4 vFacade; varying float vFace;
-        float bh(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-        float box2(vec2 p, vec2 a, vec2 b){ return step(a.x, p.x) * step(p.x, b.x) * step(a.y, p.y) * step(p.y, b.y); }
-        float gGlass; vec3 gEmit;
-        // A sash / casement window in cell coords (x 0..1 across the bay, y metres within the floor)
-        vec3 sashWindow(vec2 q, vec2 size, vec3 wall, vec3 frameCol, float panesX, float panesY, float lit, inout float glass) {
-          vec2 w = (q - vec2(0.5 - size.x * 0.5, 0.0)) / size;
-          if (w.x < 0.0 || w.x > 1.0 || w.y < 0.0 || w.y > 1.0) return wall;
-          vec2 fw = fwidth(w) * 1.2;
-          float frame = 1.0 - box2(w, vec2(0.07), vec2(0.93));
-          float bars = max(step(fract(w.x * panesX), 0.06 + fw.x * panesX), step(fract(w.y * panesY), 0.05 + fw.y * panesY));
-          bars *= 0.75;
-          float mid = step(abs(w.y - 0.5), 0.025);
-          vec3 g = mix(vec3(0.07, 0.085, 0.1), vec3(0.16, 0.18, 0.2), w.y);
-          g = mix(g, vec3(0.6, 0.45, 0.28), lit);
-          glass = 1.0 - max(frame, max(bars, mid));
-          return mix(g, frameCol, max(frame, max(bars, mid)));
-        }`)
+      .replace('#include <common>', `#include <common>\n${FACADE_GLSL}`)
       .replace('#include <color_fragment>', `#include <color_fragment>
         {
           float style = vStyle.x, fh = vStyle.y, bw = vStyle.z, seed = vStyle.w;
+          float doorBay = vExtra.x, signIdx = vExtra.y, weather = vExtra.z, frontage = vExtra.w;
           float u = vFacade.x, v = vFacade.y, W = vFacade.z, H = vFacade.w;
-          vec3 col = vBase; gGlass = 0.0; gEmit = vec3(0.0);
-          if (vFace < 0.5) {
-            col = mix(vec3(0.2, 0.2, 0.21), vec3(0.3, 0.29, 0.28), bh(vec2(seed, 1.0)));
+          gGlass = 0.0; gEmit = vec3(0.0); gH = 0.5;
+          // textures sampled up front (uniform control flow keeps mip selection right)
+          vec4 bt = texture2D(uBrick, vec2(u, v) / 1.8);
+          vec4 nz = texture2D(uNoise, vec2(u * 0.06 + seed * 7.0, v * 0.05 + seed * 3.0));
+          vec4 nzF = texture2D(uNoise, vec2(u, v) * 0.35 + seed);
+          float nb = max(1.0, floor(W / bw + 0.5));
+          float bayW = W / nb;
+          float nfl = max(1.0, floor((H - 0.5) / fh));
+          vec2 signUv; {
+            float cell = mod(signIdx, 64.0);
+            float sw = min(W * 0.8, fh * 0.18 * 8.0); // keep the 8:1 lettering aspect
+            float sx = clamp((u - (W - sw) * 0.5) / sw, 0.0, 1.0);
+            float sy = clamp((v - fh * 0.765) / (fh * 0.18), 0.0, 1.0);
+            signUv = vec2((mod(cell, 2.0) + sx) * 0.5, 1.0 - (floor(cell / 2.0) + 1.0 - sy) / 32.0);
+          }
+          float signA = texture2D(uSigns, signUv).a;
+
+          vec3 V = normalize(vWPos - cameraPosition);
+          vec3 T = normalize(cross(vec3(0.0, 1.0, 0.0), vFN) + vec3(1e-5, 0.0, 0.0));
+          vec3 vt = vec3(dot(V, T), V.y, dot(V, vFN)); // x along the facade, y up, z out of the wall
+          vec3 rdRoom = vec3(vt.x, vt.y, -vt.z);
+          float fw = max(fwidth(u), fwidth(v)); // metres per pixel
+          float lod = smoothstep(0.16, 0.42, fw); // a bay is ~6 px wide when this reaches 1
+          float mortarFade = smoothstep(0.012, 0.035, fw);
+
+          bool brick = style < 1.5;
+          vec3 wall;
+          if (brick) {
+            vec3 b = vBase * (0.7 + 0.55 * bt.r);
+            b = mix(b, b * vec3(1.1, 0.92, 0.82), smoothstep(0.55, 1.0, bt.g));
+            b = mix(b, b * vec3(0.82, 0.86, 0.9), smoothstep(0.45, 0.0, bt.g) * 0.6);
+            float mortarVis = bt.b * (1.0 - mortarFade) + 0.18 * mortarFade;
+            wall = mix(b, vec3(0.58, 0.56, 0.52) * (0.85 + 0.2 * nzF.r), mortarVis);
+            gH = 1.0 - bt.b;
           } else {
-            float brickLike = (style < 1.5) ? 1.0 : 0.0;
-            float tex = texture2D(uBrick, vec2(u, v) * 0.5).r;
-            float blot = texture2D(uBrick, vec2(u, v) * 0.037 + seed).r;
-            col *= brickLike > 0.5 ? mix(0.62, 1.12, tex) : mix(0.9, 1.05, blot);
-            float nb = max(1.0, floor(W / bw + 0.5));
-            float bayW = W / nb;
-            float bi = floor(u / bayW), fx = fract(u / bayW);
-            float nfl = max(1.0, floor((H - 0.5) / fh));
+            wall = vBase * (0.93 + 0.1 * nzF.r);
+            gH = nzF.r * 0.3;
+          }
+          // building-scale weathering: patchy tone, soot toward the top, grime toward the street
+          wall *= 0.88 + 0.22 * nz.r;
+          wall *= 1.0 - 0.18 * weather * smoothstep(H * 0.6, H, v) * nz.g;
+          wall *= 0.8 + 0.2 * smoothstep(0.0, 3.5, v);
+
+          vec3 col = wall;
+          if (vFace < 0.5) {
+            // roof: lead / felt with seams
+            col = mix(vec3(0.21, 0.22, 0.23), vec3(0.3, 0.29, 0.27), bh(vec2(seed, 1.0)));
+            col *= 0.85 + 0.25 * nz.r;
+            gH = 0.5;
+          } else if (lod < 0.97) {
+            float bi = floor(u / bayW), fx = u - bi * bayW - bayW * 0.5; // metres from bay centre
             float fl = floor(v / fh), fy = v - fl * fh;
-            float lit = step(0.5, bh(vec2(bi + seed * 17.0, fl + vFace * 5.0))) * uNight;
             bool front = vFace > 0.5 && vFace < 1.5;
             bool side = vFace > 2.5;
-            vec3 white = vec3(0.86, 0.85, 0.8);
+            float roomSeed = bi * 13.1 + fl * 7.7 + seed * 91.0 + vFace * 3.0;
+            float lit = step(0.62, bh(vec2(roomSeed, 4.1))) * uNight;
+            vec3 white = vec3(0.82, 0.81, 0.77);
+
             if (v > nfl * fh) {
-              // parapet / cornice
-              col = style > 3.5 ? vTrim : (v > H - 0.22 ? vec3(0.72, 0.7, 0.66) : col);
+              // parapet with stone coping; stucco gets a cornice
+              if (v > H - 0.18) col = vec3(0.7, 0.68, 0.64) * (0.9 + 0.2 * nzF.r);
+              else if (!brick && v < nfl * fh + 0.25) col = wall * 1.08;
             } else if (style > 3.5) {
-              // modern curtain wall: glass bands with spandrel panels and mullions
-              float spandrel = step(fy, fh * 0.3);
-              float mullion = step(fx, 0.05) + step(0.97, fx);
-              vec3 g = vBase * 0.55 + vec3(0.02, 0.03, 0.04);
-              float litM = step(0.4, bh(vec2(bi * 0.3 + seed * 11.0, fl))) * uNight;
-              g = mix(g, vec3(0.55, 0.56, 0.5), litM);
-              col = mix(g, vTrim, max(spandrel, 0.0));
-              col = mix(col, vec3(0.16, 0.17, 0.18), clamp(mullion, 0.0, 1.0));
-              gGlass = (1.0 - spandrel) * (1.0 - clamp(mullion, 0.0, 1.0));
-              gEmit = (1.0 - spandrel) * litM * vec3(0.85, 0.88, 0.8) * 0.6;
-              if (fl < 0.5) { col = mix(vec3(0.08, 0.1, 0.11), vec3(0.15), step(fy, 0.2)); gGlass = 1.0; gEmit = uNight * vec3(0.9, 0.85, 0.7) * 0.5; }
-            } else if (side && W < 11.0) {
-              // party wall / gable: plain
+              // curtain wall: mullions, spandrel band at each slab, offices behind
+              float cellW = 1.6;
+              float cx = mod(u, cellW);
+              float mull = 1.0 - step(0.05, cx) * step(cx, cellW - 0.05);
+              float spandrel = step(fy, 0.9);
+              if (spandrel > 0.5) col = vTrim * (0.9 + 0.1 * nzF.r);
+              else if (mull > 0.5) col = vec3(0.16, 0.17, 0.18);
+              else {
+                float officeLit = step(0.35, bh(vec2(floor(u / 4.8) + seed * 5.0, fl))) * uNight;
+                vec3 inside = room(vec2(cx - cellW * 0.5, fy), rdRoom, floor(u / 4.8) + fl * 3.0 + seed * 50.0, fh, officeLit, 0.0, 1.0);
+                // blinds on some floors
+                float blind = step(0.7, bh(vec2(fl, seed))) * step(fh - 0.6 - 1.5 * bh(vec2(bi, fl)), fy) * step(0.5, fract(fy * 12.0));
+                inside = mix(inside, vec3(0.6) * (0.2 + officeLit), blind);
+                col = vBase * 0.12; gGlass = 1.0; gEmit = inside;
+              }
             } else {
               bool ground = fl < 0.5;
-              if (ground && front && style > 0.5) {
-                // shopfront: fascia band above a big glazed front
-                if (fy > fh * 0.76 && fy < fh * 0.97) col = vTrim;
-                else if (fy <= fh * 0.76) {
-                  float pier = step(fx, 0.06) + step(0.94, fx);
-                  float stall = step(fy, 0.45);
-                  float shopLit = uNight * step(0.3, bh(vec2(bi, seed * 5.0)));
-                  vec3 g = mix(vec3(0.06, 0.07, 0.08), vec3(0.55, 0.42, 0.28), shopLit);
-                  col = mix(g, vTrim * 0.8, clamp(pier + stall, 0.0, 1.0));
-                  gGlass = 1.0 - clamp(pier + stall, 0.0, 1.0);
-                  gEmit = gGlass * shopLit * vec3(1.0, 0.72, 0.45) * 0.55;
+              bool shopfront = ground && front && frontage > 0.5 && style > 0.5;
+              bool georgianGround = ground && style < 0.5;
+              if (georgianGround) {
+                // rusticated granite / painted stucco ground floor
+                vec3 g = bh(vec2(seed, 9.0)) > 0.4 ? vec3(0.58, 0.57, 0.54) : vec3(0.84, 0.81, 0.74);
+                float joint = step(fract(v / 0.38), 0.06);
+                col = g * (0.9 + 0.15 * nzF.r) * (1.0 - joint * 0.35);
+                gH = 1.0 - joint;
+              }
+              if (shopfront) {
+                // pilasters, fascia with the shop name, display window, stall riser
+                float edge = min(u, W - u);
+                bool pilaster = edge < 0.35;
+                if (pilaster) col = vTrim * 0.85;
+                else if (fy > fh * 0.76 && fy < fh * 0.94) {
+                  float bright = dot(vTrim, vec3(0.3, 0.59, 0.11));
+                  vec3 txt = bright > 0.45 ? vec3(0.1) : (bh(vec2(seed, 5.0)) > 0.5 ? vec3(0.85, 0.66, 0.28) : vec3(0.93, 0.9, 0.82));
+                  col = mix(vTrim, txt, signA);
+                  gEmit = signA * uNight * txt * 0.35;
+                } else if (fy >= fh * 0.94) col = vTrim * 1.15;
+                else if (fy < 0.55) col = vTrim * 0.75;
+                else {
+                  float pane = mod(u - 0.35, 1.7);
+                  bool mullion = pane < 0.05;
+                  float doorX = 0.35 + (doorBay > 0.5 ? W - 1.8 : 0.4);
+                  bool door = u > doorX && u < doorX + 1.0;
+                  if (mullion) col = vTrim * 0.8;
+                  else {
+                    float shopLit = step(0.25, bh(vec2(seed, 6.0))) * uNight;
+                    vec3 inside = room(vec2(mod(u, 5.0) - 2.5, fy), rdRoom, seed * 31.0 + floor(u / 5.0), fh, shopLit, 1.0, 0.0);
+                    if (door) inside *= 0.5;
+                    col = vec3(0.02); gGlass = 1.0; gEmit = inside;
+                  }
                 }
-              } else if (ground && front && style < 0.5 && abs(bi - floor(bh(vec2(seed, 3.0)) * nb)) < 0.5) {
-                // Georgian door with a fanlight and stone surround
-                vec2 q = vec2((fx - 0.5) * bayW, fy);
-                float dw = 0.62, dh = 2.25, fr = dw;
+              } else if (georgianGround && front && frontage > 0.5 && abs(bi - doorBay) < 0.5) {
+                // Georgian door: stone surround with pilasters, panelled door, radial fanlight
+                vec2 q = vec2(fx, fy);
+                float dw = 0.56, dh = 2.3, fr = dw;
+                float r = length(q - vec2(0.0, dh));
                 bool inDoor = abs(q.x) < dw && q.y < dh;
-                bool inFan = length(q - vec2(0.0, dh)) < fr && q.y >= dh;
-                bool inSurround = abs(q.x) < dw + 0.18 && q.y < dh + fr + 0.18 && !inDoor && !inFan && (q.y < dh || length(q - vec2(0.0, dh)) < fr + 0.18);
-                if (inSurround) col = vec3(0.8, 0.78, 0.72);
+                bool inFan = q.y >= dh && r < fr;
+                bool surround = abs(q.x) < dw + 0.28 && (q.y < dh || r < fr + 0.2) && !inDoor && !inFan;
+                if (surround) { col = vec3(0.86, 0.84, 0.78) * (0.92 + 0.1 * nzF.r); gH = 0.8; }
                 if (inDoor) {
-                  col = vTrim;
                   vec2 pp = vec2(abs(q.x) / dw, q.y / dh);
-                  float panel = box2(fract(pp * vec2(1.0, 3.0)), vec2(0.18), vec2(0.82));
-                  col *= mix(0.8, 1.05, panel);
-                  if (length(q - vec2(0.12, 1.05)) < 0.04) col = vec3(0.85, 0.7, 0.3); // brass knob
+                  float panel = inRect(fract(pp * vec2(1.0, 3.0)), vec2(0.2, 0.15), vec2(0.8, 0.85));
+                  col = vTrim * mix(0.78, 1.0, panel);
+                  gH = 0.3 + 0.2 * panel;
+                  if (length(q - vec2(0.0, 1.45)) < 0.05) col = vec3(0.8, 0.65, 0.3);
                 }
                 if (inFan) {
                   float ang = atan(q.y - dh, q.x);
-                  float rays = step(0.8, fract(ang * 3.0));
-                  col = mix(mix(vec3(0.1, 0.12, 0.14), vec3(1.0, 0.8, 0.5), uNight), white, max(rays, step(fr - 0.07, length(q - vec2(0.0, dh)))));
-                  gEmit = uNight * vec3(1.0, 0.75, 0.45) * (1.0 - rays);
+                  float bars = max(step(0.85, fract(ang * 2.55)), step(fr - 0.06, r));
+                  vec3 fan = mix(vec3(0.05, 0.06, 0.07), vec3(1.0, 0.8, 0.5) * 0.9, uNight * step(0.3, bh(vec2(seed, 8.0))));
+                  col = mix(fan, white, bars); gGlass = 1.0 - bars;
+                  gEmit = (1.0 - bars) * uNight * vec3(1.0, 0.75, 0.45) * 0.8 * step(0.3, bh(vec2(seed, 8.0)));
                 }
-                if (v < 0.35) col = vec3(0.55, 0.54, 0.52);
-              } else {
-                // windows: Georgian proportions diminish as you go up
-                vec2 size = vec2(0.42, fh * 0.55);
-                float y0 = fh * 0.22;
+              } else if (!(side && W < 11.0)) {
+                // sash window in a recessed opening; Georgian windows diminish as you go up
+                vec2 hw = vec2(0.52, fh * 0.3);
+                float y0 = fh * 0.24;
                 if (style < 0.5) {
-                  if (fl > 0.5 && fl < 1.5) { size.y = fh * 0.68; y0 = fh * 0.12; }
-                  else if (fl > nfl - 1.5) { size.y = fh * 0.4; y0 = fh * 0.28; }
-                } else { size.x = 0.5; }
-                if (style > 2.5 && style < 3.5) size.x = 0.46;
-                vec3 frameCol = style > 2.5 ? vec3(0.9) : white;
-                float gl = 0.0;
-                vec3 wcol = sashWindow(vec2(fx, fy - y0), vec2(size.x, size.y), col, frameCol, 3.0, 4.0, lit, gl);
-                // stone sill / lintel on stucco & commercial
-                if (style > 0.5 && abs(fx - 0.5) < size.x * 0.58 && (abs(fy - y0 + 0.08) < 0.08 || abs(fy - y0 - size.y - 0.1) < 0.1)) wcol = vec3(0.78, 0.76, 0.7);
-                col = wcol; gGlass = gl; gEmit = gl * lit * vec3(1.0, 0.7, 0.4) * 0.8;
-                if (style < 0.5 && v < 0.4) col = vec3(0.55, 0.54, 0.52); // granite plinth
+                  if (fl > 0.5 && fl < 1.5) { hw.y = fh * 0.34; y0 = fh * 0.14; }
+                  else if (fl > nfl - 1.5) { hw.y = fh * 0.2; y0 = fh * 0.3; }
+                  if (ground) { hw.y = fh * 0.26; y0 = fh * 0.3; }
+                } else if (style > 2.5) { hw.x = 0.5; }
+                else hw.x = 0.58;
+                vec2 q = vec2(fx, fy - y0 - hw.y); // centred on the opening
+                float depth = 0.14;
+                vec2 shift = rdRoom.xy / max(rdRoom.z, 0.08) * depth;
+                vec2 qg = q + shift;
+                bool opening = abs(q.x) < hw.x && abs(q.y) < hw.y;
+                if (opening) {
+                  if (abs(qg.x) > hw.x || abs(qg.y) > hw.y) {
+                    col = wall * 0.5; // reveal
+                  } else {
+                    vec2 w = (qg + hw) / (2.0 * hw); // 0..1 across the glass
+                    vec2 px = vec2(fw) / (2.0 * hw); // derivative from uniform control flow
+                    float fr = 0.055 / (2.0 * hw.x), frY = 0.055 / (2.0 * hw.y);
+                    float frame = 1.0 - inRect(w, vec2(fr, frY), vec2(1.0 - fr, 1.0 - frY));
+                    float meet = step(abs(w.y - 0.5), 0.02);
+                    float panesX = style < 0.5 ? 3.0 : style > 2.5 ? 2.0 : 1.0;
+                    float panesY = style < 0.5 ? 6.0 : 2.0;
+                    float bx = abs(fract(w.x * panesX + 0.5) - 0.5) / panesX, by = abs(fract(w.y * panesY + 0.5) - 0.5) / panesY;
+                    float bars = max(1.0 - smoothstep(0.012, 0.012 + px.x, bx), 1.0 - smoothstep(0.008, 0.008 + px.y, by));
+                    bars *= 1.0 - smoothstep(0.03, 0.08, fw);
+                    float solid = max(frame, max(meet, bars));
+                    vec3 frameCol = style > 2.5 && bh(vec2(seed, 2.0)) > 0.6 ? vTrim : white;
+                    // curtains and blinds just behind the glass
+                    float cw = 0.12 + 0.3 * bh(vec2(roomSeed, 5.5));
+                    float curtain = (step(w.x, cw) + step(1.0 - cw, w.x)) * step(0.35, bh(vec2(roomSeed, 6.6)));
+                    float blind = step(1.0 - 0.45 * bh(vec2(roomSeed, 7.7)), w.y) * step(0.7, bh(vec2(roomSeed, 8.8)));
+                    vec3 inside = room(vec2((w.x - 0.5) * 2.0 * hw.x, y0 + w.y * 2.0 * hw.y), rdRoom, roomSeed, fh, lit, 0.0, 0.0);
+                    vec3 fabric = hsv(bh(vec2(roomSeed, 9.9)), 0.25, 0.4) * (0.8 + 0.2 * sin(w.x * 60.0));
+                    float light = uIndoor * (1.0 - uNight) + lit * 0.9;
+                    inside = mix(inside, fabric * light, max(curtain, blind * 0.9));
+                    col = mix(vec3(0.015, 0.02, 0.025), frameCol, solid);
+                    gGlass = 1.0 - solid;
+                    gEmit = inside * (1.0 - solid);
+                  }
+                } else {
+                  // stone sill below, brick flat arch or stucco architrave above
+                  if (abs(q.x) < hw.x + 0.12 && q.y < -hw.y && q.y > -hw.y - 0.1) { col = vec3(0.74, 0.72, 0.67) * (0.9 + 0.15 * nzF.r); gH = 0.9; }
+                  else if (brick && !georgianGround && abs(q.x) < hw.x + 0.08 && q.y > hw.y && q.y < hw.y + 0.28) col = wall * vec3(1.05, 0.95, 0.9);
+                  else if (!brick && style < 2.5 && abs(q.x) < hw.x + 0.14 && q.y > -hw.y && q.y < hw.y + 0.14) col = mix(wall, vec3(0.86, 0.84, 0.8), 0.6);
+                  // rain streaks under sills
+                  if (abs(q.x) < hw.x && q.y < -hw.y - 0.1) col *= 1.0 - 0.18 * weather * smoothstep(-hw.y - 2.2, -hw.y - 0.1, q.y) * step(0.45, texture2D(uNoise, vec2(u * 1.7, 0.1)).r);
+                }
               }
             }
-            // ground contact darkening
-            col *= 0.72 + 0.28 * smoothstep(0.0, 2.5, v);
+          }
+          if (vFace > 0.5) {
+            // far away: average colour so the window grid does not shimmer
+            vec3 avg = mix(wall, vec3(0.05, 0.06, 0.07), style > 3.5 ? 0.7 : 0.28);
+            float litAvg = uNight * 0.3;
+            col = mix(col, avg, lod);
+            gEmit = mix(gEmit, vec3(1.0, 0.75, 0.45) * litAvg * 0.28 * (style > 3.5 ? 0.6 : 1.0) + uIndoor * (1.0 - uNight) * 0.02, lod);
+            gGlass = mix(gGlass, 0.25, lod);
           }
           diffuseColor.rgb = col;
         }`)
+      .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+        {
+          // bump from the procedural height (mortar joints, rustication, sills)
+          vec3 sp = -vViewPosition;
+          vec3 sx = dFdx(sp), sy = dFdy(sp);
+          vec2 dh = vec2(dFdx(gH), dFdy(gH)) * 0.35 * (1.0 - gGlass);
+          vec3 r1 = cross(sy, normal), r2 = cross(normal, sx);
+          float det = dot(sx, r1);
+          vec3 grad = sign(det) * (dh.x * r1 + dh.y * r2);
+          normal = normalize(abs(det) * normal - grad);
+        }`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
-        roughnessFactor = mix(roughnessFactor * (1.0 - uWet * 0.35), 0.12, gGlass);`)
+        roughnessFactor = mix(roughnessFactor * (1.0 - uWet * 0.4), 0.06, gGlass);`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         totalEmissiveRadiance += gEmit;`);
   };
   return mat;
 }
 
+// Georgian basement areas: railings on the pavement, a dark area below, granite steps up to the door.
+function buildGeorgianFronts(scene) {
+  const rail = [], pit = [], steps = [];
+  for (const L of lots) {
+    if (L.style !== S.GEORGIAN || !L.frontage) continue;
+    const c = Math.cos(L.rot), s = Math.sin(L.rot);
+    const toW = (lx, lz) => ({ x: L.x + lx * c + lz * s, z: L.z - lx * s + lz * c });
+    const bayW = L.w / L.nb, zF = L.d / 2, zR = zF + 1.3;
+    const doorX = -L.w / 2 + (L.doorBay + 0.5) * bayW;
+    const gap = [doorX - 0.8, doorX + 0.8];
+    for (const [x0, x1] of [[-L.w / 2 + 0.05, gap[0]], [gap[1], L.w / 2 - 0.05]]) {
+      if (x1 - x0 < 0.3) continue;
+      rail.push([toW(x0, zR), toW(x1, zR)]);
+      pit.push([toW(x0, zF), toW(x1, zF), toW(x1, zR), toW(x0, zR)]);
+      addSegment(toW(x0, zR).x, toW(x0, zR).z, toW(x1, zR).x, toW(x1, zR).z);
+    }
+    // side returns of the railings at the door gap
+    for (const x of gap) { rail.push([toW(x, zF), toW(x, zR)]); addSegment(toW(x, zF).x, toW(x, zF).z, toW(x, zR).x, toW(x, zR).z); }
+    steps.push({ ...toW(doorX, zF + 0.7), rot: L.rot });
+  }
+  // railings: vertical ribbons with an alpha-tested bar texture
+  const rc = document.createElement('canvas');
+  rc.width = 64; rc.height = 128;
+  const rx = rc.getContext('2d');
+  rx.fillStyle = '#141615';
+  rx.fillRect(0, 14, 64, 5); rx.fillRect(0, 110, 64, 5);
+  for (let x = 4; x < 64; x += 12) {
+    rx.fillRect(x, 6, 3, 122);
+    rx.beginPath(); rx.moveTo(x - 2, 8); rx.lineTo(x + 1.5, 0); rx.lineTo(x + 5, 8); rx.fill();
+  }
+  const rt = new THREE.CanvasTexture(rc);
+  rt.wrapS = THREE.RepeatWrapping; rt.colorSpace = THREE.SRGBColorSpace;
+  const pos = [], uv = [], idx = [];
+  const Y0 = KERB_H, Y1 = KERB_H + 1.05;
+  for (const [a, b] of rail) {
+    const k = pos.length / 3, L = Math.hypot(b.x - a.x, b.z - a.z) / 0.5;
+    pos.push(a.x, Y0, a.z, b.x, Y0, b.z, b.x, Y1, b.z, a.x, Y1, a.z);
+    uv.push(0, 0, L, 0, L, 1, 0, 1);
+    idx.push(k, k + 1, k + 2, k, k + 2, k + 3);
+  }
+  const rg = new THREE.BufferGeometry();
+  rg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  rg.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  rg.setIndex(idx); rg.computeVertexNormals();
+  const railMesh = new THREE.Mesh(rg, new THREE.MeshStandardMaterial({ map: rt, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.5, metalness: 0.5 }));
+  railMesh.castShadow = true;
+  // dark basement areas
+  const pp = [], pi = [];
+  for (const q of pit) {
+    const k = pp.length / 3;
+    for (const p of q) pp.push(p.x, KERB_H + 0.006, p.z);
+    pi.push(k, k + 2, k + 1, k, k + 3, k + 2);
+  }
+  const pg = new THREE.BufferGeometry();
+  pg.setAttribute('position', new THREE.Float32BufferAttribute(pp, 3));
+  pg.setIndex(pi); pg.computeVertexNormals();
+  const pitMesh = new THREE.Mesh(pg, new THREE.MeshStandardMaterial({ color: 0x1a1b1c, roughness: 1, polygonOffset: true, polygonOffsetFactor: -2, side: THREE.DoubleSide }));
+  // granite steps
+  const sg = new THREE.BoxGeometry(1.6, 0.34, 1.4); sg.translate(0, 0.17, 0);
+  const stepMesh = chunkedInstances(sg, new THREE.MeshStandardMaterial({ color: 0x9a9892, roughness: 0.85 }), steps, { y: KERB_H });
+  scene.add(railMesh, pitMesh, stepMesh);
+}
+
 export function buildBuildings(scene) {
   const geo = new THREE.BoxGeometry(1, 1, 1);
   geo.translate(0, 0.5, 0);
   const count = lots.length;
-  const aBase = new Float32Array(count * 3), aTrim = new Float32Array(count * 3), aStyle = new Float32Array(count * 4);
+  const aBase = new Float32Array(count * 3), aTrim = new Float32Array(count * 3), aStyle = new Float32Array(count * 4), aExtra = new Float32Array(count * 4);
   const mesh = new THREE.InstancedMesh(geo, makeMaterial(), count);
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0);
-  const chimneys = [];
+  const chimneys = [], pots = [];
   lots.forEach((L, i) => {
     q.setFromAxisAngle(up, L.rot);
     m4.compose(new THREE.Vector3(L.x, 0, L.z), q, new THREE.Vector3(L.w, L.h, L.d));
@@ -368,36 +637,43 @@ export function buildBuildings(scene) {
     aBase.set([L.base.r, L.base.g, L.base.b], i * 3);
     aTrim.set([L.trim.r, L.trim.g, L.trim.b], i * 3);
     aStyle.set([L.style, L.fh, L.bay, L.seed], i * 4);
+    aExtra.set([L.doorBay, L.sign, L.weather, L.frontage ? 1 : 0], i * 4);
     addBox(L.x, L.z, L.w / 2, L.d / 2, L.rot);
     if (L.style === S.GEORGIAN || L.style === S.BRICK) {
-      // chimney stacks on the party walls
+      // chimney stacks on the party walls, each with a row of clay pots
       for (const sx of [-1, 1]) {
-        if (rand() < 0.35) continue;
-        const lx = sx * (L.w / 2 - 0.45), lz = (rand() - 0.5) * L.d * 0.4;
+        if (rand() < 0.3) continue;
+        const lx = sx * (L.w / 2 - 0.45), lz = (rand() - 0.5) * L.d * 0.3;
         const c = Math.cos(L.rot), s = Math.sin(L.rot);
-        chimneys.push({ x: L.x + lx * c + lz * s, z: L.z - lx * s + lz * c, y: L.h, rot: L.rot, color: L.base });
+        const ch = { x: L.x + lx * c + lz * s, z: L.z - lx * s + lz * c, y: L.h, rot: L.rot, color: L.base, h: 1.4 + rand() * 0.8 };
+        chimneys.push(ch);
+        const n = L.frontage ? 2 + Math.floor(rand() * 3) : 0;
+        for (let k = 0; k < n; k++) {
+          const pz = -0.95 + (1.9 * (k + 0.5)) / n;
+          pots.push({ x: ch.x + pz * s, z: ch.z + pz * c, y: ch.y - 0.2 + ch.h, h: 0.35 + rand() * 0.3 });
+        }
       }
     }
   });
   geo.setAttribute('aBase', new THREE.InstancedBufferAttribute(aBase, 3));
   geo.setAttribute('aTrim', new THREE.InstancedBufferAttribute(aTrim, 3));
   geo.setAttribute('aStyle', new THREE.InstancedBufferAttribute(aStyle, 4));
+  geo.setAttribute('aExtra', new THREE.InstancedBufferAttribute(aExtra, 4));
   mesh.castShadow = mesh.receiveShadow = true;
   mesh.computeBoundingSphere();
   scene.add(mesh);
 
-  // chimneys (with pots)
-  const cgeo = new THREE.BoxGeometry(0.8, 1.7, 2.4);
-  cgeo.translate(0, 0.85, 0);
-  const cmat = new THREE.MeshStandardMaterial({ roughness: 0.9 });
-  const cm = new THREE.InstancedMesh(cgeo, cmat, chimneys.length);
-  chimneys.forEach((c, i) => {
-    q.setFromAxisAngle(up, c.rot);
-    cm.setMatrixAt(i, m4.compose(new THREE.Vector3(c.x, c.y - 0.2, c.z), q, new THREE.Vector3(1, 1, 1)));
-    cm.setColorAt(i, c.color.clone().multiplyScalar(0.85));
-  });
-  cm.castShadow = true;
-  scene.add(cm);
+  const cgeo = new THREE.BoxGeometry(0.8, 1, 2.3);
+  cgeo.translate(0, 0.5, 0);
+  const cm = chunkedInstances(cgeo, new THREE.MeshStandardMaterial({ roughness: 0.9 }),
+    chimneys.map((c) => ({ x: c.x, y: c.y - 0.2, z: c.z, rot: c.rot, s: new THREE.Vector3(1, c.h, 1), color: c.color })),
+    { shadow: true, colors: (c) => c.color.clone().multiplyScalar(0.8), size: 180 });
+  const pgeo = new THREE.CylinderGeometry(0.1, 0.13, 1, 5, 1, true);
+  pgeo.translate(0, 0.5, 0);
+  const pm = chunkedInstances(pgeo, new THREE.MeshStandardMaterial({ color: 0x9a5a3c, roughness: 0.85, side: THREE.DoubleSide }),
+    pots.map((p) => ({ x: p.x, y: p.y, z: p.z, s: new THREE.Vector3(1, p.h, 1) })), { size: 180 });
+  scene.add(cm, pm);
+  buildGeorgianFronts(scene);
 
   return { mesh, count, frontageCount, lots };
 }

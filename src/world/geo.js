@@ -237,3 +237,15 @@ export function roadInsetFor(world, ids) {
 
 export const world = build();
 export const rawData = data;
+
+// Kerbside parking on wide streets without bus lanes or the Luas.
+const NO_PARKING = /Dame|College|Westmoreland|D'Olier|Nassau|Abbey|Beresford|Memorial|Amiens|Tara|O'Connell|Pearse|Mayor/;
+export function hasParking(way) {
+  return way.width >= 12 && !['boulevard', 'quay', 'bridge', 'lane'].includes(way.type) && !NO_PARKING.test(way.name);
+}
+// Distance of the running lane's centre from the road centreline (traffic keeps left of it).
+export function laneOffset(way) {
+  if (way.type === 'boulevard') return 7;
+  if (hasParking(way)) return 2.6;
+  return Math.min(way.width / 4, 3);
+}

@@ -60,6 +60,7 @@ export function createHUD({ sites, actions }) {
         <tr><td><kbd>L</kbd></td><td>Landmark labels</td></tr>
         <tr><td><kbd>T</kbd> <kbd>1</kbd>&ndash;<kbd>9</kbd></td><td>Landmark list / teleport</td></tr>
         <tr><td><kbd>Backspace</kbd></td><td>Reset car onto the road</td></tr>
+        <tr><td><kbd>Q</kbd></td><td>Graphics quality (low / medium / high)</td></tr>
         <tr><td><kbd>M</kbd> <kbd>F</kbd></td><td>Sound / frame rate</td></tr>
       </table>
       <p class="touch-note">On a phone: steer with the left pad, pedals on the right, <b>HB</b> is the handbrake.</p>

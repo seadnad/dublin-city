@@ -6,6 +6,7 @@ import { sites, reserved, grounds } from './sites.js';
 import { parkPolys, campusPolys, stoneTex, WATER_Y, paintArea, COLORS } from './ground.js';
 import { rng, makeLabelTexture, makeStoneTexture } from './textures.js';
 import { addBox } from '../game/collision.js';
+import { chunkedInstances } from './chunks.js';
 
 const rand = rng(1742);
 
@@ -538,18 +539,10 @@ function buildTrees(scene) {
   }
   const trunkGeo = new THREE.CylinderGeometry(0.22, 0.35, 4, 6).translate(0, 2, 0);
   const crownGeo = new THREE.IcosahedronGeometry(3.2, 1).translate(0, 6.2, 0);
-  const trunks = new THREE.InstancedMesh(trunkGeo, new THREE.MeshStandardMaterial({ color: 0x4a3b2c, roughness: 0.9 }), spots.length);
-  const crowns = new THREE.InstancedMesh(crownGeo, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, flatShading: true }), spots.length);
-  const m = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), col = new THREE.Color();
-  spots.forEach((p, i) => {
-    q.setFromAxisAngle(up, rand() * 6.28);
-    m.compose(new THREE.Vector3(p.x, 0, p.z), q, new THREE.Vector3(p.s, p.s * (0.9 + rand() * 0.3), p.s));
-    trunks.setMatrixAt(i, m); crowns.setMatrixAt(i, m);
-    col.setHSL(0.24 + rand() * 0.08, 0.35 + rand() * 0.2, 0.2 + rand() * 0.1);
-    crowns.setColorAt(i, col);
-  });
-  trunks.castShadow = crowns.castShadow = true;
-  crowns.receiveShadow = true;
+  const items = spots.map((p) => ({ x: p.x, z: p.z, rot: rand() * 6.28, s: new THREE.Vector3(p.s, p.s * (0.9 + rand() * 0.3), p.s) }));
+  const trunks = chunkedInstances(trunkGeo, new THREE.MeshStandardMaterial({ color: 0x4a3b2c, roughness: 0.9 }), items, { shadow: true });
+  const crowns = chunkedInstances(crownGeo, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, flatShading: true }), items,
+    { shadow: true, colors: () => new THREE.Color().setHSL(0.24 + rand() * 0.08, 0.35 + rand() * 0.2, 0.2 + rand() * 0.1) });
   scene.add(trunks, crowns);
   return spots.length;
 }
