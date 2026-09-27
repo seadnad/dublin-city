@@ -116,6 +116,7 @@ const people = createPeople(scene, { count: IS_MOBILE ? 110 : 300 });
 traffic.setPlayer(car);
 traffic.setTram(tram);
 traffic.setSignals(signals);
+audio.setWorld(world, signals); // audio: pedestrian-crossing sounds at signalised junctions
 car.dynamicObstacles = (c, r) => {
   let best = null;
   for (const f of [traffic.collide, tram.collide, (cc, rr) => pursuit.collide(cc, rr)]) {
@@ -250,6 +251,8 @@ loadCar('coupe').then((m) => { suspectModel = m; });
 loadTrees().then((s) => console.log('trees loaded:', s.join(', ')));
 onKey('g', actions.play);
 onKey('x', () => { if (pursuit.active) return; car.siren = !car.siren; audio.setSiren(car.siren); hud.toast(car.siren ? 'Siren on' : 'Siren off'); });
+// audio: siren tone (auto / wail / yelp / hi-lo)
+onKey('z', () => { const m = audio.cycleSirenTone(); hud.toast(`Siren tone: ${{ auto: 'auto (wail / yelp)', wail: 'wail', yelp: 'yelp', hilo: 'hi-lo' }[m]}`); });
 onKey('h', () => hud.togglePanel('help'));
 onKey('t', () => hud.togglePanel('places'));
 onKey('escape', () => { hud.togglePanel(null); worldMap.close(); if (gameUI.playOpen) gameUI.togglePlay(false); });
@@ -314,7 +317,8 @@ function frame() {
   lamps.update(dt, focus);
   rain.update(dt, time, camera);
   hud.update(dt, { car, traffic, tram });
-  audio.update(car, input, mode.rain);
+  // audio reads the city state it needs (weather, traffic, tram) rather than being called from those modules
+  audio.update(car, input, { rain: mode.rain, night: mode.evening, traffic: traffic.list, tram, paused: worldMap.isOpen });
 
   const tp5 = performance.now();
   // shadow map every frame: with half-rate updates the car's own shadow lagged and jittered at speed
@@ -347,7 +351,7 @@ setTimeout(() => hud.toast(IS_MOBILE ? 'Tap ? for help' : 'Press H for controls,
 
 // hooks for the headless smoke test
 window.__dublin = {
-  THREE, scene, camera, world, renderer, pipeline, groundAOUniforms, atmosphere, car, input, rig, traffic, tram, people, pursuit, trial, gameUI, buildings, landmarks, sites, teleportTo, actions, mode,
+  THREE, scene, camera, world, renderer, pipeline, groundAOUniforms, atmosphere, car, input, rig, traffic, tram, people, pursuit, trial, gameUI, buildings, landmarks, sites, teleportTo, actions, mode, audio,
   lockQuality(q, d) { userQuality = true; dpr = d; renderer.setPixelRatio(d); pipeline.setQuality(q); pipeline.setMood(mode); slowTime = fastTime = 0; lastSwitch = time + 1e9; },
   profile() { const o = {}; for (const k of Object.keys(prof)) if (k !== 'n') o[k] = +(prof[k] / Math.max(1, prof.n)).toFixed(2); for (const k of Object.keys(prof)) prof[k] = 0; return o; },
   stats: () => ({ ...renderer.info.render, dpr, segments: segmentCount(), car: { ...car.pos, speed: car.speed, street: car.street && car.street.name } }),

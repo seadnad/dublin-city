@@ -26,11 +26,12 @@ if (remote) {
 } else if (useBuild) {
   await build({ logLevel: 'warn' });
   server = await preview({ preview: { port: 4174 } });
-  url = 'http://localhost:4174/';
+  // Vite moves to the next free port if this one is taken (e.g. another checkout's test): use the one it got
+  url = (server.resolvedUrls && server.resolvedUrls.local[0]) || 'http://localhost:4174/';
 } else {
   server = await createServer({ server: { port: 5199 }, logLevel: 'warn' });
   await server.listen();
-  url = 'http://localhost:5199/';
+  url = (server.resolvedUrls && server.resolvedUrls.local[0]) || 'http://localhost:5199/';
 }
 
 const browser = await puppeteer.launch({

@@ -62,7 +62,7 @@ export function createHUD({ sites, actions }) {
         <tr><td><kbd>C</kbd></td><td>Chase / bonnet camera</td></tr>
         <tr><td><kbd>R</kbd> <kbd>N</kbd></td><td>Rain / night</td></tr>
         <tr><td><kbd>G</kbd></td><td>Play: Garda Pursuit, Time Trials</td></tr>
-        <tr><td><kbd>X</kbd></td><td>Siren and blue lights</td></tr>
+        <tr><td><kbd>X</kbd> <kbd>Z</kbd></td><td>Siren and blue lights / siren tone</td></tr>
         <tr><td><kbd>M</kbd></td><td>World map (click streets for a waypoint)</td></tr>
         <tr><td><kbd>T</kbd> <kbd>1</kbd>&ndash;<kbd>9</kbd></td><td>Landmark list / teleport</td></tr>
         <tr><td><kbd>Backspace</kbd></td><td>Reset car onto the road</td></tr>
