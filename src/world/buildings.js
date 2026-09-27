@@ -267,7 +267,7 @@ const FACADE_GLSL = /* glsl */ `
   uniform sampler2D uBrick; uniform sampler2D uSigns; uniform sampler2D uNoise;
   varying vec3 vBase; varying vec3 vTrim; varying vec4 vStyle; varying vec4 vExtra; varying vec4 vFacade; varying float vFace;
   varying vec3 vWPos; varying vec3 vFN;
-  float gGlass; vec3 gEmit; float gH;
+  float gGlass; vec3 gEmit; float gH; float gBump;
   float bh(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
   float inRect(vec2 p, vec2 a, vec2 b) { return step(a.x, p.x) * step(p.x, b.x) * step(a.y, p.y) * step(p.y, b.y); }
   vec3 hsv(float h, float s, float v) { vec3 k = clamp(abs(mod(h * 6.0 + vec3(0, 4, 2), 6.0) - 3.0) - 1.0, 0.0, 1.0); return v * mix(vec3(1), k, s); }
@@ -363,6 +363,10 @@ function makeMaterial() {
           float fw = max(fwidth(u), fwidth(v)); // metres per pixel
           float lod = smoothstep(0.16, 0.42, fw); // a bay is ~6 px wide when this reaches 1
           float mortarFade = smoothstep(0.012, 0.035, fw);
+          // Relief (mortar joints, rustication, sills) is shaded from screen-space derivatives of the pattern.
+          // Once the pattern is only a few pixels across those derivatives alias into moire rings, so the
+          // relief fades out by ~7 mm per pixel (a few metres away on a phone) and is fully off beyond that.
+          gBump = 1.0 - smoothstep(0.0025, 0.007, fw);
 
           bool brick = style < 1.5;
           vec3 wall;
@@ -545,7 +549,7 @@ function makeMaterial() {
           // bump from the procedural height (mortar joints, rustication, sills)
           vec3 sp = -vViewPosition;
           vec3 sx = dFdx(sp), sy = dFdy(sp);
-          vec2 dh = vec2(dFdx(gH), dFdy(gH)) * 0.35 * (1.0 - gGlass);
+          vec2 dh = vec2(dFdx(gH), dFdy(gH)) * 0.35 * (1.0 - gGlass) * gBump;
           vec3 r1 = cross(sy, normal), r2 = cross(normal, sx);
           float det = dot(sx, r1);
           vec3 grad = sign(det) * (dh.x * r1 + dh.y * r2);
