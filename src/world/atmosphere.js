@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { IS_MOBILE } from './textures.js';
 import { noiseTexture } from './roads.js';
+import { setReflectLevel } from '../render/reflect.js';
 
 const skyVert = /* glsl */ `
 varying vec3 vDir;
@@ -48,25 +49,28 @@ export const PRESETS = {
     top: 0x6f90b3, horizon: 0xd2d9de, cloudA: 0xf2f1ec, cloudB: 0x98a2ab, cover: 0.55,
     fog: 0xc3cbd1, fogDensity: 0.0022, hemiSky: 0xb9cde4, hemiGround: 0x8c806e, hemi: 0.68,
     sun: 0xfff1dc, sunI: 3.0, sunDir: [-0.55, 0.62, 0.56], fill: 0x9fb6d0, fillI: 0.4,
-    exposure: 1.0, lamps: 0, windows: 0.0, wet: 0, env: 0.3,
+    exposure: 1.0, lamps: 0, windows: 0.0, wet: 0, env: 0.3, reflect: 1.0,
+    city: 1.0, ground: 0x34363a,
   },
   rain: {
     top: 0x6b757c, horizon: 0x9ea5a8, cloudA: 0x8a9195, cloudB: 0x5d6569, cover: 1.0,
     fog: 0x9aa1a3, fogDensity: 0.0052, hemiSky: 0xbfc8cc, hemiGround: 0x4f4b44, hemi: 0.85,
     sun: 0xdde6ee, sunI: 0.95, sunDir: [-0.35, 0.85, 0.4], fill: 0xa9b6c2, fillI: 0.28,
-    exposure: 1.0, lamps: 0.25, windows: 0.0, wet: 1, env: 0.5,
+    exposure: 1.0, lamps: 0.25, windows: 0.0, wet: 1, env: 0.5, reflect: 1.0,
+    city: 0.45, ground: 0x26282b,
   },
   evening: {
     top: 0x1a2440, horizon: 0x8a6a6a, cloudA: 0x3d3f55, cloudB: 0x252838, cover: 0.7,
     fog: 0x3a3c4c, fogDensity: 0.0034, hemiSky: 0x5a6a90, hemiGround: 0x2a2420, hemi: 0.38,
     sun: 0xffa86a, sunI: 0.45, sunDir: [-0.88, 0.2, 0.43], fill: 0x5d6f9a, fillI: 0.14,
-    exposure: 1.08, lamps: 1, windows: 1, wet: 0, env: 0.3,
+    exposure: 1.08, lamps: 1, windows: 1, wet: 0, env: 0.3, reflect: 0.8,
+    city: 0.12, ground: 0x121316,
   },
 };
 
 const RAINY_EVENING = {
   ...PRESETS.evening, top: 0x131a2b, horizon: 0x4c4b58, cloudA: 0x2f3242, cloudB: 0x1d202b, cover: 1,
-  fog: 0x2f323d, fogDensity: 0.0058, hemi: 0.42, sunI: 0.2, fillI: 0.12, wet: 1, env: 0.4,
+  fog: 0x2f323d, fogDensity: 0.0058, hemi: 0.42, sunI: 0.2, fillI: 0.12, wet: 1, env: 0.4, reflect: 0.9, city: 0.1,
 };
 export function composePreset({ rain, evening }) {
   if (rain && evening) return RAINY_EVENING;
@@ -114,12 +118,40 @@ export function createAtmosphere(scene, renderer) {
 
   scene.fog = new THREE.FogExp2(0xffffff, 0.003);
 
-  // environment map from the sky for reflections (regenerated on preset change)
+  // Environment map for image-based light and reflections, regenerated on preset change: the sky, a dark street
+  // below and a ring of building silhouettes at the horizon, so car paint and glass reflect sky / street / road
+  // instead of plain haze all round.
   const pmrem = new THREE.PMREMGenerator(renderer);
   const envScene = new THREE.Scene();
   const envSky = sky.clone();
   envSky.material = sky.material;
   envScene.add(envSky);
+  const groundMat = new THREE.MeshBasicMaterial({ color: 0x333333 });
+  const envGround = new THREE.Mesh(new THREE.CircleGeometry(95, 32).rotateX(-Math.PI / 2), groundMat);
+  envGround.position.y = -1.2;
+  envScene.add(envGround);
+  const cityGeo = (() => {
+    // facades on a ring of radius 55 m (a street's width across, compressed), 8-26 m tall; vertex colours give
+    // each block a tone and darken the side facing away from the sun
+    const parts = [], rnd = (() => { let s = 7; return () => ((s = (s * 16807) % 2147483647) / 2147483647); })();
+    const tones = [[0.42, 0.24, 0.18], [0.5, 0.31, 0.22], [0.66, 0.62, 0.55], [0.55, 0.53, 0.5], [0.72, 0.68, 0.6]];
+    for (let a = 0; a < Math.PI * 2; a += 0.21 + rnd() * 0.12) {
+      const w = 12 + rnd() * 10, h = 8 + rnd() * 18;
+      const g = new THREE.BoxGeometry(w, h, 6);
+      g.translate(0, h / 2 - 1.2, 0);
+      g.rotateY(-a + Math.PI / 2);
+      g.translate(Math.cos(a) * 55, 0, Math.sin(a) * 55);
+      const t = tones[Math.floor(rnd() * tones.length)];
+      const lit = 0.55 + 0.45 * Math.max(0, Math.cos(a - 2.35)); // facing the south-west sun
+      const col = new Float32Array(g.attributes.position.count * 3);
+      for (let i = 0; i < col.length; i += 3) { col[i] = t[0] * lit; col[i + 1] = t[1] * lit; col[i + 2] = t[2] * lit; }
+      g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+      parts.push(g.toNonIndexed());
+    }
+    return parts;
+  })();
+  const cityMat = new THREE.MeshBasicMaterial({ vertexColors: true });
+  for (const g of cityGeo) envScene.add(new THREE.Mesh(g, cityMat));
   let envRT = null;
 
   const state = { rain: false, evening: false, values: null };
@@ -139,9 +171,13 @@ export function createAtmosphere(scene, renderer) {
     fill.color.set(p.fill); fill.intensity = p.fillI;
     renderer.toneMappingExposure = p.exposure * EXPOSURE_BASE;
     if (envRT) envRT.dispose();
-    envRT = pmrem.fromScene(envScene, 0.02);
+    groundMat.color.set(p.ground);
+    // silhouettes are unlit, so brightness tracks the preset (sunny day ~ lit brick, night ~ near black)
+    cityMat.color.setScalar(1.6 * p.city);
+    envRT = pmrem.fromScene(envScene, 0.02, 0.1, 200);
     scene.environment = envRT.texture;
     scene.environmentIntensity = p.env;
+    setReflectLevel(p.reflect, p.env);
     renderer.setClearColor(p.fog);
   }
   apply({ rain: false, evening: false });

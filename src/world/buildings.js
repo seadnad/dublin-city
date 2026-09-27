@@ -10,6 +10,7 @@ import { rng, fbmFast } from './textures.js';
 import { addBox, addSegment } from '../game/collision.js';
 import { noiseTexture, KERB_H } from './roads.js';
 import { chunkedInstances } from './chunks.js';
+import { addReflections } from '../render/reflect.js';
 
 const B = world.bounds;
 const CELL = 0.5;
@@ -560,7 +561,8 @@ function makeMaterial() {
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         totalEmissiveRadiance += gEmit;`);
   };
-  return mat;
+  // window glass reflects the environment at the preset level; walls keep the plain low level
+  return addReflections(mat, 0.9, 'gGlass');
 }
 
 // Georgian basement areas: railings on the pavement, a dark area below, granite steps up to the door.

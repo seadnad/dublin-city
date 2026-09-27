@@ -2,6 +2,7 @@
 // makePlayerCar(): a Group facing +z with userData.update(speed, dt, steer) and userData.setLights(level).
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { addReflections } from '../render/reflect.js';
 
 const loader = new GLTFLoader();
 const cache = new Map();
@@ -34,7 +35,8 @@ export async function loadCar(name) {
     const n = o.material.name || '';
     if (/headlight|drl|taillight|indicator|lightbar/.test(n)) glow.push({ m: o.material, base: o.material.emissiveIntensity, kind: n });
     if (/^wheel_/.test(o.name)) wheels.push({ o, front: /front/.test(o.name) });
-    if (/glass/.test(n)) { o.material.roughness = 0.04; o.material.metalness = 0.3; o.material.envMapIntensity = 1.4; }
+    if (/glass/.test(n)) { o.material.roughness = 0.04; o.material.metalness = 0.3; }
+    addReflections(o.material, 1);
   });
   let spin = 0;
   const q = new THREE.Quaternion(), qs = new THREE.Quaternion(), X = new THREE.Vector3(1, 0, 0), Y = new THREE.Vector3(0, 1, 0);

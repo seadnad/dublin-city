@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import { IS_MOBILE } from '../world/textures.js';
 import { createContactShadows } from '../render/contact.js';
+import { addReflections } from '../render/reflect.js';
 
 // ---------------- vehicle types ----------------
 // top: outline in (z, y) from the rear bumper over the roof to the front; wheels: [zRear, zFront]; r: wheel radius
@@ -185,7 +186,7 @@ function carMaterial(atlas) {
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
       roughnessFactor = mix(0.08, roughnessFactor, sampledDiffuseColor.a);`);
   };
-  return m;
+  return addReflections(m, 1);
 }
 
 // ---------------- wheels ----------------
@@ -373,7 +374,7 @@ export function createFleet(scene, counts) {
     const geo = busGeometry();
     for (let k = 0; k < counts.bus; k++) {
       const atlas = busAtlas(ROUTES[k % ROUTES.length]);
-      const mat = new THREE.MeshStandardMaterial({ map: atlas.map, emissiveMap: atlas.emissiveMap, emissive: 0xffffff, emissiveIntensity: 1, roughness: 0.38, metalness: 0.15 });
+      const mat = addReflections(new THREE.MeshStandardMaterial({ map: atlas.map, emissiveMap: atlas.emissiveMap, emissive: 0xffffff, emissiveIntensity: 1, roughness: 0.38, metalness: 0.15 }), 0.8);
       const m = new THREE.Mesh(geo, mat);
       m.castShadow = m.receiveShadow = true;
       scene.add(m);

@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { world, PAVEMENT, v2, offsetPolyline, resample, pointInPolygon, insetPolygon, roadInsetFor } from './geo.js';
 import { makePuddleTexture, makeStoneTexture, makeWaterNormal, fbm, rng } from './textures.js';
 import { addPolyline, addSegment } from '../game/collision.js';
+import { addReflections } from '../render/reflect.js';
 import { buildStreets, buildMedian, grassPolygon, fieldUniforms, KERB_H } from './roads.js';
 
 export const WATER_Y = -2.6;
@@ -291,6 +292,7 @@ export function buildGround(scene) {
   const waterMat = new THREE.MeshStandardMaterial({
     color: 0x24362f, roughness: 0.06, metalness: 0.45, normalMap: waterNormal, normalScale: new THREE.Vector2(0.35, 0.35), envMapIntensity: 1.4,
   });
+  addReflections(waterMat, 0.7);
   const water = new THREE.Mesh(shapeGeometry(world.riverPoly, WATER_Y), waterMat);
   water.receiveShadow = true;
   group.add(water);
