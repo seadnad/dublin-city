@@ -143,7 +143,8 @@ class Builder {
   }
   column(x, z, h, r, mat, y = 0) {
     this.box(r * 2.6, 0.45, r * 2.6, mat, { x, y, z });
-    this.cyl(r * 0.85, r, h - 1.0, mat, { x, y: y + 0.45, z }, 10);
+    // shafts are smooth dressed stone: the block-textured stone read as stacked bricks on a cylinder
+    this.cyl(r * 0.85, r, h - 1.0, mat === M.portland ? M.portlandSmooth : mat, { x, y: y + 0.45, z }, 10);
     this.box(r * 2.5, 0.55, r * 2.5, mat, { x, y: y + h - 0.55, z });
     return this;
   }
@@ -295,21 +296,27 @@ function trinity(site) {
   const b = new Builder(site);
   const W = site.w, D = site.d;
   // wings
-  b.facade(W, 15, D, M.facade, M.slate, { y: 0 });
+  b.facade(W, 15, D, M.trinityFacade, M.slate, { y: 0 }, 4, 15);
   b.box(W + 0.5, 0.8, D + 0.5, M.portland, { y: 15 });
   b.balustrade(-W / 2, W / 2, 15.8, D / 2, M.portland);
   // end pavilions
   for (const sx of [-1, 1]) {
-    b.facade(8, 17, D + 1.6, M.facade, M.slate, { x: sx * (W / 2 - 4) });
-    for (let k = 0; k < 2; k++) b.column(sx * (W / 2 - 5.5 + k * 3), D / 2 + 1.1, 10, 0.45, M.portland, 5);
+    b.facade(8, 17, D + 1.6, M.trinityFacade, M.slate, { x: sx * (W / 2 - 4) }, 4, 15);
+    for (let k = 0; k < 2; k++) b.column(sx * (W / 2 - 5.5 + k * 3), D / 2 + 1.1, 10, 0.45, M.portlandSmooth, 5);
   }
   // central pedimented frontispiece with the arched front gate
   const cz = D / 2 + 1.2;
   b.box(16, 5, 2.4, M.granite, { z: cz - 0.2 }); // rusticated base
-  b.facade(16, 17, 2.4, M.portland, M.portland, { z: cz - 0.2 });
+  b.facade(16, 17, 2.4, M.trinityFacade, M.portland, { z: cz - 0.2 }, 4, 15);
   b.box(4.4, 5, 0.3, M.dark, { z: D / 2 + 2.45 }); // gate opening
   b.cyl(2.2, 2.2, 0.3, M.dark, { y: 5, z: D / 2 + 2.45, rx: Math.PI / 2 }, 16);
-  for (const x of [-6, -2.2, 2.2, 6]) b.column(x, cz + 1.5, 11, 0.5, M.portland, 5.2);
+  for (const x of [-6, -2.2, 2.2, 6]) b.column(x, cz + 1.5, 11, 0.5, M.portlandSmooth, 5.2);
+  // cobbled forecourt behind railings, open at the gate
+  const fz = D / 2 + site.gap - 0.6;
+  b.box(W, 0.05, site.gap, M.cobble, { y: KERB_H, z: D / 2 + site.gap / 2 });
+  railings(b, -W / 2, -3, fz); railings(b, 3, W / 2, fz);
+  for (const x of [-3, 3]) b.box(1, 2.8, 1, M.granite, { x, z: fz });
+  b.solid(-W / 4 - 1.5, fz, W / 2 - 3, 0.4); b.solid(W / 4 + 1.5, fz, W / 2 - 3, 0.4);
   b.box(16.6, 1.6, 3.4, M.portland, { y: 16.2, z: cz + 0.4 });
   b.pediment(16.8, 3.6, 3.2, M.portland, { y: 17.8, z: cz + 0.4 });
   b.solid(0, 0, W, D + 2);
@@ -770,6 +777,200 @@ function markerHotel(site) {
   return b.build('The Marker');
 }
 
+// ---------- Dame Street and College Green ----------
+// Palladian range (Trinity front): one 4 m bay over the full 15 m height — rusticated ground floor,
+// pedimented piano nobile windows, square attic windows, cornice band
+const trinityTex = canvasTex(128, 480, (ctx, w, h) => {
+  const px = h / 15; // pixels per metre
+  ctx.fillStyle = '#cfcbc1'; ctx.fillRect(0, 0, w, h);
+  for (let i = 0; i < 500; i++) { ctx.fillStyle = `rgba(70,68,62,${Math.random() * 0.05})`; ctx.fillRect(Math.random() * w, Math.random() * h, 5 + Math.random() * 14, 2 + Math.random() * 5); }
+  const y = (m) => h - m * px; // metres above ground -> canvas y
+  // rusticated ground floor (granite, deep horizontal channels)
+  ctx.fillStyle = '#b3aea4'; ctx.fillRect(0, y(5), w, 5 * px);
+  ctx.fillStyle = 'rgba(60,58,52,0.45)';
+  for (let m = 0.55; m < 5; m += 0.55) ctx.fillRect(0, y(m), w, 2);
+  const win = (x0, y0, ww, hh) => {
+    ctx.fillStyle = '#e6e2d8'; ctx.fillRect(x0 - 4, y0 - 4, ww + 8, hh + 8);
+    ctx.fillStyle = '#23292d'; ctx.fillRect(x0, y0, ww, hh);
+    ctx.fillStyle = '#d9d4c8';
+    for (let r = 1; r < 3; r++) ctx.fillRect(x0, y0 + (hh * r) / 3, ww, 1.5);
+    ctx.fillRect(x0 + ww / 2 - 0.75, y0, 1.5, hh);
+  };
+  const cx = w / 2, ww = 1.3 * px;
+  win(cx - ww / 2, y(3.9), ww, 2.6 * px); // ground floor
+  win(cx - ww / 2, y(9.3), ww, 2.9 * px); // piano nobile, with a triangular pediment hood and sill
+  ctx.fillStyle = '#ece8de';
+  ctx.beginPath(); ctx.moveTo(cx - ww / 2 - 8, y(9.5)); ctx.lineTo(cx + ww / 2 + 8, y(9.5)); ctx.lineTo(cx, y(10.2)); ctx.closePath(); ctx.fill();
+  ctx.fillRect(cx - ww / 2 - 6, y(6.25), ww + 12, 5);
+  win(cx - ww / 2, y(12.6), ww, 1.4 * px); // attic
+  // string courses and the cornice
+  ctx.fillStyle = '#e4e0d6'; ctx.fillRect(0, y(5.15), w, 5); ctx.fillRect(0, y(10.6), w, 4);
+  ctx.fillStyle = '#dcd8ce'; ctx.fillRect(0, y(15), w, 0.9 * px);
+  ctx.fillStyle = 'rgba(40,38,34,0.35)'; ctx.fillRect(0, y(14.1), w, 3);
+});
+// white painted stucco with two sash windows per 4 m bay, 3.6 m floors (the Olympia and its neighbours)
+const stuccoTex = canvasTex(128, 115, (ctx, w, h) => {
+  ctx.fillStyle = '#eeece6'; ctx.fillRect(0, 0, w, h);
+  for (let i = 0; i < 120; i++) { ctx.fillStyle = `rgba(120,115,105,${Math.random() * 0.05})`; ctx.fillRect(Math.random() * w, Math.random() * h, 6, 3); }
+  for (const x of [22, 78]) {
+    ctx.fillStyle = '#d8d4ca'; ctx.fillRect(x - 3, 20, 34, 72);
+    ctx.fillStyle = '#2a3136'; ctx.fillRect(x, 23, 28, 66);
+    ctx.fillStyle = '#f4f2ec'; ctx.fillRect(x, 54, 28, 3); ctx.fillRect(x + 13, 23, 2, 66);
+  }
+});
+// the Olympia's stained-glass canopy dome: coloured fish-scale glass
+const scaleGlassTex = canvasTex(128, 64, (ctx, w, h) => {
+  const cols = ['#e2a33a', '#5aa6c9', '#7fb86a', '#c95a4a', '#e8d27a', '#6f7fc4'];
+  for (let y = -8; y < h + 8; y += 8) for (let x = 0; x < w + 8; x += 10) {
+    ctx.fillStyle = cols[(x / 10 + y / 8) % cols.length | 0];
+    ctx.beginPath(); ctx.arc(x + ((y / 8) % 2 ? 5 : 0), y, 5.5, 0, Math.PI); ctx.fill();
+  }
+});
+const bladeSign = (text) => canvasTex(64, 512, (ctx, w, h) => {
+  ctx.fillStyle = '#a3182a'; ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = '#f7efe0'; ctx.font = 'bold 50px Georgia'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const n = text.length;
+  [...text].forEach((ch, i) => ctx.fillText(ch, w / 2, ((i + 0.5) / n) * h));
+});
+Object.assign(M, {
+  trinityFacade: new THREE.MeshStandardMaterial({ map: trinityTex, roughness: 0.85 }),
+  portlandSmooth: new THREE.MeshStandardMaterial({ color: 0xdcd7ca, roughness: 0.78 }),
+  graniteSmooth: new THREE.MeshStandardMaterial({ color: 0x9a978f, roughness: 0.7 }),
+  stucco: new THREE.MeshStandardMaterial({ map: stuccoTex, roughness: 0.85 }),
+  castleBrick: new THREE.MeshStandardMaterial({ map: warehouseTex, color: 0xd88a70, roughness: 0.9 }),
+  cobble: new THREE.MeshStandardMaterial({ color: 0x8e877b, map: stoneT, roughness: 0.9 }),
+  gold: addReflections(new THREE.MeshStandardMaterial({ color: 0xd4a53c, roughness: 0.3, metalness: 1 }), 0.8),
+  olympiaRed: new THREE.MeshStandardMaterial({ color: 0x9b1b26, roughness: 0.5 }),
+  scaleGlass: new THREE.MeshStandardMaterial({ map: scaleGlassTex, roughness: 0.25, emissive: 0xffffff, emissiveMap: scaleGlassTex, emissiveIntensity: 0.15 }),
+  bladeTheatre: new THREE.MeshStandardMaterial({ map: bladeSign('THEATRE'), roughness: 0.6, side: THREE.DoubleSide }),
+  bladeOlympia: new THREE.MeshStandardMaterial({ map: bladeSign('OLYMPIA'), roughness: 0.6, side: THREE.DoubleSide }),
+});
+
+// a run of cast-iron railings along local x at depth z (spear-topped bars and two rails)
+function railings(b, x0, x1, z, h = 2) {
+  for (let x = x0; x <= x1; x += 0.3) b.cyl(0.025, 0.025, h, M.dark, { x, z }, 4);
+  for (const y of [0.15, h - 0.25]) b.box(x1 - x0, 0.06, 0.06, M.dark, { x: (x0 + x1) / 2, y, z });
+}
+
+function cityHall(site) {
+  // Thomas Cooley's Royal Exchange: a Portland-stone cube with a hexastyle Corinthian front facing up
+  // Parliament Street, raised on a balustraded podium; a low dome over the rotunda
+  const b = new Builder(site);
+  const W = site.w, D = site.d, P = 2; // podium height
+  b.box(W + 4, P, D + 2, M.granite, { z: 1 });
+  b.balustrade(-W / 2 - 2, -3.2, P, D / 2 + 1.8, M.portland);
+  b.balustrade(3.2, W / 2 + 2, P, D / 2 + 1.8, M.portland);
+  for (let k = 0; k < 5; k++) b.box(6, 0.4, 0.5, M.granite, { y: k * 0.4, z: D / 2 + 2.25 - k * 0.5 }); // entrance steps
+  b.facade(W, 14, D, M.trinityFacade, M.lead, { y: P }, 4, 15);
+  // the six-column portico on the north front
+  const pz = D / 2 + 1.6;
+  for (let i = 0; i < 6; i++) b.column(-9 + i * 3.6, pz, 12, 0.62, M.portlandSmooth, P);
+  b.box(21, 1.8, 3.6, M.portland, { y: P + 12, z: pz - 0.3 });
+  b.pediment(21.4, 3.6, 3.4, M.portland, { y: P + 13.8, z: pz - 0.3 });
+  b.box(W + 0.6, 1, D + 0.6, M.portland, { y: P + 14 });
+  b.balustrade(-W / 2, -11, P + 15, D / 2, M.portland); b.balustrade(11, W / 2, P + 15, D / 2, M.portland);
+  // lamp standards flanking the steps
+  for (const sx of [-1, 1]) lampStandard(b, sx * 4.6, D / 2 + 2.4, 5, 3);
+  // drum and dome over the rotunda
+  b.cyl(6, 6, 3, M.portland, { y: P + 15 }, 24);
+  b.dome(6.2, M.lead, { y: P + 18 });
+  b.cyl(0.9, 1.1, 2.2, M.portland, { y: P + 24 }, 10);
+  b.solid(0, 1, W + 4, D + 2);
+  return b.build('City Hall');
+}
+
+function dublinCastle(site) {
+  // the Cork Hill gate into the Upper Castle Yard (Justice on top) and the red-brick Georgian range behind it
+  const b = new Builder(site);
+  b.archWall(8, 8.5, 1.6, 4, 6, M.portland);
+  b.box(8.6, 0.8, 2, M.portland, { y: 8.5 });
+  b.statue(0, 9.3, 0, 1.1, M.bronze);
+  b.box(3.8, 5, 0.1, M.dark, { z: -0.3 });
+  railings(b, -18, -4.4, 0.3); railings(b, 4.4, 18, 0.3);
+  for (const x of [-18, 18]) b.box(1.2, 2.6, 1.2, M.portland, { x });
+  // Upper Yard: red brick, three storeys with a stone cornice, and the Bedford Tower over the far range
+  b.facade(40, 13, 12, M.castleBrick, M.slate, { z: -24 }, 4, 4.3);
+  b.box(40.5, 0.8, 12.5, M.portland, { y: 13, z: -24 });
+  b.facade(7, 18, 7, M.portland, M.lead, { z: -18 });
+  b.cyl(2.4, 2.8, 5, M.portland, { y: 18, z: -18 }, 12);
+  b.dome(2.5, M.copper, { y: 23, z: -18 });
+  b.box(40, 0.05, 20, M.cobble, { y: KERB_H, z: -10 }); // cobbled yard
+  b.solid(-9, 0, 2, 1.8); b.solid(9, 0, 2, 1.8); b.solid(-11, 0.3, 14, 0.4); b.solid(11, 0.3, 14, 0.4);
+  b.solid(0, -24, 40, 12); b.solid(0, -18, 7, 7);
+  return b.build('Dublin Castle');
+}
+
+function centralBank(site) {
+  // Sam Stephenson's Central Bank (1978): floors hung from the roof as projecting stone "trays",
+  // dark suspension members down the front, raised on a plaza with steps to Dame Street
+  const b = new Builder(site);
+  const W = site.w, D = site.d, P = 1.4;
+  const front = D / 2 + site.plaza;
+  b.box(W + 8, P, D + site.plaza, M.granite, { z: site.plaza / 2 });
+  for (let k = 0; k < 4; k++) b.box(W + 8, 0.35, 0.45, M.granite, { y: k * 0.35, z: front + 1.6 - k * 0.45 });
+  b.box(W - 8, 7, D - 8, M.glass, { y: P }); // recessed glazed ground floor
+  for (let f = 0; f < 9; f++) {
+    const y = P + 7 + f * 3.8;
+    b.box(W, 1.1, D, M.portlandSmooth, { y }); // the tray
+    b.box(W - 1.6, 2.7, D - 1.6, M.curtain, { y: y + 1.1 }); // glazing set back behind the tray lip
+  }
+  const top = P + 7 + 9 * 3.8;
+  b.box(W, 1.6, D, M.portlandSmooth, { y: top });
+  b.box(W - 8, 3, D - 8, M.glass, { y: top + 1.6 }); // rooftop pavilion
+  for (const x of [-W / 2 + 2.5, -W / 6, W / 6, W / 2 - 2.5]) for (const z of [D / 2 + 0.3, -D / 2 - 0.3]) b.box(0.5, top - P - 5, 0.4, M.dark, { x, y: P + 7, z });
+  // the gilded sculpture on the plaza
+  b.add(new THREE.SphereGeometry(1.7, 18, 12), M.gold, { x: W / 2 - 3, y: P + 2.4, z: front - 3 });
+  b.cyl(0.4, 0.5, 0.8, M.granite, { x: W / 2 - 3, y: P, z: front - 3 }, 8);
+  b.solid(0, 0, W - 4, D - 4);
+  return b.build('Central Bank');
+}
+
+function olympia(site) {
+  // white stucco front, red and gold cast-iron canopy with a stained-glass half dome, red blade signs
+  const b = new Builder(site);
+  const W = site.w, D = site.d, H = 4 * 3.6;
+  b.facade(W, H, D, M.stucco, M.slate, {}, 4, 3.6);
+  b.box(W, 3.6, 0.3, M.olympiaRed, { z: D / 2 + 0.05 }); // red ground-floor front
+  const cz = D / 2 + 1.7;
+  b.box(W - 1, 0.35, 3.4, M.olympiaRed, { y: 3.6, z: cz });
+  b.box(W - 1, 0.7, 0.25, M.gold, { y: 3.95, z: cz + 1.6 });
+  for (const sx of [-1, 1]) { b.cyl(0.12, 0.16, 3.6, M.olympiaRed, { x: sx * (W / 2 - 1), z: cz + 1.5 }, 8); b.solid(sx * (W / 2 - 1), cz + 1.5, 0.4, 0.4); }
+  b.add(new THREE.SphereGeometry(2.4, 18, 8, 0, Math.PI, 0, Math.PI / 2), M.scaleGlass, { y: 3.95, z: cz - 1.2, s: 1, sz: 1.2 });
+  b.add(new THREE.PlaneGeometry(1, 7), M.bladeTheatre, { x: -W / 2 + 1.5, y: 8.2, z: D / 2 + 0.8, ry: Math.PI / 2 });
+  b.add(new THREE.PlaneGeometry(1, 7), M.bladeOlympia, { x: W / 2 - 1.5, y: 8.2, z: D / 2 + 0.8, ry: Math.PI / 2 });
+  b.solid(0, 0, W, D);
+  return b.build('Olympia Theatre');
+}
+
+function clockCorner(site) {
+  // Victorian stone commercial block on the Trinity Street corner, its corner tower topped with a clock
+  // stage and a small dome
+  const b = new Builder(site);
+  const W = site.w, D = site.d, H = 20;
+  b.facade(W, H, D, M.heustonStone, M.slate, {}, 4, 4.3);
+  b.box(W + 0.5, 0.8, D + 0.5, M.portland, { y: H });
+  const tx = W / 2 - 2.5, tz = D / 2 - 2.5;
+  b.facade(5.4, 29, 5.4, M.heustonStone, M.lead, { x: tx, z: tz });
+  b.box(6, 0.7, 6, M.portland, { x: tx, y: 25 });
+  for (const [dx, dz, ry] of [[0, 2.72, 0], [2.72, 0, Math.PI / 2], [0, -2.72, Math.PI], [-2.72, 0, -Math.PI / 2]]) b.add(new THREE.CircleGeometry(1.1, 20), M.clock, { x: tx + dx, y: 27, z: tz + dz, ry });
+  b.cyl(2, 2.4, 2, M.portland, { x: tx, y: 29, z: tz }, 10);
+  b.dome(2.1, M.lead, { x: tx, y: 31, z: tz });
+  b.solid(0, 0, W, D);
+  return b.build('Dame Street clock tower');
+}
+
+function grattanIsland(site) {
+  // Henry Grattan on his granite pedestal, on a kerbed island in the middle of College Green
+  const b = new Builder(site);
+  b.box(3.2, KERB_H, 16, M.granite);
+  b.box(2.8, 0.05, 15.4, M.cobble, { y: KERB_H });
+  b.box(2.2, 3.4, 2.2, M.graniteSmooth, { y: KERB_H });
+  b.box(2.6, 0.4, 2.6, M.graniteSmooth, { y: KERB_H + 3.4 });
+  b.statue(0, KERB_H + 3.8, 0, 1.25, M.bronze);
+  b.solid(0, 0, 3.2, 16);
+  return b.build('Grattan monument');
+}
+
 // ---------- trees ----------
 function buildTrees(scene) {
   const spots = [];
@@ -826,6 +1027,8 @@ export function buildLandmarks(scene) {
     spire(S.spire), gpo(S.gpo), oconnellBridge(S.oconnellBridge), hapenny(S.hapenny), trinity(S.trinity),
     bankOfIreland(S.bankOfIreland), christChurch(S.christChurch), customHouse(S.customHouse),
     oconnellMonument(), fusiliersArch(S.stephensGreen.park),
+    cityHall(S.cityHall), dublinCastle(extraSites.castle), centralBank(S.centralBank), olympia(extraSites.olympia),
+    clockCorner(extraSites.clockCorner), grattanIsland(extraSites.grattan),
     heuston(S.heuston), guinness(S.guinness), jamesGate(extraSites.jamesGate), beckettHarp(S.beckett), convention(S.convention),
     threeArena(S.threeArena), grattanOffice(S.grandCanalSt), grandCanalTheatre(S.grandCanal), grandCanalSquare(S.grandCanal.square), markerHotel(extraSites.marker),
   ];

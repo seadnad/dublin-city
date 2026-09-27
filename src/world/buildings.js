@@ -70,7 +70,7 @@ function testOBB(o, shrink = 0.4) {
 const markOBB = (o, shrink = 0.4) => fillPolygon(obbCorners(o, shrink));
 
 // roads + pavements, river, parks, campus, landmarks
-for (const s of world.segs) fillSegment(s.a, s.b, s.way.width / 2 + PAVEMENT);
+for (const s of world.segs) fillSegment(s.a, s.b, s.way.width / 2 + s.way.pave);
 fillPolygon(world.riverPoly);
 for (const dk of dockPolys) fillPolygon(dk.poly);
 for (const p of [...parkPolys, ...campusPolys]) fillPolygon(p.poly);
@@ -101,6 +101,8 @@ function styleFor(x, z, way) {
   if (docks && !GEORGIAN_ST.test(name)) return S.MODERN;
   if (x > 200 && DOCK_ST.test(name)) return rand() < 0.65 ? S.MODERN : S.BRICK;
   if (TEMPLE_BAR.test(name)) return rand() < 0.75 ? S.TEMPLEBAR : S.BRICK;
+  // Dame Street: Victorian red brick and painted stucco, with the odd colourful front
+  if (/Dame|College Green|Lord Edward/.test(name)) { const r = rand(); return r < 0.5 ? S.BRICK : r < 0.85 ? S.STUCCO : S.TEMPLEBAR; }
   if (GEORGIAN_ST.test(name)) return rand() < 0.88 ? S.GEORGIAN : S.BRICK;
   if (/Parnell|Capel|Aungier|Talbot|Marlborough/.test(name)) return rand() < 0.5 ? S.GEORGIAN : S.BRICK;
   if (/Quay|Bachelors/.test(name)) return rand() < 0.45 ? S.STUCCO : rand() < 0.6 ? S.BRICK : S.TEMPLEBAR;
@@ -148,7 +150,7 @@ for (const way of ordered) {
       const a = way.pts[k], b = way.pts[k + 1];
       const dir = v2.norm(v2.sub(b, a)), L = v2.len(v2.sub(b, a));
       const n = { x: dir.z * side, z: -dir.x * side }; // away from the road
-      const setback = way.width / 2 + PAVEMENT + 0.15;
+      const setback = way.width / 2 + way.pave + 0.15;
       const rot = Math.atan2(-n.x, -n.z);
       let s = 0;
       while (s < L) {

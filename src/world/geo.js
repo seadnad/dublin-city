@@ -138,6 +138,7 @@ function build() {
     const way = {
       index: i, name: w.name, type: w.type, width, nodeIds: w.nodes, pts,
       bridge: w.type === 'bridge', speed: TYPE_SPEED[w.type] ?? 10,
+      pave: w.pave ?? PAVEMENT, // footpath width each side; wider on the grand streets
     };
     for (const id of w.nodes) nodes.get(id).ways.push(way);
     return way;
@@ -169,7 +170,7 @@ function build() {
   const hash = new Map();
   const key = (i, j) => i * 73856093 ^ j * 19349663;
   for (const s of segs) {
-    const r = s.way.width / 2 + PAVEMENT + 2;
+    const r = s.way.width / 2 + s.way.pave + 2;
     const i0 = Math.floor((Math.min(s.a.x, s.b.x) - r) / CELL), i1 = Math.floor((Math.max(s.a.x, s.b.x) + r) / CELL);
     const j0 = Math.floor((Math.min(s.a.z, s.b.z) - r) / CELL), j1 = Math.floor((Math.max(s.a.z, s.b.z) + r) / CELL);
     for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) {
@@ -233,7 +234,7 @@ export function roadInsetFor(world, ids) {
       const k = w.nodeIds.indexOf(a), k2 = w.nodeIds.indexOf(b);
       return k >= 0 && k2 >= 0 && Math.abs(k - k2) === 1;
     });
-    return (way ? way.width / 2 : 5) + PAVEMENT;
+    return (way ? way.width / 2 + way.pave : 5 + PAVEMENT);
   });
 }
 

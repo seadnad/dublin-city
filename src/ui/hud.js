@@ -24,6 +24,8 @@ const BLURBS = {
   hapenny: 'Cast-iron footbridge from 1816',
   trinity: 'Front gate on College Green, campanile in Front Square',
   bankOfIreland: 'Old Parliament House with its curved colonnade',
+  cityHall: 'The Royal Exchange at the top of Parliament Street',
+  centralBank: 'Floors hung from the roof, on Central Plaza',
   christChurch: 'Medieval cathedral and the Synod Hall bridge',
   customHouse: 'Gandon’s domed masterpiece on the quays',
   stephensGreen: 'Victorian park, entered by the Fusiliers’ Arch',

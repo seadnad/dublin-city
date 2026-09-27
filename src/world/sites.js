@@ -16,7 +16,7 @@ function beside(fromId, toId, t, side, w, d, { shift = 0, gap = 0.5 } = {}) {
   const dir = v2.norm(v2.sub(B, A));
   const left = { x: dir.z, z: -dir.x };
   const way = wayBetween(fromId, toId);
-  const setback = way.width / 2 + PAVEMENT + gap + d / 2;
+  const setback = way.width / 2 + way.pave + gap + d / 2;
   const p = v2.add(v2.lerp(A, B, t), v2.scale(dir, shift));
   const n = { x: left.x * side, z: left.z * side }; // points away from the road
   return { x: p.x + n.x * setback, z: p.z + n.z * setback, rot: Math.atan2(-n.x, -n.z), w, d };
@@ -49,7 +49,7 @@ for (let i = 0; i <= 200; i++) {
   if (pointInPolygon(p, world.riverPoly)) { if (!hp0) hp0 = p; hp1 = p; }
 }
 
-const trinityFront = beside('CG1', 'CG3', 0.5, 1, 56, 20, { gap: 5 });
+const trinityFront = { ...beside('CG1', 'CG3', 0.5, 1, 56, 20, { gap: 9 }), gap: 9 };
 const tfDir = { x: -Math.sin(trinityFront.rot), z: -Math.cos(trinityFront.rot) }; // into the campus
 const campanile = { x: trinityFront.x + tfDir.x * 62, z: trinityFront.z + tfDir.z * 62, rot: trinityFront.rot, w: 12, d: 12 };
 
@@ -84,6 +84,15 @@ export const sites = {
   trinity: {
     name: 'Trinity College', ...trinityFront, labelY: 36, campanile,
     view: spot('CG0', 'CG1', 0.35),
+  },
+  cityHall: {
+    // at the top of Parliament Street, where Dame Street becomes Lord Edward Street
+    name: 'City Hall', ...beside('DM2', 'DM3', 1, 1, 26, 24, { shift: -5, gap: 3 }), labelY: 30,
+    view: spot('SQ4', 'PARL', 0.55),
+  },
+  centralBank: {
+    name: 'Central Bank', ...beside('DMc', 'DM1', 0.5, -1, 26, 18, { gap: 7 }), plaza: 6, labelY: 44,
+    view: spot('DM2', 'DM1', 0.35),
   },
   bankOfIreland: {
     name: 'Bank of Ireland', ...beside('CG1', 'CG0', 0.55, -1, 42, 34, { gap: 0.5 }), labelY: 28,
@@ -147,11 +156,20 @@ export const grounds = [
 ];
 
 // Smaller landmarks that are modelled but not in the teleport list
-export const extraSites = {};
+export const extraSites = {
+  // the Cork Hill gate of Dublin Castle, on Lord Edward Street (the Upper Yard sits behind it)
+  castle: beside('DM3', 'LE1', 0.55, 1, 40, 2, { gap: 0.5 }),
+  olympia: beside('DM2', 'DM3', 0.35, 1, 12, 16, { gap: 0.15 }),
+  clockCorner: beside('CG0', 'DMc', 0.22, 1, 16, 16, { gap: 0.15 }),
+  // Grattan's statue on its island in the middle of College Green
+  grattan: (() => { const a = N('CG1'), b = N('CG0'), p = v2.lerp(a, b, 0.5), d = v2.norm(v2.sub(b, a)); return { ...p, rot: Math.atan2(d.x, d.z) }; })(),
+};
 
 // Footprints the filler generator must avoid (landmark buildings; parks/campus handled separately).
 export const reserved = [
   sites.gpo, sites.bankOfIreland, sites.christChurch, sites.customHouse, sites.trinity, ...grounds,
+  sites.cityHall, sites.centralBank, extraSites.olympia, extraSites.clockCorner,
+  { ...extraSites.castle, w: 44, d: 36, ...shifted(extraSites.castle, 0, -16, 44, 34) },
   sites.grandCanalSt, sites.heuston, sites.guinness, sites.convention, sites.threeArena, sites.grandCanal, sites.grandCanal.square,
   // Heuston's forecourt, open to the quay
   { x: heustonFront.x + 12, z: heustonFront.z, rot: Math.PI / 2, w: 34, d: 24 },
