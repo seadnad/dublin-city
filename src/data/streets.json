@@ -76,9 +76,9 @@
     "CM2": [53.3505, -6.2459],
     "CHS1": [53.3481, -6.2754],
     "WM1": [53.3458, -6.25928],
-    "CG1": [53.3447, -6.25955],
+    "CG1": [53.34500, -6.25955], "CGT": [53.34432, -6.25955],
     "CG0": [53.3445, -6.2612],
-    "CG3": [53.34385, -6.25955],
+    "CG3": [53.34365, -6.25955],
     "DO1": [53.3459, -6.2579],
     "CS1": [53.3452, -6.2572],
     "PS1": [53.34495, -6.2549],
@@ -237,7 +237,8 @@
     { "name": "Commons Street", "type": "secondary", "nodes": ["NQ13", "MY1", "CM2"] },
     { "name": "Westmoreland Street", "type": "primary", "width": 14, "nodes": ["SQ8", "WM1", "CG1"] },
     { "name": "D'Olier Street", "type": "primary", "width": 14, "nodes": ["SQ8", "DO1", "CS1"] },
-    { "name": "College Green", "type": "primary", "width": 20, "pave": 6.5, "nodes": ["CG3", "CG1", "CG0"] },
+    { "name": "College Green", "type": "primary", "width": 20, "pave": 6.5, "nodes": ["CG0", "CGT", "CG3"] },
+    { "name": "College Green", "type": "primary", "width": 16, "pave": 5, "nodes": ["CGT", "CG1"] },
     { "name": "College Street", "type": "primary", "nodes": ["CG1", "CS1"] },
     { "name": "Pearse Street", "type": "primary", "nodes": ["CS1", "PS1", "PS2", "PS3", "PS4"] },
     { "name": "Tara Street", "type": "primary", "nodes": ["SQ10", "TA1", "PS1"] },
@@ -342,7 +343,7 @@
     "Merrion Square": ["MSNW", "MSNE", "MSSE", "MSSW"]
   },
   "campus": {
-    "Trinity College": ["CG1", "CS1", "PS1", "PS2", "MSNW", "NS3", "NS2", "NS1", "CG3"]
+    "Trinity College": ["CG1", "CS1", "PS1", "PS2", "MSNW", "NS3", "NS2", "NS1", "CG3", "CGT"]
   },
   "luas": {
     "name": "Luas Red Line",

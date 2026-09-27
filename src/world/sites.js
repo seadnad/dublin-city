@@ -49,7 +49,8 @@ for (let i = 0; i <= 200; i++) {
   if (pointInPolygon(p, world.riverPoly)) { if (!hp0) hp0 = p; hp1 = p; }
 }
 
-const trinityFront = { ...beside('CG1', 'CG3', 0.5, 1, 56, 20, { gap: 9 }), gap: 9 };
+// Trinity's Front Gate closes the view down Dame Street: the front is centred on the College Green junction
+const trinityFront = { ...beside('CGT', 'CG3', 0, 1, 64, 20, { gap: 9 }), gap: 9 };
 const tfDir = { x: -Math.sin(trinityFront.rot), z: -Math.cos(trinityFront.rot) }; // into the campus
 const campanile = { x: trinityFront.x + tfDir.x * 62, z: trinityFront.z + tfDir.z * 62, rot: trinityFront.rot, w: 12, d: 12 };
 
@@ -83,7 +84,7 @@ export const sites = {
   },
   trinity: {
     name: 'Trinity College', ...trinityFront, labelY: 36, campanile,
-    view: spot('CG0', 'CG1', 0.35),
+    view: spot('CG0', 'CGT', 0.3),
   },
   cityHall: {
     // at the top of Parliament Street, where Dame Street becomes Lord Edward Street
@@ -95,7 +96,7 @@ export const sites = {
     view: spot('DM2', 'DM1', 0.35),
   },
   bankOfIreland: {
-    name: 'Bank of Ireland', ...beside('CG1', 'CG0', 0.55, -1, 42, 34, { gap: 0.5 }), labelY: 28,
+    name: 'Bank of Ireland', ...beside('CGT', 'CG0', 0.5, -1, 42, 34, { gap: 0.5 }), labelY: 28,
     view: spot('DM1', 'DMc', 0.2),
   },
   christChurch: {
@@ -159,10 +160,11 @@ export const grounds = [
 export const extraSites = {
   // the Cork Hill gate of Dublin Castle, on Lord Edward Street (the Upper Yard sits behind it)
   castle: beside('DM3', 'LE1', 0.55, 1, 40, 2, { gap: 0.5 }),
-  olympia: beside('DM2', 'DM3', 0.35, 1, 12, 16, { gap: 0.15 }),
+  // 72 Dame Street, on the Temple Bar side like the Central Bank
+  olympia: beside('DM2', 'DM3', 0.35, -1, 12, 16, { gap: 0.15 }),
   clockCorner: beside('CG0', 'DMc', 0.22, 1, 16, 16, { gap: 0.15 }),
   // Grattan's statue on its island in the middle of College Green
-  grattan: (() => { const a = N('CG1'), b = N('CG0'), p = v2.lerp(a, b, 0.5), d = v2.norm(v2.sub(b, a)); return { ...p, rot: Math.atan2(d.x, d.z) }; })(),
+  grattan: (() => { const a = N('CGT'), b = N('CG0'), p = v2.lerp(a, b, 0.5), d = v2.norm(v2.sub(b, a)); return { ...p, rot: Math.atan2(d.x, d.z) }; })(),
 };
 
 // Footprints the filler generator must avoid (landmark buildings; parks/campus handled separately).

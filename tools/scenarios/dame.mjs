@@ -2,8 +2,8 @@
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 // [name, from node, to node, t] — the car is placed in the left lane looking from -> to
 const VIEWS = [
-  ['trinity-front', 'CG0', 'CG1', 0.2],
-  ['college-green-west', 'CG1', 'CG0', 0.1],
+  ['trinity-front', 'CG0', 'CGT', 0.1],
+  ['college-green-west', 'CGT', 'CG0', 0.15],
   ['dame-east-end', 'DMc', 'DM1', 0.1],
   ['dame-mid', 'DM1', 'DM2', 0.3],
   ['dame-west', 'DM2', 'DM3', 0.4],

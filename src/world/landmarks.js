@@ -308,12 +308,20 @@ function trinity(site) {
   const cz = D / 2 + 1.2;
   b.box(16, 5, 2.4, M.granite, { z: cz - 0.2 }); // rusticated base
   b.facade(16, 17, 2.4, M.trinityFacade, M.portland, { z: cz - 0.2 }, 4, 15);
-  b.box(4.4, 5, 0.3, M.dark, { z: D / 2 + 2.45 }); // gate opening
-  b.cyl(2.2, 2.2, 0.3, M.dark, { y: 5, z: D / 2 + 2.45, rx: Math.PI / 2 }, 16);
+  b.box(4.4, 5, 0.3, M.timber, { z: D / 2 + 2.45 }); // the oak Front Gate
+  b.cyl(2.2, 2.2, 0.3, M.timber, { y: 5, z: D / 2 + 2.45, rx: Math.PI / 2 }, 16);
+  b.add(new THREE.CircleGeometry(1.1, 24), M.clock, { y: 19.3, z: cz + 2.05 }); // clock in the pediment
+  for (const x of [-W / 2 + 10, -W / 2 + 20, W / 2 - 20, W / 2 - 10]) b.box(1.4, 3, 2.6, M.trinityFacade, { x, y: 15.8, z: -2 }); // chimney stacks
   for (const x of [-6, -2.2, 2.2, 6]) b.column(x, cz + 1.5, 11, 0.5, M.portlandSmooth, 5.2);
   // cobbled forecourt behind railings, open at the gate
   const fz = D / 2 + site.gap - 0.6;
-  b.box(W, 0.05, site.gap, M.cobble, { y: KERB_H, z: D / 2 + site.gap / 2 });
+  b.box(6, 0.05, site.gap, M.cobble, { y: KERB_H, z: D / 2 + site.gap / 2 });
+  for (const sx of [-1, 1]) {
+    b.box(W / 2 - 3, 0.08, site.gap - 1, M.planting, { x: sx * (W / 4 + 1.5), y: KERB_H, z: D / 2 + site.gap / 2 - 0.3 });
+    // Burke and Goldsmith on their plinths
+    b.box(1.6, 2.2, 1.6, M.graniteSmooth, { x: sx * 7, y: KERB_H, z: D / 2 + site.gap / 2 });
+    b.statue(sx * 7, KERB_H + 2.2, D / 2 + site.gap / 2, 1.1, M.bronze);
+  }
   railings(b, -W / 2, -3, fz); railings(b, 3, W / 2, fz);
   for (const x of [-3, 3]) b.box(1, 2.8, 1, M.granite, { x, z: fz });
   b.solid(-W / 4 - 1.5, fz, W / 2 - 3, 0.4); b.solid(W / 4 + 1.5, fz, W / 2 - 3, 0.4);
@@ -575,7 +583,7 @@ Object.assign(M, {
   paving: new THREE.MeshStandardMaterial({ color: 0xb8b6ae, map: stoneT, roughness: 0.8 }),
   redResin: new THREE.MeshStandardMaterial({ color: 0x9e2a22, roughness: 0.7 }),
   planter: new THREE.MeshStandardMaterial({ color: 0x55595a, roughness: 0.8 }),
-  planting: new THREE.MeshStandardMaterial({ color: 0x5c7a3a, roughness: 0.95 }),
+  planting: new THREE.MeshStandardMaterial({ color: 0x5f8a3a, roughness: 0.95 }),
   timber: new THREE.MeshStandardMaterial({ color: 0x6d4f3a, roughness: 0.85 }),
   // after dark: the Convention Centre's drum rings and roof edge, the Beckett harp, the red light-sticks, the 3Arena front
   ccdRing: glow(0xb04cff, 0, 3.2),
@@ -782,11 +790,11 @@ function markerHotel(site) {
 // pedimented piano nobile windows, square attic windows, cornice band
 const trinityTex = canvasTex(128, 480, (ctx, w, h) => {
   const px = h / 15; // pixels per metre
-  ctx.fillStyle = '#cfcbc1'; ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = '#b7b2a7'; ctx.fillRect(0, 0, w, h);
   for (let i = 0; i < 500; i++) { ctx.fillStyle = `rgba(70,68,62,${Math.random() * 0.05})`; ctx.fillRect(Math.random() * w, Math.random() * h, 5 + Math.random() * 14, 2 + Math.random() * 5); }
   const y = (m) => h - m * px; // metres above ground -> canvas y
   // rusticated ground floor (granite, deep horizontal channels)
-  ctx.fillStyle = '#b3aea4'; ctx.fillRect(0, y(5), w, 5 * px);
+  ctx.fillStyle = '#a19c92'; ctx.fillRect(0, y(5), w, 5 * px);
   ctx.fillStyle = 'rgba(60,58,52,0.45)';
   for (let m = 0.55; m < 5; m += 0.55) ctx.fillRect(0, y(m), w, 2);
   const win = (x0, y0, ww, hh) => {
@@ -1001,6 +1009,15 @@ function buildTrees(scene) {
     // College Park, the eastern part of the campus
     const east = cp.poly.filter((p) => p.x > sites.trinity.x + 110);
     if (east.length >= 3) scatter(east, 25, 6);
+  }
+  // London planes along the south footpath of College Green
+  {
+    const a = world.nodes.get('CG0'), c = world.nodes.get('CGT'), way = world.ways.find((w) => w.name === 'College Green');
+    const d = v2.norm(v2.sub(c, a)), L = v2.len(v2.sub(c, a)), off = way.width / 2 + way.pave - 1.8;
+    for (let s = 6; s < L - 12; s += 11) {
+      const p = { x: a.x + d.x * s - d.z * off, z: a.z + d.z * s + d.x * off };
+      spots.push({ ...p, s: 0.95, street: true }); addBox(p.x, p.z, 0.4, 0.4, 0);
+    }
   }
   // London planes along O'Connell Street's median
   const oc = world.ways.find((w) => w.type === 'boulevard');

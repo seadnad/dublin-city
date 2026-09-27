@@ -12,8 +12,18 @@ const SCALE = data.meta.scale;
 const M_PER_LAT = 111320;
 const M_PER_LON = 111320 * Math.cos((LAT0 * Math.PI) / 180);
 
+// The band from College Green to Christ Church is stretched east-west so Dame Street reads closer to its real
+// length (the uniform 50% compression made it feel short); everything west of the band shifts over with it.
+const STRETCH = { a: (-6.2675 - LON0) * M_PER_LON, b: (-6.2612 - LON0) * M_PER_LON, k: 1.6 };
+function warpX(u) {
+  const { a, b, k } = STRETCH;
+  if (u >= b) return u;
+  if (u >= a) return b - (b - u) * k;
+  return b - (b - a) * k - (a - u);
+}
+
 export function project(lat, lon) {
-  return { x: (lon - LON0) * M_PER_LON * SCALE, z: -(lat - LAT0) * M_PER_LAT * SCALE };
+  return { x: warpX((lon - LON0) * M_PER_LON) * SCALE, z: -(lat - LAT0) * M_PER_LAT * SCALE };
 }
 
 // ---------- small vector helpers ----------
