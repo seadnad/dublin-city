@@ -4,7 +4,7 @@
 // to an average colour in the distance.
 import * as THREE from 'three';
 import { world, PAVEMENT, v2 } from './geo.js';
-import { parkPolys, campusPolys } from './ground.js';
+import { parkPolys, campusPolys, dockPolys } from './ground.js';
 import { reserved } from './sites.js';
 import { rng, fbmFast } from './textures.js';
 import { addBox, addSegment } from '../game/collision.js';
@@ -72,6 +72,7 @@ const markOBB = (o, shrink = 0.4) => fillPolygon(obbCorners(o, shrink));
 // roads + pavements, river, parks, campus, landmarks
 for (const s of world.segs) fillSegment(s.a, s.b, s.way.width / 2 + PAVEMENT);
 fillPolygon(world.riverPoly);
+for (const dk of dockPolys) fillPolygon(dk.poly);
 for (const p of [...parkPolys, ...campusPolys]) fillPolygon(p.poly);
 for (const r of reserved) markOBB(r, -1);
 // Luas platforms stand in the road; keep an apron clear around the track anyway
@@ -182,7 +183,8 @@ for (let z = B.minZ + 10; z < B.maxZ - 10; z += 11) {
       const o = { x, z, rot, w: size + rand() * 3, d: size + rand() * 3 };
       if (testOBB(o)) {
         const spec = lotSpec(style);
-        spec.floors = Math.max(3, spec.floors - 1);
+        // block interiors stay lower than the street frontage (keeps Docklands from becoming a wall of towers)
+        spec.floors = style === S.MODERN ? 3 + Math.floor(rand() * 4) : Math.max(3, spec.floors - 1);
         place(o, style, spec, false);
         break;
       }
@@ -655,13 +657,13 @@ export function buildBuildings(scene) {
   geo.translate(0, 0.5, 0);
   const count = lots.length;
   const aBase = new Float32Array(count * 3), aTrim = new Float32Array(count * 3), aStyle = new Float32Array(count * 4), aExtra = new Float32Array(count * 4);
-  const mesh = new THREE.InstancedMesh(geo, makeMaterial(), count);
+  const mats = new Float32Array(count * 16);
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0);
   const chimneys = [], pots = [];
   lots.forEach((L, i) => {
     q.setFromAxisAngle(up, L.rot);
     m4.compose(new THREE.Vector3(L.x, 0, L.z), q, new THREE.Vector3(L.w, L.h, L.d));
-    mesh.setMatrixAt(i, m4);
+    m4.toArray(mats, i * 16);
     aBase.set([L.base.r, L.base.g, L.base.b], i * 3);
     aTrim.set([L.trim.r, L.trim.g, L.trim.b], i * 3);
     aStyle.set([L.style, L.fh, L.bay, L.seed], i * 4);
@@ -683,12 +685,29 @@ export function buildBuildings(scene) {
       }
     }
   });
-  geo.setAttribute('aBase', new THREE.InstancedBufferAttribute(aBase, 3));
-  geo.setAttribute('aTrim', new THREE.InstancedBufferAttribute(aTrim, 3));
-  geo.setAttribute('aStyle', new THREE.InstancedBufferAttribute(aStyle, 4));
-  geo.setAttribute('aExtra', new THREE.InstancedBufferAttribute(aExtra, 4));
-  mesh.castShadow = mesh.receiveShadow = true;
-  mesh.computeBoundingSphere();
+  // One instanced mesh per ~450 m chunk rather than one for the whole city, so the camera and the shadow
+  // camera can cull whole districts (the map is ~2.4 km wide and holds >10k buildings).
+  const material = makeMaterial(), CH = 450, buckets = new Map();
+  lots.forEach((L, i) => {
+    const k = `${Math.floor(L.x / CH)},${Math.floor(L.z / CH)}`;
+    if (!buckets.has(k)) buckets.set(k, []);
+    buckets.get(k).push(i);
+  });
+  const mesh = new THREE.Group();
+  mesh.name = 'buildings';
+  const pick = (src, n, ids) => { const out = new Float32Array(ids.length * n); ids.forEach((i, j) => out.set(src.subarray(i * n, i * n + n), j * n)); return out; };
+  for (const ids of buckets.values()) {
+    const g = geo.clone();
+    g.setAttribute('aBase', new THREE.InstancedBufferAttribute(pick(aBase, 3, ids), 3));
+    g.setAttribute('aTrim', new THREE.InstancedBufferAttribute(pick(aTrim, 3, ids), 3));
+    g.setAttribute('aStyle', new THREE.InstancedBufferAttribute(pick(aStyle, 4, ids), 4));
+    g.setAttribute('aExtra', new THREE.InstancedBufferAttribute(pick(aExtra, 4, ids), 4));
+    const im = new THREE.InstancedMesh(g, material, ids.length);
+    im.instanceMatrix.array.set(pick(mats, 16, ids));
+    im.castShadow = im.receiveShadow = true;
+    im.computeBoundingSphere();
+    mesh.add(im);
+  }
   scene.add(mesh);
 
   const cgeo = new THREE.BoxGeometry(0.8, 1, 2.3);

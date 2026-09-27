@@ -52,6 +52,7 @@ function trim(pts, da, db) {
 
 export const parkPolys = world.parks.map((p) => ({ name: p.name, poly: insetPolygon(p.poly, roadInsetFor(world, p.ids)) }));
 export const campusPolys = world.campus.map((p) => ({ name: p.name, poly: insetPolygon(p.poly, roadInsetFor(world, p.ids)) }));
+export const dockPolys = world.docks.map((p) => ({ name: p.name, poly: insetPolygon(p.poly, roadInsetFor(world, p.ids)) }));
 
 function drawLayout() {
   const c = document.createElement('canvas');
@@ -86,6 +87,7 @@ function drawLayout() {
 
   // river (seen on the minimap; the 3D water is its own mesh)
   fillPoly(ctx, world.riverPoly, COLORS.water);
+  for (const dk of dockPolys) fillPoly(ctx, dk.poly, COLORS.water);
 
   const roads = world.ways;
   // pavements
@@ -214,6 +216,8 @@ let waterMatRef = null, wetNow = 0;
 export function getStreets() { return streets; }
 export const stoneTex = makeStoneTexture(256);
 export const stoneMaterial = new THREE.MeshStandardMaterial({ map: stoneTex, roughness: 0.9, color: 0xd8d4cc });
+export const deckMaterial = new THREE.MeshStandardMaterial({ color: 0xd9dcdc, roughness: 0.55 }); // painted steel / fair-faced concrete
+const railMaterial = new THREE.MeshStandardMaterial({ color: 0xeef0f0, roughness: 0.35, metalness: 0.2 });
 
 // world-space UVs in metres (the asphalt material's texture repeat turns them into tiles)
 function setGroundUVs(geo) {
@@ -228,8 +232,9 @@ function setGroundUVs(geo) {
   geo.setAttribute('uv1', new THREE.BufferAttribute(uv1, 2));
 }
 
-function shapeGeometry(poly, y = 0) {
+function shapeGeometry(poly, y = 0, holes = []) {
   const shape = new THREE.Shape(poly.map((p) => new THREE.Vector2(p.x, -p.z)));
+  for (const h of holes) shape.holes.push(new THREE.Path(h.map((p) => new THREE.Vector2(p.x, -p.z))));
   const geo = new THREE.ShapeGeometry(shape);
   geo.rotateX(-Math.PI / 2);
   geo.translate(0, y, 0);
@@ -272,9 +277,10 @@ function inBridgeGap(p) {
   return false;
 }
 
-// True if (x, z) is over the river and not on a road bridge deck.
+// True if (x, z) is over the river (and not on a road bridge deck) or in a dock basin.
 export function isOverWater(x, z) {
   const p = { x, z };
+  for (const dk of dockPolys) if (pointInPolygon(p, dk.poly)) return true;
   if (!pointInPolygon(p, world.riverPoly)) return false;
   for (const br of bridges) {
     const d = v2.sub(p, br.centre);
@@ -297,7 +303,7 @@ export function buildGround(scene) {
   const northPoly = [{ x: B.minX, z: B.minZ }, { x: B.maxX, z: B.minZ }, ...nb.slice().reverse()];
   const southPoly = [...sb, { x: B.maxX, z: B.maxZ }, { x: B.minX, z: B.maxZ }];
   for (const poly of [northPoly, southPoly]) {
-    const geo = shapeGeometry(poly);
+    const geo = shapeGeometry(poly, 0, dockPolys.filter((dk) => pointInPolygon(dk.poly[0], poly)).map((dk) => dk.poly));
     setGroundUVs(geo);
     const m = new THREE.Mesh(geo, groundMaterial);
     m.receiveShadow = true;
@@ -323,9 +329,14 @@ export function buildGround(scene) {
   const water = new THREE.Mesh(shapeGeometry(world.riverPoly, WATER_Y), waterMat);
   water.receiveShadow = true;
   group.add(water);
+  for (const dk of dockPolys) {
+    const w = new THREE.Mesh(shapeGeometry(dk.poly, WATER_Y + 0.6), waterMat); // docks sit a little higher (locked)
+    w.receiveShadow = true;
+    group.add(w);
+  }
 
   // Quay walls (vertical faces from street level down into the water)
-  for (const [bank, side] of [[nb, 1], [sb, -1]]) {
+  for (const [bank, side] of [[nb, 1], [sb, -1], ...dockPolys.map((dk) => [[...dk.poly, dk.poly[0]], 0])]) {
     const pts = resample(bank, 3);
     const pos = [], uv = [], idx = [];
     let u = 0;
@@ -333,7 +344,11 @@ export function buildGround(scene) {
       if (i) u += v2.len(v2.sub(p, pts[i - 1])) / 4;
       pos.push(p.x, KERB_H, p.z, p.x, WATER_Y - 1.5, p.z);
       uv.push(u, 1.1, u, 0);
-      if (i) { const k = i * 2; side > 0 ? idx.push(k - 2, k - 1, k, k, k - 1, k + 1) : idx.push(k - 2, k, k - 1, k, k + 1, k - 1); }
+      if (i) {
+        const k = i * 2;
+        if (side >= 0) idx.push(k - 2, k - 1, k, k, k - 1, k + 1);
+        if (side <= 0) idx.push(k - 2, k, k - 1, k, k + 1, k - 1);
+      }
     });
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
@@ -380,8 +395,8 @@ export function buildGround(scene) {
   // Road bridges: arched stone body + deck painted with the ground texture + parapets
   for (const br of bridges) group.add(buildBridge(br, groundMaterial));
 
-  // Park railings and Trinity railings
-  group.add(buildRailings([...parkPolys, ...campusPolys]));
+  // Park railings, Trinity railings and the dock edges
+  group.add(buildRailings([...parkPolys, ...campusPolys, ...dockPolys]));
 
   // Map boundary walls so you can't drive off the edge
   addPolyline([{ x: B.minX + 1, z: B.minZ + 1 }, { x: B.maxX - 1, z: B.minZ + 1 }, { x: B.maxX - 1, z: B.maxZ - 1 }, { x: B.minX + 1, z: B.maxZ - 1 }], true);
@@ -402,12 +417,16 @@ function buildBridge(br, groundMaterial) {
   const g = new THREE.Group();
   const L = br.length + 1.2, W = br.width;
   const angle = Math.atan2(br.dir.x, br.dir.z);
-  const arches = br.name === 'Butt Bridge' || br.name === 'Talbot Memorial Bridge' ? 1 : 3;
+  // 20th-century bridges get one flat arch; the docklands bridges (Samuel Beckett, Tom Clarke) are slim
+  // steel/concrete decks on piers, no arches at all
+  const modern = /Beckett|Tom Clarke/.test(br.name);
+  const arches = modern ? 0 : /Butt|Talbot|Sherwin|Rory/.test(br.name) ? 1 : 3;
+  const bodyMat = modern ? deckMaterial : stoneMaterial;
   // body: arch shape extruded across the width
   const shape = new THREE.Shape();
-  const bottom = WATER_Y - 1.5, top = -0.08;
+  const bottom = modern ? -1.7 : WATER_Y - 1.5, top = -0.08;
   shape.moveTo(-L / 2, bottom); shape.lineTo(L / 2, bottom); shape.lineTo(L / 2, top); shape.lineTo(-L / 2, top); shape.closePath();
-  const pier = arches === 1 ? 0 : Math.max(1.5, L * 0.06);
+  const pier = arches <= 1 ? 0 : Math.max(1.5, L * 0.06);
   const spanW = (L - 2 - pier * (arches - 1)) / arches;
   const crown = arches === 1 ? -0.9 : -0.7, spring = WATER_Y + 0.2;
   for (let k = 0; k < arches; k++) {
@@ -424,7 +443,7 @@ function buildBridge(br, groundMaterial) {
   body.translate(0, 0, -W / 2);
   body.rotateY(Math.PI / 2); // shape x -> world -z ... align length with local z
   const uvScale = body.attributes.uv; for (let i = 0; i < uvScale.count; i++) uvScale.setXY(i, uvScale.getX(i) / 4, uvScale.getY(i) / 4);
-  const bodyMesh = new THREE.Mesh(body, stoneMaterial);
+  const bodyMesh = new THREE.Mesh(body, bodyMat);
   bodyMesh.castShadow = bodyMesh.receiveShadow = true;
   g.add(bodyMesh);
 
@@ -441,7 +460,7 @@ function buildBridge(br, groundMaterial) {
   // parapets
   const parH = 1.05;
   for (const side of [-1, 1]) {
-    const p = new THREE.Mesh(new THREE.BoxGeometry(0.7, parH, L + 1.5), stoneMaterial);
+    const p = new THREE.Mesh(modern ? new THREE.BoxGeometry(0.25, parH, L + 1.5) : new THREE.BoxGeometry(0.7, parH, L + 1.5), modern ? railMaterial : stoneMaterial);
     p.position.set(side * (W / 2 + 0.35), parH / 2, 0);
     p.castShadow = p.receiveShadow = true;
     g.add(p);
@@ -449,6 +468,15 @@ function buildBridge(br, groundMaterial) {
     const n = { x: br.dir.z, z: -br.dir.x };
     const cx = br.centre.x + n.x * side * (W / 2 + 0.35), cz = br.centre.z + n.z * side * (W / 2 + 0.35);
     addSegment(cx - br.dir.x * (L / 2 + 0.75), cz - br.dir.z * (L / 2 + 0.75), cx + br.dir.x * (L / 2 + 0.75), cz + br.dir.z * (L / 2 + 0.75));
+  }
+  if (modern) {
+    // piers down into the water
+    for (const t of [-0.28, 0.28]) {
+      const pm = new THREE.Mesh(new THREE.BoxGeometry(W * 0.6, -1.7 - WATER_Y + 1.5, 3), deckMaterial);
+      pm.position.set(0, (-1.7 + WATER_Y - 1.5) / 2, t * L);
+      pm.castShadow = pm.receiveShadow = true;
+      g.add(pm);
+    }
   }
   g.rotation.y = angle;
   g.position.set(br.centre.x, 0, br.centre.z);

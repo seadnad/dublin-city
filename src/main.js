@@ -1,9 +1,10 @@
 import * as THREE from 'three';
-import { world, v2, laneOffset } from './world/geo.js';
-import { buildGround, isOverWater, setWet } from './world/ground.js';
+import { world, v2, laneOffset, pointInPolygon } from './world/geo.js';
+import { buildGround, isOverWater, setWet, WATER_Y, dockPolys } from './world/ground.js';
 import { createAtmosphere } from './world/atmosphere.js';
 import { buildBuildings, buildingUniforms } from './world/buildings.js';
-import { buildLandmarks, landmarkMaterials } from './world/landmarks.js';
+import { buildLandmarks, landmarkMaterials, waterGlowSources } from './world/landmarks.js';
+import { buildWaterGlow } from './render/waterglow.js';
 import { buildLamps, buildRain } from './world/props.js';
 import { buildFurniture, createSignals } from './world/furniture.js';
 import { sites } from './world/sites.js';
@@ -64,6 +65,15 @@ const buildings = buildBuildings(scene);
 { const t = performance.now(); bakeGroundAO([...buildings.lots, ...landmarkFootprints], world.bounds); console.log(`ground AO baked in ${Math.round(performance.now() - t)} ms`); }
 const landmarks = buildLandmarks(scene);
 const lamps = buildLamps(scene);
+// reflections of quay lamps and the docklands lights on the water after dark
+const nearWater = (x, z) => [[7, 0], [-7, 0], [0, 7], [0, -7]].some(([dx, dz]) => isOverWater(x + dx, z + dz));
+const waterGlow = buildWaterGlow(scene, [
+  ...lamps.spots.filter((s) => nearWater(s.hx, s.hz)).map((s) => ({
+    x: s.hx, z: s.hz, y: WATER_Y + (dockPolys.some((dk) => [[7, 0], [-7, 0], [0, 7], [0, -7]].some(([dx, dz]) => pointInPolygon({ x: s.hx + dx, z: s.hz + dz }, dk.poly))) ? 0.65 : 0.05),
+    color: 0xffb25e, width: 1.8, length: 30,
+  })),
+  ...waterGlowSources,
+]);
 { const t = performance.now(); bakeLampLight(lamps.spots, world.bounds); console.log(`lamp light baked in ${Math.round(performance.now() - t)} ms`); }
 const rain = buildRain(scene);
 const furniture = buildFurniture(scene);
@@ -138,6 +148,8 @@ function applyMode() {
   buildingUniforms.uNight.value = p.windows;
 
   lamps.setLevel(p.lamps);
+  landmarks.setNight(mode.evening ? p.lamps : 0);
+  waterGlow.setLevel(mode.evening ? p.lamps * (mode.rain ? 0.7 : 1) : 0);
   lampUniforms.uLampLevel.value = mode.evening ? p.lamps : 0; // baked lamp light only after dark
   landmarkMaterials.lampGlow.emissiveIntensity = 0.2 + p.lamps * 3;
   traffic.setLights(p.lamps);
@@ -311,6 +323,7 @@ function frame() {
   camera.getWorldDirection(viewDir); viewDir.y = 0; viewDir.normalize();
   atmosphere.update(dt, time, focus, viewDir);
   landmarks.update(camera);
+  waterGlow.update(camera);
   lamps.update(dt, focus);
   rain.update(dt, time, camera);
   hud.update(dt, { car, traffic, tram });

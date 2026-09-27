@@ -209,11 +209,13 @@ function build() {
   const polyOf = (ids) => ids.map((id) => ({ x: nodes.get(id).x, z: nodes.get(id).z, id }));
   const parks = Object.entries(data.parks).map(([name, ids]) => ({ name, poly: polyOf(ids), ids }));
   const campus = Object.entries(data.campus).map(([name, ids]) => ({ name, poly: polyOf(ids), ids }));
+  // enclosed dock basins (Grand Canal Dock): water ringed by roads, like a park ringed by railings
+  const docks = Object.entries(data.docks || {}).map(([name, ids]) => ({ name, poly: polyOf(ids), ids }));
 
   const luasPts = data.luas.route.map((id) => ({ x: nodes.get(id).x, z: nodes.get(id).z, id }));
   const luas = { name: data.luas.name, pts: luasPts, stops: data.luas.stops };
 
-  return { nodes, ways, edges, bounds, segs, segsNear, nearestRoad, northBank, southBank, riverPoly, parks, campus, luas };
+  return { nodes, ways, edges, bounds, segs, segsNear, nearestRoad, northBank, southBank, riverPoly, parks, campus, docks, luas };
 }
 
 function extendToEdges(pts, bounds) {

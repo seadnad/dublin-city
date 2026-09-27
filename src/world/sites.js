@@ -1,7 +1,7 @@
 // Landmark sites, anchored to street-graph nodes so they always sit correctly against the roads.
 // Each site: position, rotation (local +z faces the street), footprint (w along street, d deep),
 // a label height, and a teleport spot on a nearby road looking at it.
-import { world, v2, PAVEMENT, pointInPolygon, laneOffset } from './geo.js';
+import { world, v2, PAVEMENT, pointInPolygon, laneOffset, project } from './geo.js';
 import { bridges, parkPolys, campusPolys } from './ground.js';
 
 const N = (id) => world.nodes.get(id);
@@ -55,6 +55,13 @@ const campanile = { x: trinityFront.x + tfDir.x * 62, z: trinityFront.z + tfDir.
 
 const sgPark = parkPolys.find((p) => p.name === "St Stephen's Green");
 
+// Heuston: the head building faces east over the station forecourt, the train shed runs west behind it
+const heustonFront = project(53.3465, -6.2922);
+// Grand Canal Square: theatre at the west end facing east down the square to the dock, the Marker Hotel on its south side
+const theatre = beside('MC1', 'MC2', 0.32, 1, 30, 32, { gap: 1 });
+const thBack = { x: -Math.sin(theatre.rot), z: -Math.cos(theatre.rot) }; // from the theatre towards the dock
+const beckett = bridges.find((b) => b.name === 'Samuel Beckett Bridge');
+
 export const sites = {
   spire: {
     name: 'The Spire', x: N('OC2').x, z: N('OC2').z, rot: Math.atan2(oc.x, oc.z), w: 3, d: 3, labelY: 128,
@@ -91,6 +98,37 @@ export const sites = {
     name: 'Custom House', ...beside('NQ10', 'NQ11', 1, 1, 104, 32, { gap: 3 }), labelY: 50,
     view: spot('SQ9', 'SQ10', 0.3),
   },
+  heuston: {
+    name: 'Heuston Station', x: heustonFront.x - 52, z: heustonFront.z, rot: Math.PI / 2, w: 34, d: 104, labelY: 30,
+    view: spot('WT2', 'VQ2', 0.55),
+  },
+  guinness: {
+    name: 'Guinness Storehouse', ...beside('BV1', 'MK1', 0.55, -1, 40, 34, { gap: 2 }), labelY: 44,
+    view: spot('MK1', 'BV1', 0.12),
+  },
+  beckett: {
+    name: 'Samuel Beckett Bridge', x: beckett.centre.x, z: beckett.centre.z, rot: Math.atan2(beckett.dir.x, beckett.dir.z),
+    w: beckett.width, d: beckett.length, labelY: 50, bridge: beckett,
+    view: spot('SQ14', 'SQ15', 0.25),
+  },
+  convention: {
+    name: 'Convention Centre', ...beside('NQ15', 'NQ16', 1, 1, 60, 30, { gap: 2 }), labelY: 40,
+    view: spot('NQ14', 'NQ15', 0.35),
+  },
+  threeArena: {
+    name: '3Arena', ...beside('NQ18', 'NQ19', 0.5, 1, 70, 46, { gap: 3 }), labelY: 30,
+    view: spot('NQ17', 'NQ18', 0.45),
+  },
+  grandCanal: {
+    name: 'Grand Canal Theatre', ...theatre, labelY: 32,
+    square: { x: theatre.x + thBack.x * 31, z: theatre.z + thBack.z * 31, rot: theatre.rot, w: 30, d: 30 },
+    view: spot('HQM', 'HQ1', 0.55),
+  },
+  grandCanalSt: {
+    // the precast-concrete office block on the corner of Grattan Street
+    name: 'Grand Canal Street', ...beside('GC1', 'GCM', 0.3, -1, 24, 20, { gap: 1 }), labelY: 30,
+    view: spot('MSNE', 'GC1', 0.8),
+  },
   stephensGreen: {
     name: "St Stephen's Green", ...centroid(sgPark.poly), rot: 0, w: 0, d: 0, labelY: 30, park: sgPark,
     view: spot('GR2', 'SGNW', 0.35),
@@ -108,9 +146,21 @@ export const grounds = [
   shifted(sites.customHouse, 0, -6, 128, 50),
 ];
 
+// Smaller landmarks that are modelled but not in the teleport list
+export const extraSites = {};
+
 // Footprints the filler generator must avoid (landmark buildings; parks/campus handled separately).
 export const reserved = [
   sites.gpo, sites.bankOfIreland, sites.christChurch, sites.customHouse, sites.trinity, ...grounds,
+  sites.grandCanalSt, sites.heuston, sites.guinness, sites.convention, sites.threeArena, sites.grandCanal, sites.grandCanal.square,
+  // Heuston's forecourt, open to the quay
+  { x: heustonFront.x + 12, z: heustonFront.z, rot: Math.PI / 2, w: 34, d: 24 },
+  // keep the square open all the way to the water
+  { x: theatre.x + thBack.x * 50, z: theatre.z + thBack.z * 50, rot: theatre.rot, w: 30, d: 44 },
+  // the Marker Hotel on Pearse Street, south side of the square
+  (extraSites.marker = { ...beside('MC2', 'PS5', 0.5, 1, 44, 18, { gap: 0.5 }) }),
+  // St James's Gate, in the brewery wall on James's Street
+  (extraSites.jamesGate = { ...beside('TS3', 'JS1', 0.5, 1, 14, 4, { gap: 0.2 }) }),
   // Synod Hall across Winetavern Street from Christ Church
   (() => {
     const cc = sites.christChurch;

@@ -8,7 +8,7 @@ import * as THREE from 'three';
 import { addReflections } from '../render/reflect.js';
 import { groundAOUniforms, GROUND_AO_GLSL, GROUND_AO_APPLY } from '../render/groundao.js';
 import { lampUniforms } from '../render/lamplight.js';
-import { world, v2, PAVEMENT, offsetPolyline, pointInPolygon, hasParking } from './geo.js';
+import { world, v2, PAVEMENT, offsetPolyline, pointInPolygon, hasParking, insetPolygon, roadInsetFor } from './geo.js';
 import { IS_MOBILE, fbm } from './textures.js';
 import { asphalt, paving, granite, setts, grass } from './surfaces.js';
 
@@ -63,8 +63,9 @@ const field = new Float32Array(NX * NZ).fill(30);
       if (d !== Infinity) { field[k2] = smin(field[k2], d, 5); scratch[k2] = Infinity; }
     }
   }
-  // river: scanline inside test per row + distance to nearby bank edges
-  const poly = world.riverPoly;
+  // river and dock basins: scanline inside test per row + distance to nearby bank edges
+  const waters = [world.riverPoly, ...world.docks.map((dk) => insetPolygon(dk.poly, roadInsetFor(world, dk.ids)))];
+  for (const poly of waters) {
   const rd = new Float32Array(NX * NZ).fill(REACH);
   for (let e = 0, f = poly.length - 1; e < poly.length; f = e++) {
     const a = poly[e], b = poly[f];
@@ -92,6 +93,7 @@ const field = new Float32Array(NX * NZ).fill(30);
       if (inside) field[k2] = Math.min(field[k2], -rd[k2]);
       else if (rd[k2] < REACH) field[k2] = Math.min(field[k2], rd[k2]);
     }
+  }
   }
   for (let i = 0; i < NX; i++) { field[i] = -1; field[(NZ - 1) * NX + i] = -1; }
   for (let j = 0; j < NZ; j++) { field[j * NX] = -1; field[j * NX + NX - 1] = -1; }

@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { addReflections } from '../render/reflect.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { world, v2, pointInPolygon, insetPolygon } from './geo.js';
-import { sites, reserved, grounds } from './sites.js';
+import { sites, reserved, grounds, extraSites } from './sites.js';
 import { parkPolys, campusPolys, stoneTex, WATER_Y, paintArea, COLORS } from './ground.js';
 import { rng, makeStoneTexture } from './textures.js';
 import { addBox } from '../game/collision.js';
@@ -497,6 +497,279 @@ function fusiliersArch(park) {
   return b.build("Fusiliers' Arch");
 }
 
+// ---------- extended map: Heuston, the Liberties, Docklands ----------
+function signTex(text, { bg = '#15181b', fg = '#f1ede2', w = 512, h = 64, font = 'bold 38px Georgia' } = {}) {
+  return canvasTex(w, h, (ctx) => {
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = fg; ctx.font = font; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(text, w / 2, h / 2 + 2);
+  });
+}
+const signMat = (text, o = {}, emissive = false) => {
+  const map = signTex(text, o);
+  return new THREE.MeshStandardMaterial({ map, roughness: 0.6, ...(emissive ? { emissive: 0xffffff, emissiveMap: map, emissiveIntensity: 0.25 } : {}) });
+};
+// red-brown warehouse brick with a regular window grid (Guinness Storehouse): one bay 4 m x 4.3 m
+const warehouseTex = canvasTex(128, 138, (ctx, w, h) => {
+  ctx.fillStyle = '#7a4331'; ctx.fillRect(0, 0, w, h);
+  for (let y = 0; y < h; y += 4) { ctx.fillStyle = 'rgba(40,20,14,0.25)'; ctx.fillRect(0, y, w, 1); }
+  for (let i = 0; i < 400; i++) { ctx.fillStyle = `rgba(${120 + Math.random() * 60},${60 + Math.random() * 30},40,0.12)`; ctx.fillRect(Math.random() * w, Math.random() * h, 8, 3); }
+  ctx.fillStyle = '#d9d2c2'; ctx.fillRect(28, 26, 72, 82);
+  ctx.fillStyle = '#1b2024';
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) ctx.fillRect(32 + c * 22.7, 30 + r * 25.3, 20, 23);
+});
+// glass curtain wall: 3 m bay x 3.6 m floor
+const curtainTex = canvasTex(64, 76, (ctx, w, h) => {
+  const g = ctx.createLinearGradient(0, 0, w, h); g.addColorStop(0, '#39505a'); g.addColorStop(1, '#22343d');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = '#b8c2c6'; ctx.fillRect(0, 0, w, 3); ctx.fillRect(0, 0, 2, h); ctx.fillRect(w / 2, 0, 1, h);
+});
+// the Marker Hotel's checkerboard: 16 m x 18 m tile of white panels and dark glass
+const checkerTex = canvasTex(256, 288, (ctx, w, h) => {
+  const r = rng(77);
+  const cw = w / 8, ch = h / 8;
+  for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) {
+    const glass = (x + y) % 2 === 0 ? r() < 0.8 : r() < 0.2;
+    ctx.fillStyle = glass ? '#1f2a30' : '#eef0ee';
+    ctx.fillRect(x * cw, y * ch, cw + 0.5, ch + 0.5);
+  }
+  ctx.fillStyle = 'rgba(160,170,172,0.6)';
+  for (let x = 0; x <= 8; x++) ctx.fillRect(x * cw - 1, 0, 2, h);
+});
+const clockTex = canvasTex(128, 128, (ctx, w) => {
+  ctx.fillStyle = '#f3efe4'; ctx.beginPath(); ctx.arc(w / 2, w / 2, w / 2 - 2, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#1b1b1b'; ctx.lineWidth = 5;
+  for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2; ctx.beginPath(); ctx.moveTo(w / 2 + Math.cos(a) * 50, w / 2 + Math.sin(a) * 50); ctx.lineTo(w / 2 + Math.cos(a) * 58, w / 2 + Math.sin(a) * 58); ctx.stroke(); }
+  ctx.beginPath(); ctx.moveTo(w / 2, w / 2); ctx.lineTo(w / 2, 22); ctx.moveTo(w / 2, w / 2); ctx.lineTo(w / 2 + 30, w / 2 + 12); ctx.stroke();
+}, true);
+
+// bright lights that reflect in the water at night (see render/waterglow.js)
+export const waterGlowSources = [];
+
+// Night lighting: materials that glow after dark, scaled by setNight(level)
+const neon = [];
+const glow = (color, day = 0, night = 2.5) => {
+  const m = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: day, roughness: 0.4 });
+  neon.push({ m, day, night });
+  return m;
+};
+Object.assign(M, {
+  glass: addReflections(new THREE.MeshStandardMaterial({ color: 0x86a3aa, roughness: 0.06, metalness: 0.7 }), 1.0),
+  curtain: addReflections(new THREE.MeshStandardMaterial({ map: curtainTex, roughness: 0.15, metalness: 0.5 }), 0.8),
+  warehouse: new THREE.MeshStandardMaterial({ map: warehouseTex, roughness: 0.9 }),
+  checker: new THREE.MeshStandardMaterial({ map: checkerTex, roughness: 0.35 }),
+  clock: new THREE.MeshStandardMaterial({ map: clockTex, roughness: 0.6 }),
+  heustonStone: new THREE.MeshStandardMaterial({ map: facadeTex, roughness: 0.85, color: 0xcfc6b4 }),
+  sandstone: new THREE.MeshStandardMaterial({ color: 0xbfa98a, map: stoneT, roughness: 0.85 }),
+  cladGrey: new THREE.MeshStandardMaterial({ color: 0x8b9196, roughness: 0.45, metalness: 0.3 }),
+  cladDark: new THREE.MeshStandardMaterial({ color: 0x3a3e45, roughness: 0.6, metalness: 0.2 }),
+  whiteSteel: addReflections(new THREE.MeshStandardMaterial({ color: 0xf2f3f2, roughness: 0.3, metalness: 0.1 }), 0.6),
+  brickChimney: new THREE.MeshStandardMaterial({ color: 0x8a4a34, map: stoneT, roughness: 0.9 }),
+  paving: new THREE.MeshStandardMaterial({ color: 0xb8b6ae, map: stoneT, roughness: 0.8 }),
+  redResin: new THREE.MeshStandardMaterial({ color: 0x9e2a22, roughness: 0.7 }),
+  planter: new THREE.MeshStandardMaterial({ color: 0x55595a, roughness: 0.8 }),
+  planting: new THREE.MeshStandardMaterial({ color: 0x5c7a3a, roughness: 0.95 }),
+  timber: new THREE.MeshStandardMaterial({ color: 0x6d4f3a, roughness: 0.85 }),
+  // after dark: the Convention Centre's drum rings and roof edge, the Beckett harp, the red light-sticks, the 3Arena front
+  ccdRing: glow(0xb04cff, 0, 3.2),
+  ccdEdge: glow(0x8a5cff, 0, 2.2),
+  harpLight: glow(0xdfe8ff, 0, 1.6),
+  harpBody: glow(0xf2f3f2, 0, 0.5),
+  harpStay: glow(0xe6ecff, 0, 0.7),
+  redStick: glow(0xe8321e, 0.15, 2.4),
+  arenaGlow: glow(0x4f7dff, 0, 1.6),
+});
+
+function heuston(site) {
+  // local +z faces east over the forecourt; local x runs north-south
+  const b = new Builder(site);
+  const W = site.w, D = site.d, hz = D / 2 - 8;
+  // Italianate head building with a projecting centre and domed corner towers
+  b.facade(W, 13, 16, M.heustonStone, M.lead, { z: hz });
+  b.box(W + 0.6, 0.8, 16.6, M.portland, { y: 13, z: hz });
+  b.balustrade(-W / 2, W / 2, 13.8, hz + 8, M.portland);
+  b.facade(12, 15.5, 2.2, M.heustonStone, M.lead, { z: hz + 9 });
+  b.box(12.6, 0.9, 2.8, M.portland, { y: 15.5, z: hz + 9 });
+  b.add(new THREE.CircleGeometry(1.3, 24), M.clock, { y: 13.2, z: hz + 10.15 });
+  for (const sx of [-1, 1]) {
+    const x = sx * (W / 2 - 3);
+    b.facade(6.4, 17.5, 6.4, M.heustonStone, M.lead, { x, z: hz + 5 });
+    b.box(7, 0.7, 7, M.portland, { x, y: 17.5, z: hz + 5 });
+    b.cyl(2.1, 2.4, 3, M.portland, { x, y: 18.2, z: hz + 5 }, 12);
+    b.dome(2.2, M.copper, { x, y: 21.2, z: hz + 5 });
+  }
+  // the train shed behind: three long pitched roofs over granite walls
+  const shedL = D - 16, sz = -D / 2 + shedL / 2;
+  b.box(W, 8, shedL, M.granite, { z: sz });
+  for (let k = 0; k < 3; k++) b.gable(W / 3, 4.5, shedL, M.lead, { x: -W / 3 + k * (W / 3), y: 8, z: sz });
+  b.solid(0, 0, W, D);
+  return b.build('Heuston Station');
+}
+
+function guinness(site) {
+  // local +z faces Market Street
+  const b = new Builder(site);
+  const W = site.w, D = site.d, H = 30;
+  b.facade(W, H, D, M.warehouse, M.lead, {}, 4, 4.3);
+  b.box(W + 0.5, 1, D + 0.5, M.brickChimney, { y: H });
+  // the Gravity Bar: a glass drum on the roof
+  b.cyl(9, 9, 5.5, M.glass, { y: H + 1 }, 28);
+  b.cyl(9.5, 9.5, 0.6, M.dark, { y: H + 6.5 }, 28);
+  b.add(new THREE.PlaneGeometry(24, 2.4), signMat('GUINNESS STOREHOUSE', { font: 'bold 34px Georgia' }, true), { y: 6.5, z: D / 2 + 0.06 });
+  // brewery chimney with the name down it
+  const cx = W / 2 + 7, cz = -D / 2 - 5;
+  b.cyl(1.5, 2.3, 44, M.brickChimney, { x: cx, z: cz }, 14);
+  b.add(new THREE.PlaneGeometry(1.4, 14), signMat('GUINNESS', { bg: '#141414', fg: '#e9dfc6', w: 64, h: 512, font: 'bold 40px Georgia' }), { x: cx, y: 30, z: cz + 2.05 });
+  b.solid(0, 0, W, D); b.solid(cx, cz, 4.6, 4.6);
+  return b.build('Guinness Storehouse');
+}
+
+function jamesGate(site) {
+  const b = new Builder(site);
+  b.archWall(14, 8.5, 1.4, 6, 6.8, M.granite);
+  b.box(6, 5.4, 0.25, M.dark, { z: -0.2 });
+  b.add(new THREE.PlaneGeometry(9, 1.1), signMat("ST. JAMES'S GATE", { bg: '#1c2a22', fg: '#e8d9a8' }), { y: 7.4, z: 0.72 });
+  b.solid(0, 0, 14, 1.6);
+  return b.build("St James's Gate");
+}
+
+function beckettHarp(site) {
+  // local +z runs along the deck (north to south). A single curved white pylon rises from the deck near the
+  // south end and leans back over it; a fan of stays runs to the main span (the harp's strings)
+  const b = new Builder(site);
+  const L = site.d, z0 = L * 0.24, H = 42;
+  const pylon = (t) => new THREE.Vector3(0, 1 + H * t, z0 + 16 * Math.pow(t, 1.7));
+  const pts = []; for (let i = 0; i <= 20; i++) pts.push(pylon(i / 20));
+  b.add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 40, 1.0, 10), M.harpBody);
+  b.add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map((p) => p.clone().add(new THREE.Vector3(0, 0, -0.9)))), 40, 0.18, 6), M.harpLight);
+  const stay = (a, c, mat, r = 0.07) => b.add(new THREE.TubeGeometry(new THREE.LineCurve3(a, c), 1, r, 4), mat);
+  for (let i = 0; i < 16; i++) {
+    const t = 0.3 + (i / 15) * 0.68;
+    stay(pylon(t), new THREE.Vector3(0, 0.6, z0 - 6 - (i / 15) * (L / 2 + z0 - 10)), M.harpStay);
+  }
+  for (let i = 0; i < 6; i++) stay(pylon(0.55 + i * 0.08), new THREE.Vector3(0, 0.6, L / 2 - 1 - i * 0.6), M.harpStay, 0.1);
+  for (const t of [-0.3, 0, z0 / L]) waterGlowSources.push({ ...toWorld(site, 0, t * L), y: WATER_Y + 0.05, color: 0xcfdcff, width: 3, length: 60 });
+  // central spine the stays anchor to, and the round pivot pier under the pylon
+  b.box(1.1, 0.7, L, M.whiteSteel);
+  b.cyl(6, 6, 2.6 - WATER_Y, M.granite, { y: WATER_Y - 0.5, z: z0 }, 20);
+  b.solid(0, 0, 1.2, L);
+  return b.build('Samuel Beckett Bridge');
+}
+
+function convention(site) {
+  // local +z faces the river. Stone-clad box with the tilted glass drum (the atrium) at the front
+  const b = new Builder(site);
+  const W = site.w, D = site.d, H = 26;
+  b.facade(W, H, D, M.sandstone, M.cladGrey, {}, 6, 6);
+  for (let k = 0; k < 3; k++) b.box(W * 0.35, 1.2, 0.3, M.dark, { x: -W * 0.25, y: 6 + k * 6, z: D / 2 + 0.1 }); // slit windows
+  // roofline strips that glow at night
+  for (const sz of [-1, 1]) b.box(W + 0.4, 0.5, 0.4, M.ccdEdge, { y: H, z: sz * (D / 2 + 0.1) });
+  for (const sx of [-1, 1]) b.box(0.4, 0.5, D + 0.4, M.ccdEdge, { x: sx * (W / 2 + 0.1), y: H });
+  // the drum stands proud of the river front and leans back into the building
+  const dx = W * 0.18, dz = D / 2 + 1, tilt = -0.3;
+  b.cyl(10, 10.5, H + 4, M.glass, { x: dx, y: -1, z: dz, rx: tilt }, 32);
+  for (let k = 0; k < 8; k++) {
+    const y = 3 + k * 3.4;
+    // horizontal light rings, following the drum's lean
+    b.add(new THREE.TorusGeometry(10.35 - k * 0.02, 0.16, 5, 40), M.ccdRing, { x: dx, y: -1 + y * Math.cos(tilt), z: dz + y * Math.sin(tilt), rx: Math.PI / 2 + tilt });
+  }
+  for (const ox of [-6, 0, 6]) waterGlowSources.push({ ...toWorld(site, dx + ox, D / 2 + 20), y: WATER_Y + 0.05, color: 0xb04cff, width: 7, length: 70 });
+  waterGlowSources.push({ ...toWorld(site, -W * 0.2, D / 2 + 20), y: WATER_Y + 0.05, color: 0x8a5cff, width: 9, length: 60 });
+  b.solid(0, 0, W, D); b.solid(dx, dz, 22, 20);
+  return b.build('Convention Centre');
+}
+
+function threeArena(site) {
+  const b = new Builder(site);
+  const W = site.w, D = site.d;
+  b.box(W, 18, D - 10, M.cladDark, { z: -5 });
+  // shallow barrel roof over the hall
+  b.add(new THREE.CylinderGeometry(18, 18, W, 24, 1, false, 0, Math.PI), M.cladGrey, { y: 18, z: -5, rz: Math.PI / 2, sx: 0.32, sz: (D - 10) / 36 });
+  // glazed front on the quay with the name
+  b.box(W, 22, 10, M.curtain, { z: D / 2 - 5 });
+  b.box(W + 0.3, 0.6, 10.3, M.arenaGlow, { y: 22, z: D / 2 - 5 });
+  b.add(new THREE.PlaneGeometry(20, 4.5), signMat('3ARENA', { bg: '#101216', fg: '#ffffff', font: 'bold 48px Arial' }, true), { y: 17, z: D / 2 + 0.06 });
+  for (const ox of [-20, 0, 20]) waterGlowSources.push({ ...toWorld(site, ox, D / 2 + 22), y: WATER_Y + 0.05, color: 0x4f7dff, width: 8, length: 60 });
+  b.solid(0, 0, W, D);
+  return b.build('3Arena');
+}
+
+function grandCanalTheatre(site) {
+  // local +z faces Macken Street (west); the glass front faces the square and the dock (local -z)
+  const b = new Builder(site);
+  const W = site.w, D = site.d;
+  b.box(W, 18, D * 0.62, M.cladGrey, { z: D * 0.19 });
+  b.box(W * 0.7, 24, D * 0.35, M.cladGrey, { x: W * 0.1, z: D * 0.05 });
+  // the foyer: a tall glass wall leaning out over the square, with white diagonal struts
+  const fz = -D / 2 + 9, lean = -0.3;
+  b.box(W - 2, 27, 0.5, M.glass, { z: fz, rx: lean });
+  for (const [x, a] of [[-8, 0.45], [2, -0.35], [9, 0.5]]) b.box(0.5, 30, 0.6, M.whiteSteel, { x, z: fz - 0.6, rx: lean, rz: a });
+  for (const sx of [-1, 1]) b.box(0.5, 24, 9, M.glass, { x: sx * (W / 2 - 1), z: fz - 3 });
+  // the sloping roof plane, highest over the glass front
+  b.box(W + 4, 1, D + 6, M.cladGrey, { y: 21, z: -3, rx: 0.2 });
+  b.add(new THREE.PlaneGeometry(18, 1.8), signMat('BORD GÁIS ENERGY THEATRE', { bg: '#8b9196', fg: '#ffffff', font: 'bold 30px Arial' }, true), { y: 25.5, z: fz - 8.9, ry: Math.PI, rx: 0.2 });
+  b.solid(0, 0, W, D);
+  return b.build('Grand Canal Theatre');
+}
+
+function grandCanalSquare(sq) {
+  // local -z runs from the theatre towards the dock
+  const b = new Builder(sq);
+  const W = sq.w, D = sq.d, r = rng(314);
+  b.box(W, 0.06, D, M.paving, { y: KERB_H });
+  // the red carpet from the theatre door out to a jetty on the water, bristling with tilted light-sticks
+  const ang = 0.22;
+  b.box(6, 0.08, D + 4, M.redResin, { y: KERB_H + 0.02, ry: ang });
+  b.box(8, 0.4, 12, M.redResin, { x: -3, y: -0.2, z: -D / 2 - 7 });
+  for (const sx of [-1, 1]) b.box(0.3, 0.3, 12, M.timber, { x: -3 + sx * 4, y: 0.15, z: -D / 2 - 7 });
+  for (let i = 0; i < 30; i++) {
+    const t = r() * 2 - 1, off = (r() - 0.5) * 5;
+    const z = t * (D / 2 + 1), x = off + Math.tan(ang) * -z;
+    const h = 6 + r() * 5;
+    b.cyl(0.09, 0.12, h, M.redStick, { x, y: KERB_H, z, rx: (r() - 0.5) * 0.5, rz: (r() - 0.5) * 0.5 }, 6);
+  }
+  for (const ox of [-4, 2]) waterGlowSources.push({ ...toWorld(sq, ox, -D / 2 - 8), y: WATER_Y + 0.65, color: 0xe8321e, width: 4, length: 40 });
+  // green carpet: raised planters with grasses running the other way
+  for (const k of [-1, 1]) {
+    b.box(2.6, 0.7, D * 0.8, M.planter, { x: k * 9, y: KERB_H, ry: -0.3 });
+    b.box(2.3, 0.35, D * 0.78, M.planting, { x: k * 9, y: KERB_H + 0.7, ry: -0.3 });
+  }
+  return b.build('Grand Canal Square');
+}
+
+// precast concrete frame with deep-set windows: one bay 3 m x 3.6 m
+const precastTex = canvasTex(96, 116, (ctx, w, h) => {
+  ctx.fillStyle = '#cbc3b1'; ctx.fillRect(0, 0, w, h);
+  for (let i = 0; i < 200; i++) { ctx.fillStyle = `rgba(90,85,75,${Math.random() * 0.06})`; ctx.fillRect(Math.random() * w, Math.random() * h, 4, 4); }
+  ctx.fillStyle = '#9d9585'; ctx.fillRect(10, 18, w - 20, h - 30);
+  ctx.fillStyle = '#263036'; ctx.fillRect(14, 22, w - 28, h - 38);
+  ctx.fillStyle = '#5b666c'; ctx.fillRect(w / 2 - 1, 22, 2, h - 38);
+});
+M.precast = new THREE.MeshStandardMaterial({ map: precastTex, roughness: 0.8 });
+
+function grattanOffice(site) {
+  // seven-storey precast office: a deep window grid, a glazed set-back top floor under a slatted canopy
+  const b = new Builder(site);
+  const W = site.w, D = site.d, H = 6 * 3.6;
+  b.facade(W, H, D, M.precast, M.lead, {}, 3, 3.6);
+  b.box(W - 3, 3.4, D - 3, M.curtain, { y: H });
+  const top = H + 3.4;
+  for (const sx of [-1, 1]) b.box(0.3, 0.3, D + 2, M.dark, { x: sx * (W / 2 + 0.6), y: top + 0.6 });
+  for (let x = -W / 2 - 0.6; x <= W / 2 + 0.6; x += 0.9) b.box(0.12, 0.35, D + 2, M.dark, { x, y: top + 0.9 });
+  for (const [x, z] of [[-W / 2 + 0.8, -D / 2 + 0.8], [W / 2 - 0.8, -D / 2 + 0.8], [W / 2 - 0.8, D / 2 - 0.8], [-W / 2 + 0.8, D / 2 - 0.8]]) b.box(0.3, 1.2, 0.3, M.dark, { x, y: top, z });
+  b.solid(0, 0, W, D);
+  return b.build('Grand Canal Street office');
+}
+
+function markerHotel(site) {
+  const b = new Builder(site);
+  const W = site.w, D = site.d;
+  b.facade(W, 22, D, M.checker, M.lead, {}, 16, 18);
+  b.box(W + 0.2, 4, D + 0.2, M.curtain, {});
+  b.solid(0, 0, W, D);
+  return b.build('The Marker');
+}
+
 // ---------- trees ----------
 function buildTrees(scene) {
   const spots = [];
@@ -553,6 +826,8 @@ export function buildLandmarks(scene) {
     spire(S.spire), gpo(S.gpo), oconnellBridge(S.oconnellBridge), hapenny(S.hapenny), trinity(S.trinity),
     bankOfIreland(S.bankOfIreland), christChurch(S.christChurch), customHouse(S.customHouse),
     oconnellMonument(), fusiliersArch(S.stephensGreen.park),
+    heuston(S.heuston), guinness(S.guinness), jamesGate(extraSites.jamesGate), beckettHarp(S.beckett), convention(S.convention),
+    threeArena(S.threeArena), grattanOffice(S.grandCanalSt), grandCanalTheatre(S.grandCanal), grandCanalSquare(S.grandCanal.square), markerHotel(extraSites.marker),
   ];
   for (const g of groups) scene.add(g);
   for (const g of grounds) {
@@ -575,6 +850,8 @@ export function buildLandmarks(scene) {
   return {
     groups, labels, trees,
     setLabels(on) { labels.visible = on; },
+    // docklands lighting after dark (0 = day, 1 = night)
+    setNight(level) { for (const n of neon) n.m.emissiveIntensity = n.day + (n.night - n.day) * level; },
     update(camera) {
       // hide labels that are far away or behind the camera
       for (const sp of labels.children) {

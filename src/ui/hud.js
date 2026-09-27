@@ -27,6 +27,13 @@ const BLURBS = {
   christChurch: 'Medieval cathedral and the Synod Hall bridge',
   customHouse: 'Gandon’s domed masterpiece on the quays',
   stephensGreen: 'Victorian park, entered by the Fusiliers’ Arch',
+  heuston: 'Kingsbridge terminus, where the western quays end',
+  guinness: 'Seven storeys of stout, Gravity Bar on top',
+  beckett: 'Calatrava’s harp over the docklands',
+  convention: 'The tilted glass drum on North Wall Quay',
+  threeArena: 'The old Point Depot at the mouth of the Liffey',
+  grandCanal: 'Libeskind’s theatre and the red light-sticks',
+  grandCanalSt: 'Offices between Merrion Square and the docks',
 };
 
 export function createHUD({ sites, actions }) {
