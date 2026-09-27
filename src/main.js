@@ -19,6 +19,11 @@ import { createPeople } from './game/people.js';
 import { audio } from './game/audio.js';
 import { createHUD } from './ui/hud.js';
 import { createWorldMap } from './ui/worldmap.js';
+import { createGameUI, save } from './ui/gameui.js';
+import { createPursuit } from './game/modes/pursuit.js';
+import { createTrial } from './game/modes/trial.js';
+import { addGardaKit } from './game/garda.js';
+import { loadCar } from './game/models.js';
 import { createPipeline, QUALITIES } from './render/pipeline.js';
 import { KERB_H } from './world/roads.js';
 
@@ -58,7 +63,11 @@ function laneSpot(edge, t) {
 }
 const start = laneSpot(world.nodes.get('NQ8').edges.find((e) => e.to.id === 'OC1'), 0.2);
 const car = new Car(start.x, start.z, start.heading);
-const carMesh = makePlayerCar('hatch', 0x169b62);
+// the player drives a Garda patrol car
+// (a procedural stand-in until the Blender model has loaded)
+let carMesh = makePlayerCar('hatch', 0xeeeeea);
+let garda = addGardaKit(carMesh);
+car.siren = false;
 carMesh.rotation.order = 'YXZ';
 scene.add(carMesh);
 const headlight = new THREE.SpotLight(0xfff1d6, 0, 70, 0.5, 0.5, 1.2);
@@ -89,8 +98,12 @@ traffic.setPlayer(car);
 traffic.setTram(tram);
 traffic.setSignals(signals);
 car.dynamicObstacles = (c, r) => {
-  const a = traffic.collide(c, r), b = tram.collide(c, r);
-  return a && b ? (a.depth > b.depth ? a : b) : a || b;
+  let best = null;
+  for (const f of [traffic.collide, tram.collide, (cc, rr) => pursuit.collide(cc, rr)]) {
+    const h = f(c, r);
+    if (h && (!best || h.depth > best.depth)) best = h;
+  }
+  return best;
 };
 
 let time = 0;
@@ -133,6 +146,7 @@ const actions = {
   sound: () => { const on = audio.toggle(); hud.setOn('sound', on); hud.toast(on ? 'Sound on' : 'Sound off'); },
   teleport: teleportTo,
   map: () => worldMap.toggle(),
+  play: () => gameUI.togglePlay(),
 };
 const hud = createHUD({ sites, actions });
 // Desktop starts at medium and steps up to high (ambient occlusion) if there is frame-time headroom.
@@ -156,15 +170,68 @@ const worldMap = createWorldMap({
   getLive: () => ({
     player: { x: car.pos.x, z: car.pos.z, heading: car.heading },
     traffic: traffic.list.map((a) => a.pos),
+    blips: [...pursuit.blips(), ...trial.blips()],
     tram: tram.carriages,
   }),
   onTeleport: (k) => teleportTo(k),
   onWaypoint: (p) => { hud.setWaypoint(p); if (p) hud.toast(`Waypoint: ${p.name}`); },
 });
 onKey('m', actions.map);
+
+// ---------- game modes ----------
+let frozen = false;
+const gameUI = createGameUI({
+  onPursuit: () => { trial.stop(); pursuit.start(); },
+  onTrial: (r) => { pursuit.stop(); trial.start(r); rig.snap(); },
+  onFree: () => { pursuit.stop(); trial.stop(); hud.toast('Free roam'); },
+  onCar: (name) => actions.car(name),
+  trialInfo: (r) => trial.info(r),
+  toast: (m, ms) => hud.toast(m, ms),
+});
+const pursuit = createPursuit({
+  scene, player: car, traffic, ui: gameUI, audio, save,
+  makeSuspectMesh: () => {
+    // one suspect at a time, so the loaded model itself is used (pursuit keeps and reuses this mesh)
+    const m = suspectModel || makePlayerCar('hatch', 0xa3121a);
+    m.rotation.order = 'YXZ';
+    return m;
+  },
+});
+const trial = createTrial({ scene, player: car, playerMesh: carMesh, ui: gameUI, audio, save, freeze: (f) => { frozen = f; } });
+hud.setBlips(() => [...pursuit.blips(), ...trial.blips()]);
+
+// ---------- Blender hero cars: swap in when loaded ----------
+let suspectModel = null;
+// swap the player's car for a loaded model: 'garda' (default) or 'hatch'
+async function useCar(name) {
+  const m = await loadCar(name);
+  if (!m) return;
+  m.rotation.order = 'YXZ';
+  m.add(headlight, headlight.target);
+  scene.remove(carMesh);
+  carMesh = m;
+  scene.add(carMesh);
+  // the model has its own lightbar: flash its lenses instead of adding the procedural kit
+  const bars = m.userData.lightbar;
+  const glow = new THREE.PointLight(0x3a6bff, 0, 18, 2); glow.position.set(0, 2.0, -0.3); m.add(glow);
+  garda = { update(t, on) {
+    const p = (t * 2.2) % 1;
+    const a = on && (p < 0.12 || (p > 0.2 && p < 0.32)), b = on && ((p > 0.5 && p < 0.62) || (p > 0.7 && p < 0.82));
+    bars.forEach((mat, i) => { mat.emissiveIntensity = (i % 2 ? b : a) ? 8 : 0.1; });
+    glow.intensity = a || b ? 18 : 0;
+  } };
+  if (!bars.length) garda = { update() {} };
+  carMesh.userData.setLights(atmosphere.state.values.lamps);
+  save.set('car', name);
+}
+useCar(save.get('car', 'garda'));
+actions.car = (name) => { useCar(name); hud.toast(name === 'garda' ? 'Garda patrol car' : 'Hot hatch'); };
+loadCar('coupe').then((m) => { suspectModel = m; });
+onKey('g', actions.play);
+onKey('x', () => { if (pursuit.active) return; car.siren = !car.siren; audio.setSiren(car.siren); hud.toast(car.siren ? 'Siren on' : 'Siren off'); });
 onKey('h', () => hud.togglePanel('help'));
 onKey('t', () => hud.togglePanel('places'));
-onKey('escape', () => { hud.togglePanel(null); worldMap.close(); });
+onKey('escape', () => { hud.togglePanel(null); worldMap.close(); if (gameUI.playOpen) gameUI.togglePlay(false); });
 onKey('f', () => hud.toggleFps());
 onKey('backspace', respawnNearRoad);
 siteKeys.forEach((k, i) => onKey(String(i + 1), () => { teleportTo(k); hud.togglePanel(null); }));
@@ -192,7 +259,10 @@ function frame() {
 
   const tp0 = performance.now();
   updateInput(dt);
-  car.update(dt, input);
+  car.update(dt, frozen ? { throttle: 0, brake: 1, steer: 0, handbrake: true } : input);
+  pursuit.update(dt);
+  trial.update(dt);
+  garda.update(time, car.siren);
   if (isOverWater(car.pos.x, car.pos.z)) respawnNearRoad();
   const tp1 = performance.now();
   traffic.update(dt, camera);
@@ -247,7 +317,7 @@ setTimeout(() => hud.toast(IS_MOBILE ? 'Tap ? for help' : 'Press H for controls,
 
 // hooks for the headless smoke test
 window.__dublin = {
-  THREE, scene, camera, world, renderer, pipeline, atmosphere, car, input, rig, traffic, tram, people, buildings, landmarks, sites, teleportTo, actions, mode,
+  THREE, scene, camera, world, renderer, pipeline, atmosphere, car, input, rig, traffic, tram, people, pursuit, trial, gameUI, buildings, landmarks, sites, teleportTo, actions, mode,
   lockQuality(q, d) { userQuality = true; dpr = d; renderer.setPixelRatio(d); pipeline.setQuality(q); pipeline.setMood(mode); slowTime = fastTime = 0; lastSwitch = time + 1e9; },
   profile() { const o = {}; for (const k of Object.keys(prof)) if (k !== 'n') o[k] = +(prof[k] / Math.max(1, prof.n)).toFixed(2); for (const k of Object.keys(prof)) prof[k] = 0; return o; },
   stats: () => ({ ...renderer.info.render, dpr, segments: segmentCount(), car: { ...car.pos, speed: car.speed, street: car.street && car.street.name } }),

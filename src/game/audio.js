@@ -1,5 +1,6 @@
 // Small procedural soundscape: engine note, tyre squeal, bumps, rain hiss. Starts on first input.
 let ctx = null, master, engine, engine2, engFilter, engGain, skidGain, rainGain, noiseBuf;
+let sirenOsc = null, sirenGain = null, sirenOn = false, sirenPhase = 0;
 let muted = false;
 
 function noise(seconds = 2) {
@@ -30,6 +31,11 @@ function start() {
     noiseBuf = noise();
     skidGain = loop(noiseBuf, 'bandpass', 1800, 3);
     rainGain = loop(noiseBuf, 'lowpass', 1400, 0.3);
+    // Garda two-tone siren
+    sirenOsc = ctx.createOscillator(); sirenOsc.type = 'square';
+    const sf = ctx.createBiquadFilter(); sf.type = 'lowpass'; sf.frequency.value = 2200;
+    sirenGain = ctx.createGain(); sirenGain.gain.value = 0;
+    sirenOsc.connect(sf).connect(sirenGain).connect(master); sirenOsc.start();
   } catch { ctx = null; }
 }
 window.addEventListener('keydown', start, { once: true });
@@ -42,6 +48,21 @@ export const audio = {
     return !muted;
   },
   get muted() { return muted; },
+  setSiren(on) { sirenOn = on; },
+  // one-shot cues: 'go', 'checkpoint', 'finish', 'bust', 'fail', 'beep'
+  cue(kind) {
+    if (!ctx) return;
+    const t = ctx.currentTime;
+    const notes = { beep: [[660, 0.15]], go: [[990, 0.35]], checkpoint: [[880, 0.08], [1320, 0.12]], finish: [[784, 0.12], [988, 0.12], [1175, 0.3]], bust: [[523, 0.12], [659, 0.12], [784, 0.12], [1047, 0.35]], fail: [[392, 0.25], [311, 0.45]] }[kind] || [];
+    let at = t;
+    for (const [f, d] of notes) {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'triangle'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(0.25, at + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, at + d);
+      o.connect(g).connect(master); o.start(at); o.stop(at + d + 0.02);
+      at += d * 0.9;
+    }
+  },
   update(car, input, raining) {
     if (!ctx || ctx.state !== 'running') { if (ctx && ctx.state === 'suspended') ctx.resume(); return; }
     const t = ctx.currentTime, spd = Math.abs(car.speed);
@@ -56,6 +77,11 @@ export const audio = {
     const skid = Math.max(0, Math.min(1, (Math.abs(car.slip) - 2.5) / 6)) * (spd > 3 ? 1 : 0);
     skidGain.gain.setTargetAtTime(skid * 0.12, t, 0.05);
     rainGain.gain.setTargetAtTime(raining ? 0.07 : 0, t, 0.5);
+    if (sirenOsc) {
+      sirenPhase = (t * 1.25) % 1; // hi-lo, 0.4 s each
+      sirenOsc.frequency.setTargetAtTime(sirenPhase < 0.5 ? 960 : 720, t, 0.01);
+      sirenGain.gain.setTargetAtTime(sirenOn ? 0.07 : 0, t, 0.08);
+    }
     if (car.impact > 3 && !this._thud) {
       this._thud = true;
       const src = ctx.createBufferSource(); src.buffer = noiseBuf;

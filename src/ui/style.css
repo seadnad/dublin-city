@@ -125,3 +125,46 @@ kbd { display: inline-block; min-width: 1.5em; padding: 1px 5px; border-radius: 
   .waypoint { right: auto; left: max(12px, env(safe-area-inset-left)); top: 140px; bottom: auto; }
   .worldmap header p { display: none; }
 }
+
+/* ---------- game modes ---------- */
+.toolbar .play-btn { background: rgba(255,136,62,0.35); opacity: 1; }
+.mission { position: absolute; left: max(16px, env(safe-area-inset-left)); top: max(14px, env(safe-area-inset-top)); min-width: 220px; padding: 10px 14px 12px; background: rgba(12,20,40,0.82); border: 1px solid rgba(255,255,255,0.15); border-left: 4px solid #2f6bff; border-radius: 10px; pointer-events: auto; }
+.mission[hidden] { display: none; }
+.mission.trial { border-left-color: #ff883e; }
+.mission .m-title { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; opacity: 0.8; }
+.mission .m-big { font: 700 34px/1.1 ui-monospace, 'Cascadia Mono', Consolas, monospace; font-variant-numeric: tabular-nums; }
+.mission .m-big.warn { color: #ff5a4a; animation: blink 0.6s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0.55; } }
+.mission .m-sub { font-size: 13px; opacity: 0.9; margin-top: 2px; }
+.mission .m-meter { position: relative; height: 12px; margin-top: 8px; background: rgba(255,255,255,0.12); border-radius: 6px; overflow: hidden; }
+.mission .m-meter[hidden] { display: none; }
+.mission .m-meter i { position: absolute; inset: 0 auto 0 0; width: 0; background: linear-gradient(90deg, #2f6bff, #ffd23c); transition: width 0.15s; }
+.mission .m-meter span { position: relative; display: block; text-align: center; font-size: 9px; font-weight: 800; letter-spacing: 0.2em; line-height: 12px; }
+.mission .m-quit { position: absolute; top: 8px; right: 8px; background: none; border: 1px solid rgba(255,255,255,0.3); color: var(--ink); border-radius: 6px; font-size: 11px; padding: 2px 7px; cursor: pointer; }
+.countdown { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%) scale(0.8); font: 900 110px/1 system-ui, sans-serif; color: #fff; text-shadow: 0 6px 30px rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.15s, transform 0.15s; }
+.countdown.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.play { width: min(420px, calc(100vw - 24px)); }
+.play h3 { margin: 14px 0 6px; font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.75; }
+.play .card { display: block; width: 100%; text-align: left; margin: 6px 0; padding: 10px 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: var(--ink); cursor: pointer; font-family: inherit; }
+.play .card:hover, .play .card:focus-visible { background: rgba(255,136,62,0.25); outline: none; }
+.play .card.pursuit { border-left: 4px solid #2f6bff; }
+.play .card b { display: block; font-size: 15px; }
+.play .card small { display: block; font-size: 12px; opacity: 0.8; margin-top: 3px; line-height: 1.35; }
+.play .card em { display: block; font-style: normal; font-size: 12px; font-weight: 600; color: #ffb27a; margin-top: 4px; }
+.results { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,0.35); pointer-events: auto; }
+.results[hidden] { display: none; }
+.results .r-card { width: min(420px, calc(100vw - 32px)); padding: 22px 22px 18px; text-align: center; background: var(--panel); border: 1px solid var(--panel-edge); border-radius: 16px; }
+.results .r-medal { font-size: 64px; line-height: 1; }
+.results h2 { margin: 8px 0 10px; font-size: 22px; }
+.results p { margin: 4px 0; font-size: 14px; opacity: 0.9; }
+.results .r-buttons { display: flex; gap: 8px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+.results button { padding: 9px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.08); color: var(--ink); font: 600 14px system-ui, sans-serif; cursor: pointer; }
+.results button:first-child { background: #169b62; border-color: #169b62; }
+@media (pointer: coarse), (max-width: 760px) {
+  .mission { top: 140px; min-width: 170px; padding: 8px 10px; }
+  .mission .m-big { font-size: 26px; }
+  .countdown { font-size: 80px; }
+}
+.play .cars { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 13px; margin-bottom: 6px; }
+.play .cars button { padding: 5px 10px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.06); color: var(--ink); font: 600 12px system-ui, sans-serif; cursor: pointer; }
+.play .cars button.on { background: #169b62; border-color: #169b62; }

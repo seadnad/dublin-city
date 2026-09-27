@@ -10,6 +10,7 @@ const ICONS = {
   camera: '<rect x="3" y="7" width="18" height="12" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 7l1.5-3h5L16 7"/>',
   tag: '<path d="M3 12V4h8l10 10-8 8L3 12Z"/><circle cx="7.5" cy="8.5" r="1.5"/>',
   pin: '<path d="M12 22s7-6.3 7-12a7 7 0 1 0-14 0c0 5.7 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/>',
+  play: '<path d="M7 4.5v15l12-7.5-12-7.5Z"/>',
   help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 1-1 1.7v.5M12 17h.01"/>',
   sound: '<path d="M4 9h4l5-4v14l-5-4H4V9Z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>',
   map: '<path d="M9 4 3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5L9 4Z"/><path d="M9 4v13.5M15 6.5V20"/>',
@@ -34,6 +35,7 @@ export function createHUD({ sites, actions }) {
     <div class="street" id="street"></div>
     <div class="speedo"><b id="speed">0</b><span>km/h</span></div>
     <div class="toolbar panel" role="toolbar" aria-label="Game options">
+      <button data-a="play" title="Play (G)" class="play-btn">${svg('play')}<span>Play</span><kbd>G</kbd></button>
       <button data-a="rain" title="Rain (R)">${svg('rain')}<span>Rain</span><kbd>R</kbd></button>
       <button data-a="evening" title="Evening (N)">${svg('moon')}<span>Evening</span><kbd>N</kbd></button>
       <button data-a="camera" title="Camera (C)">${svg('camera')}<span>Camera</span><kbd>C</kbd></button>
@@ -61,6 +63,8 @@ export function createHUD({ sites, actions }) {
         <tr><td><kbd>C</kbd></td><td>Chase / bonnet camera</td></tr>
         <tr><td><kbd>R</kbd> <kbd>N</kbd></td><td>Rain / evening</td></tr>
         <tr><td><kbd>L</kbd></td><td>Landmark labels</td></tr>
+        <tr><td><kbd>G</kbd></td><td>Play: Garda Pursuit, Time Trials</td></tr>
+        <tr><td><kbd>X</kbd></td><td>Siren and blue lights</td></tr>
         <tr><td><kbd>M</kbd></td><td>World map (click streets for a waypoint)</td></tr>
         <tr><td><kbd>T</kbd> <kbd>1</kbd>&ndash;<kbd>9</kbd></td><td>Landmark list / teleport</td></tr>
         <tr><td><kbd>Backspace</kbd></td><td>Reset car onto the road</td></tr>
@@ -110,6 +114,7 @@ export function createHUD({ sites, actions }) {
   map.addEventListener('click', () => actions.map());
   const wpEl = $('waypoint');
   let waypoint = null;
+  let getBlips = () => [];
   const size = IS_MOBILE ? 118 : 190;
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   map.width = map.height = size * dpr;
@@ -170,6 +175,17 @@ export function createHUD({ sites, actions }) {
       mctx.lineWidth = 2 * dpr; mctx.strokeStyle = '#fff'; mctx.strokeRect(-6 * dpr, -6 * dpr, 12 * dpr, 12 * dpr);
       mctx.restore();
     }
+    // mission blips (pulsing), clamped to the rim with a direction pip when off the map
+    const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 180);
+    for (const b of getBlips()) {
+      let [x, y] = toScreen(b.x, b.z);
+      const dx = x - R, dy = y - R, d = Math.hypot(dx, dy), lim = R - 10 * dpr;
+      const off = d > lim;
+      if (off) { x = R + (dx / d) * lim; y = R + (dy / d) * lim; }
+      if (b.pulse) { mctx.beginPath(); mctx.arc(x, y, (8 + pulse * 6) * dpr, 0, 7); mctx.fillStyle = b.color + '55'; mctx.fill(); }
+      mctx.beginPath(); mctx.arc(x, y, (off ? 5 : 6.5) * dpr, 0, 7);
+      mctx.fillStyle = b.color; mctx.fill(); mctx.lineWidth = 1.5 * dpr; mctx.strokeStyle = '#fff'; mctx.stroke();
+    }
     // north marker
     const [nx, ny] = (() => { const dx = 0, dz = -1; return [R + (dx * c - dz * s) * (R - 11 * dpr), R + (dx * s + dz * c) * (R - 11 * dpr)]; })();
     mctx.font = `bold ${11 * dpr}px system-ui, sans-serif`; mctx.textAlign = 'center'; mctx.textBaseline = 'middle';
@@ -188,6 +204,7 @@ export function createHUD({ sites, actions }) {
   let lastStreet = null, mapT = 0, fpsFrames = 0, fpsT = 0;
   return {
     toast, setOn, togglePanel,
+    setBlips(fn) { getBlips = fn; },
     setWaypoint(p) { waypoint = p; if (!p) { wpEl.textContent = ''; wpEl.classList.remove('show'); } },
     isPanelOpen: () => !places.hidden || !help.hidden,
     toggleFps() { fpsEl.hidden = !fpsEl.hidden; },
@@ -204,7 +221,7 @@ export function createHUD({ sites, actions }) {
         else { wpEl.textContent = `${waypoint.name} · ${d < 1000 ? Math.round(d / 10) * 10 + ' m' : (d / 1000).toFixed(1) + ' km'}`; wpEl.classList.add('show'); }
       }
       mapT -= dt;
-      if (mapT <= 0) { drawMinimap(car, traffic, tram); mapT = IS_MOBILE ? 1 / 20 : 1 / 40; }
+      if (mapT <= 0) { drawMinimap(car, traffic, tram); mapT = IS_MOBILE ? 1 / 24 : 1 / 45; }
       // Luas stop announcement when the player is near a stopped tram
       let stop = '';
       if (tram.currentStop) {

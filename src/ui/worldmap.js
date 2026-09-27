@@ -95,6 +95,10 @@ export function createWorldMap({ sites, lots, getLive, onTeleport, onWaypoint })
       ctx.strokeStyle = '#222'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y - 24); ctx.stroke();
       ctx.fillStyle = '#ff883e'; ctx.beginPath(); ctx.moveTo(x, y - 24); ctx.lineTo(x + 16, y - 19); ctx.lineTo(x, y - 13); ctx.fill();
     }
+    for (const b of live.blips || []) {
+      const [x, y] = toS(b.x, b.z);
+      ctx.beginPath(); ctx.arc(x, y, 9, 0, 7); ctx.fillStyle = b.color; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = '#fff'; ctx.stroke();
+    }
     landmarkPins();
     // player
     const [px, py] = toS(live.player.x, live.player.z);

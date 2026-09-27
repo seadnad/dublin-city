@@ -13,9 +13,9 @@ const paint = () => PAINT[Math.floor(rand() * PAINT.length)];
 const pickKind = () => { const r = rand(); return r < 0.34 ? 'hatch' : r < 0.62 ? 'saloon' : r < 0.84 ? 'suv' : 'van'; };
 const leftOf = (d) => ({ x: d.z, z: -d.x });
 
-function laneLine(edge) {
+function laneLine(edge, extra = 0) {
   const d = v2.norm(v2.sub(edge.to, edge.from));
-  const l = leftOf(d), o = laneOffset(edge.way);
+  const l = leftOf(d), o = laneOffset(edge.way) + extra;
   return { a: { x: edge.from.x + l.x * o, z: edge.from.z + l.z * o }, b: { x: edge.to.x + l.x * o, z: edge.to.z + l.z * o }, d };
 }
 
@@ -58,13 +58,13 @@ class AICar {
 
   // Point `look` metres ahead along the lane path (current edge then the next one).
   target(look) {
-    const L1 = laneLine(this.edge);
+    const L1 = laneLine(this.edge, this.pull || 0);
     const c = v2.sub(this.pos, L1.a);
     const along = v2.dot(c, L1.d);
     const len1 = v2.len(v2.sub(L1.b, L1.a));
     const s = along + look;
     if (s < len1) return { p: v2.add(L1.a, v2.scale(L1.d, Math.max(0, s))), along, len1 };
-    const L2 = laneLine(this.next);
+    const L2 = laneLine(this.next, this.pull || 0);
     return { p: v2.add(L2.a, v2.scale(L2.d, Math.min(s - len1, v2.len(v2.sub(L2.b, L2.a))))), along, len1 };
   }
 
@@ -99,6 +99,16 @@ class AICar {
     if (this.blockedTime > 5) { this.ignoreOthers = 2.5; this.blockedTime = 0; }
     this.ignoreOthers = Math.max(0, this.ignoreOthers - dt);
     if (this.stunned > 0) { this.stunned -= dt; want = 0; }
+    // a Garda car coming up behind with the siren on: ease over to the kerb and slow down
+    const pl = ctx.player;
+    let yielding = false;
+    if (pl && pl.siren) {
+      const rx = pl.pos.x - this.pos.x, rz = pl.pos.z - this.pos.z;
+      const behind = -(rx * fx + rz * fz), lat = Math.abs(rx * fz - rz * fx);
+      yielding = behind > 0 && behind < 45 && lat < 6;
+    }
+    this.pull = (this.pull || 0) + ((yielding ? 1.6 : 0) - (this.pull || 0)) * Math.min(1, dt * 1.5);
+    if (yielding) want = Math.min(want, 3);
 
     const acc = want > this.speed ? 2.6 : 7;
     this.speed += Math.sign(want - this.speed) * Math.min(Math.abs(want - this.speed), acc * dt);
@@ -182,6 +192,7 @@ export function createTraffic(scene, { cars = 16, buses = 4, taxis = 4, parked =
   let player = null, tram = null, signals = null;
   const ctx = {
     fleet,
+    get player() { return player; },
     get signals() { return signals; },
     // distance to the nearest thing in our lane ahead (Infinity if clear)
     clearAhead(me, fx, fz) {

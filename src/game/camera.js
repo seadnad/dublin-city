@@ -41,9 +41,9 @@ export class CameraRig {
     if (!this.initialised) { this.yaw = car.heading; d = 0; }
     this.yaw += d * Math.min(1, dt * 3.2);
 
-    const wantDist = 8.5 + spd * 0.09;
+    const wantDist = 9.4 + spd * 0.09;
     this.dist += (wantDist - this.dist) * Math.min(1, dt * 2);
-    const height = 3.2 + spd * 0.03;
+    const height = 3.6 + spd * 0.03;
     const fx = Math.sin(this.yaw), fz = Math.cos(this.yaw);
     let bx = car.pos.x - fx * this.dist, bz = car.pos.z - fz * this.dist;
     // pull the camera in if a wall sits between it and the car

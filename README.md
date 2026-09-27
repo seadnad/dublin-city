@@ -6,6 +6,8 @@ A browser driving game set in a stylised, compressed central Dublin. Three.js (W
 
 | Key | Action |
 | --- | --- |
+| `G` | Play menu: Garda Pursuit, Time Trials, choose your car |
+| `X` | Siren and blue lights (traffic pulls over) |
 | `W` / `↑` | Accelerate |
 | `S` / `↓` | Brake, then reverse |
 | `A` `D` / `←` `→` | Steer |
@@ -25,6 +27,22 @@ A browser driving game set in a stylised, compressed central Dublin. Three.js (W
 On phones, on-screen controls appear automatically: steering on the left, brake, accelerator and handbrake (**HB**) on the right. The toolbar buttons do the same as the keys.
 
 Traffic drives on the **left**.
+
+## Game modes
+
+- **Garda Pursuit**: a suspect (the red blip on the minimap and map) flees through the city, choosing escape routes away from you and overtaking traffic. Stay close or ram them to fill the bust meter before the clock runs out. Each catch adds 40 seconds and the next suspect is faster. Your best is saved.
+- **Time Trials**: checkpoint routes (Liffey Loop, Georgian Sprint, Temple Bar & Christ Church), plus a **Daily Route** generated from the date, so everyone gets the same one each day. There's a countdown, split times against your best, bronze, silver and gold medals, and a ghost car of your best run to race.
+
+## Cars
+
+The Garda patrol car (with its Battenburg livery and lightbar), a hot hatch and the suspect's coupe are modelled in Blender by a Python script, [`tools/blender/build_cars.py`](tools/blender/build_cars.py), and exported to `public/models/*.glb`. To rebuild them:
+
+```bash
+blender -b --factory-startup -P tools/blender/build_cars.py -- public/models
+blender -b --factory-startup -P tools/blender/preview.py -- public/models tools/shots   # optional renders
+```
+
+Traffic, buses and parked cars are still generated in code.
 
 ## What's in it
 
