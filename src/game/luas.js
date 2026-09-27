@@ -1,5 +1,6 @@
 // Luas Red Line tram: three carriages running back and forth along the route, pausing at stops.
 import * as THREE from 'three';
+import { addReflections } from '../render/reflect.js';
 import { world, v2, offsetPolyline, resample } from '../world/geo.js';
 import { makeTramCar } from './vehicles.js';
 
@@ -46,7 +47,7 @@ export function createLuas(scene) {
 
   // stop platforms with a small shelter
   const platMat = new THREE.MeshStandardMaterial({ color: 0xb8b4aa, roughness: 0.9 });
-  const shelterMat = new THREE.MeshStandardMaterial({ color: 0x3c3c40, roughness: 0.5, metalness: 0.5 });
+  const shelterMat = addReflections(new THREE.MeshStandardMaterial({ color: 0x4a4c50, roughness: 0.35, metalness: 0.85 }), 0.7);
   const glass = new THREE.MeshStandardMaterial({ color: 0x9fb4bf, roughness: 0.1, transparent: true, opacity: 0.35 });
   for (const st of stops) {
     for (const side of [-1, 1]) {

@@ -442,7 +442,7 @@ function railingTexture() {
 }
 
 function buildRailings(polys) {
-  const mat = new THREE.MeshStandardMaterial({ map: railingTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6, metalness: 0.4 });
+  const mat = new THREE.MeshStandardMaterial({ map: railingTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.45, metalness: 0 }); // painted railings
   const pos = [], uv = [], idx = [];
   let base = 0;
   for (const { poly } of polys) {

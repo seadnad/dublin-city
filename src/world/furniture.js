@@ -1,6 +1,7 @@
 // Dublin street furniture: working traffic signals, bus stops and shelters, bins, An Post pillar boxes,
 // corner bollards and trees along the north quays. All instanced.
 import * as THREE from 'three';
+import { addReflections } from '../render/reflect.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { world, v2 } from './geo.js';
 import { KERB_H, fieldAt } from './roads.js';
@@ -59,7 +60,7 @@ export function createSignals(scene) {
       addBox(p.x, p.z, 0.12, 0.12, 0);
     }
   }
-  const black = new THREE.MeshStandardMaterial({ color: 0x151617, roughness: 0.5, metalness: 0.4 });
+  const black = addReflections(new THREE.MeshStandardMaterial({ color: 0x151617, roughness: 0.42, metalness: 0 }), 0.6); // painted signal poles
   const poleGeo = new THREE.CylinderGeometry(0.06, 0.07, 3.3, 8).translate(0, 1.65, 0);
   const headGeo = mergeGeometries([
     new THREE.BoxGeometry(0.34, 0.95, 0.24).translate(0, 3.05, 0.05),
@@ -162,8 +163,8 @@ export function buildFurniture(scene) {
   for (const list of [stops, bins, posts, bollards]) for (const p of list) addBox(p.x, p.z, 0.18, 0.18, 0);
   for (const p of shelters) addBox(p.x, p.z, 1.9, 0.75, p.rot);
 
-  const metal = new THREE.MeshStandardMaterial({ color: 0x9aa0a6, roughness: 0.4, metalness: 0.8 });
-  const dark = new THREE.MeshStandardMaterial({ color: 0x1c1e20, roughness: 0.55, metalness: 0.4 });
+  const metal = addReflections(new THREE.MeshStandardMaterial({ color: 0xa4aab0, roughness: 0.32, metalness: 1 }), 0.85); // stainless / galvanised
+  const dark = addReflections(new THREE.MeshStandardMaterial({ color: 0x1c1e20, roughness: 0.5, metalness: 0 }), 0.5); // painted bins, bollards
   // bus stop pole with the yellow and navy flag
   const signMat = new THREE.MeshStandardMaterial({ map: stopSign(), roughness: 0.5 });
   const flag = new THREE.BoxGeometry(0.36, 0.45, 0.04).translate(0, 2.55, 0);
@@ -186,7 +187,7 @@ export function buildFurniture(scene) {
     instanced(ad, new THREE.MeshStandardMaterial({ map: adTex, emissiveMap: adTex, emissive: 0xffffff, emissiveIntensity: 0.25 }), shelters));
   // bins (black with a silver top) and green An Post pillar boxes
   scene.add(instanced(mergeGeometries([new THREE.BoxGeometry(0.62, 1.05, 0.62).translate(0, 0.52, 0), new THREE.BoxGeometry(0.66, 0.12, 0.66).translate(0, 1.1, 0)]), dark, bins));
-  const green = new THREE.MeshStandardMaterial({ color: 0x1f6b3a, roughness: 0.45, metalness: 0.2 });
+  const green = addReflections(new THREE.MeshStandardMaterial({ color: 0x1f6b3a, roughness: 0.3, metalness: 0 }), 0.7); // gloss-painted pillar box
   scene.add(instanced(mergeGeometries([
     new THREE.CylinderGeometry(0.27, 0.3, 1.3, 16).translate(0, 0.65, 0),
     new THREE.SphereGeometry(0.3, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 0.55, 1).translate(0, 1.3, 0),

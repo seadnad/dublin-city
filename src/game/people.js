@@ -106,7 +106,7 @@ export function createPeople(scene, { count = 240 } = {}) {
     new THREE.ConeGeometry(0.55, 0.28, 8, 1, true).translate(0, 2.08, 0).toNonIndexed(),
     new THREE.CylinderGeometry(0.012, 0.012, 0.75, 4).translate(0, 1.72, 0).toNonIndexed(),
   ]);
-  const umbrellas = new THREE.InstancedMesh(ugeo, new THREE.MeshStandardMaterial({ roughness: 0.5, side: THREE.DoubleSide }), count);
+  const umbrellas = new THREE.InstancedMesh(ugeo, new THREE.MeshStandardMaterial({ roughness: 0.35, side: THREE.DoubleSide }), count);
   umbrellas.castShadow = true; umbrellas.frustumCulled = false;
   scene.add(umbrellas);
 

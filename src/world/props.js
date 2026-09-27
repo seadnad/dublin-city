@@ -1,5 +1,6 @@
 // Street lamps (instanced), night light pools, and rain.
 import * as THREE from 'three';
+import { addReflections } from '../render/reflect.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { chunkedInstances } from './chunks.js';
 import { world, v2 } from './geo.js';
@@ -60,8 +61,8 @@ function heritageGeometry() {
 export function buildLamps(scene) {
   const spots = lampSpots();
   const modern = spots.filter((s) => !s.heritage), heritage = spots.filter((s) => s.heritage);
-  const poleMat = new THREE.MeshStandardMaterial({ color: 0x5b6166, roughness: 0.45, metalness: 0.7 });
-  const ironMat = new THREE.MeshStandardMaterial({ color: 0x1f2723, roughness: 0.5, metalness: 0.5 });
+  const poleMat = addReflections(new THREE.MeshStandardMaterial({ color: 0x7a8086, roughness: 0.45, metalness: 0.9 }), 0.7); // galvanised steel
+  const ironMat = addReflections(new THREE.MeshStandardMaterial({ color: 0x1f2723, roughness: 0.4, metalness: 0 }), 0.6); // painted cast iron
   const headMat = new THREE.MeshStandardMaterial({ color: 0xf4efe0, emissive: 0xffc98a, emissiveIntensity: 0 });
   const lanternMat = new THREE.MeshStandardMaterial({ color: 0xfff4e0, emissive: 0xffc070, emissiveIntensity: 0, transparent: true, opacity: 0.85, side: THREE.DoubleSide });
   const make = (geo, mat, list, shadow = false) => chunkedInstances(geo, mat, list, { shadow });

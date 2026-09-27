@@ -1,5 +1,6 @@
 // Hand-modelled landmarks (low poly, merged per material), park trees, and floating labels.
 import * as THREE from 'three';
+import { addReflections } from '../render/reflect.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { world, v2, pointInPolygon, insetPolygon } from './geo.js';
 import { sites, reserved, grounds } from './sites.js';
@@ -81,15 +82,15 @@ const M = {
   gothic: new THREE.MeshStandardMaterial({ map: gothicTex, roughness: 0.9 }),
   gothicStone: new THREE.MeshStandardMaterial({ color: 0xb3a893, map: stoneTex, roughness: 0.9 }),
   niche: new THREE.MeshStandardMaterial({ map: nicheTex, roughness: 0.85 }),
-  granite: new THREE.MeshStandardMaterial({ color: 0x9d9a93, map: stoneTex, roughness: 0.9 }),
-  copper: new THREE.MeshStandardMaterial({ color: 0x5e9c86, roughness: 0.55, metalness: 0.35 }),
+  granite: new THREE.MeshStandardMaterial({ color: 0x9d9a93, map: stoneTex, roughness: 0.78 }),
+  copper: new THREE.MeshStandardMaterial({ color: 0x5e9c86, roughness: 0.75, metalness: 0 }), // verdigris is mineral, not metal
   slate: new THREE.MeshStandardMaterial({ color: 0x4b5057, roughness: 0.7 }),
-  lead: new THREE.MeshStandardMaterial({ color: 0x6b7075, roughness: 0.6, metalness: 0.3 }),
-  steel: new THREE.MeshStandardMaterial({ color: 0xd6dadd, roughness: 0.18, metalness: 1.0 }),
-  iron: new THREE.MeshStandardMaterial({ color: 0xf2f1ec, roughness: 0.45, metalness: 0.3 }),
+  lead: new THREE.MeshStandardMaterial({ color: 0x6b7075, roughness: 0.62, metalness: 0.15 }),
+  steel: addReflections(new THREE.MeshStandardMaterial({ color: 0xd6dadd, roughness: 0.2, metalness: 1.0 }), 1.0), // the Spire: brushed stainless
+  iron: addReflections(new THREE.MeshStandardMaterial({ color: 0xf2f1ec, roughness: 0.38, metalness: 0 }), 0.6), // painted cast iron
   ironLace: new THREE.MeshStandardMaterial({ map: ironTex, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.5 }),
   dark: new THREE.MeshStandardMaterial({ color: 0x15181b, roughness: 0.6 }),
-  bronze: new THREE.MeshStandardMaterial({ color: 0x4f5b47, roughness: 0.5, metalness: 0.6 }),
+  bronze: addReflections(new THREE.MeshStandardMaterial({ color: 0x4f5b47, roughness: 0.45, metalness: 0.85 }), 0.6),
   flag: new THREE.MeshStandardMaterial({ map: tricolour, side: THREE.DoubleSide, roughness: 0.8 }),
   lampGlow: new THREE.MeshStandardMaterial({ color: 0xfff1d0, emissive: 0xffd9a0, emissiveIntensity: 0.2 }),
   water: new THREE.MeshStandardMaterial({ color: 0x2b4540, roughness: 0.05, metalness: 0.4 }),

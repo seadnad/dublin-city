@@ -268,7 +268,7 @@ const FACADE_GLSL = /* glsl */ `
   uniform sampler2D uBrick; uniform sampler2D uSigns; uniform sampler2D uNoise;
   varying vec3 vBase; varying vec3 vTrim; varying vec4 vStyle; varying vec4 vExtra; varying vec4 vFacade; varying float vFace;
   varying vec3 vWPos; varying vec3 vFN;
-  float gGlass; vec3 gEmit; float gH; float gBump;
+  float gGlass; vec3 gEmit; float gH; float gBump; float gRough; float gMetal;
   float bh(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
   float inRect(vec2 p, vec2 a, vec2 b) { return step(a.x, p.x) * step(p.x, b.x) * step(a.y, p.y) * step(p.y, b.y); }
   vec3 hsv(float h, float s, float v) { vec3 k = clamp(abs(mod(h * 6.0 + vec3(0, 4, 2), 6.0) - 3.0) - 1.0, 0.0, 1.0); return v * mix(vec3(1), k, s); }
@@ -341,6 +341,8 @@ function makeMaterial() {
           float doorBay = vExtra.x, signIdx = vExtra.y, weather = vExtra.z, frontage = vExtra.w;
           float u = vFacade.x, v = vFacade.y, W = vFacade.z, H = vFacade.w;
           gGlass = 0.0; gEmit = vec3(0.0); gH = 0.5;
+          // surface finish per facade element (roughness / metalness): brick, render, paint, stone, lead, metal
+          gRough = 0.9; gMetal = 0.0;
           // textures sampled up front (uniform control flow keeps mip selection right)
           vec4 bt = texture2D(uBrick, vec2(u, v) / 1.8);
           vec4 nz = texture2D(uNoise, vec2(u * 0.06 + seed * 7.0, v * 0.05 + seed * 3.0));
@@ -378,9 +380,11 @@ function makeMaterial() {
             float mortarVis = bt.b * (1.0 - mortarFade) + 0.18 * mortarFade;
             wall = mix(b, vec3(0.58, 0.56, 0.52) * (0.85 + 0.2 * nzF.r), mortarVis);
             gH = 1.0 - bt.b;
+            gRough = mix(0.86, 0.97, mortarVis);               // fired brick, sandy mortar
           } else {
             wall = vBase * (0.93 + 0.1 * nzF.r);
             gH = nzF.r * 0.3;
+            gRough = style > 2.5 && style < 3.5 ? 0.58 : 0.7;  // masonry paint (Temple Bar) / painted render
           }
           // building-scale weathering: patchy tone, soot toward the top, grime toward the street
           wall *= 0.88 + 0.22 * nz.r;
@@ -391,6 +395,7 @@ function makeMaterial() {
           if (vFace < 0.5) {
             // roof: lead / felt with seams
             col = mix(vec3(0.21, 0.22, 0.23), vec3(0.3, 0.29, 0.27), bh(vec2(seed, 1.0)));
+            gRough = 0.72; // weathered lead and felt
             col *= 0.85 + 0.25 * nz.r;
             gH = 0.5;
           } else if (lod < 0.97) {
@@ -404,7 +409,7 @@ function makeMaterial() {
 
             if (v > nfl * fh) {
               // parapet with stone coping; stucco gets a cornice
-              if (v > H - 0.18) col = vec3(0.7, 0.68, 0.64) * (0.9 + 0.2 * nzF.r);
+              if (v > H - 0.18) { col = vec3(0.7, 0.68, 0.64) * (0.9 + 0.2 * nzF.r); gRough = 0.82; }
               else if (!brick && v < nfl * fh + 0.25) col = wall * 1.08;
             } else if (style > 3.5) {
               // curtain wall: mullions, spandrel band at each slab, offices behind
@@ -412,8 +417,8 @@ function makeMaterial() {
               float cx = mod(u, cellW);
               float mull = 1.0 - step(0.05, cx) * step(cx, cellW - 0.05);
               float spandrel = step(fy, 0.9);
-              if (spandrel > 0.5) col = vTrim * (0.9 + 0.1 * nzF.r);
-              else if (mull > 0.5) col = vec3(0.16, 0.17, 0.18);
+              if (spandrel > 0.5) { col = vTrim * (0.9 + 0.1 * nzF.r); gRough = 0.35; gMetal = 0.55; } // aluminium cladding
+              else if (mull > 0.5) { col = vec3(0.16, 0.17, 0.18); gRough = 0.4; gMetal = 0.85; }
               else {
                 float officeLit = step(0.35, bh(vec2(floor(u / 4.8) + seed * 5.0, fl))) * uNight;
                 vec3 inside = room(vec2(cx - cellW * 0.5, fy), rdRoom, floor(u / 4.8) + fl * 3.0 + seed * 50.0, fh, officeLit, 0.0, 1.0);
@@ -431,12 +436,14 @@ function makeMaterial() {
                 vec3 g = bh(vec2(seed, 9.0)) > 0.4 ? vec3(0.58, 0.57, 0.54) : vec3(0.84, 0.81, 0.74);
                 float joint = step(fract(v / 0.38), 0.06);
                 col = g * (0.9 + 0.15 * nzF.r) * (1.0 - joint * 0.35);
+                gRough = g.r < 0.7 ? 0.8 : 0.62; // granite / painted stucco rustication
                 gH = 1.0 - joint;
               }
               if (shopfront) {
                 // pilasters, fascia with the shop name, display window, stall riser
                 float edge = min(u, W - u);
                 bool pilaster = edge < 0.35;
+                gRough = 0.36; // painted timber shopfront (the glass sets its own finish)
                 if (pilaster) col = vTrim * 0.85;
                 else if (fy > fh * 0.76 && fy < fh * 0.94) {
                   float bright = dot(vTrim, vec3(0.3, 0.59, 0.11));
@@ -466,11 +473,12 @@ function makeMaterial() {
                 bool inDoor = abs(q.x) < dw && q.y < dh;
                 bool inFan = q.y >= dh && r < fr;
                 bool surround = abs(q.x) < dw + 0.28 && (q.y < dh || r < fr + 0.2) && !inDoor && !inFan;
-                if (surround) { col = vec3(0.86, 0.84, 0.78) * (0.92 + 0.1 * nzF.r); gH = 0.8; }
+                if (surround) { col = vec3(0.86, 0.84, 0.78) * (0.92 + 0.1 * nzF.r); gH = 0.8; gRough = 0.8; }
                 if (inDoor) {
                   vec2 pp = vec2(abs(q.x) / dw, q.y / dh);
                   float panel = inRect(fract(pp * vec2(1.0, 3.0)), vec2(0.2, 0.15), vec2(0.8, 0.85));
                   col = vTrim * mix(0.78, 1.0, panel);
+                  gRough = 0.26; // Georgian doors are gloss-painted
                   gH = 0.3 + 0.2 * panel;
                   if (length(q - vec2(0.0, 1.45)) < 0.05) col = vec3(0.8, 0.65, 0.3);
                 }
@@ -511,6 +519,7 @@ function makeMaterial() {
                     float bars = max(1.0 - smoothstep(0.012, 0.012 + px.x, bx), 1.0 - smoothstep(0.008, 0.008 + px.y, by));
                     bars *= 1.0 - smoothstep(0.03, 0.08, fw);
                     float solid = max(frame, max(meet, bars));
+                    gRough = mix(gRough, 0.42, solid); // painted sash frames
                     vec3 frameCol = style > 2.5 && bh(vec2(seed, 2.0)) > 0.6 ? vTrim : white;
                     // curtains and blinds just behind the glass
                     float cw = 0.12 + 0.3 * bh(vec2(roomSeed, 5.5));
@@ -526,7 +535,7 @@ function makeMaterial() {
                   }
                 } else {
                   // stone sill below, brick flat arch or stucco architrave above
-                  if (abs(q.x) < hw.x + 0.12 && q.y < -hw.y && q.y > -hw.y - 0.1) { col = vec3(0.74, 0.72, 0.67) * (0.9 + 0.15 * nzF.r); gH = 0.9; }
+                  if (abs(q.x) < hw.x + 0.12 && q.y < -hw.y && q.y > -hw.y - 0.1) { col = vec3(0.74, 0.72, 0.67) * (0.9 + 0.15 * nzF.r); gH = 0.9; gRough = 0.85; }
                   else if (brick && !georgianGround && abs(q.x) < hw.x + 0.08 && q.y > hw.y && q.y < hw.y + 0.28) col = wall * vec3(1.05, 0.95, 0.9);
                   else if (!brick && style < 2.5 && abs(q.x) < hw.x + 0.14 && q.y > -hw.y && q.y < hw.y + 0.14) col = mix(wall, vec3(0.86, 0.84, 0.8), 0.6);
                   // rain streaks under sills
@@ -557,12 +566,15 @@ function makeMaterial() {
           normal = normalize(abs(det) * normal - grad);
         }`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
-        roughnessFactor = mix(roughnessFactor * (1.0 - uWet * 0.4), 0.06, gGlass);`)
+        roughnessFactor = mix(gRough * (1.0 - uWet * 0.4), 0.06, gGlass);`)
+      .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
+        metalnessFactor = gMetal * (1.0 - gGlass);`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
         totalEmissiveRadiance += gEmit;`);
   };
   // window glass reflects the environment at the preset level; walls keep the plain low level
-  return addReflections(mat, 0.9, 'gGlass');
+  // window glass and metal cladding reflect the environment at the preset level; walls keep the plain low level
+  return addReflections(mat, 0.9, 'max(gGlass, gMetal)');
 }
 
 // Georgian basement areas: railings on the pavement, a dark area below, granite steps up to the door.
@@ -609,7 +621,7 @@ function buildGeorgianFronts(scene) {
   rg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   rg.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
   rg.setIndex(idx); rg.computeVertexNormals();
-  const railMesh = new THREE.Mesh(rg, new THREE.MeshStandardMaterial({ map: rt, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.5, metalness: 0.5 }));
+  const railMesh = new THREE.Mesh(rg, new THREE.MeshStandardMaterial({ map: rt, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.45, metalness: 0 }));
   railMesh.castShadow = true;
   // dark basement areas
   const pp = [], pi = [];

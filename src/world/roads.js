@@ -5,6 +5,7 @@
 //  - granite sett lanes, the Luas track bed and rails, the O'Connell Street median.
 // The field is also uploaded as a texture so shaders know how far each pixel is from the kerb.
 import * as THREE from 'three';
+import { addReflections } from '../render/reflect.js';
 import { world, v2, PAVEMENT, offsetPolyline, pointInPolygon, hasParking } from './geo.js';
 import { IS_MOBILE, fbm } from './textures.js';
 import { asphalt, paving, granite, setts, grass } from './surfaces.js';
@@ -523,12 +524,13 @@ export function buildStreets(scene, puddles) {
   const asphaltMat = patchAsphalt(worldMaterial(A, { repeat: 4, rough: 0.92, normalScale: 0.9 }), puddles);
   const pavingMat = patchPaving(worldMaterial(P, { repeat: 1, rough: 0.85, normalScale: 0.8 }), K.map);
   K.map.repeat.set(1, 1); K.normalMap.repeat.set(1, 1);
-  const kerbMat = new THREE.MeshStandardMaterial({ map: K.map, normalMap: K.normalMap, roughness: 0.8, color: 0xe6e3dc });
-  const settMat = worldMaterial(S, { repeat: 3, rough: 0.75, normalScale: 1.2 });
+  const kerbMat = new THREE.MeshStandardMaterial({ map: K.map, normalMap: K.normalMap, roughness: 0.7, color: 0xe6e3dc });
+  // granite setts polished by tyres and feet: a faint sheen that catches the sky
+  const settMat = addReflections(worldMaterial(S, { repeat: 3, rough: 0.55, normalScale: 1.2 }), 0.35);
   settMat.polygonOffset = true; settMat.polygonOffsetFactor = -1; settMat.polygonOffsetUnits = -1;
   const grassMat = worldMaterial(Gr, { repeat: 2, rough: 0.95 });
   grassMat.polygonOffset = true; grassMat.polygonOffsetFactor = -2; grassMat.polygonOffsetUnits = -2;
-  const lineMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+  const lineMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.5, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
   lineMat.onBeforeCompile = (sh) => {
     // worn paint: erode lines with world-space noise
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 vWXZ;')
@@ -574,7 +576,7 @@ export function buildStreets(scene, puddles) {
   const bedGeo = bed.geometry();
   { const p = bedGeo.attributes.position, uv = bedGeo.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i) / 3.6, p.getZ(i) / 3.6); }
   const bedMat = new THREE.MeshStandardMaterial({ map: P.map, normalMap: P.normalMap, color: 0xb9b6ae, roughness: 0.85, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
-  const railMat = new THREE.MeshStandardMaterial({ color: 0xb8bcc0, metalness: 1, roughness: 0.3, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 });
+  const railMat = addReflections(new THREE.MeshStandardMaterial({ color: 0xb8bcc0, metalness: 1, roughness: 0.25, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 }), 1.0);
   group.add(new THREE.Mesh(bedGeo, bedMat), new THREE.Mesh(rails.geometry(), railMat));
   group.children.forEach((m) => { m.receiveShadow = true; });
 
