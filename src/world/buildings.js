@@ -11,6 +11,7 @@ import { addBox, addSegment } from '../game/collision.js';
 import { noiseTexture, KERB_H } from './roads.js';
 import { chunkedInstances } from './chunks.js';
 import { addReflections } from '../render/reflect.js';
+import { lampUniforms, LAMP_GLSL } from '../render/lamplight.js';
 
 const B = world.bounds;
 const CELL = 0.5;
@@ -318,7 +319,7 @@ function makeMaterial() {
   buildingUniforms.uNoise.value = noiseTexture;
   const mat = new THREE.MeshStandardMaterial({ roughness: 0.9, metalness: 0.0 });
   mat.onBeforeCompile = (sh) => {
-    Object.assign(sh.uniforms, buildingUniforms);
+    Object.assign(sh.uniforms, buildingUniforms, lampUniforms);
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', `#include <common>
         attribute vec3 aBase; attribute vec3 aTrim; attribute vec4 aStyle; attribute vec4 aExtra;
@@ -334,7 +335,7 @@ function makeMaterial() {
         vWPos = (modelMatrix * instanceMatrix * vec4(position, 1.0)).xyz;
         vFN = normalize(mat3(modelMatrix) * (mat3(instanceMatrix) * normal));`);
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', `#include <common>\n${FACADE_GLSL}`)
+      .replace('#include <common>', `#include <common>\n${FACADE_GLSL}\n${LAMP_GLSL}`)
       .replace('#include <color_fragment>', `#include <color_fragment>
         {
           float style = vStyle.x, fh = vStyle.y, bw = vStyle.z, seed = vStyle.w;
@@ -549,7 +550,8 @@ function makeMaterial() {
           if (vFace > 0.5) {
             // far away: average colour so the window grid does not shimmer
             vec3 avg = mix(wall, vec3(0.05, 0.06, 0.07), style > 3.5 ? 0.7 : 0.28);
-            float litAvg = uNight * 0.3;
+            // far away the lit windows average out; keep it faint so night facades stay dark with a warm speckle
+            float litAvg = uNight * 0.1;
             col = mix(col, avg, lod);
             gEmit = mix(gEmit, vec3(1.0, 0.75, 0.45) * litAvg * 0.28 * (style > 3.5 ? 0.6 : 1.0) + uIndoor * (1.0 - uNight) * 0.02, lod);
             gGlass = mix(gGlass, 0.25, lod);
@@ -572,7 +574,13 @@ function makeMaterial() {
       .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>
         metalnessFactor = gMetal * (1.0 - gGlass);`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-        totalEmissiveRadiance += gEmit;`);
+        totalEmissiveRadiance += gEmit;`)
+      .replace('#include <aomap_fragment>', `#include <aomap_fragment>
+        if (vFace > 0.5) {
+          // street lamps stand 1-2 m out from the facade: sample the lamp map just outside the wall, fading upward
+          vec3 lampL = lampLight(vWPos.xz + vFN.xz * 1.8) * exp(-max(vWPos.y - 2.5, 0.0) / 4.5);
+          reflectedLight.directDiffuse += diffuseColor.rgb * lampL * 2.0 * (1.0 - gGlass);
+        }`);
   };
   // window glass reflects the environment at the preset level; walls keep the plain low level
   // window glass and metal cladding reflect the environment at the preset level; walls keep the plain low level

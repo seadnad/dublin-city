@@ -37,7 +37,7 @@ export function createHUD({ sites, actions }) {
     <div class="toolbar panel" role="toolbar" aria-label="Game options">
       <button data-a="play" title="Play (G)" class="play-btn">${svg('play')}<span>Play</span><kbd>G</kbd></button>
       <button data-a="rain" title="Rain (R)">${svg('rain')}<span>Rain</span><kbd>R</kbd></button>
-      <button data-a="evening" title="Evening (N)">${svg('moon')}<span>Evening</span><kbd>N</kbd></button>
+      <button data-a="evening" title="Night (N)">${svg('moon')}<span>Night</span><kbd>N</kbd></button>
       <button data-a="camera" title="Camera (C)">${svg('camera')}<span>Camera</span><kbd>C</kbd></button>
       <button data-a="map" title="Map (M)">${svg('map')}<span>Map</span><kbd>M</kbd></button>
       <button data-a="places" title="Landmarks (T)">${svg('pin')}<span>Places</span><kbd>T</kbd></button>
@@ -60,7 +60,7 @@ export function createHUD({ sites, actions }) {
         <tr><td><kbd>A</kbd> <kbd>D</kbd> <kbd>&larr;</kbd> <kbd>&rarr;</kbd></td><td>Steer</td></tr>
         <tr><td><kbd>Space</kbd></td><td>Handbrake (drift)</td></tr>
         <tr><td><kbd>C</kbd></td><td>Chase / bonnet camera</td></tr>
-        <tr><td><kbd>R</kbd> <kbd>N</kbd></td><td>Rain / evening</td></tr>
+        <tr><td><kbd>R</kbd> <kbd>N</kbd></td><td>Rain / night</td></tr>
         <tr><td><kbd>G</kbd></td><td>Play: Garda Pursuit, Time Trials</td></tr>
         <tr><td><kbd>X</kbd></td><td>Siren and blue lights</td></tr>
         <tr><td><kbd>M</kbd></td><td>World map (click streets for a waypoint)</td></tr>

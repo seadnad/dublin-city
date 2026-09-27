@@ -60,7 +60,7 @@ THREE.ShaderChunk.fog_fragment = `
 const skyFrag = /* glsl */ `
 uniform vec3 top; uniform vec3 horizon; uniform vec3 cloudA; uniform vec3 cloudB;
 uniform float cover; uniform float time;
-uniform vec3 uFog; uniform vec3 uSunDir; uniform vec3 uSunCol; uniform float uSunDisc;
+uniform vec3 uFog; uniform vec3 uSunDir; uniform vec3 uSunCol; uniform float uSunDisc; uniform float uStars; uniform vec3 uGlow;
 varying vec3 vDir;
 uniform sampler2D uClouds;
 // two taps of a baked fbm texture at different scales and drift speeds instead of per-pixel noise
@@ -78,6 +78,16 @@ void main() {
   // sun disc and its bright aureole sit behind the cloud layer
   col += uSunCol * (uSunDisc * smoothstep(0.9993, 0.9997, sd) + 0.25 * uSunDisc * pow(sd, 200.0));
   col = mix(col, cc * (1.0 + 0.35 * pow(sd, 8.0)), c * smoothstep(0.0, 0.12, d.y));
+  // stars: a sparse hashed field, hidden by cloud and faded near the hazy horizon
+  if (uStars > 0.0) {
+    vec3 sp = d * 420.0;
+    vec3 cell = floor(sp);
+    float hs = fract(sin(dot(cell, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
+    float star = step(0.9972, hs) * smoothstep(0.55, 0.0, length(fract(sp) - 0.5)) * (0.6 + 0.4 * fract(hs * 97.0));
+    col += vec3(0.85, 0.9, 1.0) * star * uStars * (1.0 - c) * smoothstep(0.05, 0.3, d.y);
+  }
+  // city light pollution: a warm glow low in the sky
+  col += uGlow * smoothstep(0.35, 0.0, d.y);
   // horizon haze uses the fog colour (plus the same sun glow as the fog) so distant buildings melt into the sky
   vec3 haze = uFog + uSunCol * (0.045 * pow(sd, 4.0) + 0.09 * pow(sd, 24.0));
   col = mix(col, haze, smoothstep(0.16, 0.0, d.y));
@@ -111,18 +121,22 @@ export const PRESETS = {
     exposure: 1.0, lamps: 0.25, windows: 0.0, wet: 1, env: 0.5, reflect: 1.0,
     city: 0.4, ground: 0x2b2e32, citySat: 0.2,
   },
+  // night: moonlight is the key light (cool, shadow-casting, keeps shapes readable), sky fill is low, and the
+  // street lamps (baked map + nearby point lights), windows and headlights carry the scene
   evening: {
-    top: 0x1a2440, horizon: 0x8a6a6a, cloudA: 0x3d3f55, cloudB: 0x252838, cover: 0.7,
-    fog: 0x4a4250, fogDensity: 0.0032, sunDisc: 0.9, hemiSky: 0x5a6a90, hemiGround: 0x2a2420, hemi: 0.38,
-    sun: 0xffa86a, sunI: 0.45, sunDir: [-0.88, 0.2, 0.43], fill: 0x5d6f9a, fillI: 0.14,
-    exposure: 1.08, lamps: 1, windows: 1, wet: 0, env: 0.3, reflect: 0.8,
-    city: 0.12, ground: 0x121316,
+    top: 0x070c1a, horizon: 0x2a2a3c, cloudA: 0x23263a, cloudB: 0x14161f, cover: 0.55,
+    fog: 0x1d1f2a, fogDensity: 0.003, sunDisc: 5, stars: 1, glow: 0x2a1c12,
+    hemiSky: 0x33436a, hemiGround: 0x2a2018, hemi: 0.3,
+    sun: 0x9db6ff, sunI: 0.16, sunDir: [0.35, 0.72, -0.6], fill: 0x3a4870, fillI: 0.08,
+    exposure: 1.18, lamps: 1, windows: 1, wet: 0, env: 0.28, reflect: 0.85,
+    city: 0.07, ground: 0x0e0f12,
   },
 };
 
 const RAINY_EVENING = {
-  ...PRESETS.evening, top: 0x131a2b, horizon: 0x4c4b58, cloudA: 0x2f3242, cloudB: 0x1d202b, cover: 1,
-  fog: 0x2f323d, fogDensity: 0.0058, sunDisc: 0, citySat: 0.35, hemi: 0.42, sunI: 0.2, fillI: 0.12, wet: 1, env: 0.4, reflect: 0.9, city: 0.1,
+  ...PRESETS.evening, top: 0x191a24, horizon: 0x3a3032, cloudA: 0x2e2c33, cloudB: 0x1c1b21, cover: 1,
+  fog: 0x28262b, fogDensity: 0.0055, sunDisc: 0, stars: 0, glow: 0x3a2412, citySat: 0.35,
+  hemi: 0.4, sunI: 0.12, fillI: 0.1, wet: 1, env: 0.4, reflect: 0.95, city: 0.1,
 };
 export function composePreset({ rain, evening }) {
   if (rain && evening) return RAINY_EVENING;
@@ -134,7 +148,7 @@ export function createAtmosphere(scene, renderer) {
     top: { value: new THREE.Color() }, horizon: { value: new THREE.Color() },
     cloudA: { value: new THREE.Color() }, cloudB: { value: new THREE.Color() },
     cover: { value: 0.8 }, time: { value: 0 }, uClouds: { value: noiseTexture },
-    uFog: { value: new THREE.Color() }, uSunDir: { value: new THREE.Vector3(0, 1, 0) }, uSunCol: { value: new THREE.Color() }, uSunDisc: { value: 0 },
+    uFog: { value: new THREE.Color() }, uStars: { value: 0 }, uGlow: { value: new THREE.Color(0) }, uSunDir: { value: new THREE.Vector3(0, 1, 0) }, uSunCol: { value: new THREE.Color() }, uSunDisc: { value: 0 },
   };
   const sky = new THREE.Mesh(
     new THREE.SphereGeometry(4000, 32, 16),
@@ -228,6 +242,8 @@ export function createAtmosphere(scene, renderer) {
     uniforms.uSunDir.value.copy(sunDir);
     uniforms.uSunCol.value.set(p.sun).multiplyScalar(p.sunI);
     uniforms.uSunDisc.value = p.sunDisc ?? 0;
+    uniforms.uStars.value = p.stars ?? 0;
+    uniforms.uGlow.value.set(p.glow ?? 0);
     renderer.toneMappingExposure = p.exposure * EXPOSURE_BASE;
     if (envRT) envRT.dispose();
     groundMat.color.set(p.ground);

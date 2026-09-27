@@ -356,6 +356,8 @@ function busGeometry() {
 export function createFleet(scene, counts) {
   const total = Object.values(counts).reduce((a, b) => a + (b || 0), 0);
   const contact = createContactShadows(scene, total, { opacity: 0.6 });
+  // headlight light on the road ahead of moving vehicles (additive, only at night)
+  const beams = createContactShadows(scene, total, { opacity: 0, round: true, color: 0xfff0d0, additive: true });
   const tmpM = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), P = new THREE.Vector3(), one = new THREE.Vector3(1, 1, 1);
   const kinds = {};
   for (const [kind, n] of Object.entries(counts)) {
@@ -413,6 +415,7 @@ export function createFleet(scene, counts) {
     }
     h.wheel0 = wheelCursor; wheelCursor += 4; wheels.count = wheelCursor;
     h.blob = contact.alloc();
+    h.beam = beams.alloc();
     h.spin = 0;
     vehicles.push(h);
     return h;
@@ -421,6 +424,7 @@ export function createFleet(scene, counts) {
   const local = new THREE.Vector3(), wscale = new THREE.Vector3(), off = new THREE.Vector3();
   function set(h, x, z, heading, speed = 0, dt = 0, steer = 0, y = 0) {
     contact.set(h.blob, x, y, z, heading, h.W + 0.7, h.L + 0.6);
+    if (h.lit) { const f = h.L / 2 + 5.5; beams.set(h.beam, x + Math.sin(heading) * f, y, z + Math.cos(heading) * f, heading, h.W * 1.9, 10); }
     q.setFromAxisAngle(up, heading);
     if (h.kind === 'bus') { h.mesh.position.set(x, y, z); h.mesh.quaternion.copy(q); }
     else {
@@ -443,12 +447,13 @@ export function createFleet(scene, counts) {
     }
   }
   function commit() {
-    contact.commit();
+    contact.commit(); beams.commit();
     for (const k of Object.values(kinds)) { k.mesh.instanceMatrix.needsUpdate = true; k.mesh.instanceColor.needsUpdate = true; }
     wheels.instanceMatrix.needsUpdate = true;
     if (taxiSigns) taxiSigns.instanceMatrix.needsUpdate = true;
   }
   function setLights(level) {
+    beams.setOpacity(level * 0.28);
     for (const k of Object.values(kinds)) k.mesh.material.emissiveIntensity = 0.15 + level * 2.2;
     for (const m of busMeshes) m.material.emissiveIntensity = 1 + level * 1.2;
     if (taxiSigns) taxiSigns.material.emissiveIntensity = 0.3 + level * 1.5;

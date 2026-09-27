@@ -121,12 +121,13 @@ export function buildLamps(scene) {
   let level = 0, t = 0, wet = 0;
   return {
     count: spots.length,
-    setWet(w) { wet = w; streak.value = w; poolMat.opacity = level * (0.5 + 0.45 * w); },
+    spots,
+    setWet(w) { wet = w; streak.value = w; poolMat.opacity = level * (0.12 + 0.75 * w); },
     setLevel(v) {
       level = v;
       headMat.emissiveIntensity = v * 3;
       lanternMat.emissiveIntensity = 0.05 + v * 3.2;
-      poolMat.opacity = v * (0.5 + 0.45 * wet);
+      poolMat.opacity = v * (0.12 + 0.75 * wet);
     },
     update(dt, focus) {
       t -= dt;

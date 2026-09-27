@@ -19,7 +19,7 @@ function blobTexture() {
   return t;
 }
 
-export function createContactShadows(scene, max, { opacity = 0.55, round = false } = {}) {
+export function createContactShadows(scene, max, { opacity = 0.55, round = false, color = 0x000000, additive = false } = {}) {
   let tex;
   if (round) {
     const S = 64, c = document.createElement('canvas');
@@ -31,7 +31,8 @@ export function createContactShadows(scene, max, { opacity = 0.55, round = false
     tex = new THREE.CanvasTexture(c);
   } else tex = blobTexture();
   const mat = new THREE.MeshBasicMaterial({
-    color: 0x000000, alphaMap: tex, transparent: true, opacity, depthWrite: false,
+    color, alphaMap: tex, transparent: true, opacity, depthWrite: false,
+    blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending,
     polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4,
   });
   const geo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
@@ -44,7 +45,7 @@ export function createContactShadows(scene, max, { opacity = 0.55, round = false
   let dirty = false;
   return {
     mesh,
-    alloc() { return mesh.count++; },
+    alloc() { const i = mesh.count++; mesh.setMatrixAt(i, m.makeScale(0, 0, 0)); dirty = true; return i; },
     // footprint w (across) x l (along), slightly larger than the object so the falloff shows round it
     set(i, x, y, z, heading, w, l) {
       q.setFromAxisAngle(up, heading);

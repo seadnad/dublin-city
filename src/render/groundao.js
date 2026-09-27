@@ -3,6 +3,7 @@
 // (asphalt, paving) sample it once per pixel to darken ambient/sky light at wall bases and in narrow lanes.
 // Costs one texture tap at runtime and ~20-40 ms at load; no screen-space pass, so it's free on phones.
 import * as THREE from 'three';
+import { LAMP_GLSL } from './lamplight.js';
 
 export const groundAOUniforms = {
   uGroundAO: { value: null },
@@ -14,6 +15,7 @@ export const groundAOUniforms = {
 // GLSL: returns 1 (open) .. ~0.45 (hard against a wall)
 export const GROUND_AO_GLSL = /* glsl */ `
   uniform sampler2D uGroundAO; uniform vec2 uAOOrigin; uniform vec2 uAOSize; uniform float uAOStrength;
+  ${LAMP_GLSL}
   float groundAO(vec2 xz) {
     float occ = texture2D(uGroundAO, (xz - uAOOrigin) / uAOSize).r;
     return 1.0 - uAOStrength * occ;
@@ -78,5 +80,7 @@ export const GROUND_AO_APPLY = /* glsl */ `
     reflectedLight.indirectDiffuse *= gao;
     reflectedLight.indirectSpecular *= gao;
     reflectedLight.directDiffuse *= mix(1.0, gao, 0.45);
+    // street lamps (baked): warm light on the ground at night
+    reflectedLight.directDiffuse += diffuseColor.rgb * lampLight(vWXZ) * 2.4;
   }
 `;

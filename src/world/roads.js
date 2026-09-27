@@ -7,6 +7,7 @@
 import * as THREE from 'three';
 import { addReflections } from '../render/reflect.js';
 import { groundAOUniforms, GROUND_AO_GLSL, GROUND_AO_APPLY } from '../render/groundao.js';
+import { lampUniforms } from '../render/lamplight.js';
 import { world, v2, PAVEMENT, offsetPolyline, pointInPolygon, hasParking } from './geo.js';
 import { IS_MOBILE, fbm } from './textures.js';
 import { asphalt, paving, granite, setts, grass } from './surfaces.js';
@@ -490,7 +491,7 @@ function worldMaterial(tex, { repeat, color = 0xffffff, rough = 0.9, normalScale
 // Asphalt with kerb-side gutter grime, lane wear, repair patches and a macro tone so the tile never repeats visibly.
 function patchAsphalt(mat, puddles) {
   mat.onBeforeCompile = (sh) => {
-    Object.assign(sh.uniforms, fieldUniforms, groundAOUniforms, { uPuddles: { value: puddles } });
+    Object.assign(sh.uniforms, fieldUniforms, groundAOUniforms, lampUniforms, { uPuddles: { value: puddles } });
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec2 vWXZ;')
       .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWXZ = (modelMatrix * vec4(transformed, 1.0)).xz;');
@@ -532,7 +533,7 @@ function patchAsphalt(mat, puddles) {
 // Paving top: granite kerb band along the edge, weathering near walls, wet darkening.
 function patchPaving(mat, kerbTex) {
   mat.onBeforeCompile = (sh) => {
-    Object.assign(sh.uniforms, fieldUniforms, groundAOUniforms, { uKerb: { value: kerbTex } });
+    Object.assign(sh.uniforms, fieldUniforms, groundAOUniforms, lampUniforms, { uKerb: { value: kerbTex } });
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec2 vWXZ;')
       .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWXZ = (modelMatrix * vec4(transformed, 1.0)).xz;');

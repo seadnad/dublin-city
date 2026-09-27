@@ -29,6 +29,7 @@ import { createPipeline, QUALITIES } from './render/pipeline.js';
 import { applyTextureQuality } from './render/texquality.js';
 import { createContactShadows } from './render/contact.js';
 import { bakeGroundAO, groundAOUniforms } from './render/groundao.js';
+import { bakeLampLight, lampUniforms } from './render/lamplight.js';
 import { reserved as landmarkFootprints } from './world/sites.js';
 import { KERB_H } from './world/roads.js';
 
@@ -63,6 +64,7 @@ const buildings = buildBuildings(scene);
 { const t = performance.now(); bakeGroundAO([...buildings.lots, ...landmarkFootprints], world.bounds); console.log(`ground AO baked in ${Math.round(performance.now() - t)} ms`); }
 const landmarks = buildLandmarks(scene);
 const lamps = buildLamps(scene);
+{ const t = performance.now(); bakeLampLight(lamps.spots, world.bounds); console.log(`lamp light baked in ${Math.round(performance.now() - t)} ms`); }
 const rain = buildRain(scene);
 const furniture = buildFurniture(scene);
 const signals = createSignals(scene);
@@ -136,10 +138,12 @@ function applyMode() {
   buildingUniforms.uNight.value = p.windows;
 
   lamps.setLevel(p.lamps);
+  lampUniforms.uLampLevel.value = mode.evening ? p.lamps : 0; // baked lamp light only after dark
   landmarkMaterials.lampGlow.emissiveIntensity = 0.2 + p.lamps * 3;
   traffic.setLights(p.lamps);
   carMesh.userData.setLights(p.lamps);
-  headlight.intensity = mode.evening ? 60 : mode.rain ? 15 : 0;
+  headlight.intensity = mode.evening ? 90 : mode.rain ? 15 : 0;
+  headlight.distance = mode.evening ? 85 : 70;
   rain.set(mode.rain, mode.evening);
   people.setRain(mode.rain);
   pipeline.setMood(mode);
@@ -156,7 +160,7 @@ function teleportTo(key) {
 }
 const actions = {
   rain: () => { mode.rain = !mode.rain; applyMode(); hud.toast(mode.rain ? 'Rain' : 'Dry'); },
-  evening: () => { mode.evening = !mode.evening; applyMode(); hud.toast(mode.evening ? 'Evening' : 'Daytime'); },
+  evening: () => { mode.evening = !mode.evening; applyMode(); hud.toast(mode.evening ? 'Night' : 'Daytime'); },
   camera: () => { rig.toggle(); hud.toast(rig.mode === 'chase' ? 'Chase camera' : 'Bonnet camera'); },
   sound: () => { const on = audio.toggle(); hud.setOn('sound', on); hud.toast(on ? 'Sound on' : 'Sound off'); },
   teleport: teleportTo,
@@ -233,7 +237,7 @@ async function useCar(name) {
     const a = on && (p < 0.12 || (p > 0.2 && p < 0.32)), b = on && ((p > 0.5 && p < 0.62) || (p > 0.7 && p < 0.82));
     // lenses glow a saturated blue when flashing, and sit as glossy dark-blue plastic between flashes
     bars.forEach((mat, i) => { mat.emissiveIntensity = (i % 2 ? b : a) ? 5 : 0.25; });
-    glow.intensity = a || b ? 18 : 0;
+    glow.intensity = a || b ? (mode.evening ? 40 : 18) : 0;
   } };
   if (!bars.length) garda = { update() {} };
   carMesh.userData.setLights(atmosphere.state.values.lamps);

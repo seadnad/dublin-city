@@ -178,6 +178,7 @@ export function createTraffic(scene, { cars = 16, buses = 4, taxis = 4, parked =
     const isBus = i >= cars;
     const kind = isBus ? 'bus' : aiKinds[i];
     const handle = fleet.add(kind, kind === 'taxi' ? new THREE.Color(rand() < 0.5 ? '#1a1c1e' : '#b7babd') : paint());
+    handle.lit = true; // moving vehicles light the road at night
     const ai = new AICar(handle, isBus);
     const e = drivable[Math.floor(rand() * drivable.length)];
     ai.place(e, rand() * e.len);
