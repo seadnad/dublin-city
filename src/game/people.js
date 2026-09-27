@@ -213,11 +213,12 @@ export function createPeople(scene, { count = 240 } = {}) {
 
   let raining = false;
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), P = new THREE.Vector3(), S = new THREE.Vector3(), zero = new THREE.Vector3(0, 0, 0);
-  let initialised = false;
+  let initialised = false, frame = 0;
   return {
     people,
     setRain(on) { raining = on; for (const p of people) aLook.array[p.i * 4 + 3] = on && p.umbrella ? 1 : 0; aLook.needsUpdate = true; },
     update(dt, focus, car) {
+      frame++;
       refreshNearby(focus);
       if (!initialised) { for (const p of people) place(p, { x: focus.x, z: focus.z, min: 0, max: 130 }); initialised = true; }
       const cs = car ? Math.abs(car.speed) : 0;
@@ -262,8 +263,13 @@ export function createPeople(scene, { count = 240 } = {}) {
         p.walk += ((moving ? 1 : 0) - p.walk) * Math.min(1, dt * 6);
         aWalk.array[p.i * 2] = p.phase; aWalk.array[p.i * 2 + 1] = p.walk;
         // footpath height, or the road when crossing
-        const onRoad = world.nearestRoad(p.x, p.z);
-        const y = onRoad && onRoad.edgeDist < -0.2 ? 0 : KERB_H;
+        // footpath or road height: the road lookup is the costliest part of the update, so each person
+        // refreshes it on one frame in eight (they move ~20 cm in that time)
+        if (((frame + p.i) & 7) === 0 || p.y === undefined) {
+          const onRoad = world.nearestRoad(p.x, p.z);
+          p.y = onRoad && onRoad.edgeDist < -0.2 ? 0 : KERB_H;
+        }
+        const y = p.y;
         q.setFromAxisAngle(up, p.heading);
         mesh.setMatrixAt(p.i, m4.compose(P.set(p.x, y, p.z), q, S.setScalar(p.scale)));
         contact.set(p.i, p.x, y, p.z, p.heading, 0.75 * p.scale, 0.75 * p.scale);

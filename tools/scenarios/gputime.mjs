@@ -25,6 +25,7 @@ export default async function (page) {
     console.log(label.padEnd(26), 'GPU ms median', r.median && r.median.toFixed(2), `(${r.n} frames)`);
     if (undo) await page.evaluate(undo);
   };
+  await page.keyboard.press('6'); await wait(1500);
   await measure('baseline');
   const hide = (test) => `(() => { const d = window.__dublin; d.scene.traverse((o) => { if (${test}) { o.userData.h = true; o.visible = false; } }); })()`;
   const show = `(() => { window.__dublin.scene.traverse((o) => { if (o.userData.h) { o.visible = true; delete o.userData.h; } }); })()`;
@@ -35,7 +36,8 @@ export default async function (page) {
     fleet: 'o.isInstancedMesh && o.material && o.material.isMeshPhysicalMaterial',
     buses: 'o.isMesh && !o.isInstancedMesh && o.geometry && o.geometry.parameters === undefined && o.material && o.material.map && o.material.map.image && o.material.map.image.width === 2048',
     people: 'o.isInstancedMesh && !!o.geometry.attributes.aPart',
-    sky: 'o.isMesh && o.material && o.material.isShaderMaterial && o.geometry.type === "SphereGeometry"',
+    trees: 'o.isInstancedMesh && o.material && o.material.vertexColors',
+    'car:garda': '(() => { for (let p = o; p; p = p.parent) if (p.userData && p.userData.model) return true; return false; })()',
     'all instanced props': 'o.isInstancedMesh && !o.geometry.attributes.aExtra && !o.geometry.attributes.aPart && !(o.material && o.material.isMeshPhysicalMaterial)',
   };
   for (const [k, t] of Object.entries(cats)) await measure(`without ${k}`, hide(t), show);

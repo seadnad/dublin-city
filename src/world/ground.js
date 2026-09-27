@@ -238,18 +238,24 @@ function shapeGeometry(poly, y = 0) {
 
 // ---------------- bridges ----------------
 export const bridges = [];
-function findRiverSpan(a, b) {
+// Where the river runs under the bridge, as [t0, t1] along a->b. Sampled across the whole deck width, not just
+// the centreline: the banks are slanted, so on a wide bridge (O'Connell, 32 m) the water under the outer lanes
+// reaches past the centreline span, and those corners read as river (deck missing, car respawned).
+function findRiverSpan(a, b, width) {
   let t0 = null, t1 = null;
-  for (let i = 0; i <= 400; i++) {
-    const t = i / 400;
-    if (pointInPolygon(v2.lerp(a, b, t), world.riverPoly)) { if (t0 === null) t0 = t; t1 = t; }
+  const d = v2.norm(v2.sub(b, a)), n = { x: -d.z, z: d.x };
+  for (let o = -width / 2; o <= width / 2 + 1e-6; o += width / 8) {
+    for (let i = 0; i <= 400; i++) {
+      const t = i / 400, p = v2.lerp(a, b, t);
+      if (pointInPolygon({ x: p.x + n.x * o, z: p.z + n.z * o }, world.riverPoly)) { if (t0 === null || t < t0) t0 = t; if (t1 === null || t > t1) t1 = t; }
+    }
   }
   return t0 === null ? null : [t0, t1];
 }
 for (const way of world.ways) {
   if (!way.bridge) continue;
   const a = way.pts[0], b = way.pts[way.pts.length - 1];
-  const span = findRiverSpan(a, b);
+  const span = findRiverSpan(a, b, way.width);
   if (!span) continue;
   const L = v2.len(v2.sub(b, a));
   const p0 = v2.lerp(a, b, span[0]), p1 = v2.lerp(a, b, span[1]);

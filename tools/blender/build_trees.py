@@ -48,15 +48,15 @@ def material(name, hexcol, rough=0.85):
 
 SPECIES = {
     'plane': dict(height=9.0, trunk_r=0.32, split=3.2, depth=4, kids=(2, 3), spread=0.62, droop=0.05, shrink=0.72,
-                  clump=(1.6, 2.4), clumps_per_tip=2, leaf='#5f8a3a', leaf_var=0.22, bark='#8d8272', mottled=True, seed=11),
+                  clump=(1.6, 2.4), clumps_per_tip=1, leaf='#5f8a3a', leaf_var=0.22, bark='#8d8272', mottled=True, seed=11),
     'lime': dict(height=11.0, trunk_r=0.3, split=3.8, depth=4, kids=(2, 3), spread=0.42, droop=0.0, shrink=0.74,
-                 clump=(1.4, 2.0), clumps_per_tip=2, leaf='#6a943e', leaf_var=0.18, bark='#5e554a', seed=23),
+                 clump=(1.4, 2.0), clumps_per_tip=1, leaf='#6a943e', leaf_var=0.18, bark='#5e554a', seed=23),
     'chestnut': dict(height=8.0, trunk_r=0.36, split=2.2, depth=4, kids=(3, 3), spread=0.8, droop=0.12, shrink=0.68,
-                     clump=(1.8, 2.6), clumps_per_tip=2, leaf='#4a7431', leaf_var=0.2, bark='#4f473f', seed=37),
+                     clump=(1.8, 2.6), clumps_per_tip=1, leaf='#4a7431', leaf_var=0.2, bark='#4f473f', seed=37),
     'birch': dict(height=9.5, trunk_r=0.17, split=3.5, depth=4, kids=(2, 2), spread=0.38, droop=0.18, shrink=0.72,
-                  clump=(0.9, 1.4), clumps_per_tip=2, leaf='#86a54c', leaf_var=0.25, bark='#d9d6cc', birch=True, seed=51),
+                  clump=(0.9, 1.4), clumps_per_tip=1, leaf='#86a54c', leaf_var=0.25, bark='#d9d6cc', birch=True, seed=51),
     'young': dict(height=5.5, trunk_r=0.12, split=2.4, depth=3, kids=(2, 3), spread=0.5, droop=0.02, shrink=0.72,
-                  clump=(1.0, 1.4), clumps_per_tip=2, leaf='#6b9a42', leaf_var=0.2, bark='#6a5f52', seed=67),
+                  clump=(1.0, 1.4), clumps_per_tip=1, leaf='#6b9a42', leaf_var=0.2, bark='#6a5f52', seed=67),
 }
 
 
@@ -70,7 +70,7 @@ def grow(sp):
     def limb(start, direction, length, r0, r1, depth):
         """A tapered 7-sided cylinder along `direction`; returns the tip."""
         end = start + direction * length
-        segs = 7
+        segs = 5
         z = direction.normalized()
         x = z.cross(Vector((0, 0, 1)) if abs(z.z) < 0.95 else Vector((1, 0, 0))).normalized()
         y = z.cross(x)
@@ -123,13 +123,13 @@ def grow(sp):
     def branch(start, direction, length, radius, depth):
         # gentle droop and wander along the limb
         end = limb(start, direction, length, radius, radius * sp['shrink'], depth)
-        if depth == 1:
+        if depth == 1 and rnd.random() < 0.5:
             # inner foliage along the upper limbs so the crown isn't hollow
             mid = start + (end - start) * 0.7
             clump(mid + Vector((rnd.uniform(-0.4, 0.4), rnd.uniform(-0.4, 0.4), 0.2)), rnd.uniform(*sp['clump']) * 1.15)
         if depth == 0:
             for _ in range(sp['clumps_per_tip']):
-                r = rnd.uniform(*sp['clump'])
+                r = rnd.uniform(*sp['clump']) * 1.3  # one larger cluster per branch tip keeps the crown full
                 off = Vector((rnd.uniform(-1, 1), rnd.uniform(-1, 1), rnd.uniform(-0.3, 0.8))) * r * 0.45
                 clump(end + off, r)
             return

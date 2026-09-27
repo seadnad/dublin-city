@@ -5,7 +5,7 @@ import * as THREE from 'three';
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _up = new THREE.Vector3(0, 1, 0), _p = new THREE.Vector3(), _s = new THREE.Vector3();
 
 // items: { x, y?, z, rot?, s?: number | Vector3 }
-export function chunkedInstances(geo, mat, items, { size = 140, shadow = false, receive = true, colors = null, y = 0 } = {}) {
+export function chunkedInstances(geo, mat, items, { size = 300, shadow = false, receive = true, colors = null, y = 0 } = {}) {
   const group = new THREE.Group();
   const buckets = new Map();
   items.forEach((it, i) => {

@@ -6,6 +6,18 @@ import { IS_MOBILE } from '../world/textures.js';
 import { createContactShadows } from '../render/contact.js';
 import { addReflections } from '../render/reflect.js';
 
+// Atlases are painted at a comfortable working size (fixed pixel fonts / strokes) and uploaded downscaled:
+// the bus atlases alone were 12 x 2048^2 (~270 MB of GPU memory).
+function shrink(canvas, size) {
+  if (canvas.width <= size) return canvas;
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const g = c.getContext('2d');
+  g.imageSmoothingQuality = 'high';
+  g.drawImage(canvas, 0, 0, size, size);
+  return c;
+}
+
 // ---------------- vehicle types ----------------
 // top: outline in (z, y) from the rear bumper over the roof to the front; wheels: [zRear, zFront]; r: wheel radius
 export const TYPES = {
@@ -120,7 +132,7 @@ export function paintAtlas(t) {
   const map = new THREE.DataTexture(data, S, S);
   map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 8; map.generateMipmaps = true;
   map.minFilter = THREE.LinearMipmapLinearFilter; map.magFilter = THREE.LinearFilter; map.needsUpdate = true;
-  const emissiveMap = new THREE.CanvasTexture(emiC);
+  const emissiveMap = new THREE.CanvasTexture(shrink(emiC, 256)); // lamp masks only need coarse detail
   emissiveMap.colorSpace = THREE.SRGBColorSpace;
   return { map, emissiveMap };
 }
@@ -311,8 +323,8 @@ function busAtlas(route) {
     }
   }
   g.fillStyle = '#e4e3de'; g.fillRect(S * 0.66, S * 0.6, S * 0.34, S * 0.4);
-  const map = new THREE.CanvasTexture(c); map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 8;
-  const emissiveMap = new THREE.CanvasTexture(e); emissiveMap.colorSpace = THREE.SRGBColorSpace;
+  const map = new THREE.CanvasTexture(shrink(c, IS_MOBILE ? 512 : 1024)); map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 8;
+  const emissiveMap = new THREE.CanvasTexture(shrink(e, 512)); emissiveMap.colorSpace = THREE.SRGBColorSpace;
   return { map, emissiveMap };
 }
 

@@ -2,6 +2,7 @@
 // makePlayerCar(): a Group facing +z with userData.update(speed, dt, steer) and userData.setLights(level).
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { carMaterialCache } from './carmaterials.js';
 
 const loader = new GLTFLoader();
@@ -36,6 +37,27 @@ export async function loadCar(name) {
     const n = o.material.name || '';
     if (/headlight|drl|taillight|indicator|lightbar_\d/.test(n) && !glow.some((g) => g.m === o.material)) glow.push({ m: o.material, base: o.material.emissiveIntensity, kind: n });
   });
+  // Merge every non-wheel mesh into one mesh per material: ~125 meshes (125 draw calls, twice with shadows)
+  // become ~20. Geometry is baked into the car root's space; wheels keep their own nodes.
+  src.updateMatrixWorld(true);
+  const inv = new THREE.Matrix4().copy(src.matrixWorld).invert();
+  const buckets = new Map(), victims = [];
+  src.traverse((o) => {
+    if (!o.isMesh) return;
+    for (let p = o; p && p !== src; p = p.parent) if (/^wheel_/.test(p.name)) return;
+    const g = (o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone());
+    for (const k of Object.keys(g.attributes)) if (k !== 'position' && k !== 'normal') g.deleteAttribute(k);
+    g.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv, o.matrixWorld));
+    if (!buckets.has(o.material)) buckets.set(o.material, []);
+    buckets.get(o.material).push(g);
+    victims.push(o);
+  });
+  for (const o of victims) o.parent.remove(o);
+  for (const [mat, geos] of buckets) {
+    const merged = new THREE.Mesh(mergeGeometries(geos), mat);
+    merged.castShadow = merged.receiveShadow = true;
+    src.add(merged);
+  }
   let spin = 0;
   const q = new THREE.Quaternion(), qs = new THREE.Quaternion(), X = new THREE.Vector3(1, 0, 0), Y = new THREE.Vector3(0, 1, 0);
   const r = name === 'hatch' ? 0.34 : name === 'coupe' ? 0.35 : 0.33;
