@@ -38,7 +38,7 @@ export async function loadCar(name) {
   });
   let spin = 0;
   const q = new THREE.Quaternion(), qs = new THREE.Quaternion(), X = new THREE.Vector3(1, 0, 0), Y = new THREE.Vector3(0, 1, 0);
-  const r = 0.33;
+  const r = name === 'hatch' ? 0.34 : name === 'coupe' ? 0.35 : 0.33;
   group.userData = {
     model: name,
     update(speed, dt, steer) {

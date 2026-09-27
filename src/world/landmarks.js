@@ -7,6 +7,8 @@ import { parkPolys, campusPolys, stoneTex, WATER_Y, paintArea, COLORS } from './
 import { rng, makeLabelTexture, makeStoneTexture } from './textures.js';
 import { addBox } from '../game/collision.js';
 import { chunkedInstances } from './chunks.js';
+import { plantTrees } from './trees.js';
+import { KERB_H } from './roads.js';
 
 const rand = rng(1742);
 
@@ -537,13 +539,10 @@ function buildTrees(scene) {
       addBox(p.x, p.z, 0.4, 0.4, 0);
     }
   }
-  const trunkGeo = new THREE.CylinderGeometry(0.22, 0.35, 4, 6).translate(0, 2, 0);
-  const crownGeo = new THREE.IcosahedronGeometry(3.2, 1).translate(0, 6.2, 0);
-  const items = spots.map((p) => ({ x: p.x, z: p.z, rot: rand() * 6.28, s: new THREE.Vector3(p.s, p.s * (0.9 + rand() * 0.3), p.s) }));
-  const trunks = chunkedInstances(trunkGeo, new THREE.MeshStandardMaterial({ color: 0x4a3b2c, roughness: 0.9 }), items, { shadow: true });
-  const crowns = chunkedInstances(crownGeo, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, flatShading: true }), items,
-    { shadow: true, colors: () => new THREE.Color().setHSL(0.24 + rand() * 0.08, 0.35 + rand() * 0.2, 0.2 + rand() * 0.1) });
-  scene.add(trunks, crowns);
+  // parks get a mix of species; O'Connell Street's median is lined with London planes
+  const item = (p, k) => ({ x: p.x, y: KERB_H, z: p.z, rot: rand() * 6.28, s: p.s * k * (0.9 + rand() * 0.25) });
+  plantTrees(scene, spots.filter((p) => !p.street).map((p) => item(p, 0.85)), { plane: 3, lime: 2, chestnut: 3, birch: 2, young: 1 }, rand);
+  plantTrees(scene, spots.filter((p) => p.street).map((p) => item(p, 1.05)), { plane: 1 }, rand);
   return spots.length;
 }
 

@@ -10,7 +10,7 @@ const P = {
   rolling: 0.5,
   drag: 0.0035,
   wheelbase: 2.6,
-  maxSteer: 0.6,
+  maxSteer: 0.5,
   grip: 22,            // high: the car goes where it points
   driftGrip: 2.6,      // handbrake: slides, but stays catchable
   align: 5,            // arcade assist: velocity swings toward the nose
@@ -116,12 +116,12 @@ export class Car {
     const steerTarget = input.steer;
     this.steer += (steerTarget - this.steer) * Math.min(1, dt * (steerTarget === 0 ? 9 : 6));
     // steering stays useful at speed (arcade), and at low speed you can still turn sharply
-    const maxSteer = P.maxSteer / (1 + spd * 0.035);
+    const maxSteer = P.maxSteer / (1 + spd * 0.045);
     const angle = this.steer * maxSteer;
     const turnSpeed = Math.sign(vLong) * Math.min(spd, 6 + spd * 0.55); // less twitchy flat out
     let targetYaw = -(turnSpeed * Math.tan(angle)) / P.wheelbase * (spd < 1 ? spd : 1);
     if (handbrake && spd > 4) targetYaw *= 1.9;
-    this.yawRate += (targetYaw - this.yawRate) * Math.min(1, dt * (handbrake ? 5 : 12));
+    this.yawRate += (targetYaw - this.yawRate) * Math.min(1, dt * (handbrake ? 5 : 8));
 
     this.heading += this.yawRate * dt;
     // rebuild velocity against the new heading, so the car carries its speed through turns

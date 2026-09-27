@@ -7,6 +7,7 @@ import { KERB_H, fieldAt } from './roads.js';
 import { rng } from './textures.js';
 import { addBox } from '../game/collision.js';
 import { chunkedInstances } from './chunks.js';
+import { plantTrees } from './trees.js';
 
 const rand = rng(1847);
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _up = new THREE.Vector3(0, 1, 0), _p = new THREE.Vector3(), _one = new THREE.Vector3(1, 1, 1);
@@ -206,11 +207,7 @@ export function buildFurniture(scene) {
     }
   }
   for (const t of trees) addBox(t.x, t.z, 0.25, 0.25, 0);
-  const trunk = new THREE.CylinderGeometry(0.16, 0.24, 5, 6).translate(0, 2.5, 0);
-  const crown = new THREE.IcosahedronGeometry(2.8, 1).scale(1, 1.15, 1).translate(0, 6.6, 0);
-  scene.add(instanced(trunk, new THREE.MeshStandardMaterial({ color: 0x6b6152, roughness: 0.9 }), trees, { shadow: true }));
-  scene.add(instanced(crown, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, flatShading: true }), trees,
-    { shadow: true, colors: () => new THREE.Color().setHSL(0.24 + rand() * 0.06, 0.35, 0.24 + rand() * 0.08) }));
+  plantTrees(scene, trees.map((t) => ({ x: t.x, y: KERB_H, z: t.z, rot: t.rot, s: t.s.x })), { plane: 5, lime: 1 }, rand);
 
   return { stops: stops.length, shelters: shelters.length, bins: bins.length, posts: posts.length, bollards: bollards.length, trees: trees.length };
 }

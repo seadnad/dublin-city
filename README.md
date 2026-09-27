@@ -33,13 +33,23 @@ Traffic drives on the **left**.
 - **Garda Pursuit**: a suspect (the red blip on the minimap and map) flees through the city, choosing escape routes away from you and overtaking traffic. Stay close or ram them to fill the bust meter before the clock runs out. Each catch adds 40 seconds and the next suspect is faster. Your best is saved.
 - **Time Trials**: checkpoint routes (Liffey Loop, Georgian Sprint, Temple Bar & Christ Church), plus a **Daily Route** generated from the date, so everyone gets the same one each day. There's a countdown, split times against your best, bronze, silver and gold medals, and a ghost car of your best run to race.
 
-## Cars
+## Cars and trees (Blender)
 
-The Garda patrol car (with its Battenburg livery and lightbar), a hot hatch and the suspect's coupe are modelled in Blender by a Python script, [`tools/blender/build_cars.py`](tools/blender/build_cars.py), and exported to `public/models/*.glb`. To rebuild them:
+The hero cars are modelled after real ones from reference photos by a Blender Python script, [`tools/blender/build_cars.py`](tools/blender/build_cars.py):
+
+- **Garda Hyundai i40 Tourer**, in the standard patrol livery (yellow waist band edged in blue, GARDA on the doors, yellow and orange rear chevrons, roof lightbar)
+- **Garda Roads Policing i40**, with the blue and yellow Battenburg sides and a yellow bonnet
+- **Hyundai i30 N** style hot hatch
+- the pursuit suspect's **coupe**
+
+Bodies are extruded side profiles with wheel arches and tumblehome. Lights, grilles, glazing, livery and lettering are *projected decals*: 2D outlines raycast onto the bodywork so they follow its curves. The same technique can paint livery onto an imported mesh.
+
+[`tools/blender/build_trees.py`](tools/blender/build_trees.py) grows five tree species (London plane, lime, horse chestnut, silver birch, young street tree) with branching limbs and colour-varied clumped canopies. Parks get a mix; the quays and O'Connell Street get plane trees.
 
 ```bash
-blender -b --factory-startup -P tools/blender/build_cars.py -- public/models
-blender -b --factory-startup -P tools/blender/preview.py -- public/models tools/shots   # optional renders
+blender -b --factory-startup -P tools/blender/build_cars.py -- public/models            # all cars (or name some: garda hatch)
+blender -b --factory-startup -P tools/blender/build_trees.py -- public/models tools/shots
+blender -b --factory-startup -P tools/blender/preview.py -- public/models tools/shots     # optional car renders
 ```
 
 Traffic, buses and parked cars are still generated in code.

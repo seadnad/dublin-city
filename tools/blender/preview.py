@@ -4,7 +4,7 @@ import bpy, math, os, sys
 args = sys.argv[sys.argv.index('--') + 1:]
 SRC, OUT = (os.path.abspath(a) for a in args[:2])
 os.makedirs(OUT, exist_ok=True)
-for name in ('garda', 'hatch', 'coupe'):
+for name in (sys.argv[sys.argv.index('--') + 3:] or ['garda', 'garda_rp', 'hatch', 'coupe']):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.gltf(filepath=os.path.join(SRC, f'{name}.glb'))
     sc = bpy.context.scene

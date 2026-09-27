@@ -24,6 +24,7 @@ import { createPursuit } from './game/modes/pursuit.js';
 import { createTrial } from './game/modes/trial.js';
 import { addGardaKit } from './game/garda.js';
 import { loadCar } from './game/models.js';
+import { loadTrees } from './world/trees.js';
 import { createPipeline, QUALITIES } from './render/pipeline.js';
 import { KERB_H } from './world/roads.js';
 
@@ -225,8 +226,10 @@ async function useCar(name) {
   save.set('car', name);
 }
 useCar(save.get('car', 'garda'));
-actions.car = (name) => { useCar(name); hud.toast(name === 'garda' ? 'Garda patrol car' : 'Hot hatch'); };
+const CAR_NAMES = { garda: 'Garda Hyundai i40 patrol car', garda_rp: 'Garda Roads Policing i40', hatch: 'Hyundai i30 N' };
+actions.car = (name) => { useCar(name); hud.toast(CAR_NAMES[name] || name); };
 loadCar('coupe').then((m) => { suspectModel = m; });
+loadTrees().then((s) => console.log('trees loaded:', s.join(', ')));
 onKey('g', actions.play);
 onKey('x', () => { if (pursuit.active) return; car.siren = !car.siren; audio.setSiren(car.siren); hud.toast(car.siren ? 'Siren on' : 'Siren off'); });
 onKey('h', () => hud.togglePanel('help'));

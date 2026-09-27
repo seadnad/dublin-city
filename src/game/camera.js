@@ -39,25 +39,26 @@ export class CameraRig {
     let d = target - this.yaw;
     d = Math.atan2(Math.sin(d), Math.cos(d));
     if (!this.initialised) { this.yaw = car.heading; d = 0; }
-    this.yaw += d * Math.min(1, dt * 3.2);
+    this.yaw += d * Math.min(1, dt * 4.5);
 
-    const wantDist = 9.4 + spd * 0.09;
-    this.dist += (wantDist - this.dist) * Math.min(1, dt * 2);
-    const height = 3.6 + spd * 0.03;
+    // GTA-style: fixed distance and height, only the angle lags behind the car
+    this.dist = 8.2;
+    const height = 3.1;
     const fx = Math.sin(this.yaw), fz = Math.cos(this.yaw);
     let bx = car.pos.x - fx * this.dist, bz = car.pos.z - fz * this.dist;
     // pull the camera in if a wall sits between it and the car
     const t = raycast(car.pos.x, car.pos.z, bx, bz);
     if (t < 1) { const k = Math.max(0.25, t - 0.08); bx = car.pos.x + (bx - car.pos.x) * k; bz = car.pos.z + (bz - car.pos.z) * k; }
     const desired = new THREE.Vector3(bx, height, bz);
-    if (!this.initialised) { this.pos.copy(desired); this.initialised = true; }
-    this.pos.lerp(desired, 1 - Math.exp(-dt * 7));
+    this.initialised = true;
+    // follow position exactly (no trailing at speed); ease only the height for kerb bumps
+    this.pos.set(desired.x, this.pos.y + (desired.y - this.pos.y) * Math.min(1, dt * 10) || desired.y, desired.z);
     cam.position.copy(this.pos);
     this.shake = Math.max(this.shake * Math.exp(-dt * 6), car.impact * 0.02);
     if (this.shake > 0.001) cam.position.add(new THREE.Vector3((Math.random() - 0.5) * this.shake, (Math.random() - 0.5) * this.shake, (Math.random() - 0.5) * this.shake));
     this.look.set(car.pos.x + Math.sin(car.heading) * 4, 1.3, car.pos.z + Math.cos(car.heading) * 4);
     cam.lookAt(this.look);
-    cam.fov += (62 + spd * 0.35 - cam.fov) * Math.min(1, dt * 3);
+    cam.fov += (62 + spd * 0.08 - cam.fov) * Math.min(1, dt * 3);
     cam.updateProjectionMatrix();
   }
 }

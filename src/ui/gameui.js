@@ -32,8 +32,9 @@ export function createGameUI({ onPursuit, onTrial, onFree, onCar, trialInfo, toa
     play.innerHTML = `
       <header><h2>Play</h2><button class="close" aria-label="Close">&times;</button></header>
       <div class="cars">Your car:
-        <button data-car="garda" class="${car === 'garda' ? 'on' : ''}">Garda patrol car</button>
-        <button data-car="hatch" class="${car === 'hatch' ? 'on' : ''}">Hot hatch</button>
+        <button data-car="garda" class="${car === 'garda' ? 'on' : ''}">Garda i40 patrol</button>
+        <button data-car="garda_rp" class="${car === 'garda_rp' ? 'on' : ''}">Roads Policing</button>
+        <button data-car="hatch" class="${car === 'hatch' ? 'on' : ''}">i30 N</button>
       </div>`;
     play.innerHTML += `
       <button class="card pursuit" data-mode="pursuit">
