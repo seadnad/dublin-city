@@ -11,9 +11,56 @@ void main() {
   vec4 p = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   gl_Position = p.xyww;
 }`;
+// ---------------------------------------------------------------- atmospheric fog
+// three.js's fog chunks are replaced globally (every material that uses fog picks this up, no per-material setup):
+//  - radial distance instead of view depth (no haze swinging as the camera turns)
+//  - height falloff: denser near the ground, thinner up high, so rooftops and the Spire read against the sky
+//  - aerial perspective: looking toward the sun the haze brightens and warms (Mie forward scatter); the sun's
+//    direction and colour come from the first directional light, which lit materials already receive
+// Materials without lighting (basic/sprite) just get the height fog.
+const FOG_HEIGHT = 70.0; // metres over which the haze thins out
+THREE.ShaderChunk.fog_pars_vertex = `
+#ifdef USE_FOG
+  varying float vFogDepth; varying vec3 vFogView; varying float vFogY;
+#endif`;
+THREE.ShaderChunk.fog_vertex = `
+#ifdef USE_FOG
+  vFogDepth = - mvPosition.z;
+  vFogView = mvPosition.xyz;
+  vFogY = cameraPosition.y + ( vec4( mvPosition.xyz, 0.0 ) * viewMatrix ).y;
+#endif`;
+THREE.ShaderChunk.fog_pars_fragment = `
+#ifdef USE_FOG
+  uniform vec3 fogColor;
+  varying float vFogDepth; varying vec3 vFogView; varying float vFogY;
+  #ifdef FOG_EXP2
+    uniform float fogDensity;
+  #else
+    uniform float fogNear; uniform float fogFar;
+  #endif
+#endif`;
+THREE.ShaderChunk.fog_fragment = `
+#ifdef USE_FOG
+  float fogDist = length( vFogView );
+  #ifdef FOG_EXP2
+    float fogH = max( 0.0, 0.5 * ( vFogY + cameraPosition.y ) );
+    float fogD = fogDensity * mix( 1.0, exp( - fogH / ${FOG_HEIGHT.toFixed(1)} ), 0.7 );
+    float fogFactor = 1.0 - exp( - fogD * fogD * fogDist * fogDist );
+  #else
+    float fogFactor = smoothstep( fogNear, fogFar, fogDist );
+  #endif
+  vec3 fogCol = fogColor;
+  #if ( defined( STANDARD ) || defined( LAMBERT ) || defined( PHONG ) ) && NUM_DIR_LIGHTS > 0
+    float fogSun = max( dot( vFogView / max( fogDist, 1e-3 ), directionalLights[ 0 ].direction ), 0.0 );
+    fogCol += directionalLights[ 0 ].color * ( 0.045 * pow( fogSun, 4.0 ) + 0.09 * pow( fogSun, 24.0 ) );
+  #endif
+  gl_FragColor.rgb = mix( gl_FragColor.rgb, fogCol, fogFactor );
+#endif`;
+
 const skyFrag = /* glsl */ `
 uniform vec3 top; uniform vec3 horizon; uniform vec3 cloudA; uniform vec3 cloudB;
 uniform float cover; uniform float time;
+uniform vec3 uFog; uniform vec3 uSunDir; uniform vec3 uSunCol; uniform float uSunDisc;
 varying vec3 vDir;
 uniform sampler2D uClouds;
 // two taps of a baked fbm texture at different scales and drift speeds instead of per-pixel noise
@@ -27,8 +74,13 @@ void main() {
   float c = fbm2(uv, time);
   c = smoothstep(0.55 - cover * 0.45, 0.95, c);
   vec3 cc = mix(cloudA, cloudB, smoothstep(0.3, 0.9, texture2D(uClouds, uv * 0.5 + 0.3).g));
-  col = mix(col, cc, c * smoothstep(0.0, 0.12, d.y));
-  col = mix(col, horizon, smoothstep(0.12, 0.0, d.y)); // haze at the horizon
+  float sd = max(dot(d, uSunDir), 0.0);
+  // sun disc and its bright aureole sit behind the cloud layer
+  col += uSunCol * (uSunDisc * smoothstep(0.9993, 0.9997, sd) + 0.25 * uSunDisc * pow(sd, 200.0));
+  col = mix(col, cc * (1.0 + 0.35 * pow(sd, 8.0)), c * smoothstep(0.0, 0.12, d.y));
+  // horizon haze uses the fog colour (plus the same sun glow as the fog) so distant buildings melt into the sky
+  vec3 haze = uFog + uSunCol * (0.045 * pow(sd, 4.0) + 0.09 * pow(sd, 24.0));
+  col = mix(col, haze, smoothstep(0.16, 0.0, d.y));
   gl_FragColor = vec4(col, 1.0);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
@@ -47,21 +99,21 @@ const EXPOSURE_BASE = 0.92; // keeps sunlit white paint and pale stone below the
 export const PRESETS = {
   day: {
     top: 0x6f90b3, horizon: 0xd2d9de, cloudA: 0xf2f1ec, cloudB: 0x98a2ab, cover: 0.55,
-    fog: 0xc3cbd1, fogDensity: 0.0022, hemiSky: 0xb9cde4, hemiGround: 0x8c806e, hemi: 0.68,
+    fog: 0xbcc7d0, fogDensity: 0.0024, sunDisc: 0.5, hemiSky: 0xb9cde4, hemiGround: 0x8c806e, hemi: 0.68,
     sun: 0xfff1dc, sunI: 3.0, sunDir: [-0.55, 0.62, 0.56], fill: 0x9fb6d0, fillI: 0.4,
     exposure: 1.0, lamps: 0, windows: 0.0, wet: 0, env: 0.3, reflect: 1.0,
     city: 1.0, ground: 0x34363a,
   },
   rain: {
     top: 0x6b757c, horizon: 0x9ea5a8, cloudA: 0x8a9195, cloudB: 0x5d6569, cover: 1.0,
-    fog: 0x9aa1a3, fogDensity: 0.0052, hemiSky: 0xbfc8cc, hemiGround: 0x4f4b44, hemi: 0.85,
+    fog: 0x979fa3, fogDensity: 0.0056, hemiSky: 0xbfc8cc, hemiGround: 0x4f4b44, hemi: 0.85,
     sun: 0xdde6ee, sunI: 0.95, sunDir: [-0.35, 0.85, 0.4], fill: 0xa9b6c2, fillI: 0.28,
     exposure: 1.0, lamps: 0.25, windows: 0.0, wet: 1, env: 0.5, reflect: 1.0,
     city: 0.45, ground: 0x26282b,
   },
   evening: {
     top: 0x1a2440, horizon: 0x8a6a6a, cloudA: 0x3d3f55, cloudB: 0x252838, cover: 0.7,
-    fog: 0x3a3c4c, fogDensity: 0.0034, hemiSky: 0x5a6a90, hemiGround: 0x2a2420, hemi: 0.38,
+    fog: 0x4a4250, fogDensity: 0.0032, sunDisc: 0.9, hemiSky: 0x5a6a90, hemiGround: 0x2a2420, hemi: 0.38,
     sun: 0xffa86a, sunI: 0.45, sunDir: [-0.88, 0.2, 0.43], fill: 0x5d6f9a, fillI: 0.14,
     exposure: 1.08, lamps: 1, windows: 1, wet: 0, env: 0.3, reflect: 0.8,
     city: 0.12, ground: 0x121316,
@@ -70,7 +122,7 @@ export const PRESETS = {
 
 const RAINY_EVENING = {
   ...PRESETS.evening, top: 0x131a2b, horizon: 0x4c4b58, cloudA: 0x2f3242, cloudB: 0x1d202b, cover: 1,
-  fog: 0x2f323d, fogDensity: 0.0058, hemi: 0.42, sunI: 0.2, fillI: 0.12, wet: 1, env: 0.4, reflect: 0.9, city: 0.1,
+  fog: 0x2f323d, fogDensity: 0.0058, sunDisc: 0, hemi: 0.42, sunI: 0.2, fillI: 0.12, wet: 1, env: 0.4, reflect: 0.9, city: 0.1,
 };
 export function composePreset({ rain, evening }) {
   if (rain && evening) return RAINY_EVENING;
@@ -82,6 +134,7 @@ export function createAtmosphere(scene, renderer) {
     top: { value: new THREE.Color() }, horizon: { value: new THREE.Color() },
     cloudA: { value: new THREE.Color() }, cloudB: { value: new THREE.Color() },
     cover: { value: 0.8 }, time: { value: 0 }, uClouds: { value: noiseTexture },
+    uFog: { value: new THREE.Color() }, uSunDir: { value: new THREE.Vector3(0, 1, 0) }, uSunCol: { value: new THREE.Color() }, uSunDisc: { value: 0 },
   };
   const sky = new THREE.Mesh(
     new THREE.SphereGeometry(4000, 32, 16),
@@ -169,6 +222,10 @@ export function createAtmosphere(scene, renderer) {
     sunDir.set(...p.sunDir).normalize();
     fillDir.set(-sunDir.x, 0.35, -sunDir.z).normalize();
     fill.color.set(p.fill); fill.intensity = p.fillI;
+    uniforms.uFog.value.set(p.fog);
+    uniforms.uSunDir.value.copy(sunDir);
+    uniforms.uSunCol.value.set(p.sun).multiplyScalar(p.sunI);
+    uniforms.uSunDisc.value = p.sunDisc ?? 0;
     renderer.toneMappingExposure = p.exposure * EXPOSURE_BASE;
     if (envRT) envRT.dispose();
     groundMat.color.set(p.ground);

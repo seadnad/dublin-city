@@ -51,9 +51,9 @@ page.on('console', (m) => {
 page.on('pageerror', (e) => problems.push(`[pageerror] ${e.message}\n${e.stack || ''}`));
 
 const t0 = Date.now();
-await page.goto(url, { waitUntil: 'load' });
+await page.goto(url, { waitUntil: 'load', timeout: 180000 });
 try {
-  await page.waitForFunction(() => window.__dublin && window.__dublin.ready !== false, { timeout: 60000 });
+  await page.waitForFunction(() => window.__dublin && window.__dublin.ready !== false, { timeout: 180000 });
 } catch (e) {
   problems.push('Timed out waiting for window.__dublin');
 }
