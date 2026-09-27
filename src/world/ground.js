@@ -190,7 +190,27 @@ puddles.wrapS = puddles.wrapT = THREE.RepeatWrapping;
 let streets = null;
 
 // Rain: street shaders darken and turn glossy, with puddles collecting in the gutters and dips.
-export function setWet(wet) { fieldUniforms.uWet.value = wet ? 1 : 0; }
+// Wetness 0..1 (ramped by the caller). Shader-driven surfaces read fieldUniforms.uWet; simple materials
+// (setts, kerbs, grass, quay stone) darken and gloss here.
+const wetBases = new Map();
+export function setWet(w) {
+  fieldUniforms.uWet.value = w;
+  if (!streets) return;
+  const tune = (m, dark, rough) => {
+    if (!m) return;
+    if (!wetBases.has(m)) wetBases.set(m, { c: m.color.clone(), r: m.roughness });
+    const b = wetBases.get(m);
+    m.color.copy(b.c).multiplyScalar(1 - dark * w);
+    m.roughness = b.r + (rough - b.r) * w;
+  };
+  tune(streets.settMat, 0.3, 0.14);
+  tune(streets.kerbMat, 0.3, 0.3);
+  tune(streets.grassMat, 0.22, 0.75);
+  tune(stoneMaterial, 0.3, 0.45);
+  if (waterMatRef) { waterMatRef.roughness = 0.06 + 0.12 * w; waterMatRef.normalScale.setScalar(0.35 + 0.35 * w); }
+  wetNow = w;
+}
+let waterMatRef = null, wetNow = 0;
 export function getStreets() { return streets; }
 export const stoneTex = makeStoneTexture(256);
 export const stoneMaterial = new THREE.MeshStandardMaterial({ map: stoneTex, roughness: 0.9, color: 0xd8d4cc });
@@ -290,9 +310,10 @@ export function buildGround(scene) {
   const waterNormal = makeWaterNormal(256);
   waterNormal.repeat.set(1 / 22, 1 / 22);
   const waterMat = new THREE.MeshStandardMaterial({
-    color: 0x24362f, roughness: 0.06, metalness: 0.45, normalMap: waterNormal, normalScale: new THREE.Vector2(0.35, 0.35), envMapIntensity: 1.4,
+    color: 0x1e3029, roughness: 0.06, metalness: 0.45, normalMap: waterNormal, normalScale: new THREE.Vector2(0.35, 0.35), envMapIntensity: 1.4,
   });
-  addReflections(waterMat, 0.7);
+  addReflections(waterMat, 0.55); // lower: at grazing angles the quay buildings made the river look brick-brown
+  waterMatRef = waterMat;
   const water = new THREE.Mesh(shapeGeometry(world.riverPoly, WATER_Y), waterMat);
   water.receiveShadow = true;
   group.add(water);
@@ -360,9 +381,14 @@ export function buildGround(scene) {
   addPolyline([{ x: B.minX + 1, z: B.minZ + 1 }, { x: B.maxX - 1, z: B.minZ + 1 }, { x: B.maxX - 1, z: B.maxZ - 1 }, { x: B.minX + 1, z: B.maxZ - 1 }], true);
 
   scene.add(group);
+  let waterT = 0;
   return {
     group, waterMat,
-    update(dt, time) { waterNormal.offset.set(time * 0.004, time * 0.011); },
+    update(dt, time) {
+      waterT += dt * (1 + 2.5 * wetNow); // rain roughens and speeds up the river surface
+      waterNormal.offset.set(waterT * 0.004, waterT * 0.011);
+      fieldUniforms.uRainTime.value = time;
+    },
   };
 }
 

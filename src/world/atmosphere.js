@@ -109,7 +109,7 @@ export const PRESETS = {
     fog: 0x979fa3, fogDensity: 0.0056, hemiSky: 0xbfc8cc, hemiGround: 0x4f4b44, hemi: 0.85,
     sun: 0xdde6ee, sunI: 0.95, sunDir: [-0.35, 0.85, 0.4], fill: 0xa9b6c2, fillI: 0.28,
     exposure: 1.0, lamps: 0.25, windows: 0.0, wet: 1, env: 0.5, reflect: 1.0,
-    city: 0.45, ground: 0x26282b,
+    city: 0.4, ground: 0x2b2e32, citySat: 0.2,
   },
   evening: {
     top: 0x1a2440, horizon: 0x8a6a6a, cloudA: 0x3d3f55, cloudB: 0x252838, cover: 0.7,
@@ -122,7 +122,7 @@ export const PRESETS = {
 
 const RAINY_EVENING = {
   ...PRESETS.evening, top: 0x131a2b, horizon: 0x4c4b58, cloudA: 0x2f3242, cloudB: 0x1d202b, cover: 1,
-  fog: 0x2f323d, fogDensity: 0.0058, sunDisc: 0, hemi: 0.42, sunI: 0.2, fillI: 0.12, wet: 1, env: 0.4, reflect: 0.9, city: 0.1,
+  fog: 0x2f323d, fogDensity: 0.0058, sunDisc: 0, citySat: 0.35, hemi: 0.42, sunI: 0.2, fillI: 0.12, wet: 1, env: 0.4, reflect: 0.9, city: 0.1,
 };
 export function composePreset({ rain, evening }) {
   if (rain && evening) return RAINY_EVENING;
@@ -199,7 +199,9 @@ export function createAtmosphere(scene, renderer) {
       const col = new Float32Array(g.attributes.position.count * 3);
       for (let i = 0; i < col.length; i += 3) { col[i] = t[0] * lit; col[i + 1] = t[1] * lit; col[i + 2] = t[2] * lit; }
       g.setAttribute('color', new THREE.BufferAttribute(col, 3));
-      parts.push(g.toNonIndexed());
+      const ng = g.toNonIndexed();
+      ng.userData.base = ng.attributes.color.array.slice();
+      parts.push(ng);
     }
     return parts;
   })();
@@ -231,6 +233,16 @@ export function createAtmosphere(scene, renderer) {
     groundMat.color.set(p.ground);
     // silhouettes are unlit, so brightness tracks the preset (sunny day ~ lit brick, night ~ near black)
     cityMat.color.setScalar(1.6 * p.city);
+    // under rain cloud the surrounding city reads grey, not brick-red (it tinted puddles and the river brown)
+    const sat = p.citySat ?? 1;
+    for (const g of cityGeo) {
+      const src = g.userData.base, col = g.attributes.color.array;
+      for (let i = 0; i < col.length; i += 3) {
+        const l = 0.3 * src[i] + 0.59 * src[i + 1] + 0.11 * src[i + 2];
+        col[i] = l + (src[i] - l) * sat; col[i + 1] = l + (src[i + 1] - l) * sat; col[i + 2] = l + (src[i + 2] - l) * sat;
+      }
+      g.attributes.color.needsUpdate = true;
+    }
     envRT = pmrem.fromScene(envScene, 0.02, 0.1, 200);
     scene.environment = envRT.texture;
     scene.environmentIntensity = p.env;

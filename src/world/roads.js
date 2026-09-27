@@ -130,10 +130,11 @@ export const fieldUniforms = {
   uFieldSize: { value: new THREE.Vector2((NX - 1) * G, (NZ - 1) * G) },
   uFieldTexel: { value: new THREE.Vector2(1 / NX, 1 / NZ) },
   uWet: { value: 0 },
+  uRainTime: { value: 0 },
 };
 // GLSL: sample the field in world space (texel centres sit on grid points)
 export const FIELD_GLSL = /* glsl */ `
-  uniform sampler2D uField; uniform vec2 uFieldOrigin; uniform vec2 uFieldSize; uniform vec2 uFieldTexel; uniform float uWet;
+  uniform sampler2D uField; uniform vec2 uFieldOrigin; uniform vec2 uFieldSize; uniform vec2 uFieldTexel; uniform float uWet; uniform float uRainTime;
   uniform sampler2D uNoise;
   float kerbField(vec2 xz) {
     vec2 uv = (xz - uFieldOrigin) / uFieldSize * (1.0 - uFieldTexel) + 0.5 * uFieldTexel;
@@ -143,6 +144,29 @@ export const FIELD_GLSL = /* glsl */ `
   // noise from the shared texture: one tap each
   float fbm2(vec2 p) { return texture2D(uNoise, p * 0.25).r; }
   float vnoise(vec2 p) { return texture2D(uNoise, p * 0.25 + 0.37).g; }
+  // Rain ripples: expanding rings in a grid of cells, each cell's drop at its own random phase. Returns an xz slope.
+  vec2 rainRipples(vec2 p) {
+    vec2 slope = vec2(0.0);
+    for (int k = 0; k < 2; k++) {
+      vec2 q = p * (k == 0 ? 2.3 : 3.7) + float(k) * 17.1;
+      vec2 cell = floor(q), f = fract(q) - 0.5;
+      vec2 c = vec2(hash21(cell), hash21(cell + 9.2)) - 0.5;
+      float t = fract(uRainTime * 0.9 + hash21(cell + 4.4));
+      vec2 d = f - c * 0.6;
+      float r = length(d);
+      float ring = sin((r - t * 0.55) * 40.0) * smoothstep(0.0, 0.05, t * 0.55 - r + 0.05) * (1.0 - t) * smoothstep(0.5, 0.2, r);
+      slope += d / max(r, 1e-3) * ring;
+    }
+    return slope;
+  }
+  // flatten the normal toward the surface's own normal (water fills the texture) and add ripples, in view space
+  vec3 wetNormal(vec3 n, vec3 flatN, float puddle, vec2 xz) {
+    // ripples fade out once they are only a few pixels across (they alias into dark speckle)
+    float rfw = length(fwidth(xz));
+    vec2 rp = rainRipples(xz) * 0.22 * (1.0 - smoothstep(0.015, 0.05, rfw));
+    vec3 rip = (viewMatrix * vec4(rp.x, 0.0, rp.y, 0.0)).xyz;
+    return normalize(mix(n, flatN, puddle) + rip * puddle);
+  }
 `;
 
 // ---------------- marching squares → pavement blocks ----------------
@@ -490,10 +514,17 @@ function patchAsphalt(mat, puddles) {
         }
         // oily centre of each lane
         diffuseColor.rgb *= 1.0 - 0.06 * smoothstep(0.35, 0.65, vnoise(vWXZ * 0.3)) * (1.0 - gut);
-        float wetMask = uWet * clamp(0.35 + 0.9 * gut + 0.6 * (1.0 - texture2D(uPuddles, vWXZ / 12.0).r), 0.0, 1.0);
-        diffuseColor.rgb *= 1.0 - 0.35 * wetMask;`)
+        // wet: a thin film everywhere, standing water in dips (dark puddle-map areas) and along the gutters
+        float pudTex = texture2D(uPuddles, vWXZ / 12.0).r;
+        float puddle = uWet * max(smoothstep(0.62, 0.5, pudTex), 0.85 * smoothstep(-0.5, -0.1, fk));
+        float film = uWet;
+        diffuseColor.rgb *= 1.0 - 0.28 * film - 0.3 * puddle;
+        float wetMask = max(film * 0.55, puddle);`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
-        roughnessFactor = mix(roughnessFactor, 0.08, wetMask);`);
+        roughnessFactor = mix(mix(roughnessFactor, 0.2, film), 0.035, puddle);`)
+      .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+        // the water film fills the aggregate texture (half-flattened); puddles are flat with ripples
+        normal = wetNormal(normal, nonPerturbedNormal, max(puddle, film * 0.5), vWXZ);`);
   };
   return mat;
 }
@@ -513,10 +544,15 @@ function patchPaving(mat, kerbTex) {
         diffuseColor.rgb *= 0.9 + 0.2 * fbm2(vWXZ * 0.08);
         float kerb = 1.0 - smoothstep(0.26, 0.3, fk);
         if (kerb > 0.0) diffuseColor.rgb = mix(diffuseColor.rgb, texture2D(uKerb, vWXZ * vec2(1.0, 0.33)).rgb * vec3(0.95, 0.94, 0.92), kerb);
-        float wetP = uWet * (0.6 + 0.4 * vnoise(vWXZ * 0.4));
-        diffuseColor.rgb *= 1.0 - 0.3 * wetP;`)
+        // wet slabs: film everywhere, small puddles where slabs have settled
+        float slabPud = uWet * smoothstep(0.66, 0.78, vnoise(vWXZ * 0.9)) * (1.0 - kerb);
+        float wetP = uWet * (0.75 + 0.25 * vnoise(vWXZ * 0.4));
+        diffuseColor.rgb *= 1.0 - 0.3 * wetP - 0.2 * slabPud;
+        float wetR = max(wetP * 0.5, slabPud);`)
       .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
-        roughnessFactor = mix(roughnessFactor, 0.25, wetP);`);
+        roughnessFactor = mix(mix(roughnessFactor, 0.3, wetP), 0.05, slabPud);`)
+      .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+        normal = wetNormal(normal, nonPerturbedNormal, slabPud, vWXZ);`);
   };
   return mat;
 }
@@ -524,8 +560,8 @@ function patchPaving(mat, kerbTex) {
 export function buildStreets(scene, puddles) {
   const t0 = performance.now();
   const A = asphalt(), P = paving(), K = granite(), S = setts(), Gr = grass();
-  const asphaltMat = patchAsphalt(worldMaterial(A, { repeat: 4, rough: 0.92, normalScale: 0.9 }), puddles);
-  const pavingMat = patchPaving(worldMaterial(P, { repeat: 1, rough: 0.85, normalScale: 0.8 }), K.map);
+  const asphaltMat = addReflections(patchAsphalt(worldMaterial(A, { repeat: 4, rough: 0.92, normalScale: 0.9 }), puddles), 1.3, 'wetMask');
+  const pavingMat = addReflections(patchPaving(worldMaterial(P, { repeat: 1, rough: 0.85, normalScale: 0.8 }), K.map), 1.1, 'wetR');
   K.map.repeat.set(1, 1); K.normalMap.repeat.set(1, 1);
   const kerbMat = new THREE.MeshStandardMaterial({ map: K.map, normalMap: K.normalMap, roughness: 0.7, color: 0xe6e3dc });
   // granite setts polished by tyres and feet: a faint sheen that catches the sky

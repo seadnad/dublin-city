@@ -88,6 +88,24 @@ export function buildLamps(scene) {
     return t;
   })();
   const poolMat = new THREE.MeshBasicMaterial({ map: poolTex, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4 });
+  // On wet ground a lamp's reflection smears into a streak running toward the viewer: stretch each pool along
+  // the lamp-to-camera direction (and narrow it) in the vertex shader. uStreak = wetness.
+  const streak = { value: 0 };
+  poolMat.onBeforeCompile = (sh) => {
+    sh.uniforms.uStreak = streak;
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nuniform float uStreak;')
+      .replace('#include <begin_vertex>', `#include <begin_vertex>
+        {
+          vec3 lampW = (modelMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+          vec2 toCam = cameraPosition.xz - lampW.xz;
+          float dc = length(toCam);
+          vec2 along = toCam / max(dc, 1e-3), across = vec2(-along.y, along.x);
+          float L = 1.0 + uStreak * min(dc * 0.1, 4.0);
+          vec2 off = across * transformed.x * mix(1.0, 0.4, uStreak) + along * (transformed.z * L + (L - 1.0) * 5.5);
+          transformed.x = off.x; transformed.z = off.y;
+        }`);
+  };
   const pools = chunkedInstances(new THREE.PlaneGeometry(12, 12).rotateX(-Math.PI / 2).translate(0, 0.16, 0), poolMat,
     spots.map((s) => ({ x: s.hx, z: s.hz })), { receive: false });
   for (const s of spots) addBox(s.x, s.z, 0.2, 0.2, 0);
@@ -100,14 +118,15 @@ export function buildLamps(scene) {
     const l = new THREE.PointLight(0xffc68a, 0, 24, 1.6);
     scene.add(l); lights.push(l);
   }
-  let level = 0, t = 0;
+  let level = 0, t = 0, wet = 0;
   return {
     count: spots.length,
+    setWet(w) { wet = w; streak.value = w; poolMat.opacity = level * (0.5 + 0.45 * w); },
     setLevel(v) {
       level = v;
       headMat.emissiveIntensity = v * 3;
       lanternMat.emissiveIntensity = 0.05 + v * 3.2;
-      poolMat.opacity = v * 0.5;
+      poolMat.opacity = v * (0.5 + 0.45 * wet);
     },
     update(dt, focus) {
       t -= dt;
@@ -125,7 +144,7 @@ export function buildLamps(scene) {
 
 // ---------- rain ----------
 export function buildRain(scene) {
-  const N = IS_MOBILE ? 1800 : 5000;
+  const N = IS_MOBILE ? 2600 : 7000;
   const pos = new Float32Array(N * 2 * 3), end = new Float32Array(N * 2);
   for (let i = 0; i < N; i++) {
     const x = Math.random() * 70, y = Math.random() * 34, z = Math.random() * 70;
@@ -144,7 +163,7 @@ export function buildRain(scene) {
         p.y = mod(p.y - uTime * 24.0, 34.0) + uCam.y - 14.0;
         p.x = mod(p.x - uCam.x + 35.0, 70.0) - 35.0 + uCam.x;
         p.z = mod(p.z - uCam.z + 35.0, 70.0) - 35.0 + uCam.z;
-        p += aEnd * vec3(0.12, 0.9, 0.05);
+        p += aEnd * vec3(0.22, 1.25, 0.1); // wind-slanted streak
         gl_Position = projectionMatrix * viewMatrix * vec4(p, 1.0);
       }`,
     fragmentShader: /* glsl */ `

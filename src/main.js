@@ -127,14 +127,14 @@ let time = 0;
 
 // ---------- modes ----------
 const mode = { rain: false, evening: false };
-let lastSwitch = 0;
+let lastSwitch = 0, wetTarget = 0, wetNow = 0;
 function applyMode() {
   lastSwitch = time;
   atmosphere.apply(mode);
   const p = atmosphere.state.values;
-  setWet(mode.rain);
+  wetTarget = p.wet;
   buildingUniforms.uNight.value = p.windows;
-  buildingUniforms.uWet.value = p.wet;
+
   lamps.setLevel(p.lamps);
   landmarkMaterials.lampGlow.emissiveIntensity = 0.2 + p.lamps * 3;
   traffic.setLights(p.lamps);
@@ -147,7 +147,6 @@ function applyMode() {
 }
 
 // ---------- HUD + input ----------
-let labelsOn = true;
 const siteKeys = Object.keys(sites);
 function teleportTo(key) {
   const v = sites[key].view;
@@ -159,7 +158,6 @@ const actions = {
   rain: () => { mode.rain = !mode.rain; applyMode(); hud.toast(mode.rain ? 'Rain' : 'Dry'); },
   evening: () => { mode.evening = !mode.evening; applyMode(); hud.toast(mode.evening ? 'Evening' : 'Daytime'); },
   camera: () => { rig.toggle(); hud.toast(rig.mode === 'chase' ? 'Chase camera' : 'Bonnet camera'); },
-  labels: () => { labelsOn = !labelsOn; landmarks.setLabels(labelsOn); hud.setOn('labels', labelsOn); },
   sound: () => { const on = audio.toggle(); hud.setOn('sound', on); hud.toast(on ? 'Sound on' : 'Sound off'); },
   teleport: teleportTo,
   map: () => worldMap.toggle(),
@@ -180,7 +178,6 @@ buildTouchControls(document.getElementById('hud'));
 onKey('r', actions.rain);
 onKey('n', actions.evening);
 onKey('c', actions.camera);
-onKey('l', actions.labels);
 onKey('v', actions.sound);
 const worldMap = createWorldMap({
   sites, lots: buildings.lots,
@@ -301,6 +298,12 @@ function frame() {
   rig.update(dt, car, carMesh);
   focus.set(car.pos.x, 0, car.pos.z);
   ground.update(dt, time);
+  // the city gets wet over a few seconds when rain starts and dries more slowly
+  if (wetNow !== wetTarget) {
+    const rate = wetTarget > wetNow ? 0.35 : 0.12;
+    wetNow = wetTarget > wetNow ? Math.min(wetTarget, wetNow + rate * dt) : Math.max(wetTarget, wetNow - rate * dt);
+    setWet(wetNow); buildingUniforms.uWet.value = wetNow; lamps.setWet(wetNow);
+  }
   camera.getWorldDirection(viewDir); viewDir.y = 0; viewDir.normalize();
   atmosphere.update(dt, time, focus, viewDir);
   landmarks.update(camera);

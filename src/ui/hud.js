@@ -39,7 +39,6 @@ export function createHUD({ sites, actions }) {
       <button data-a="rain" title="Rain (R)">${svg('rain')}<span>Rain</span><kbd>R</kbd></button>
       <button data-a="evening" title="Evening (N)">${svg('moon')}<span>Evening</span><kbd>N</kbd></button>
       <button data-a="camera" title="Camera (C)">${svg('camera')}<span>Camera</span><kbd>C</kbd></button>
-      <button data-a="labels" title="Labels (L)" class="on">${svg('tag')}<span>Labels</span><kbd>L</kbd></button>
       <button data-a="map" title="Map (M)">${svg('map')}<span>Map</span><kbd>M</kbd></button>
       <button data-a="places" title="Landmarks (T)">${svg('pin')}<span>Places</span><kbd>T</kbd></button>
       <button data-a="sound" title="Sound (V)">${svg('sound')}<span>Sound</span><kbd>V</kbd></button>
@@ -62,7 +61,6 @@ export function createHUD({ sites, actions }) {
         <tr><td><kbd>Space</kbd></td><td>Handbrake (drift)</td></tr>
         <tr><td><kbd>C</kbd></td><td>Chase / bonnet camera</td></tr>
         <tr><td><kbd>R</kbd> <kbd>N</kbd></td><td>Rain / evening</td></tr>
-        <tr><td><kbd>L</kbd></td><td>Landmark labels</td></tr>
         <tr><td><kbd>G</kbd></td><td>Play: Garda Pursuit, Time Trials</td></tr>
         <tr><td><kbd>X</kbd></td><td>Siren and blue lights</td></tr>
         <tr><td><kbd>M</kbd></td><td>World map (click streets for a waypoint)</td></tr>
@@ -162,7 +160,7 @@ export function createHUD({ sites, actions }) {
       const off = d > lim;
       if (off) { x = R + (dx / d) * lim; y = R + (dy / d) * lim; }
       mctx.beginPath(); mctx.arc(x, y, (off ? 4 : 5.5) * dpr, 0, 7);
-      mctx.fillStyle = off ? 'rgba(22,155,98,0.75)' : '#169b62'; mctx.fill();
+      mctx.fillStyle = off ? 'rgba(242,182,50,0.8)' : '#f2b632'; mctx.fill();
       mctx.lineWidth = 1.5 * dpr; mctx.strokeStyle = '#fff'; mctx.stroke();
     }
     // waypoint (clamped to the rim when off the minimap)

@@ -390,12 +390,14 @@ function makeMaterial() {
           wall *= 0.88 + 0.22 * nz.r;
           wall *= 1.0 - 0.18 * weather * smoothstep(H * 0.6, H, v) * nz.g;
           wall *= 0.8 + 0.2 * smoothstep(0.0, 3.5, v);
+          // rain darkens masonry, more toward the street where splash-back soaks it
+          wall *= 1.0 - uWet * (0.12 + 0.1 * smoothstep(2.0, 0.0, v));
 
           vec3 col = wall;
           if (vFace < 0.5) {
             // roof: lead / felt with seams
             col = mix(vec3(0.21, 0.22, 0.23), vec3(0.3, 0.29, 0.27), bh(vec2(seed, 1.0)));
-            gRough = 0.72; // weathered lead and felt
+            gRough = mix(0.72, 0.3, uWet); // weathered lead and felt; wet roofs sheen
             col *= 0.85 + 0.25 * nz.r;
             gH = 0.5;
           } else if (lod < 0.97) {

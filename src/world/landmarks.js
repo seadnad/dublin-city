@@ -1,11 +1,11 @@
-// Hand-modelled landmarks (low poly, merged per material), park trees, and floating labels.
+// Hand-modelled landmarks (low poly, merged per material) and park trees.
 import * as THREE from 'three';
 import { addReflections } from '../render/reflect.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { world, v2, pointInPolygon, insetPolygon } from './geo.js';
 import { sites, reserved, grounds } from './sites.js';
 import { parkPolys, campusPolys, stoneTex, WATER_Y, paintArea, COLORS } from './ground.js';
-import { rng, makeLabelTexture, makeStoneTexture } from './textures.js';
+import { rng, makeStoneTexture } from './textures.js';
 import { addBox } from '../game/collision.js';
 import { chunkedInstances } from './chunks.js';
 import { plantTrees } from './trees.js';
@@ -547,25 +547,6 @@ function buildTrees(scene) {
   return spots.length;
 }
 
-// ---------- labels ----------
-function buildLabels(scene) {
-  const group = new THREE.Group();
-  group.name = 'labels';
-  for (const s of Object.values(sites)) {
-    const { texture, aspect } = makeLabelTexture(s.name);
-    const mat = new THREE.SpriteMaterial({ map: texture, depthTest: false, depthWrite: false, sizeAttenuation: false, transparent: true, fog: false });
-    const sp = new THREE.Sprite(mat);
-    sp.center.set(0.5, 0);
-    sp.scale.set(0.05 * aspect, 0.05, 1);
-    sp.position.set(s.x, s.labelY, s.z);
-    sp.renderOrder = 100;
-    sp.userData.site = s;
-    group.add(sp);
-  }
-  scene.add(group);
-  return group;
-}
-
 export function buildLandmarks(scene) {
   const S = sites;
   const groups = [
@@ -589,7 +570,8 @@ export function buildLandmarks(scene) {
   scene.add(pond, rim);
 
   const trees = buildTrees(scene);
-  const labels = buildLabels(scene);
+  // floating place labels were removed from the 3D view (landmarks are on the map instead)
+  const labels = new THREE.Group();
   return {
     groups, labels, trees,
     setLabels(on) { labels.visible = on; },
