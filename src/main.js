@@ -27,6 +27,7 @@ import { loadCar } from './game/models.js';
 import { loadTrees } from './world/trees.js';
 import { createPipeline, QUALITIES } from './render/pipeline.js';
 import { applyTextureQuality } from './render/texquality.js';
+import { createContactShadows } from './render/contact.js';
 import { KERB_H } from './world/roads.js';
 
 const canvas = document.getElementById('scene');
@@ -86,6 +87,8 @@ headlight.position.set(0, 0.8, 2.2);
 headlight.target.position.set(0, 0, 14);
 carMesh.add(headlight, headlight.target);
 const rig = new CameraRig(camera);
+const playerContact = createContactShadows(scene, 1, { opacity: 0.62 });
+playerContact.alloc();
 
 // Put the car back on the nearest road lane.
 function respawnNearRoad() {
@@ -262,7 +265,7 @@ const timer = new THREE.Timer();
 let slowTime = 0, fastTime = 0, rideY = 0;
 let frameNo = 0;
 const prof = { car: 0, traffic: 0, people: 0, other: 0, render: 0, n: 0 };
-const focus = new THREE.Vector3();
+const focus = new THREE.Vector3(), viewDir = new THREE.Vector3();
 function frame() {
   timer.update();
   const rawDt = timer.getDelta();
@@ -290,10 +293,12 @@ function frame() {
   carMesh.position.set(car.pos.x, rideY + car.bump * 0.12, car.pos.z);
   carMesh.rotation.set(car.pitch, car.heading, car.roll);
   carMesh.userData.update(car.speed, dt, car.steer * 0.5);
+  playerContact.set(0, car.pos.x, rideY, car.pos.z, car.heading, 2.5, 5.3); playerContact.commit();
   rig.update(dt, car, carMesh);
   focus.set(car.pos.x, 0, car.pos.z);
   ground.update(dt, time);
-  atmosphere.update(dt, time, focus);
+  camera.getWorldDirection(viewDir); viewDir.y = 0; viewDir.normalize();
+  atmosphere.update(dt, time, focus, viewDir);
   landmarks.update(camera);
   lamps.update(dt, focus);
   rain.update(dt, time, camera);
@@ -301,8 +306,8 @@ function frame() {
   audio.update(car, input, mode.rain);
 
   const tp5 = performance.now();
-  // shadow map every other frame (every frame on high): halves the cost of the shadow pass
-  renderer.shadowMap.needsUpdate = pipeline.quality === 'high' || (++frameNo & 1) === 0;
+  // shadow map every frame: with half-rate updates the car's own shadow lagged and jittered at speed
+  renderer.shadowMap.needsUpdate = true;
   pipeline.render(dt);
   const tp6 = performance.now();
   prof.car += tp1 - tp0; prof.traffic += tp2 - tp1; prof.people += tp4 - tp3; prof.other += tp5 - tp4; prof.render += tp6 - tp5; prof.n++;

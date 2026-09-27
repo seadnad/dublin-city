@@ -92,13 +92,17 @@ export function createAtmosphere(scene, renderer) {
 
   const sun = new THREE.DirectionalLight(0xffffff, 1);
   sun.castShadow = true;
-  const S = IS_MOBILE ? 1024 : 2048;
+  // Shadows cover the area in front of the camera (see update), not a big square centred on the car:
+  // desktop 120 m at 2048 px = 5.9 cm per texel, phones 100 m at 1536 px = 6.5 cm per texel.
+  const S = IS_MOBILE ? 1536 : 2048;
   sun.shadow.mapSize.set(S, S);
-  const ext = 90;
-  Object.assign(sun.shadow.camera, { left: -ext, right: ext, top: ext, bottom: -ext, near: 10, far: 600 });
-  sun.shadow.bias = -0.0004;
-  sun.shadow.normalBias = 0.6;
-  sun.shadow.radius = 4;
+  const ext = IS_MOBILE ? 50 : 60;
+  const texel = (2 * ext) / S;
+  Object.assign(sun.shadow.camera, { left: -ext, right: ext, top: ext, bottom: -ext, near: 40, far: 420 });
+  // biases of about one to two texels: enough to avoid acne on large facades without detaching contact shadows
+  sun.shadow.bias = -0.00025;
+  sun.shadow.normalBias = texel * 1.4;
+  sun.shadow.radius = 2.2; // PCF blur radius in texels (~13 cm penumbra)
   scene.add(sun, sun.target);
   const sunDir = new THREE.Vector3(...PRESETS.day.sunDir).normalize();
 
@@ -106,6 +110,7 @@ export function createAtmosphere(scene, renderer) {
   const fill = new THREE.DirectionalLight(0xffffff, 0.3);
   scene.add(fill, fill.target);
   const fillDir = new THREE.Vector3();
+  const centre = new THREE.Vector3(), lu = new THREE.Vector3(), lv = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0);
 
   scene.fog = new THREE.FogExp2(0xffffff, 0.003);
 
@@ -143,14 +148,21 @@ export function createAtmosphere(scene, renderer) {
 
   return {
     sun, fill, hemi, uniforms, state, apply,
-    update(dt, time, focus) {
+    // focus: the player; view: horizontal camera direction (the shadow area is pushed ahead of the player)
+    update(dt, time, focus, view) {
       uniforms.time.value = time;
       sky.position.copy(focus);
-      // snap the shadow frustum to whole texels so shadows don't shimmer as the car moves
-      const texel = (2 * ext) / S;
-      const fx = Math.round(focus.x / texel) * texel, fz = Math.round(focus.z / texel) * texel;
-      sun.position.set(fx + sunDir.x * 300, sunDir.y * 300, fz + sunDir.z * 300);
-      sun.target.position.set(fx, 0, fz);
+      const ahead = view ? ext * 0.55 : 0;
+      centre.set(focus.x + (view ? view.x : 0) * ahead, 0, focus.z + (view ? view.z : 0) * ahead);
+      // snap the centre to whole texels in the shadow camera's own image plane, so edges don't shimmer
+      lu.crossVectors(UP, sunDir).normalize();      // shadow camera x axis
+      lv.crossVectors(sunDir, lu);                  // shadow camera y axis
+      const su = Math.round(centre.dot(lu) / texel) * texel;
+      const sv = Math.round(centre.dot(lv) / texel) * texel;
+      const sd = centre.dot(sunDir);
+      centre.copy(lu).multiplyScalar(su).addScaledVector(lv, sv).addScaledVector(sunDir, sd);
+      sun.position.copy(centre).addScaledVector(sunDir, 250);
+      sun.target.position.copy(centre);
       fill.position.set(focus.x + fillDir.x * 100, fillDir.y * 100, focus.z + fillDir.z * 100);
       fill.target.position.set(focus.x, 0, focus.z);
     },

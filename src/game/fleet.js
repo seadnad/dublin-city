@@ -3,6 +3,7 @@
 // pillars, lights, grilles and Irish number plates. The instance colour tints only painted areas (atlas alpha).
 import * as THREE from 'three';
 import { IS_MOBILE } from '../world/textures.js';
+import { createContactShadows } from '../render/contact.js';
 
 // ---------------- vehicle types ----------------
 // top: outline in (z, y) from the rear bumper over the roof to the front; wheels: [zRear, zFront]; r: wheel radius
@@ -352,6 +353,8 @@ function busGeometry() {
 
 // ---------------- fleet ----------------
 export function createFleet(scene, counts) {
+  const total = Object.values(counts).reduce((a, b) => a + (b || 0), 0);
+  const contact = createContactShadows(scene, total, { opacity: 0.6 });
   const tmpM = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), P = new THREE.Vector3(), one = new THREE.Vector3(1, 1, 1);
   const kinds = {};
   for (const [kind, n] of Object.entries(counts)) {
@@ -408,6 +411,7 @@ export function createFleet(scene, counts) {
       k.mesh.count = k.used;
     }
     h.wheel0 = wheelCursor; wheelCursor += 4; wheels.count = wheelCursor;
+    h.blob = contact.alloc();
     h.spin = 0;
     vehicles.push(h);
     return h;
@@ -415,6 +419,7 @@ export function createFleet(scene, counts) {
   const wq = new THREE.Quaternion(), wr = new THREE.Quaternion(), axis = new THREE.Vector3(1, 0, 0), steerQ = new THREE.Quaternion();
   const local = new THREE.Vector3(), wscale = new THREE.Vector3(), off = new THREE.Vector3();
   function set(h, x, z, heading, speed = 0, dt = 0, steer = 0, y = 0) {
+    contact.set(h.blob, x, y, z, heading, h.W + 0.7, h.L + 0.6);
     q.setFromAxisAngle(up, heading);
     if (h.kind === 'bus') { h.mesh.position.set(x, y, z); h.mesh.quaternion.copy(q); }
     else {
@@ -437,6 +442,7 @@ export function createFleet(scene, counts) {
     }
   }
   function commit() {
+    contact.commit();
     for (const k of Object.values(kinds)) { k.mesh.instanceMatrix.needsUpdate = true; k.mesh.instanceColor.needsUpdate = true; }
     wheels.instanceMatrix.needsUpdate = true;
     if (taxiSigns) taxiSigns.instanceMatrix.needsUpdate = true;

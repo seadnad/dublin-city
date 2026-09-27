@@ -5,6 +5,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { world, v2, offsetPolyline } from '../world/geo.js';
 import { KERB_H } from '../world/roads.js';
 import { rng } from '../world/textures.js';
+import { createContactShadows } from '../render/contact.js';
 
 const rand = rng(2024);
 // part ids: 0 coat/top, 1 skin, 2 hair, 3 left leg, 4 right leg, 5 left arm, 6 right arm, 7 shoes, 8 coat skirt
@@ -49,6 +50,8 @@ const HAIR = ['#2a1d14', '#3b2a1c', '#5a3e25', '#8a6a42', '#c49a5a', '#b3542a', 
 const UMBRELLAS = ['#141414', '#141414', '#141414', '#1b2744', '#6b1a1a', '#1d4a33', '#d8b43a', '#b23a2a', '#e8e6e0'];
 
 export function createPeople(scene, { count = 240 } = {}) {
+  const contact = createContactShadows(scene, count, { opacity: 0.45, round: true });
+  for (let i = 0; i < count; i++) contact.alloc();
   const geo = personGeometry();
   const aTop = new THREE.InstancedBufferAttribute(new Float32Array(count * 3), 3);
   const aBottom = new THREE.InstancedBufferAttribute(new Float32Array(count * 3), 3);
@@ -263,11 +266,13 @@ export function createPeople(scene, { count = 240 } = {}) {
         const y = onRoad && onRoad.edgeDist < -0.2 ? 0 : KERB_H;
         q.setFromAxisAngle(up, p.heading);
         mesh.setMatrixAt(p.i, m4.compose(P.set(p.x, y, p.z), q, S.setScalar(p.scale)));
+        contact.set(p.i, p.x, y, p.z, p.heading, 0.75 * p.scale, 0.75 * p.scale);
         if (raining && p.umbrella) umbrellas.setMatrixAt(p.i, m4.compose(P.set(p.x + Math.cos(p.heading) * 0.12 * p.scale, y, p.z - Math.sin(p.heading) * 0.12 * p.scale), q, S.setScalar(p.scale)));
         else umbrellas.setMatrixAt(p.i, m4.compose(P, q, zero));
       }
       mesh.instanceMatrix.needsUpdate = true;
       umbrellas.instanceMatrix.needsUpdate = true;
+      contact.commit();
       aWalk.needsUpdate = true;
     },
   };
