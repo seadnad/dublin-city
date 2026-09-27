@@ -20,7 +20,7 @@ function laneLine(edge, extra = 0) {
 }
 
 function pickNext(edge, isBus) {
-  const options = edge.to.edges.filter((e) => e.to !== edge.from && (!isBus || e.way.type !== 'lane'));
+  const options = edge.to.edges.filter((e) => e.to !== edge.from && !e.way.pedestrian && (!isBus || e.way.type !== 'lane'));
   if (!options.length) return edge.to.edges.find((e) => e.to === edge.from) || edge.to.edges[0];
   // prefer continuing on the same street or bigger roads
   const weights = options.map((e) => (e.way === edge.way ? 2.5 : 1) * (e.way.type === 'lane' ? 0.25 : 1));
@@ -29,7 +29,7 @@ function pickNext(edge, isBus) {
   return options[0];
 }
 
-const drivable = world.edges.filter((e) => e.len > 15 && e.way.type !== 'lane');
+const drivable = world.edges.filter((e) => e.len > 15 && e.way.type !== 'lane' && !e.way.pedestrian);
 
 class AICar {
   constructor(handle, isBus) {

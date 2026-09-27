@@ -15,7 +15,7 @@ import { makePlayerCar } from './game/fleet.js';
 import { input, updateInput, onKey, buildTouchControls } from './game/input.js';
 import { CameraRig } from './game/camera.js';
 import { createTraffic } from './game/traffic.js';
-import { createLuas } from './game/luas.js';
+import { createLuas, combineTrams } from './game/luas.js';
 import { createPeople } from './game/people.js';
 import { audio } from './game/audio.js';
 import { createHUD } from './ui/hud.js';
@@ -121,7 +121,7 @@ function respawnNearRoad() {
 
 // ---------- traffic + Luas ----------
 const traffic = createTraffic(scene, IS_MOBILE ? { cars: 12, buses: 3, taxis: 3, parked: 120 } : { cars: 26, buses: 6, taxis: 5, parked: 320 });
-const tram = createLuas(scene);
+const tram = combineTrams(world.luasLines.map((line) => createLuas(scene, line)));
 const people = createPeople(scene, { count: IS_MOBILE ? 110 : 300 });
 traffic.setPlayer(car);
 traffic.setTram(tram);
@@ -303,7 +303,7 @@ function frame() {
   const tp1 = performance.now();
   traffic.update(dt, camera);
   const tp2 = performance.now();
-  tram.update(dt);
+  tram.update(dt, car.pos);
   signals.update(dt);
   const tp3 = performance.now();
   people.update(dt, car.pos, car);

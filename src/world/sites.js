@@ -50,7 +50,7 @@ for (let i = 0; i <= 200; i++) {
 }
 
 // Trinity's Front Gate closes the view down Dame Street: the front is centred on the College Green junction
-const trinityFront = { ...beside('CGT', 'CG3', 0, 1, 64, 20, { gap: 9 }), gap: 9 };
+const trinityFront = { ...beside('CGT', 'CGC', 0, 1, 64, 20, { gap: 9 }), gap: 9 };
 const tfDir = { x: -Math.sin(trinityFront.rot), z: -Math.cos(trinityFront.rot) }; // into the campus
 const campanile = { x: trinityFront.x + tfDir.x * 62, z: trinityFront.z + tfDir.z * 62, rot: trinityFront.rot, w: 12, d: 12 };
 
@@ -163,6 +163,12 @@ export const extraSites = {
   // 72 Dame Street, on the Temple Bar side like the Central Bank
   olympia: beside('DM2', 'DM3', 0.35, -1, 12, 16, { gap: 0.15 }),
   clockCorner: beside('CG0', 'DMc', 0.22, 1, 16, 16, { gap: 0.15 }),
+  // Grafton Street: Bewley's, Brown Thomas at the Wicklow Street corner with Weir & Sons across it,
+  // and the St Stephen's Green Shopping Centre at the top
+  bewleys: beside('GR1', 'GR2', 0.78, -1, 12, 18, { gap: 0.15 }),
+  brownThomas: beside('GR1', 'GR2', 0.3, -1, 28, 22, { gap: 0.15 }),
+  weir: beside('CG3', 'GR1', 0.9, -1, 10, 14, { gap: 0.15 }),
+  sgCentre: beside('SGNW', 'KSS1', 0.2, -1, 46, 36, { gap: 0.3 }),
   // Grattan's statue on its island in the middle of College Green
   grattan: (() => { const a = N('CGT'), b = N('CG0'), p = v2.lerp(a, b, 0.5), d = v2.norm(v2.sub(b, a)); return { ...p, rot: Math.atan2(d.x, d.z) }; })(),
 };
@@ -171,6 +177,7 @@ export const extraSites = {
 export const reserved = [
   sites.gpo, sites.bankOfIreland, sites.christChurch, sites.customHouse, sites.trinity, ...grounds,
   sites.cityHall, sites.centralBank, extraSites.olympia, extraSites.clockCorner,
+  extraSites.bewleys, extraSites.brownThomas, extraSites.weir, extraSites.sgCentre,
   { ...extraSites.castle, w: 44, d: 36, ...shifted(extraSites.castle, 0, -16, 44, 34) },
   sites.grandCanalSt, sites.heuston, sites.guinness, sites.convention, sites.threeArena, sites.grandCanal, sites.grandCanal.square,
   // Heuston's forecourt, open to the quay

@@ -107,7 +107,9 @@ export function createWorldMap({ sites, lots, getLive, onTeleport, onWaypoint })
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     for (const w of world.ways) if (!MAIN.has(w.type)) { path(w.pts); ctx.strokeStyle = C.road; ctx.lineWidth = Math.max(1.2, w.width * scale * 0.8); ctx.stroke(); }
     for (const w of world.ways) if (MAIN.has(w.type)) { path(w.pts); ctx.strokeStyle = C.main; ctx.lineWidth = Math.max(2, w.width * scale * 0.85); ctx.stroke(); }
-    ctx.setLineDash([5, 4]); path(world.luas.pts); ctx.strokeStyle = C.luas; ctx.lineWidth = 2.2; ctx.stroke(); ctx.setLineDash([]);
+    ctx.setLineDash([5, 4]); ctx.strokeStyle = C.luas; ctx.lineWidth = 2.2;
+    for (const l of world.luasLines) { path(l.pts); ctx.stroke(); }
+    ctx.setLineDash([]);
     districtLabels();
     if (scale > 1.5) streetLabels();
     ctx.restore();

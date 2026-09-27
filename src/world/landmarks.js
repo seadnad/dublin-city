@@ -979,6 +979,176 @@ function grattanIsland(site) {
   return b.build('Grattan monument');
 }
 
+// ---------- Grafton Street ----------
+// shopfront elevations painted to scale (32 px per metre), used on a plane over the building's street face
+const PXM = 32;
+const frontTex = (wm, hm, draw) => {
+  const t = canvasTex(wm * PXM, hm * PXM, (ctx, w, h) => draw(ctx, w, h, (m) => h - m * PXM));
+  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
+  return t;
+};
+const sashRow = (ctx, w, y0, hh, n, frame = '#f3efe6', glass = '#27303a') => {
+  const bw = w / n;
+  for (let i = 0; i < n; i++) {
+    const x = i * bw + bw * 0.28, ww = bw * 0.44;
+    ctx.fillStyle = frame; ctx.fillRect(x - 5, y0 - 5, ww + 10, hh + 10);
+    ctx.fillStyle = glass; ctx.fillRect(x, y0, ww, hh);
+    ctx.fillStyle = frame; ctx.fillRect(x, y0 + hh / 2 - 2, ww, 4); ctx.fillRect(x + ww / 2 - 2, y0, 4, hh);
+  }
+};
+const bewleysTex = frontTex(12, 18, (ctx, w, h, y) => {
+  ctx.fillStyle = '#e9e1cf'; ctx.fillRect(0, 0, w, h);
+  sashRow(ctx, w, y(16.2), 2.2 * PXM, 3); sashRow(ctx, w, y(12.6), 2.4 * PXM, 3);
+  // the Egyptian-style mosaic frieze with its winged disc
+  ctx.fillStyle = '#2f5f4a'; ctx.fillRect(0, y(9.6), w, 1.6 * PXM);
+  const cols = ['#c8352a', '#e2b53a', '#2c6fb0', '#3f9a5a'];
+  for (let x = 0; x < w; x += 12) { ctx.fillStyle = cols[(x / 12) % 4 | 0]; ctx.fillRect(x, y(9.4), 8, 0.5 * PXM); }
+  ctx.fillStyle = '#e2b53a'; ctx.beginPath(); ctx.ellipse(w / 2, y(8.6), 70, 16, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#c8352a'; ctx.beginPath(); ctx.arc(w / 2, y(8.6), 12, 0, Math.PI * 2); ctx.fill();
+  // first-floor windows behind the red balcony
+  ctx.fillStyle = '#5a2a1e'; ctx.fillRect(0, y(8), w, 3 * PXM);
+  ctx.fillStyle = '#26343c'; for (let i = 0; i < 5; i++) ctx.fillRect(12 + i * (w - 24) / 5, y(7.7), (w - 24) / 5 - 10, 2.4 * PXM);
+  // the lettered sign band on a checkered border
+  ctx.fillStyle = '#ece6d4'; ctx.fillRect(0, y(5), w, 1.2 * PXM);
+  for (let x = 0; x < w; x += 8) { ctx.fillStyle = (x / 8) % 2 ? '#1c1c1c' : '#e9e1cf'; ctx.fillRect(x, y(5), 8, 5); ctx.fillRect(x, y(3.95), 8, 5); }
+  ctx.fillStyle = '#26221c'; ctx.font = `bold ${0.7 * PXM}px Georgia`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText("BEWLEY'S ORIENTAL CAFÉS Ltd", w / 2, y(4.4));
+  // ground floor: dark timber and glass
+  ctx.fillStyle = '#4a2a1c'; ctx.fillRect(0, y(3.8), w, 3.8 * PXM);
+  ctx.fillStyle = '#2a2622'; ctx.fillRect(20, y(3.4), w * 0.38, 2.8 * PXM); ctx.fillRect(w * 0.58, y(3.4), w * 0.38, 2.8 * PXM);
+});
+const brownThomasTex = frontTex(28, 18, (ctx, w, h, y) => {
+  ctx.fillStyle = '#a4523a'; ctx.fillRect(0, 0, w, h);
+  for (let r = 0; r < h; r += 6) { ctx.fillStyle = 'rgba(60,25,18,0.18)'; ctx.fillRect(0, r, w, 1); }
+  sashRow(ctx, w, y(16), 2.2 * PXM, 7); sashRow(ctx, w, y(12.4), 2.6 * PXM, 7); sashRow(ctx, w, y(8.6), 2.6 * PXM, 7);
+  // white stone shopfront storey with the name, garlanded windows
+  ctx.fillStyle = '#efece6'; ctx.fillRect(0, y(5.6), w, 5.6 * PXM);
+  ctx.fillStyle = '#3a3530'; ctx.font = `${0.8 * PXM}px Georgia`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('BROWN THOMAS', w * 0.72, y(4.9));
+  for (let i = 0; i < 5; i++) {
+    const x = 16 + i * (w - 32) / 5, ww = (w - 32) / 5 - 26;
+    ctx.fillStyle = '#2d4a2c'; ctx.fillRect(x - 12, y(4.3), ww + 24, 4.3 * PXM); // garland
+    for (let k = 0; k < 40; k++) { ctx.fillStyle = '#ffe9a0'; ctx.fillRect(x - 10 + Math.random() * (ww + 20), y(4.2) + Math.random() * 4.1 * PXM, 3, 3); }
+    ctx.fillStyle = '#e7dccb'; ctx.fillRect(x, y(3.8), ww, 3.6 * PXM);
+    ctx.fillStyle = '#b89c7a'; ctx.fillRect(x + 8, y(1.2), ww - 16, 1.0 * PXM);
+  }
+});
+const weirTex = frontTex(10, 16, (ctx, w, h, y) => {
+  ctx.fillStyle = '#d9d1bf'; ctx.fillRect(0, 0, w, h);
+  sashRow(ctx, w, y(14.2), 2.2 * PXM, 3, '#ece6d8'); sashRow(ctx, w, y(10.6), 2.4 * PXM, 3, '#ece6d8'); sashRow(ctx, w, y(7), 2.4 * PXM, 3, '#ece6d8');
+  ctx.fillStyle = '#16140f'; ctx.fillRect(0, y(4.4), w, 4.4 * PXM);
+  ctx.fillStyle = '#c9a646'; ctx.font = `bold ${0.75 * PXM}px Georgia`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('WEIR & SONS', w / 2, y(3.8));
+  ctx.fillStyle = '#f2e3b0'; ctx.fillRect(16, y(3.2), w - 32, 2.6 * PXM);
+  ctx.fillStyle = '#16140f'; for (let i = 1; i < 4; i++) ctx.fillRect(16 + i * (w - 32) / 4, y(3.2), 4, 2.6 * PXM);
+});
+// the shopping centre's white "conservatory" bays: one 4 m bay per 4 m storey, arched glazing over a lacy balcony
+const conservatoryTex = canvasTex(128, 128, (ctx, w, h) => {
+  ctx.fillStyle = '#f1efe9'; ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = '#2a3238';
+  ctx.beginPath(); ctx.moveTo(18, 100); ctx.lineTo(18, 42); ctx.arc(64, 42, 46, Math.PI, 0); ctx.lineTo(110, 100); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#f1efe9'; ctx.lineWidth = 4;
+  for (const x of [41, 64, 87]) { ctx.beginPath(); ctx.moveTo(x, 100); ctx.lineTo(x, 20); ctx.stroke(); }
+  ctx.fillStyle = '#e4e0d6'; ctx.fillRect(0, 100, w, 28);
+  ctx.strokeStyle = '#bdb7aa'; ctx.lineWidth = 2;
+  for (let x = 4; x < w; x += 8) { ctx.beginPath(); ctx.arc(x, 114, 3.5, 0, Math.PI * 2); ctx.stroke(); }
+});
+Object.assign(M, {
+  bewleys: new THREE.MeshStandardMaterial({ map: bewleysTex, roughness: 0.7 }),
+  brownThomas: new THREE.MeshStandardMaterial({ map: brownThomasTex, roughness: 0.75, emissive: 0xffffff, emissiveMap: brownThomasTex, emissiveIntensity: 0.05 }),
+  weir: new THREE.MeshStandardMaterial({ map: weirTex, roughness: 0.6 }),
+  conservatory: new THREE.MeshStandardMaterial({ map: conservatoryTex, roughness: 0.55 }),
+  awning: new THREE.MeshStandardMaterial({ color: 0x7a1f2b, roughness: 0.8, side: THREE.DoubleSide }),
+  flowers: new THREE.MeshStandardMaterial({ color: 0xb0204a, roughness: 0.9 }),
+  festoon: glow(0xffe2a0, 0.25, 2.2),
+});
+
+// a plain stucco block with a painted elevation laid over its street face
+function shopfront(site, frontMat, H, name) {
+  const b = new Builder(site);
+  b.facade(site.w, H, site.d, M.stucco, M.slate, {}, 4, 3.6);
+  b.add(new THREE.PlaneGeometry(site.w, H), frontMat, { y: H / 2, z: site.d / 2 + 0.03 });
+  b.solid(0, 0, site.w, site.d);
+  return b;
+}
+function bewleys(site) {
+  const b = shopfront(site, M.bewleys, 18, "Bewley's");
+  const W = site.w, D = site.d;
+  // red iron balcony with hanging flowers, and the maroon awnings over the café windows
+  b.box(W - 1, 0.1, 0.9, M.olympiaRed, { y: 5.2, z: D / 2 + 0.45 });
+  for (let x = -W / 2 + 0.7; x < W / 2 - 0.5; x += 0.35) b.box(0.04, 1, 0.04, M.olympiaRed, { x, y: 5.3, z: D / 2 + 0.88 });
+  b.box(W - 1, 0.06, 0.06, M.olympiaRed, { y: 6.3, z: D / 2 + 0.88 });
+  for (const x of [-W / 2 + 1.2, W / 2 - 1.2]) b.add(new THREE.SphereGeometry(0.55, 8, 6), M.planting, { x, y: 5.9, z: D / 2 + 0.7 });
+  for (const x of [-W / 4 - 0.4, W / 4 + 0.4]) b.box(W / 2 - 1.6, 0.08, 1.6, M.awning, { x, y: 3.3, z: D / 2 + 0.7, rx: 0.35 });
+  return b.build("Bewley's");
+}
+function brownThomas(site) {
+  const b = shopfront(site, M.brownThomas, 18, 'Brown Thomas');
+  for (const x of [-9, -3, 3, 9]) {
+    b.cyl(0.04, 0.04, 3, M.dark, { x, y: 8, z: site.d / 2 + 0.1, rx: Math.PI / 2 - 0.5 }, 5);
+    b.add(new THREE.PlaneGeometry(1, 1.6), M.flag, { x: x + 0.55, y: 9.2, z: site.d / 2 + 2 });
+  }
+  return b.build('Brown Thomas');
+}
+function weirAndSons(site) {
+  const b = shopfront(site, M.weir, 16, 'Weir & Sons');
+  // the street clock on its post, out on the paving
+  const cz = site.d / 2 + 2.2, cx = site.w / 2 + 1;
+  b.cyl(0.09, 0.14, 4.2, M.dark, { x: cx, z: cz }, 8);
+  b.cyl(0.5, 0.5, 0.18, M.dark, { x: cx, y: 4.2, z: cz, rz: Math.PI / 2 }, 16);
+  for (const s of [-1, 1]) b.add(new THREE.CircleGeometry(0.44, 20), M.clock, { x: cx + s * 0.1, y: 4.2, z: cz, ry: (s * Math.PI) / 2 });
+  b.solid(cx, cz, 0.4, 0.4);
+  return b.build('Weir & Sons');
+}
+function stephensGreenCentre(site) {
+  // local +z faces King Street South; the rounded glass-domed corner looks down Grafton Street (local +x, +z)
+  const b = new Builder(site);
+  const W = site.w, D = site.d, H = 18, R = 11;
+  const cx = W / 2 - R, cz = D / 2 - R;
+  b.box(W - R, 4, D, M.granite, { x: -R / 2 }); b.box(R, 4, D - R, M.granite, { x: W / 2 - R / 2, z: -R / 2 }); // shopfront storey
+  b.facade(W - R, H - 4, D, M.conservatory, M.slate, { x: -R / 2, y: 4 }, 4, 3.5);
+  b.facade(W, H - 4, D - R, M.conservatory, M.slate, { y: 4, z: -R / 2 }, 4, 3.5);
+  // rounded corner: a drum of the same bays, red flower boxes on its balconies, the glass dome above
+  const drum = new THREE.CylinderGeometry(R, R, H - 4, 24, 1, true, 0, Math.PI / 2);
+  { const uv = drum.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * (Math.PI * R / 2) / 4, uv.getY(i) * (H - 4) / 3.5); }
+  b.add(drum.translate(0, (H - 4) / 2, 0), M.conservatory, { x: cx, y: 4, z: cz });
+  b.add(new THREE.CylinderGeometry(R, R, 4, 24, 1, false, 0, Math.PI / 2).translate(0, 2, 0), M.granite, { x: cx, z: cz });
+  for (const y of [7.5, 11, 14.5]) b.add(new THREE.TorusGeometry(R + 0.35, 0.35, 5, 24, Math.PI / 2), M.flowers, { x: cx, y, z: cz, rx: Math.PI / 2 });
+  b.add(new THREE.SphereGeometry(R * 0.72, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), M.glass, { x: cx, y: H, z: cz, sy: 0.7 });
+  b.box(W, 0.6, D, M.portlandSmooth, { y: H });
+  b.solid(0, 0, W, D);
+  return b.build("St Stephen's Green Shopping Centre");
+}
+// Christmas lights strung across Grafton Street, and the wooden planters at its top end
+function graftonDressing() {
+  const b = new Builder({ x: 0, z: 0, rot: 0 });
+  const way = world.ways.find((w) => w.pedestrian);
+  const pts = way.pts, half = way.width / 2 + way.pave;
+  let acc = 0;
+  for (let k = 0; k < pts.length - 1; k++) {
+    const a = pts[k], c = pts[k + 1], L = v2.len(v2.sub(c, a)), d = v2.norm(v2.sub(c, a)), n = { x: -d.z, z: d.x };
+    for (let s = 12 - acc; s < L - 6; s += 18) {
+      const p = v2.add(a, v2.scale(d, s));
+      const ry = Math.atan2(n.x, n.z);
+      b.box(0.05, 0.05, half * 2, M.dark, { x: p.x, y: 9, z: p.z, ry });
+      for (let t = -half + 0.8; t < half; t += 0.9) b.add(new THREE.SphereGeometry(0.09, 5, 4), M.festoon, { x: p.x + n.x * t, y: 8.85, z: p.z + n.z * t });
+      // a hanging chandelier of lights in the middle
+      b.add(new THREE.ConeGeometry(0.7, 1.8, 8, 1, true), M.festoon, { x: p.x, y: 7.9, z: p.z, rx: Math.PI });
+    }
+    acc = (acc + L) % 18;
+  }
+  // planters with small trees where Grafton Street opens onto the Green
+  const a = pts[pts.length - 2], c = pts[pts.length - 1], d = v2.norm(v2.sub(c, a)), n = { x: -d.z, z: d.x };
+  for (const s of [8, 20]) for (const side of [-1, 1]) {
+    const p = v2.add(v2.sub(c, v2.scale(d, s)), v2.scale(n, side * (way.width / 2 - 1.3)));
+    b.box(2, 0.8, 2, M.timber, { x: p.x, y: KERB_H, z: p.z });
+    b.cyl(0.08, 0.1, 1.6, M.timber, { x: p.x, y: KERB_H + 0.8, z: p.z }, 5);
+    b.add(new THREE.IcosahedronGeometry(1.1, 0), M.planting, { x: p.x, y: KERB_H + 2.6, z: p.z });
+    addBox(p.x, p.z, 1, 1, 0);
+  }
+  return b.build('Grafton Street dressing');
+}
+
 // ---------- trees ----------
 function buildTrees(scene) {
   const spots = [];
@@ -1009,6 +1179,11 @@ function buildTrees(scene) {
     // College Park, the eastern part of the campus
     const east = cp.poly.filter((p) => p.x > sites.trinity.x + 110);
     if (east.length >= 3) scatter(east, 25, 6);
+  }
+  // trees inside Trinity's railings where College Green bends into Nassau Street
+  {
+    const c = world.nodes.get('CGC');
+    for (const [dx, dz] of [[16, -4], [20, 8], [15, 14]]) spots.push({ x: c.x + dx, z: c.z + dz, s: 1.1 });
   }
   // London planes along the south footpath of College Green
   {
@@ -1046,6 +1221,7 @@ export function buildLandmarks(scene) {
     oconnellMonument(), fusiliersArch(S.stephensGreen.park),
     cityHall(S.cityHall), dublinCastle(extraSites.castle), centralBank(S.centralBank), olympia(extraSites.olympia),
     clockCorner(extraSites.clockCorner), grattanIsland(extraSites.grattan),
+    bewleys(extraSites.bewleys), brownThomas(extraSites.brownThomas), weirAndSons(extraSites.weir), stephensGreenCentre(extraSites.sgCentre), graftonDressing(),
     heuston(S.heuston), guinness(S.guinness), jamesGate(extraSites.jamesGate), beckettHarp(S.beckett), convention(S.convention),
     threeArena(S.threeArena), grattanOffice(S.grandCanalSt), grandCanalTheatre(S.grandCanal), grandCanalSquare(S.grandCanal.square), markerHotel(extraSites.marker),
   ];

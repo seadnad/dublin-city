@@ -149,6 +149,7 @@ function build() {
       index: i, name: w.name, type: w.type, width, nodeIds: w.nodes, pts,
       bridge: w.type === 'bridge', speed: TYPE_SPEED[w.type] ?? 10,
       pave: w.pave ?? PAVEMENT, // footpath width each side; wider on the grand streets
+      pedestrian: !!w.pedestrian, // paved wall to wall (Grafton Street): no traffic, but the player may drive it
     };
     for (const id of w.nodes) nodes.get(id).ways.push(way);
     return way;
@@ -223,10 +224,11 @@ function build() {
   // enclosed dock basins (Grand Canal Dock): water ringed by roads, like a park ringed by railings
   const docks = Object.entries(data.docks || {}).map(([name, ids]) => ({ name, poly: polyOf(ids), ids }));
 
-  const luasPts = data.luas.route.map((id) => ({ x: nodes.get(id).x, z: nodes.get(id).z, id }));
-  const luas = { name: data.luas.name, pts: luasPts, stops: data.luas.stops };
+  const line = (l) => ({ name: l.name, pts: l.route.map((id) => ({ x: nodes.get(id).x, z: nodes.get(id).z, id })), stops: l.stops });
+  const luasLines = [line(data.luas), ...(data.luasGreen ? [line(data.luasGreen)] : [])];
+  const luas = luasLines[0];
 
-  return { nodes, ways, edges, bounds, segs, segsNear, nearestRoad, northBank, southBank, riverPoly, parks, campus, docks, luas };
+  return { nodes, ways, edges, bounds, segs, segsNear, nearestRoad, northBank, southBank, riverPoly, parks, campus, docks, luas, luasLines };
 }
 
 function extendToEdges(pts, bounds) {

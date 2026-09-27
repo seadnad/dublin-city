@@ -76,7 +76,7 @@ for (const dk of dockPolys) fillPolygon(dk.poly);
 for (const p of [...parkPolys, ...campusPolys]) fillPolygon(p.poly);
 for (const r of reserved) markOBB(r, -1);
 // Luas platforms stand in the road; keep an apron clear around the track anyway
-for (let i = 1; i < world.luas.pts.length; i++) fillSegment(world.luas.pts[i - 1], world.luas.pts[i], 6);
+for (const { pts } of world.luasLines) for (let i = 1; i < pts.length; i++) fillSegment(pts[i - 1], pts[i], 6);
 
 // ---------- styles ----------
 const S = { GEORGIAN: 0, BRICK: 1, STUCCO: 2, TEMPLEBAR: 3, MODERN: 4 };

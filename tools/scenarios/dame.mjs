@@ -1,7 +1,16 @@
 // Dame Street / College Green review shots: street-level views along the street plus an overhead.
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 // [name, from node, to node, t] — the car is placed in the left lane looking from -> to
-const VIEWS = [
+const GRAFTON = [
+  ['cg-bend', 'CGT', 'CGC', 0.1],
+  ['nassau-luas', 'CG3', 'NS1', 0.15],
+  ['grafton-north', 'CG3', 'GR1', 0.25],
+  ['grafton-bt', 'GR1', 'GR2', 0.05],
+  ['grafton-bewleys', 'GR1', 'GR2', 0.55],
+  ['grafton-top', 'GR2', 'SGNW', 0.4],
+  ['sg-centre', 'SGW', 'SGNW', 0.5],
+];
+const DAME = [
   ['trinity-front', 'CG0', 'CGT', 0.1],
   ['college-green-west', 'CGT', 'CG0', 0.15],
   ['dame-east-end', 'DMc', 'DM1', 0.1],
@@ -10,6 +19,7 @@ const VIEWS = [
   ['city-hall', 'SQ4', 'PARL', 0.3],
   ['lord-edward', 'LE1', 'DM3', 0.2],
 ];
+const VIEWS = process.env.SET === 'grafton' ? GRAFTON : DAME;
 export default async function (page, shot) {
   await wait(4000);
   const tag = process.env.TAG || '';
@@ -25,6 +35,7 @@ export default async function (page, shot) {
     await shot(`${tag}${name}`);
   }
   if (process.env.OVERHEAD) {
+    await page.evaluate((set) => { window.__set = set; }, process.env.SET || '');
     await page.evaluate(() => {
       const d = window.__dublin, a = d.world.nodes.get('DM2'), c = d.world.nodes.get('CG1');
       d.rig.update = () => {};

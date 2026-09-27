@@ -37,6 +37,7 @@ const field = new Float32Array(NX * NZ).fill(30);
   const gi = (x) => Math.round((x - B.minX) / G), gj = (z) => Math.round((z - B.minZ) / G);
   const scratch = new Float32Array(NX * NZ).fill(Infinity);
   for (const way of world.ways) {
+    if (way.pedestrian) continue;
     const r = way.width / 2 + REACH;
     let i0 = Infinity, i1 = -Infinity, j0 = Infinity, j1 = -Infinity;
     for (let k = 0; k < way.pts.length - 1; k++) {
@@ -593,10 +594,10 @@ export function buildStreets(scene, puddles) {
   group.add(pave.mesh);
   group.add(...buildMarkings(lineMat, textMat));
 
-  // granite setts on the Temple Bar lanes and Grafton Street
+  // granite setts on the Temple Bar lanes
   const sr = new Ribbons();
   for (const way of world.ways) {
-    if (way.type !== 'lane' && way.name !== 'Grafton Street') continue;
+    if (way.type !== 'lane' || way.pedestrian) continue;
     for (let k = 0; k < way.pts.length - 1; k++) {
       const a = way.pts[k], b = way.pts[k + 1], d = v2.norm(v2.sub(b, a)), n = { x: -d.z * way.width / 2, z: d.x * way.width / 2 };
       const ext = v2.scale(d, 2);
@@ -611,10 +612,11 @@ export function buildStreets(scene, puddles) {
   group.add(settsMesh);
 
   // Luas: concrete track bed and four steel rails
-  const lp = world.luas.pts;
   const bed = new Ribbons(), rails = new Ribbons();
-  bed.strip(lp, 0, 7.2, 0.006, null);
-  for (const off of [-2.52, -1.08, 1.08, 2.52]) rails.strip(lp, off, 0.075, 0.011, null);
+  for (const { pts: lp } of world.luasLines) {
+    bed.strip(lp, 0, 7.2, 0.006, null);
+    for (const off of [-2.52, -1.08, 1.08, 2.52]) rails.strip(lp, off, 0.075, 0.011, null);
+  }
   const bedGeo = bed.geometry();
   { const p = bedGeo.attributes.position, uv = bedGeo.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i) / 3.6, p.getZ(i) / 3.6); }
   const bedMat = new THREE.MeshStandardMaterial({ map: P.map, normalMap: P.normalMap, color: 0xb9b6ae, roughness: 0.85, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });

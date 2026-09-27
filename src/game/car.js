@@ -65,7 +65,7 @@ export class Car {
     // surface
     const road = world.nearestRoad(this.pos.x, this.pos.z);
     let surface = 'plaza';
-    if (road && road.edgeDist < 0) surface = 'road';
+    if (road && road.edgeDist < 0) surface = road.way.pedestrian ? 'pavement' : 'road'; // Grafton St is paved
     else if (road && road.edgeDist < PAVEMENT) surface = 'pavement';
     if (surface !== this.surface) {
       if (surface !== 'road' || this.surface !== 'road') {

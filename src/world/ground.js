@@ -102,7 +102,7 @@ function drawLayout() {
   ctx.strokeStyle = COLORS.asphalt;
   for (const w of roads) {
     ctx.lineWidth = (w.width - (w.type === 'lane' ? 0 : 0.9)) * PPM;
-    ctx.strokeStyle = w.type === 'lane' ? '#56524d' : COLORS.asphalt; // lanes are setts
+    ctx.strokeStyle = w.pedestrian ? COLORS.pavement : w.type === 'lane' ? '#56524d' : COLORS.asphalt; // lanes are setts
     strokePts(ctx, w.pts); ctx.stroke();
   }
   // O'Connell Street central median
@@ -113,10 +113,11 @@ function drawLayout() {
   }
 
   // Luas track bed + rails
-  const lp = world.luas.pts;
-  ctx.strokeStyle = '#4a4a4c'; ctx.lineWidth = 7.4 * PPM; strokePts(ctx, lp); ctx.stroke();
-  ctx.strokeStyle = '#8d8e90'; ctx.lineWidth = Math.max(1, 0.14 * PPM);
-  for (const off of [-2.55, -1.1, 1.1, 2.55]) { strokePts(ctx, offsetPolyline(lp, off)); ctx.stroke(); }
+  for (const { pts: lp } of world.luasLines) {
+    ctx.strokeStyle = '#4a4a4c'; ctx.lineWidth = 7.4 * PPM; strokePts(ctx, lp); ctx.stroke();
+    ctx.strokeStyle = '#8d8e90'; ctx.lineWidth = Math.max(1, 0.14 * PPM);
+    for (const off of [-2.55, -1.1, 1.1, 2.55]) { strokePts(ctx, offsetPolyline(lp, off)); ctx.stroke(); }
+  }
 
   // lane markings: white dashed centre lines, trimmed at junctions
   ctx.strokeStyle = COLORS.white; ctx.lineCap = 'butt';

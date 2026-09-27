@@ -76,7 +76,8 @@
     "CM2": [53.3505, -6.2459],
     "CHS1": [53.3481, -6.2754],
     "WM1": [53.3458, -6.25928],
-    "CG1": [53.34500, -6.25955], "CGT": [53.34432, -6.25955],
+    "CG1": [53.345, -6.25955],
+    "CGT": [53.34432, -6.25955],
     "CG0": [53.3445, -6.2612],
     "CG3": [53.34365, -6.25955],
     "DO1": [53.3459, -6.2579],
@@ -186,7 +187,11 @@
     "GC1": [53.34031, -6.24315],
     "GCM": [53.33974, -6.24184],
     "GC2": [53.33864, -6.23886],
-    "BW1": [53.3383, -6.237]
+    "BW1": [53.3383, -6.237],
+    "CGC": [53.34395, -6.25972],
+    "CGM": [53.34466, -6.25955],
+    "DSM": [53.34138, -6.2583],
+    "SGW": [53.33832, -6.26172]
   },
   "ways": [
     { "name": "Arran Quay", "type": "quay", "nodes": ["AQ2", "AQ1", "NQ0"] },
@@ -237,8 +242,9 @@
     { "name": "Commons Street", "type": "secondary", "nodes": ["NQ13", "MY1", "CM2"] },
     { "name": "Westmoreland Street", "type": "primary", "width": 14, "nodes": ["SQ8", "WM1", "CG1"] },
     { "name": "D'Olier Street", "type": "primary", "width": 14, "nodes": ["SQ8", "DO1", "CS1"] },
-    { "name": "College Green", "type": "primary", "width": 20, "pave": 6.5, "nodes": ["CG0", "CGT", "CG3"] },
-    { "name": "College Green", "type": "primary", "width": 16, "pave": 5, "nodes": ["CGT", "CG1"] },
+    { "name": "College Green", "type": "primary", "width": 20, "pave": 6.5, "nodes": ["CG0", "CGT"] },
+    { "name": "College Green", "type": "primary", "width": 13, "pave": 4.5, "nodes": ["CGT", "CGC", "CG3"] },
+    { "name": "College Green", "type": "primary", "width": 15, "pave": 5, "nodes": ["CGT", "CGM", "CG1"] },
     { "name": "College Street", "type": "primary", "nodes": ["CG1", "CS1"] },
     { "name": "Pearse Street", "type": "primary", "nodes": ["CS1", "PS1", "PS2", "PS3", "PS4"] },
     { "name": "Tara Street", "type": "primary", "nodes": ["SQ10", "TA1", "PS1"] },
@@ -254,13 +260,13 @@
     { "name": "Merrion Square West", "type": "secondary", "width": 13, "nodes": ["MSSW", "MSNW"] },
     { "name": "Merrion Row", "type": "secondary", "nodes": ["SGNE", "MR1", "MSSW"] },
     { "name": "Baggot Street Lower", "type": "secondary", "width": 12, "nodes": ["MR1", "BG1"] },
-    { "name": "Grafton Street", "type": "secondary", "width": 10, "nodes": ["CG3", "GR1", "GR2", "SGNW"] },
-    { "name": "Dawson Street", "type": "secondary", "width": 12, "nodes": ["NS1", "DS1"] },
+    { "name": "Grafton Street", "type": "lane", "width": 11, "nodes": ["CG3", "GR1", "GR2", "SGNW"], "pedestrian": true, "pave": 0.6 },
+    { "name": "Dawson Street", "type": "secondary", "width": 12, "nodes": ["NS1", "DSM", "DS1"] },
     { "name": "Kildare Street", "type": "secondary", "width": 12, "nodes": ["NS2", "KS1"] },
     { "name": "St Stephen's Green North", "type": "primary", "width": 14, "nodes": ["SGNW", "DS1", "KS1", "SGNE"] },
     { "name": "St Stephen's Green East", "type": "primary", "width": 14, "nodes": ["SGNE", "SGSE"] },
     { "name": "St Stephen's Green South", "type": "primary", "width": 14, "nodes": ["SGSE", "HC0", "SGSW"] },
-    { "name": "St Stephen's Green West", "type": "primary", "width": 14, "nodes": ["SGSW", "SGNW"] },
+    { "name": "St Stephen's Green West", "type": "primary", "width": 14, "nodes": ["SGSW", "SGW", "SGNW"] },
     { "name": "Leeson Street Lower", "type": "secondary", "width": 13, "nodes": ["SGSE", "LE2"] },
     { "name": "Harcourt Street", "type": "secondary", "width": 12, "nodes": ["HC0", "HC1"] },
     { "name": "Cuffe Street", "type": "secondary", "nodes": ["SGSW", "CU1"] },
@@ -339,11 +345,11 @@
   ],
   "river": { "name": "River Liffey", "north": ["WT3", "WT2", "WT1", "SQY", "EQ1", "EQB", "AQ2", "AQ1", "NQ0", "NQ1", "NQ2", "NQ3", "NQ4", "NQ5", "NQ6", "NQ7", "NQ8", "NQ9", "NQ10", "NQ11", "NQ12", "NQ13", "NQ14", "NQ15", "NQ16", "NQ17", "NQ18", "NQ19"], "south": ["VQ2", "VQ1", "UI1", "UQ2", "UQ1", "SQ0", "SQ1", "SQ2", "SQ3", "SQ4", "SQ5", "SQ6", "SQ7", "SQ8", "SQ9", "SQ10", "SQ11", "SQ12", "SQ13", "SQ14", "SQ15", "SQ16", "SQ17", "SQ18", "TCS"] },
   "parks": {
-    "St Stephen's Green": ["SGNW", "DS1", "KS1", "SGNE", "SGSE", "HC0", "SGSW"],
+    "St Stephen's Green": ["SGNW", "DS1", "KS1", "SGNE", "SGSE", "HC0", "SGSW", "SGW"],
     "Merrion Square": ["MSNW", "MSNE", "MSSE", "MSSW"]
   },
   "campus": {
-    "Trinity College": ["CG1", "CS1", "PS1", "PS2", "MSNW", "NS3", "NS2", "NS1", "CG3", "CGT"]
+    "Trinity College": ["CG1", "CS1", "PS1", "PS2", "MSNW", "NS3", "NS2", "NS1", "CG3", "CGC", "CGT", "CGM"]
   },
   "luas": {
     "name": "Luas Red Line",
@@ -359,5 +365,16 @@
   },
   "docks": {
     "Grand Canal Dock": ["HQ1", "HQM", "HQ2", "SD1", "RR1", "PS5"]
+  },
+  "luasGreen": {
+    "name": "Luas Green Line",
+    "route": ["WM1", "CG1", "CGM", "CGT", "CGC", "CG3", "NS1", "DSM", "DS1", "SGNW", "SGW", "SGSW", "HC0", "HC1"],
+    "stops": {
+      "WM1": "Westmoreland",
+      "CGM": "Trinity",
+      "DSM": "Dawson",
+      "SGW": "St. Stephen's Green",
+      "HC1": "Harcourt"
+    }
   }
 }

@@ -20,8 +20,8 @@ function sample(pts, table, d) {
   return v2.lerp(pts[lo], pts[hi], t);
 }
 
-export function createLuas(scene) {
-  const centre = resample(world.luas.pts, 2);
+export function createLuas(scene, line = world.luas) {
+  const centre = resample(line.pts, 2);
   // outbound (along route) keeps left; inbound uses the other track, reversed
   const tracks = [offsetPolyline(centre, -TRACK), offsetPolyline(centre, TRACK).reverse()];
   const tables = tracks.map(arcTable);
@@ -29,7 +29,7 @@ export function createLuas(scene) {
 
   // stop positions as arc distance on the centreline
   const cTable = arcTable(centre);
-  const stops = Object.entries(world.luas.stops).map(([id, name]) => {
+  const stops = Object.entries(line.stops).map(([id, name]) => {
     const n = world.nodes.get(id);
     let best = 0, bd = Infinity;
     centre.forEach((p, i) => { const d = (p.x - n.x) ** 2 + (p.z - n.z) ** 2; if (d < bd) { bd = d; best = cTable[i]; } });
@@ -69,7 +69,7 @@ export function createLuas(scene) {
   }
 
   const tram = {
-    name: world.luas.name,
+    name: line.name,
     dir: 0, s: N * (CAR_LEN + GAP) + 2, speed: 0, dwell: 4, nextStop: null,
     carriages: cars.map(() => ({ x: 0, z: 0, heading: 0, hx: 1.25, hz: CAR_LEN / 2 })),
     stops, currentStop: null,
@@ -147,4 +147,29 @@ export function createLuas(scene) {
   };
   tram.update(0);
   return tram;
+}
+
+// Several lines behind one tram-like object: carriages from every line (nearest line first, which is the one
+// the HUD stop label and the gong follow), and collisions against all of them.
+export function combineTrams(lines) {
+  let near = lines[0];
+  return {
+    lines,
+    get carriages() { return near === lines[0] ? lines.flatMap((l) => l.carriages) : [near, ...lines.filter((l) => l !== near)].flatMap((l) => l.carriages); },
+    get speed() { return near.speed; },
+    get currentStop() { return near.currentStop; },
+    get name() { return near.name; },
+    update(dt, focus) {
+      for (const l of lines) l.update(dt);
+      if (focus) {
+        let bd = Infinity;
+        for (const l of lines) for (const c of l.carriages) { const d = (c.x - focus.x) ** 2 + (c.z - focus.z) ** 2; if (d < bd) { bd = d; near = l; } }
+      }
+    },
+    collide(c, r) {
+      let hit = null;
+      for (const l of lines) { const h = l.collide(c, r); if (h && (!hit || h.depth > hit.depth)) hit = h; }
+      return hit;
+    },
+  };
 }
