@@ -26,15 +26,15 @@ export async function loadCar(name) {
   const wheels = [], glow = [];
   const material = carMaterialCache(); // one tuned material per source material, per car (lights are per car)
   src.traverse((o) => {
-    if (!o.isMesh) {
-      if (/^wheel_/.test(o.name)) wheels.push({ o, front: /front/.test(o.name) });
-      return;
-    }
+    // Only the wheel node itself spins and steers. A multi-material wheel loads as a group named wheel_front_l
+    // with child meshes (wheel_front_l_tyre, _1, ...); rotating the children as well applied steer and spin twice,
+    // and the second steer about an already-spun axis tipped the wheel over.
+    if (/^wheel_(front|rear)_[lr]$/.test(o.name)) wheels.push({ o, front: /front/.test(o.name) });
+    if (!o.isMesh) return;
     o.castShadow = true; o.receiveShadow = true;
     o.material = material(o.material);
     const n = o.material.name || '';
     if (/headlight|drl|taillight|indicator|lightbar_\d/.test(n) && !glow.some((g) => g.m === o.material)) glow.push({ m: o.material, base: o.material.emissiveIntensity, kind: n });
-    if (/^wheel_/.test(o.name)) wheels.push({ o, front: /front/.test(o.name) });
   });
   let spin = 0;
   const q = new THREE.Quaternion(), qs = new THREE.Quaternion(), X = new THREE.Vector3(1, 0, 0), Y = new THREE.Vector3(0, 1, 0);
