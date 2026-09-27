@@ -32,7 +32,7 @@ export function updateInput(dt) {
   input.handbrake = keys.has(' ') || !!touch.hand;
   const target = (right ? 1 : 0) - (left ? 1 : 0);
   // keyboard steering ramps in so small taps give small corrections
-  steerSmooth += (target - steerSmooth) * Math.min(1, dt * (target === 0 ? 12 : 7));
+  steerSmooth += (target - steerSmooth) * Math.min(1, dt * (target === 0 ? 14 : 10));
   input.steer = Math.abs(steerSmooth) < 0.01 ? 0 : steerSmooth;
 }
 

@@ -18,6 +18,7 @@ import { createLuas } from './game/luas.js';
 import { createPeople } from './game/people.js';
 import { audio } from './game/audio.js';
 import { createHUD } from './ui/hud.js';
+import { createWorldMap } from './ui/worldmap.js';
 import { createPipeline, QUALITIES } from './render/pipeline.js';
 import { KERB_H } from './world/roads.js';
 
@@ -131,6 +132,7 @@ const actions = {
   labels: () => { labelsOn = !labelsOn; landmarks.setLabels(labelsOn); hud.setOn('labels', labelsOn); },
   sound: () => { const on = audio.toggle(); hud.setOn('sound', on); hud.toast(on ? 'Sound on' : 'Sound off'); },
   teleport: teleportTo,
+  map: () => worldMap.toggle(),
 };
 const hud = createHUD({ sites, actions });
 // Desktop starts at medium and steps up to high (ambient occlusion) if there is frame-time headroom.
@@ -148,10 +150,21 @@ onKey('r', actions.rain);
 onKey('n', actions.evening);
 onKey('c', actions.camera);
 onKey('l', actions.labels);
-onKey('m', actions.sound);
+onKey('v', actions.sound);
+const worldMap = createWorldMap({
+  sites, lots: buildings.lots,
+  getLive: () => ({
+    player: { x: car.pos.x, z: car.pos.z, heading: car.heading },
+    traffic: traffic.list.map((a) => a.pos),
+    tram: tram.carriages,
+  }),
+  onTeleport: (k) => teleportTo(k),
+  onWaypoint: (p) => { hud.setWaypoint(p); if (p) hud.toast(`Waypoint: ${p.name}`); },
+});
+onKey('m', actions.map);
 onKey('h', () => hud.togglePanel('help'));
 onKey('t', () => hud.togglePanel('places'));
-onKey('escape', () => hud.togglePanel(null));
+onKey('escape', () => { hud.togglePanel(null); worldMap.close(); });
 onKey('f', () => hud.toggleFps());
 onKey('backspace', respawnNearRoad);
 siteKeys.forEach((k, i) => onKey(String(i + 1), () => { teleportTo(k); hud.togglePanel(null); }));
@@ -173,7 +186,8 @@ const focus = new THREE.Vector3();
 function frame() {
   timer.update();
   const rawDt = timer.getDelta();
-  const dt = Math.min(rawDt, 0.05);
+  // the world pauses while the map is open
+  const dt = worldMap.isOpen ? 0 : Math.min(rawDt, 0.05);
   time += dt;
 
   const tp0 = performance.now();

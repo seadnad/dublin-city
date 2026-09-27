@@ -12,6 +12,7 @@ const ICONS = {
   pin: '<path d="M12 22s7-6.3 7-12a7 7 0 1 0-14 0c0 5.7 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/>',
   help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 1-1 1.7v.5M12 17h.01"/>',
   sound: '<path d="M4 9h4l5-4v14l-5-4H4V9Z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>',
+  map: '<path d="M9 4 3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5L9 4Z"/><path d="M9 4v13.5M15 6.5V20"/>',
 };
 const svg = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>`;
 
@@ -37,11 +38,13 @@ export function createHUD({ sites, actions }) {
       <button data-a="evening" title="Evening (N)">${svg('moon')}<span>Evening</span><kbd>N</kbd></button>
       <button data-a="camera" title="Camera (C)">${svg('camera')}<span>Camera</span><kbd>C</kbd></button>
       <button data-a="labels" title="Labels (L)" class="on">${svg('tag')}<span>Labels</span><kbd>L</kbd></button>
+      <button data-a="map" title="Map (M)">${svg('map')}<span>Map</span><kbd>M</kbd></button>
       <button data-a="places" title="Landmarks (T)">${svg('pin')}<span>Places</span><kbd>T</kbd></button>
-      <button data-a="sound" title="Sound (M)">${svg('sound')}<span>Sound</span><kbd>M</kbd></button>
+      <button data-a="sound" title="Sound (V)">${svg('sound')}<span>Sound</span><kbd>V</kbd></button>
       <button data-a="help" title="Help (H)">${svg('help')}<span>Help</span><kbd>H</kbd></button>
     </div>
-    <canvas class="minimap" id="minimap" aria-label="Minimap"></canvas>
+    <canvas class="minimap" id="minimap" aria-label="Minimap, click to open the map" title="Open the map (M)"></canvas>
+    <div class="waypoint" id="waypoint"></div>
     <div class="tram-stop" id="tramstop"></div>
     <div class="panel sheet places" id="places" hidden>
       <header><h2>Landmarks</h2><button class="close" data-a="places" aria-label="Close">&times;</button></header>
@@ -58,10 +61,11 @@ export function createHUD({ sites, actions }) {
         <tr><td><kbd>C</kbd></td><td>Chase / bonnet camera</td></tr>
         <tr><td><kbd>R</kbd> <kbd>N</kbd></td><td>Rain / evening</td></tr>
         <tr><td><kbd>L</kbd></td><td>Landmark labels</td></tr>
+        <tr><td><kbd>M</kbd></td><td>World map (click streets for a waypoint)</td></tr>
         <tr><td><kbd>T</kbd> <kbd>1</kbd>&ndash;<kbd>9</kbd></td><td>Landmark list / teleport</td></tr>
         <tr><td><kbd>Backspace</kbd></td><td>Reset car onto the road</td></tr>
         <tr><td><kbd>Q</kbd></td><td>Graphics quality (low / medium / high)</td></tr>
-        <tr><td><kbd>M</kbd> <kbd>F</kbd></td><td>Sound / frame rate</td></tr>
+        <tr><td><kbd>V</kbd> <kbd>F</kbd></td><td>Sound / frame rate</td></tr>
       </table>
       <p class="touch-note">On a phone: steer with the left pad, pedals on the right, <b>HB</b> is the handbrake.</p>
     </div>
@@ -103,6 +107,9 @@ export function createHUD({ sites, actions }) {
 
   // ---------- minimap ----------
   const map = $('minimap');
+  map.addEventListener('click', () => actions.map());
+  const wpEl = $('waypoint');
+  let waypoint = null;
   const size = IS_MOBILE ? 118 : 190;
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   map.width = map.height = size * dpr;
@@ -153,6 +160,16 @@ export function createHUD({ sites, actions }) {
       mctx.fillStyle = off ? 'rgba(22,155,98,0.75)' : '#169b62'; mctx.fill();
       mctx.lineWidth = 1.5 * dpr; mctx.strokeStyle = '#fff'; mctx.stroke();
     }
+    // waypoint (clamped to the rim when off the minimap)
+    if (waypoint) {
+      let [x, y] = toScreen(waypoint.x, waypoint.z);
+      const dx = x - R, dy = y - R, d = Math.hypot(dx, dy), lim = R - 9 * dpr;
+      if (d > lim) { x = R + (dx / d) * lim; y = R + (dy / d) * lim; }
+      mctx.save(); mctx.translate(x, y); mctx.rotate(Math.PI / 4);
+      mctx.fillStyle = '#ff883e'; mctx.fillRect(-6 * dpr, -6 * dpr, 12 * dpr, 12 * dpr);
+      mctx.lineWidth = 2 * dpr; mctx.strokeStyle = '#fff'; mctx.strokeRect(-6 * dpr, -6 * dpr, 12 * dpr, 12 * dpr);
+      mctx.restore();
+    }
     // north marker
     const [nx, ny] = (() => { const dx = 0, dz = -1; return [R + (dx * c - dz * s) * (R - 11 * dpr), R + (dx * s + dz * c) * (R - 11 * dpr)]; })();
     mctx.font = `bold ${11 * dpr}px system-ui, sans-serif`; mctx.textAlign = 'center'; mctx.textBaseline = 'middle';
@@ -171,6 +188,7 @@ export function createHUD({ sites, actions }) {
   let lastStreet = null, mapT = 0, fpsFrames = 0, fpsT = 0;
   return {
     toast, setOn, togglePanel,
+    setWaypoint(p) { waypoint = p; if (!p) { wpEl.textContent = ''; wpEl.classList.remove('show'); } },
     isPanelOpen: () => !places.hidden || !help.hidden,
     toggleFps() { fpsEl.hidden = !fpsEl.hidden; },
     update(dt, { car, traffic, tram }) {
@@ -180,6 +198,11 @@ export function createHUD({ sites, actions }) {
         streetEl.classList.remove('flip'); void streetEl.offsetWidth; streetEl.classList.add('flip');
       }
       speedEl.textContent = Math.round(Math.abs(car.speed) * 3.6);
+      if (waypoint) {
+        const d = Math.hypot(waypoint.x - car.pos.x, waypoint.z - car.pos.z);
+        if (d < 18) { toast(`Arrived: ${waypoint.name}`, 2500); this.setWaypoint(null); actions.waypointReached && actions.waypointReached(); }
+        else { wpEl.textContent = `${waypoint.name} · ${d < 1000 ? Math.round(d / 10) * 10 + ' m' : (d / 1000).toFixed(1) + ' km'}`; wpEl.classList.add('show'); }
+      }
       mapT -= dt;
       if (mapT <= 0) { drawMinimap(car, traffic, tram); mapT = IS_MOBILE ? 1 / 20 : 1 / 40; }
       // Luas stop announcement when the player is near a stopped tram

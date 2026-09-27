@@ -17,7 +17,8 @@ A browser driving game set in a stylised, compressed central Dublin. Three.js (W
 | `T`, `1`–`9` | Landmark list / teleport |
 | `H` | Help |
 | `Q` | Graphics quality: low / medium / high |
-| `M` | Sound |
+| `M` | World map (click a landmark to go there, or a street for a waypoint) |
+| `V` | Sound |
 | `F` | Frame-rate counter |
 | `Backspace` | Put the car back on the road |
 
