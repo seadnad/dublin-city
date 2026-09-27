@@ -222,7 +222,10 @@ function build() {
   const parks = Object.entries(data.parks).map(([name, ids]) => ({ name, poly: polyOf(ids), ids }));
   const campus = Object.entries(data.campus).map(([name, ids]) => ({ name, poly: polyOf(ids), ids }));
   // enclosed dock basins (Grand Canal Dock): water ringed by roads, like a park ringed by railings
-  const docks = Object.entries(data.docks || {}).map(([name, ids]) => ({ name, poly: polyOf(ids), ids }));
+  // a dock is either a ring of road nodes (inset from the roads like a park) or a traced [lat, lon] outline
+  const docks = Object.entries(data.docks || {}).map(([name, pts]) => (Array.isArray(pts[0])
+    ? { name, poly: pts.map(([lat, lon]) => project(lat, lon)), ids: null }
+    : { name, poly: polyOf(pts), ids: pts }));
 
   const line = (l) => ({ name: l.name, pts: l.route.map((id) => ({ x: nodes.get(id).x, z: nodes.get(id).z, id })), stops: l.stops });
   const luasLines = [line(data.luas), ...(data.luasGreen ? [line(data.luasGreen)] : [])];

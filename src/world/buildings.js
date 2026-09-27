@@ -311,9 +311,10 @@ const FACADE_GLSL = /* glsl */ `
       c += l * lit * 3.0;
     }
     float fall = 1.0 / (1.0 + t * 0.18);
-    vec3 warm = office > 0.5 ? vec3(0.95, 0.97, 1.0) : vec3(1.0, 0.78, 0.5);
+    vec3 warm = office > 0.5 ? vec3(0.95, 0.9, 0.8) : vec3(1.0, 0.78, 0.5);
     float day = uIndoor * (1.0 - uNight) * mix(1.0, 0.55, shop);
-    return c * fall * (day + lit * warm * mix(0.75, 0.42, shop));
+    // offices are glazed floor to ceiling, so a lit one fills the whole bay: keep it well below a lit sash window
+    return c * fall * (day + lit * warm * mix(0.75, 0.42, shop) * mix(1.0, 0.38, office));
   }
 `;
 
@@ -427,11 +428,11 @@ function makeMaterial() {
               if (spandrel > 0.5) { col = vTrim * (0.9 + 0.1 * nzF.r); gRough = 0.35; gMetal = 0.55; } // aluminium cladding
               else if (mull > 0.5) { col = vec3(0.16, 0.17, 0.18); gRough = 0.4; gMetal = 0.85; }
               else {
-                float officeLit = step(0.35, bh(vec2(floor(u / 4.8) + seed * 5.0, fl))) * uNight;
+                float officeLit = step(0.62, bh(vec2(floor(u / 4.8) + seed * 5.0, fl))) * uNight;
                 vec3 inside = room(vec2(cx - cellW * 0.5, fy), rdRoom, floor(u / 4.8) + fl * 3.0 + seed * 50.0, fh, officeLit, 0.0, 1.0);
                 // blinds on some floors
                 float blind = step(0.7, bh(vec2(fl, seed))) * step(fh - 0.6 - 1.5 * bh(vec2(bi, fl)), fy) * step(0.5, fract(fy * 12.0));
-                inside = mix(inside, vec3(0.6) * (0.2 + officeLit), blind);
+                inside = mix(inside, vec3(0.6) * (0.2 + officeLit * 0.4) * mix(1.0, 0.35, uNight), blind);
                 col = vBase * 0.12; gGlass = 1.0; gEmit = inside;
               }
             } else {

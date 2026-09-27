@@ -52,7 +52,7 @@ function trim(pts, da, db) {
 
 export const parkPolys = world.parks.map((p) => ({ name: p.name, poly: insetPolygon(p.poly, roadInsetFor(world, p.ids)) }));
 export const campusPolys = world.campus.map((p) => ({ name: p.name, poly: insetPolygon(p.poly, roadInsetFor(world, p.ids)) }));
-export const dockPolys = world.docks.map((p) => ({ name: p.name, poly: insetPolygon(p.poly, roadInsetFor(world, p.ids)) }));
+export const dockPolys = world.docks.map((p) => ({ name: p.name, poly: p.ids ? insetPolygon(p.poly, roadInsetFor(world, p.ids)) : p.poly }));
 
 function drawLayout() {
   const c = document.createElement('canvas');
@@ -398,6 +398,19 @@ export function buildGround(scene) {
 
   // Park railings, Trinity railings and the dock edges
   group.add(buildRailings([...parkPolys, ...campusPolys, ...dockPolys]));
+  {
+    const segs = [];
+    for (const { poly } of parkPolys) poly.forEach((a, i) => segs.push([a, poly[(i + 1) % poly.length]]));
+    const plinth = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), stoneMaterial, segs.length);
+    const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0);
+    segs.forEach(([a, b], i) => {
+      const d = v2.sub(b, a);
+      q.setFromAxisAngle(up, Math.atan2(d.x, d.z));
+      plinth.setMatrixAt(i, m4.compose(new THREE.Vector3((a.x + b.x) / 2, KERB_H + 0.22, (a.z + b.z) / 2), q, new THREE.Vector3(0.7, 0.45, v2.len(d) + 0.7)));
+    });
+    plinth.castShadow = plinth.receiveShadow = true;
+    group.add(plinth);
+  }
 
   // Map boundary walls so you can't drive off the edge
   addPolyline([{ x: B.minX + 1, z: B.minZ + 1 }, { x: B.maxX - 1, z: B.minZ + 1 }, { x: B.maxX - 1, z: B.maxZ - 1 }, { x: B.minX + 1, z: B.maxZ - 1 }], true);

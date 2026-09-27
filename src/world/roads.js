@@ -65,7 +65,7 @@ const field = new Float32Array(NX * NZ).fill(30);
     }
   }
   // river and dock basins: scanline inside test per row + distance to nearby bank edges
-  const waters = [world.riverPoly, ...world.docks.map((dk) => insetPolygon(dk.poly, roadInsetFor(world, dk.ids)))];
+  const waters = [world.riverPoly, ...world.docks.map((dk) => (dk.ids ? insetPolygon(dk.poly, roadInsetFor(world, dk.ids)) : dk.poly))];
   for (const poly of waters) {
   const rd = new Float32Array(NX * NZ).fill(REACH);
   for (let e = 0, f = poly.length - 1; e < poly.length; f = e++) {

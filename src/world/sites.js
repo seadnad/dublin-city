@@ -58,9 +58,12 @@ const sgPark = parkPolys.find((p) => p.name === "St Stephen's Green");
 
 // Heuston: the head building faces east over the station forecourt, the train shed runs west behind it
 const heustonFront = project(53.3465, -6.2922);
-// Grand Canal Square: theatre at the west end facing east down the square to the dock, the Marker Hotel on its south side
-const theatre = beside('MC1', 'MC2', 0.32, 1, 30, 32, { gap: 1 });
-const thBack = { x: -Math.sin(theatre.rot), z: -Math.cos(theatre.rot) }; // from the theatre towards the dock
+// Grand Canal Square (positions from the OSM footprints): the theatre at the west end with its glass front facing
+// east down the square to the water, the Marker Hotel along the north side, 1 Grand Canal Square to the south.
+// Theatre local +z faces west (Macken Street), so its glass front (local -z) looks east.
+const at = (lat, lon) => project(lat, lon);
+const theatre = { ...at(53.34414, -6.23995), rot: -Math.PI / 2, w: 26, d: 34 };
+const gcSquare = { ...at(53.34409, -6.23885), rot: -Math.PI / 2, w: 30, d: 38 };
 const beckett = bridges.find((b) => b.name === 'Samuel Beckett Bridge');
 
 export const sites = {
@@ -122,8 +125,8 @@ export const sites = {
     view: spot('SQ14', 'SQ15', 0.25),
   },
   convention: {
-    name: 'Convention Centre', ...beside('NQ15', 'NQ16', 1, 1, 60, 30, { gap: 2 }), labelY: 40,
-    view: spot('NQ14', 'NQ15', 0.35),
+    name: 'Convention Centre', ...beside('NQ15', 'NQ16', 1, 1, 56, 30, { gap: 13 }), labelY: 40,
+    view: spot('SQ15', 'NQ15', 0.45), // from the Beckett Bridge, looking across to it
   },
   threeArena: {
     name: '3Arena', ...beside('NQ18', 'NQ19', 0.5, 1, 70, 46, { gap: 3 }), labelY: 30,
@@ -131,7 +134,7 @@ export const sites = {
   },
   grandCanal: {
     name: 'Grand Canal Theatre', ...theatre, labelY: 32,
-    square: { x: theatre.x + thBack.x * 31, z: theatre.z + thBack.z * 31, rot: theatre.rot, w: 30, d: 30 },
+    square: gcSquare,
     view: spot('HQM', 'HQ1', 0.55),
   },
   grandCanalSt: {
@@ -168,7 +171,12 @@ export const extraSites = {
   bewleys: beside('GR1', 'GR2', 0.78, -1, 12, 18, { gap: 0.15 }),
   brownThomas: beside('GR1', 'GR2', 0.3, -1, 28, 22, { gap: 0.15 }),
   weir: beside('CG3', 'GR1', 0.9, -1, 10, 14, { gap: 0.15 }),
-  sgCentre: beside('SGNW', 'KSS1', 0.2, -1, 46, 36, { gap: 0.3 }),
+  sgCentre: (() => {
+    const W = 56, D = 54, kss = v2.len(v2.sub(N('KSS1'), N('SGNW')));
+    const west = wayBetween('SGNW', 'SGW'); // St Stephen's Green West: its half width and footpath set the corner
+    // the Green West road slants ~12 degrees west going south: allow for it so the far end clears the footpath
+    return beside('SGNW', 'KSS1', (west.width / 2 + west.pave + 0.4 + D * 0.22 + W / 2) / kss, 1, W, D, { gap: 0.3 });
+  })(),
   // Grattan's statue on its island in the middle of College Green
   grattan: (() => { const a = N('CGT'), b = N('CG0'), p = v2.lerp(a, b, 0.5), d = v2.norm(v2.sub(b, a)); return { ...p, rot: Math.atan2(d.x, d.z) }; })(),
 };
@@ -178,14 +186,16 @@ export const reserved = [
   sites.gpo, sites.bankOfIreland, sites.christChurch, sites.customHouse, sites.trinity, ...grounds,
   sites.cityHall, sites.centralBank, extraSites.olympia, extraSites.clockCorner,
   extraSites.bewleys, extraSites.brownThomas, extraSites.weir, extraSites.sgCentre,
+  shifted(extraSites.sgCentre, -extraSites.sgCentre.w / 2 - 8, 0, 16, extraSites.sgCentre.d), // broad footpath facing the Green
   { ...extraSites.castle, w: 44, d: 36, ...shifted(extraSites.castle, 0, -16, 44, 34) },
+  shifted(sites.convention, 0, sites.convention.d / 2 + 6.5, sites.convention.w, 13), // its forecourt
   sites.grandCanalSt, sites.heuston, sites.guinness, sites.convention, sites.threeArena, sites.grandCanal, sites.grandCanal.square,
   // Heuston's forecourt, open to the quay
   { x: heustonFront.x + 12, z: heustonFront.z, rot: Math.PI / 2, w: 34, d: 24 },
-  // keep the square open all the way to the water
-  { x: theatre.x + thBack.x * 50, z: theatre.z + thBack.z * 50, rot: theatre.rot, w: 30, d: 44 },
+
   // the Marker Hotel on Pearse Street, south side of the square
-  (extraSites.marker = { ...beside('MC2', 'PS5', 0.5, 1, 44, 18, { gap: 0.5 }) }),
+  (extraSites.marker = { ...at(53.34454, -6.2391), rot: 0, w: 36, d: 12 }),
+  (extraSites.gcsOffice = { ...at(53.34348, -6.2392), rot: Math.PI, w: 26, d: 26 }),
   // St James's Gate, in the brewery wall on James's Street
   (extraSites.jamesGate = { ...beside('TS3', 'JS1', 0.5, 1, 14, 4, { gap: 0.2 }) }),
   // Synod Hall across Winetavern Street from Christ Church

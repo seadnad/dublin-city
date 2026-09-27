@@ -15,7 +15,7 @@ export default async function (page, shot) {
   }
   await page.keyboard.press('n'); await wait(2000);
   if (process.env.OVERHEAD) {
-    for (const [name, key, dist] of [['west', 'heuston', 1], ['east', 'convention', 1], ['dock', 'grandCanal', 0.5]]) {
+    for (const [name, key, dist] of [['west', 'heuston', 1], ['east', 'convention', 1], ['dock', 'grandCanal', 0.5], ['green', 'stephensGreen', 0.9]]) {
       await page.evaluate((key, dist) => {
         const d = window.__dublin, s = d.sites[key];
         d.rig.update = () => {};

@@ -496,20 +496,62 @@ function oconnellMonument() {
   return b.build("O'Connell Monument");
 }
 
-function fusiliersArch(park) {
-  // NW corner of St Stephen's Green, facing Grafton Street
+// the Fusiliers' Arch stands in the Green's railings at the Grafton Street corner; local +z faces Grafton Street
+function fusiliersSite(park) {
   const corner = world.nodes.get('SGNW');
   let best = park.poly[0], bd = Infinity;
   for (const p of park.poly) { const d = (p.x - corner.x) ** 2 + (p.z - corner.z) ** 2; if (d < bd) { bd = d; best = p; } }
-  const g = world.nodes.get('GR2');
-  const dir = v2.norm(v2.sub(corner, g));
-  const site = { x: best.x + dir.x * 5, z: best.z + dir.z * 5, rot: Math.atan2(-dir.x, -dir.z) };
+  const dir = v2.norm(v2.sub(corner, world.nodes.get('GR2')));
+  return { x: best.x + dir.x * 5, z: best.z + dir.z * 5, rot: Math.atan2(-dir.x, -dir.z) };
+}
+
+function fusiliersArch(park) {
+  // pale granite triumphal arch (1907): rusticated piers with paired pilasters, a moulded archivolt and keystone
+  // cartouche, cornice and a tall attic carrying the inscription; iron gates, gate piers with ball finials and
+  // ornate lamp standards either side, on a cobbled forecourt behind a row of bollards
+  const site = fusiliersSite(park);
   const b = new Builder(site);
-  b.archWall(11, 10, 3, 5, 7.5, M.granite);
-  b.box(11.6, 2.2, 3.6, M.granite, { y: 10 });
-  for (const sx of [-1, 1]) { b.column(sx * 4.3, 1.8, 8, 0.4, M.granite, 0); }
-  b.solid(-4, 0, 3, 3); b.solid(4, 0, 3, 3);
+  const W = 12, T = 3.4, H = 10.5;
+  b.archWall(W, 8.6, T, 5.2, 7.2, M.archStone);
+  for (const sx of [-1, 1]) {
+    for (const px of [W / 2 - 0.6, W / 2 - 2.4]) b.box(0.8, 7.4, 0.35, M.archSmooth, { x: sx * px, y: 0.6, z: T / 2 + 0.1 }); // pilasters
+    b.box(W / 2 - 2.6, 0.6, T + 0.4, M.archSmooth, { x: sx * (W / 4 + 1.3) }); // plinth
+  }
+  b.add(new THREE.TorusGeometry(2.75, 0.25, 6, 20, Math.PI), M.archSmooth, { y: 4.6, z: T / 2 + 0.1 }); // archivolt
+  b.box(1.2, 1.4, 0.6, M.bronze, { y: 7.3, z: T / 2 + 0.2 }); // cartouche on the keystone
+  b.box(W + 0.8, 0.9, T + 0.8, M.archSmooth, { y: 8.6 }); // cornice
+  b.box(W - 1, 2.6, T - 0.2, M.archStone, { y: 9.5 }); // attic
+  b.add(new THREE.PlaneGeometry(W - 3, 1.2), M.inscription, { y: 10.8, z: T / 2 - 0.08 });
+  b.box(W - 0.6, 0.5, T + 0.2, M.archSmooth, { y: H + 1.5 });
+  // gates in the opening, then gate piers and railings running off along the park edge
+  for (const sx of [-1, 1]) {
+    railings(b, sx > 0 ? 0.1 : -2.6, sx > 0 ? 2.6 : -0.1, -T / 2 + 0.3, 4.2); // the open iron gates
+    b.box(1.3, 3.6, 1.3, M.archStone, { x: sx * (W / 2 + 3.2) });
+    b.add(new THREE.SphereGeometry(0.55, 10, 8), M.archSmooth, { x: sx * (W / 2 + 3.2), y: 4.1 });
+    railings(b, sx > 0 ? W / 2 : -W / 2 - 2.6, sx > 0 ? W / 2 + 2.6 : -W / 2, 0, 2.2);
+    lampStandard(b, sx * (W / 2 + 5.2), 3.5, 5.5, 3);
+  }
+  b.box(W + 14, 0.05, 9, M.cobble, { y: KERB_H, z: 5.5 });
+  for (let x = -W / 2 - 4; x <= W / 2 + 4; x += 2.4) { b.cyl(0.12, 0.14, 1, M.dark, { x, y: KERB_H, z: 9.4 }, 6); b.solid(x, 9.4, 0.3, 0.3); }
+  b.solid(-W / 2 + 1.8, 0, 3.6, T + 0.6); b.solid(W / 2 - 1.8, 0, 3.6, T + 0.6);
   return b.build("Fusiliers' Arch");
+}
+
+// dense shrubbery behind the Green's railings: lumpy leaf masses in several greens
+function plantShrubs(scene, items) {
+  const geo = new THREE.IcosahedronGeometry(1, 2);
+  const p = geo.attributes.position, v = new THREE.Vector3();
+  for (let i = 0; i < p.count; i++) {
+    v.fromBufferAttribute(p, i);
+    const n = 0.82 + 0.18 * Math.sin(v.x * 5.1 + v.z * 3.7) * Math.cos(v.y * 4.3 - v.x * 2.1) + 0.08 * Math.sin(v.z * 11 + v.y * 9);
+    v.multiplyScalar(n); if (v.y < -0.2) v.y = -0.2 + (v.y + 0.2) * 0.3; // flattened underside
+    p.setXYZ(i, v.x, v.y, v.z);
+  }
+  geo.computeVertexNormals();
+  geo.translate(0, 0.2, 0);
+  const greens = [0x35522a, 0x3f5f2c, 0x4a6b31, 0x2f4a26, 0x55743a].map((c) => new THREE.Color(c));
+  const mesh = chunkedInstances(geo, new THREE.MeshStandardMaterial({ roughness: 0.92 }), items, { shadow: true, y: KERB_H, colors: (it) => greens[it.c] });
+  scene.add(mesh);
 }
 
 // ---------- extended map: Heuston, the Liberties, Docklands ----------
@@ -649,25 +691,28 @@ function jamesGate(site) {
 }
 
 function beckettHarp(site) {
-  // local +z runs along the deck (north to south). A single curved white pylon rises from the deck near the
-  // south end and leans back over it; a fan of stays runs to the main span (the harp's strings)
+  // local +z runs along the deck from the north bank to the south bank. The white pylon rises from the deck
+  // over the round pivot pier near the south end and sweeps up and forward over the main span like a harp;
+  // a fan of stays runs from it down to both deck edges, and two backstays tie its tip to the short back span.
   const b = new Builder(site);
-  const L = site.d, z0 = L * 0.24, H = 42;
-  const pylon = (t) => new THREE.Vector3(0, 1 + H * t, z0 + 16 * Math.pow(t, 1.7));
-  const pts = []; for (let i = 0; i <= 20; i++) pts.push(pylon(i / 20));
-  b.add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 40, 1.0, 10), M.harpBody);
-  b.add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map((p) => p.clone().add(new THREE.Vector3(0, 0, -0.9)))), 40, 0.18, 6), M.harpLight);
-  const stay = (a, c, mat, r = 0.07) => b.add(new THREE.TubeGeometry(new THREE.LineCurve3(a, c), 1, r, 4), mat);
-  for (let i = 0; i < 16; i++) {
-    const t = 0.3 + (i / 15) * 0.68;
-    stay(pylon(t), new THREE.Vector3(0, 0.6, z0 - 6 - (i / 15) * (L / 2 + z0 - 10)), M.harpStay);
+  const L = site.d, W = site.w, z0 = L * 0.3, H = 46, reach = 26;
+  const pylon = (t) => new THREE.Vector3(0, 0.6 + H * t, z0 - reach * Math.pow(t, 1.55));
+  const pts = []; for (let i = 0; i <= 24; i++) pts.push(pylon(i / 24));
+  const curve = new THREE.CatmullRomCurve3(pts);
+  b.add(new THREE.TubeGeometry(curve, 48, 1.05, 12), M.harpBody);
+  b.add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.slice(0, 7)), 12, 1.7, 12), M.harpBody); // thicker root
+  b.add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map((p) => p.clone().add(new THREE.Vector3(0, 0.9, 0.3)))), 48, 0.16, 6), M.harpLight);
+  const stay = (a, c, mat, r = 0.06) => b.add(new THREE.TubeGeometry(new THREE.LineCurve3(a, c), 1, r, 4), mat);
+  const n = 14;
+  for (let i = 0; i < n; i++) {
+    const t = 0.28 + (i / (n - 1)) * 0.7, zEnd = z0 - 7 - (i / (n - 1)) * (z0 + L / 2 - 10);
+    for (const sx of [-1, 1]) stay(pylon(t), new THREE.Vector3(sx * (W / 2 - 0.8), 1.1, zEnd), M.harpStay);
   }
-  for (let i = 0; i < 6; i++) stay(pylon(0.55 + i * 0.08), new THREE.Vector3(0, 0.6, L / 2 - 1 - i * 0.6), M.harpStay, 0.1);
+  for (const sx of [-1, 1]) stay(pylon(1), new THREE.Vector3(sx * 1.5, 0.8, L / 2 + 1), M.harpStay, 0.14);
   for (const t of [-0.3, 0, z0 / L]) waterGlowSources.push({ ...toWorld(site, 0, t * L), y: WATER_Y + 0.05, color: 0xcfdcff, width: 3, length: 60 });
-  // central spine the stays anchor to, and the round pivot pier under the pylon
-  b.box(1.1, 0.7, L, M.whiteSteel);
-  b.cyl(6, 6, 2.6 - WATER_Y, M.granite, { y: WATER_Y - 0.5, z: z0 }, 20);
-  b.solid(0, 0, 1.2, L);
+  // the round pivot pier sits under the deck
+  b.cyl(6.5, 5.5, -0.9 - WATER_Y + 0.5, M.whiteSteel, { y: WATER_Y - 0.5, z: z0 }, 24);
+  b.solid(0, z0, 3.4, 3.4); // only the pylon's root stands on the deck; traffic passes either side
   return b.build('Samuel Beckett Bridge');
 }
 
@@ -688,8 +733,8 @@ function convention(site) {
     // horizontal light rings, following the drum's lean
     b.add(new THREE.TorusGeometry(10.35 - k * 0.02, 0.16, 5, 40), M.ccdRing, { x: dx, y: -1 + y * Math.cos(tilt), z: dz + y * Math.sin(tilt), rx: Math.PI / 2 + tilt });
   }
-  for (const ox of [-6, 0, 6]) waterGlowSources.push({ ...toWorld(site, dx + ox, D / 2 + 20), y: WATER_Y + 0.05, color: 0xb04cff, width: 7, length: 70 });
-  waterGlowSources.push({ ...toWorld(site, -W * 0.2, D / 2 + 20), y: WATER_Y + 0.05, color: 0x8a5cff, width: 9, length: 60 });
+  for (const ox of [-6, 0, 6]) waterGlowSources.push({ ...toWorld(site, dx + ox, D / 2 + 36), y: WATER_Y + 0.05, color: 0xb04cff, width: 7, length: 70 });
+  waterGlowSources.push({ ...toWorld(site, -W * 0.2, D / 2 + 36), y: WATER_Y + 0.05, color: 0x8a5cff, width: 9, length: 60 });
   b.solid(0, 0, W, D); b.solid(dx, dz, 22, 20);
   return b.build('Convention Centre');
 }
@@ -704,7 +749,7 @@ function threeArena(site) {
   b.box(W, 22, 10, M.curtain, { z: D / 2 - 5 });
   b.box(W + 0.3, 0.6, 10.3, M.arenaGlow, { y: 22, z: D / 2 - 5 });
   b.add(new THREE.PlaneGeometry(20, 4.5), signMat('3ARENA', { bg: '#101216', fg: '#ffffff', font: 'bold 48px Arial' }, true), { y: 17, z: D / 2 + 0.06 });
-  for (const ox of [-20, 0, 20]) waterGlowSources.push({ ...toWorld(site, ox, D / 2 + 22), y: WATER_Y + 0.05, color: 0x4f7dff, width: 8, length: 60 });
+  for (const ox of [-20, 0, 20]) waterGlowSources.push({ ...toWorld(site, ox, D / 2 + 26), y: WATER_Y + 0.05, color: 0x4f7dff, width: 8, length: 60 });
   b.solid(0, 0, W, D);
   return b.build('3Arena');
 }
@@ -727,29 +772,70 @@ function grandCanalTheatre(site) {
   return b.build('Grand Canal Theatre');
 }
 
+// pale granite paving crossed by grey diagonal bands (the square's 45-degree grid), one tile 12 m
+const squarePaveTex = canvasTex(256, 256, (ctx, w, h) => {
+  ctx.fillStyle = '#d6d3cb'; ctx.fillRect(0, 0, w, h);
+  for (let i = 0; i < 400; i++) { ctx.fillStyle = `rgba(120,118,110,${Math.random() * 0.08})`; ctx.fillRect(Math.random() * w, Math.random() * h, 6, 3); }
+  ctx.strokeStyle = '#8f8d87'; ctx.lineWidth = 7;
+  for (let k = -1; k <= 1; k++) {
+    ctx.beginPath(); ctx.moveTo(k * w, 0); ctx.lineTo(k * w + w, h); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(k * w + w, 0); ctx.lineTo(k * w, h); ctx.stroke();
+  }
+});
+squarePaveTex.repeat.set(1 / 12, 1 / 12);
+M.squarePaving = new THREE.MeshStandardMaterial({ map: squarePaveTex, roughness: 0.75 });
+M.yellowPlant = new THREE.MeshStandardMaterial({ color: 0xb9a53a, roughness: 0.95 });
+
+// flat triangle (a planted or resin "carpet" tile) in local x/z, raised h above y
+function triangle(b, pts, y, h, mat) {
+  const s = new THREE.Shape(pts.map(([x, z]) => new THREE.Vector2(x, -z)));
+  const g = new THREE.ExtrudeGeometry(s, { depth: h, bevelEnabled: false }).rotateX(-Math.PI / 2);
+  b.add(g, mat, { y });
+}
+
 function grandCanalSquare(sq) {
-  // local -z runs from the theatre towards the dock
+  // local +z faces the theatre (west), local -z runs out to the water (east), local +x is south
   const b = new Builder(sq);
   const W = sq.w, D = sq.d, r = rng(314);
-  b.box(W, 0.06, D, M.paving, { y: KERB_H });
-  // the red carpet from the theatre door out to a jetty on the water, bristling with tilted light-sticks
-  const ang = 0.22;
-  b.box(6, 0.08, D + 4, M.redResin, { y: KERB_H + 0.02, ry: ang });
-  b.box(8, 0.4, 12, M.redResin, { x: -3, y: -0.2, z: -D / 2 - 7 });
-  for (const sx of [-1, 1]) b.box(0.3, 0.3, 12, M.timber, { x: -3 + sx * 4, y: 0.15, z: -D / 2 - 7 });
-  for (let i = 0; i < 30; i++) {
-    const t = r() * 2 - 1, off = (r() - 0.5) * 5;
-    const z = t * (D / 2 + 1), x = off + Math.tan(ang) * -z;
-    const h = 6 + r() * 5;
-    b.cyl(0.09, 0.12, h, M.redStick, { x, y: KERB_H, z, rx: (r() - 0.5) * 0.5, rz: (r() - 0.5) * 0.5 }, 6);
+  const pave = new THREE.BoxGeometry(W, 0.06, D);
+  { const p = pave.attributes.position, uv = pave.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i), p.getZ(i)); }
+  b.add(pave.translate(0, 0.03, 0), M.squarePaving, { y: KERB_H });
+  // the red carpet: from the theatre doors diagonally across the square and out over the water as a pointed jetty
+  const a = { x: -W * 0.3, z: D / 2 }, c = { x: W * 0.22, z: -D / 2 - 11 };
+  const L = Math.hypot(c.x - a.x, c.z - a.z), ry = Math.atan2(c.x - a.x, c.z - a.z), mx = (a.x + c.x) / 2, mz = (a.z + c.z) / 2;
+  b.box(7, 0.1, L, M.redResin, { x: mx, y: KERB_H + 0.02, z: mz, ry });
+  // the jetty part is a deck on piles over the water
+  const jz = -D / 2 - 5.5, jx = a.x + (c.x - a.x) * ((jz - a.z) / (c.z - a.z));
+  b.box(7.4, 0.5, 11, M.redResin, { x: jx, y: KERB_H - 0.45, z: jz, ry });
+  for (const s of [-1, 1]) for (const t of [-4, 0, 4]) b.cyl(0.2, 0.2, 3.5, M.dark, { x: jx + s * 3 * Math.cos(ry) + t * Math.sin(ry), y: WATER_Y + 0.4, z: jz - s * 3 * Math.sin(ry) + t * Math.cos(ry) }, 6);
+  triangle(b, [[c.x - 3.5 * Math.cos(ry), c.z + 2], [c.x + 3.5 * Math.cos(ry), c.z + 2], [c.x + 1.5, c.z - 5]], KERB_H - 0.45, 0.5, M.redResin);
+  // tilted red light-sticks bristling along the carpet
+  for (let i = 0; i < 44; i++) {
+    const t = r(), off = (r() - 0.5) * 6;
+    const x = a.x + (c.x - a.x) * t + off * Math.cos(ry), z = a.z + (c.z - a.z) * t - off * Math.sin(ry);
+    const base = z < -D / 2 ? KERB_H - 0.2 : KERB_H;
+    b.cyl(0.08, 0.11, 6 + r() * 5, M.redStick, { x, y: base, z, rx: (r() - 0.5) * 0.6, rz: (r() - 0.5) * 0.6 }, 6);
   }
-  for (const ox of [-4, 2]) waterGlowSources.push({ ...toWorld(sq, ox, -D / 2 - 8), y: WATER_Y + 0.65, color: 0xe8321e, width: 4, length: 40 });
-  // green carpet: raised planters with grasses running the other way
-  for (const k of [-1, 1]) {
-    b.box(2.6, 0.7, D * 0.8, M.planter, { x: k * 9, y: KERB_H, ry: -0.3 });
-    b.box(2.3, 0.35, D * 0.78, M.planting, { x: k * 9, y: KERB_H + 0.7, ry: -0.3 });
-  }
+  for (const t of [0.75, 0.95]) waterGlowSources.push({ ...toWorld(sq, a.x + (c.x - a.x) * t, a.z + (c.z - a.z) * t), y: WATER_Y + 0.65, color: 0xe8321e, width: 4, length: 40 });
+  // the green carpet: planted triangles (grass and yellow-green sedum) across the other diagonal, with bench edges
+  const tris = [
+    [[2, 12], [12, 4], [12, 16]], [[4, 2], [14, -8], [14, 4]], [[6, -10], [14, -18], [14, -8]],
+    [[-12, -4], [-4, -12], [-12, -14]], [[-2, -14], [6, -18], [-2, -19]], [[10, 12], [14, 18], [6, 18]],
+  ];
+  tris.forEach((t, i) => triangle(b, t, KERB_H, 0.45, i % 2 ? M.yellowPlant : M.planting));
+  b.solid(jx, jz, 7, 11); // keep the car off the jetty
   return b.build('Grand Canal Square');
+}
+
+function gcsOffice(site) {
+  // 1 Grand Canal Square: glass office with an angular, folded glass roof
+  const b = new Builder(site);
+  const W = site.w, D = site.d, H = 22;
+  b.facade(W, H, D, M.curtain, M.cladGrey, {}, 3, 3.6);
+  b.box(W + 0.4, 0.6, D + 0.4, M.whiteSteel, { y: H });
+  b.prism(W, 5, D * 0.8, M.glass, { y: H + 0.6, ry: Math.PI / 2 });
+  b.solid(0, 0, W, D);
+  return b.build('1 Grand Canal Square');
 }
 
 // precast concrete frame with deep-set windows: one bay 3 m x 3.6 m
@@ -1042,22 +1128,45 @@ const weirTex = frontTex(10, 16, (ctx, w, h, y) => {
   ctx.fillStyle = '#f2e3b0'; ctx.fillRect(16, y(3.2), w - 32, 2.6 * PXM);
   ctx.fillStyle = '#16140f'; for (let i = 1; i < 4; i++) ctx.fillRect(16 + i * (w - 32) / 4, y(3.2), 4, 2.6 * PXM);
 });
-// the shopping centre's white "conservatory" bays: one 4 m bay per 4 m storey, arched glazing over a lacy balcony
-const conservatoryTex = canvasTex(128, 128, (ctx, w, h) => {
-  ctx.fillStyle = '#f1efe9'; ctx.fillRect(0, 0, w, h);
-  ctx.fillStyle = '#2a3238';
-  ctx.beginPath(); ctx.moveTo(18, 100); ctx.lineTo(18, 42); ctx.arc(64, 42, 46, Math.PI, 0); ctx.lineTo(110, 100); ctx.closePath(); ctx.fill();
-  ctx.strokeStyle = '#f1efe9'; ctx.lineWidth = 4;
-  for (const x of [41, 64, 87]) { ctx.beginPath(); ctx.moveTo(x, 100); ctx.lineTo(x, 20); ctx.stroke(); }
-  ctx.fillStyle = '#e4e0d6'; ctx.fillRect(0, 100, w, 28);
-  ctx.strokeStyle = '#bdb7aa'; ctx.lineWidth = 2;
-  for (let x = 4; x < w; x += 8) { ctx.beginPath(); ctx.arc(x, 114, 3.5, 0, Math.PI * 2); ctx.stroke(); }
+// the shopping centre's white "conservatory" bays: one 4 m bay per 3.5 m storey, two arched windows over a
+// lacy balcony rail, slender white piers between
+const conservatoryTex = canvasTex(128, 112, (ctx, w, h) => {
+  ctx.fillStyle = '#f3f2ee'; ctx.fillRect(0, 0, w, h);
+  for (const x0 of [10, 68]) {
+    const ww = 50;
+    ctx.fillStyle = '#26303a';
+    ctx.beginPath(); ctx.moveTo(x0, 86); ctx.lineTo(x0, 34); ctx.arc(x0 + ww / 2, 34, ww / 2, Math.PI, 0); ctx.lineTo(x0 + ww, 86); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#f3f2ee'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(x0 + ww / 2, 86); ctx.lineTo(x0 + ww / 2, 10); ctx.moveTo(x0, 52); ctx.lineTo(x0 + ww, 52); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x0 + ww / 2, 34, ww / 2 - 8, Math.PI, 0); ctx.stroke();
+  }
+  // balcony: white rail with a quatrefoil lace pattern
+  ctx.fillStyle = '#e9e7e1'; ctx.fillRect(0, 86, w, 26);
+  ctx.strokeStyle = '#b7b3a8'; ctx.lineWidth = 1.5;
+  for (let x = 4; x < w; x += 8) { ctx.beginPath(); ctx.arc(x, 99, 3.2, 0, Math.PI * 2); ctx.stroke(); }
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 86, w, 3); ctx.fillRect(0, 108, w, 4);
 });
+// ground-floor shopfronts: granite piers, dark glass, a dark green fascia band (one 8 m unit)
+const mallShopTex = canvasTex(256, 144, (ctx, w, h) => {
+  ctx.fillStyle = '#8f8b84'; ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = '#1f4a38'; ctx.fillRect(18, 14, w - 36, 22);
+  ctx.fillStyle = '#e8e2d2'; for (let x = 40; x < w - 50; x += 14) ctx.fillRect(x, 23, 8, 4);
+  ctx.fillStyle = '#20272c'; ctx.fillRect(18, 42, w - 36, h - 42);
+  ctx.fillStyle = '#d9d2c4'; for (let i = 0; i < 6; i++) ctx.fillRect(40 + i * 30, 96, 10, 40); // mannequins and stock
+  ctx.fillStyle = '#8f8b84'; ctx.fillRect(w / 2 - 3, 42, 6, h - 42);
+});
+Object.assign(M, {
+  mallShop: new THREE.MeshStandardMaterial({ map: mallShopTex, roughness: 0.4 }),
+  archStone: new THREE.MeshStandardMaterial({ color: 0xe4e1d9, map: stoneT, roughness: 0.82 }),
+  archSmooth: new THREE.MeshStandardMaterial({ color: 0xcfccc4, roughness: 0.78 }),
+  inscription: new THREE.MeshStandardMaterial({ map: signTex('FORTISSIMIS SVIS MILITIBVS', { bg: '#bdb9ae', fg: '#6d6a62', w: 512, h: 64, font: '30px Georgia' }), roughness: 0.85 }),
+});
+
 Object.assign(M, {
   bewleys: new THREE.MeshStandardMaterial({ map: bewleysTex, roughness: 0.7 }),
   brownThomas: new THREE.MeshStandardMaterial({ map: brownThomasTex, roughness: 0.75, emissive: 0xffffff, emissiveMap: brownThomasTex, emissiveIntensity: 0.05 }),
   weir: new THREE.MeshStandardMaterial({ map: weirTex, roughness: 0.6 }),
-  conservatory: new THREE.MeshStandardMaterial({ map: conservatoryTex, roughness: 0.55 }),
+  conservatory: new THREE.MeshStandardMaterial({ map: conservatoryTex, roughness: 0.5 }),
   awning: new THREE.MeshStandardMaterial({ color: 0x7a1f2b, roughness: 0.8, side: THREE.DoubleSide }),
   flowers: new THREE.MeshStandardMaterial({ color: 0xb0204a, roughness: 0.9 }),
   festoon: glow(0xffe2a0, 0.25, 2.2),
@@ -1101,21 +1210,37 @@ function weirAndSons(site) {
   return b.build('Weir & Sons');
 }
 function stephensGreenCentre(site) {
-  // local +z faces King Street South; the rounded glass-domed corner looks down Grafton Street (local +x, +z)
+  // St Stephen's Green Shopping Centre (1988): a white cast-iron "conservatory" front four storeys high over a
+  // granite shop floor, a glazed mansard roof, and the rounded corner facing the Fusiliers' Arch crowned with a
+  // glass dome and hung with red flower boxes. Local +z faces King Street South, local -x faces the Green.
   const b = new Builder(site);
-  const W = site.w, D = site.d, H = 18, R = 11;
-  const cx = W / 2 - R, cz = D / 2 - R;
-  b.box(W - R, 4, D, M.granite, { x: -R / 2 }); b.box(R, 4, D - R, M.granite, { x: W / 2 - R / 2, z: -R / 2 }); // shopfront storey
-  b.facade(W - R, H - 4, D, M.conservatory, M.slate, { x: -R / 2, y: 4 }, 4, 3.5);
-  b.facade(W, H - 4, D - R, M.conservatory, M.slate, { y: 4, z: -R / 2 }, 4, 3.5);
-  // rounded corner: a drum of the same bays, red flower boxes on its balconies, the glass dome above
-  const drum = new THREE.CylinderGeometry(R, R, H - 4, 24, 1, true, 0, Math.PI / 2);
-  { const uv = drum.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * (Math.PI * R / 2) / 4, uv.getY(i) * (H - 4) / 3.5); }
-  b.add(drum.translate(0, (H - 4) / 2, 0), M.conservatory, { x: cx, y: 4, z: cz });
-  b.add(new THREE.CylinderGeometry(R, R, 4, 24, 1, false, 0, Math.PI / 2).translate(0, 2, 0), M.granite, { x: cx, z: cz });
-  for (const y of [7.5, 11, 14.5]) b.add(new THREE.TorusGeometry(R + 0.35, 0.35, 5, 24, Math.PI / 2), M.flowers, { x: cx, y, z: cz, rx: Math.PI / 2 });
-  b.add(new THREE.SphereGeometry(R * 0.72, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), M.glass, { x: cx, y: H, z: cz, sy: 0.7 });
-  b.box(W, 0.6, D, M.portlandSmooth, { y: H });
+  const W = site.w, D = site.d, G = 4.6, F = 3.5, N = 4, H = G + N * F, R = 13;
+  const cx = -W / 2 + R, cz = D / 2 - R;
+  // shop floor and the conservatory storeys: two boxes that leave the corner quadrant for the drum
+  b.facade(W - R, G, D, M.mallShop, M.granite, { x: R / 2 }, 8, G);
+  b.facade(R, G, D - R, M.mallShop, M.granite, { x: -W / 2 + R / 2, z: -R / 2 }, 8, G);
+  b.facade(W - R, N * F, D, M.conservatory, M.slate, { x: R / 2, y: G }, 4, F);
+  b.facade(R, N * F, D - R, M.conservatory, M.slate, { x: -W / 2 + R / 2, y: G, z: -R / 2 }, 4, F);
+  const quarter = (h, mat, y, bay, fh) => {
+    const g = new THREE.CylinderGeometry(R, R, h, 28, 1, true, -Math.PI / 2, Math.PI / 2);
+    const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * (Math.PI * R / 2) / bay, uv.getY(i) * h / fh);
+    b.add(g.translate(0, h / 2, 0), mat, { x: cx, y, z: cz });
+  };
+  quarter(G, M.mallShop, 0, 8, G); quarter(N * F, M.conservatory, G, 4, F);
+  b.add(new THREE.CircleGeometry(R, 28, Math.PI / 2, Math.PI / 2).rotateX(-Math.PI / 2), M.slate, { x: cx, y: H, z: cz });
+  // red flower boxes along the corner balconies
+  for (let k = 0; k < N; k++) b.add(new THREE.TorusGeometry(R + 0.3, 0.28, 5, 28, Math.PI / 2), M.flowers, { x: cx, y: G + k * F + 0.35, z: cz, rz: Math.PI / 2, rx: Math.PI / 2 });
+  // glazed mansard roof set back behind a white rail, and the dome over the corner
+  b.box(W - R - 2, 2.6, D - 4, M.glass, { x: R / 2, y: H, z: -1 });
+  b.box(W - R, 0.25, 0.2, M.whiteSteel, { x: R / 2, y: H + 0.9, z: D / 2 - 0.3 });
+  b.box(0.2, 0.25, D - R, M.whiteSteel, { x: -W / 2 + 0.3, y: H + 0.9, z: -R / 2 });
+  b.cyl(R * 0.62, R * 0.66, 2.2, M.whiteSteel, { x: cx + 2, y: H, z: cz - 2 }, 24);
+  b.add(new THREE.SphereGeometry(R * 0.62, 24, 10, 0, Math.PI * 2, 0, Math.PI / 2), M.glass, { x: cx + 2, y: H + 2.2, z: cz - 2, sy: 0.8 });
+  for (let k = 0; k < 12; k++) {
+    const a = (k / 12) * Math.PI * 2, pts = [];
+    for (let i = 0; i <= 8; i++) { const t = (i / 8) * (Math.PI / 2); pts.push(new THREE.Vector3(Math.cos(a) * Math.cos(t) * R * 0.63, Math.sin(t) * R * 0.63 * 0.8, Math.sin(a) * Math.cos(t) * R * 0.63)); }
+    b.add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 8, 0.08, 4), M.whiteSteel, { x: cx + 2, y: H + 2.2, z: cz - 2 });
+  }
   b.solid(0, 0, W, D);
   return b.build("St Stephen's Green Shopping Centre");
 }
@@ -1162,7 +1287,7 @@ function buildTrees(scene) {
       if (!pointInPolygon(p, inner)) continue;
       if (spots.some((q) => (q.x - p.x) ** 2 + (q.z - p.z) ** 2 < 30)) continue;
       if (pondAt && (p.x - pondAt.x) ** 2 / 400 + (p.z - pondAt.z) ** 2 / 100 < 1.4) continue;
-      spots.push({ ...p, s: 0.8 + rand() * 0.6 });
+      spots.push({ ...p, s: 0.9 + rand() * 0.6 });
       n--;
     }
   };
@@ -1171,7 +1296,31 @@ function buildTrees(scene) {
     if (pk.name === "St Stephen's Green") {
       const c = sites.stephensGreen;
       pondAt = { x: c.x + 10, z: c.z - 18 };
-      scatter(pk.poly, 150);
+      const arch = fusiliersSite(pk), clearOfArch = (p) => (p.x - arch.x) ** 2 + (p.z - arch.z) ** 2 > 18 * 18;
+      // perimeter belt: two staggered rows of big trees, and a band of shrubs just inside the railings
+      const shrubs = [];
+      for (const [inset, step, jitter, kind] of [[3.4, 3.2, 0.8, 'shrub'], [7, 8, 2, 'tree'], [13, 10, 3, 'tree']]) {
+        const ring = insetPolygon(pk.poly, inset);
+        for (let k = 0; k < ring.length; k++) {
+          const a = ring[k], bb = ring[(k + 1) % ring.length], L = v2.len(v2.sub(bb, a));
+          for (let t = rand() * step; t < L; t += step * (0.8 + rand() * 0.4)) {
+            const q = v2.lerp(a, bb, t / L), p = { x: q.x + (rand() - 0.5) * jitter, z: q.z + (rand() - 0.5) * jitter };
+            if (!clearOfArch(p)) continue;
+            if (kind === 'shrub') shrubs.push({ ...p, rot: rand() * 6.28, s: new THREE.Vector3(2 + rand() * 1.6, 1.6 + rand() * 1.4, 2 + rand() * 1.6), c: Math.floor(rand() * 5) });
+            else spots.push({ ...p, s: 1.15 + rand() * 0.45 });
+          }
+        }
+      }
+      // shrub clumps scattered through the interior lawns
+      const inner = insetPolygon(pk.poly, 20);
+      for (let i = 0; i < 90; i++) {
+        const k = Math.floor(rand() * inner.length), a = inner[k], bb = inner[(k + 1) % inner.length];
+        const q = v2.lerp(v2.lerp(a, bb, rand()), { x: c.x, z: c.z }, rand() * 0.8);
+        if ((q.x - pondAt.x) ** 2 / 500 + (q.z - pondAt.z) ** 2 / 150 < 1.4) continue;
+        shrubs.push({ ...q, rot: rand() * 6.28, s: new THREE.Vector3(1.6 + rand() * 1.5, 1.2 + rand() * 1.2, 1.6 + rand() * 1.5), c: Math.floor(rand() * 5) });
+      }
+      plantShrubs(scene, shrubs);
+      scatter(pk.poly, 110, 18);
     } else scatter(pk.poly, 70);
   }
   pondAt = null;
@@ -1223,7 +1372,7 @@ export function buildLandmarks(scene) {
     clockCorner(extraSites.clockCorner), grattanIsland(extraSites.grattan),
     bewleys(extraSites.bewleys), brownThomas(extraSites.brownThomas), weirAndSons(extraSites.weir), stephensGreenCentre(extraSites.sgCentre), graftonDressing(),
     heuston(S.heuston), guinness(S.guinness), jamesGate(extraSites.jamesGate), beckettHarp(S.beckett), convention(S.convention),
-    threeArena(S.threeArena), grattanOffice(S.grandCanalSt), grandCanalTheatre(S.grandCanal), grandCanalSquare(S.grandCanal.square), markerHotel(extraSites.marker),
+    threeArena(S.threeArena), grattanOffice(S.grandCanalSt), grandCanalTheatre(S.grandCanal), grandCanalSquare(S.grandCanal.square), markerHotel(extraSites.marker), gcsOffice(extraSites.gcsOffice),
   ];
   for (const g of groups) scene.add(g);
   for (const g of grounds) {

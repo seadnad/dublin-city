@@ -179,9 +179,9 @@
     "MC1": [53.34449, -6.24086],
     "MC2": [53.3427, -6.2412],
     "PS5": [53.34244, -6.2388],
-    "HQ1": [53.34427, -6.23838],
-    "HQM": [53.34412, -6.23655],
-    "HQ2": [53.34367, -6.23116],
+    "HQ1": [53.34433, -6.23828],
+    "HQM": [53.34417, -6.2366],
+    "HQ2": [53.34384, -6.233],
     "RR1": [53.34222, -6.237],
     "SD1": [53.3416, -6.2314],
     "GC1": [53.34031, -6.24315],
@@ -191,7 +191,11 @@
     "CGC": [53.34395, -6.25972],
     "CGM": [53.34466, -6.25955],
     "DSM": [53.34138, -6.2583],
-    "SGW": [53.33832, -6.26172]
+    "SGW": [53.33832, -6.26172],
+    "HQ3": [53.34368, -6.2306],
+    "SQJ": [53.34592, -6.233],
+    "SDN": [53.3424, -6.2331],
+    "CQ1": [53.34258, -6.236]
   },
   "ways": [
     { "name": "Arran Quay", "type": "quay", "nodes": ["AQ2", "AQ1", "NQ0"] },
@@ -319,9 +323,9 @@
     { "name": "Market Street South", "type": "secondary", "nodes": ["BV1", "MK1"] },
     { "name": "Echlin Street", "type": "secondary", "nodes": ["JS1", "EC1", "MK1"] },
     { "name": "North Wall Quay", "type": "quay", "nodes": ["NQ14", "NQ15", "NQ16", "NQ17", "NQ18", "NQ19"] },
-    { "name": "Sir John Rogerson's Quay", "type": "quay", "nodes": ["SQ14", "SQ15", "SQ16", "SQ17", "SQ18"] },
+    { "name": "Sir John Rogerson's Quay", "type": "quay", "nodes": ["SQ14", "SQ15", "SQ16", "SQ17", "SQJ", "SQ18"] },
     { "name": "Britain Quay", "type": "quay", "nodes": ["SQ18", "TCS"] },
-    { "name": "Samuel Beckett Bridge", "type": "bridge", "width": 14, "nodes": ["NQ15", "SQ15"] },
+    { "name": "Samuel Beckett Bridge", "type": "bridge", "width": 22, "nodes": ["NQ15", "SQ15"] },
     { "name": "Tom Clarke Bridge", "type": "bridge", "width": 14, "nodes": ["NQ19", "TCS"] },
     { "name": "Guild Street", "type": "secondary", "nodes": ["NQ15", "GS1", "GS2"] },
     { "name": "Mayor Street Upper", "type": "secondary", "nodes": ["MY2", "GS1", "MU2", "MU3"] },
@@ -331,19 +335,21 @@
     { "name": "East Wall Road", "type": "primary", "width": 14, "nodes": ["NQ19", "EW2"] },
     { "name": "Macken Street", "type": "secondary", "nodes": ["SQ15", "MC1", "MC2"] },
     { "name": "Pearse Street", "type": "primary", "nodes": ["PS4", "MC2", "PS5"] },
-    { "name": "Misery Hill", "type": "secondary", "nodes": ["MC1", "HQ1"] },
     { "name": "Forbes Street", "type": "secondary", "nodes": ["SQ16", "HQ1"] },
+    { "name": "Hanover Quay", "type": "secondary", "nodes": ["HQ1", "HQM", "HQ2", "HQ3"] },
+    { "name": "Benson Street", "type": "secondary", "nodes": ["HQ2", "SQJ"] },
+    { "name": "Britain Place", "type": "secondary", "nodes": ["HQ3", "SQ18"] },
+    { "name": "South Dock Road", "type": "secondary", "nodes": ["SD1", "SDN"] },
+    { "name": "Charlotte Quay", "type": "secondary", "nodes": ["SDN", "CQ1", "RR1"] },
     { "name": "Blood Stoney Road", "type": "secondary", "nodes": ["SQ17", "HQM"] },
-    { "name": "Hanover Quay", "type": "secondary", "nodes": ["HQ1", "HQM", "HQ2"] },
     { "name": "Ringsend Road", "type": "primary", "nodes": ["PS5", "RR1", "SD1"] },
-    { "name": "South Dock Road", "type": "secondary", "nodes": ["SD1", "HQ2"] },
     { "name": "Grand Canal Street Lower", "type": "primary", "width": 13, "nodes": ["MSNE", "GC1", "GCM", "GC2"] },
     { "name": "Grand Canal Street Upper", "type": "primary", "width": 13, "nodes": ["GC2", "BW1"] },
     { "name": "Barrow Street", "type": "secondary", "nodes": ["BW1", "RR1"] },
     { "name": "Macken Street", "type": "secondary", "nodes": ["MC2", "GCM"] },
     { "name": "Holles Street", "type": "secondary", "nodes": ["MSNE", "PS3"] }
   ],
-  "river": { "name": "River Liffey", "north": ["WT3", "WT2", "WT1", "SQY", "EQ1", "EQB", "AQ2", "AQ1", "NQ0", "NQ1", "NQ2", "NQ3", "NQ4", "NQ5", "NQ6", "NQ7", "NQ8", "NQ9", "NQ10", "NQ11", "NQ12", "NQ13", "NQ14", "NQ15", "NQ16", "NQ17", "NQ18", "NQ19"], "south": ["VQ2", "VQ1", "UI1", "UQ2", "UQ1", "SQ0", "SQ1", "SQ2", "SQ3", "SQ4", "SQ5", "SQ6", "SQ7", "SQ8", "SQ9", "SQ10", "SQ11", "SQ12", "SQ13", "SQ14", "SQ15", "SQ16", "SQ17", "SQ18", "TCS"] },
+  "river": { "name": "River Liffey", "north": ["WT3", "WT2", "WT1", "SQY", "EQ1", "EQB", "AQ2", "AQ1", "NQ0", "NQ1", "NQ2", "NQ3", "NQ4", "NQ5", "NQ6", "NQ7", "NQ8", "NQ9", "NQ10", "NQ11", "NQ12", "NQ13", "NQ14", "NQ15", "NQ16", "NQ17", "NQ18", "NQ19"], "south": ["VQ2", "VQ1", "UI1", "UQ2", "UQ1", "SQ0", "SQ1", "SQ2", "SQ3", "SQ4", "SQ5", "SQ6", "SQ7", "SQ8", "SQ9", "SQ10", "SQ11", "SQ12", "SQ13", "SQ14", "SQ15", "SQ16", "SQ17", "SQJ", "SQ18", "TCS"] },
   "parks": {
     "St Stephen's Green": ["SGNW", "DS1", "KS1", "SGNE", "SGSE", "HC0", "SGSW", "SGW"],
     "Merrion Square": ["MSNW", "MSNE", "MSSE", "MSSW"]
@@ -364,7 +370,20 @@
     }
   },
   "docks": {
-    "Grand Canal Dock": ["HQ1", "HQM", "HQ2", "SD1", "RR1", "PS5"]
+    "Grand Canal Dock": [
+      [53.34413, -6.23824],
+      [53.34399, -6.2367],
+      [53.34385, -6.23506],
+      [53.34366, -6.23278],
+      [53.34351, -6.231],
+      [53.34254, -6.2309],
+      [53.34274, -6.2336],
+      [53.34293, -6.23585],
+      [53.34303, -6.23706],
+      [53.34268, -6.23716],
+      [53.34265, -6.23858],
+      [53.3438, -6.23831]
+    ]
   },
   "luasGreen": {
     "name": "Luas Green Line",
