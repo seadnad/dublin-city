@@ -1,54 +1,110 @@
-// Small procedural soundscape: engine note, tyre squeal, bumps, rain hiss. Starts on first input.
-let ctx = null, master, engine, engine2, engFilter, engGain, skidGain, rainGain, noiseBuf;
-let sirenOsc = null, sirenGain = null, sirenOn = false, sirenPhase = 0;
-let muted = false;
+// Game audio: recorded engine, Garda siren, city ambience and street events (see src/game/audio/).
+// Nothing is created or downloaded until the first user gesture (browser autoplay rules; iOS needs a touchend/click),
+// then the files in public/audio stream in, most important first. Sounds join as their files arrive.
+import { LOAD_ORDER } from './audio/assets.js';
+import { gain, filter } from './audio/nodes.js';
+import { createEngine } from './audio/engine.js';
+import { createSiren, SIREN_MODES } from './audio/siren.js';
+import { createCity } from './audio/city.js';
 
-function noise(seconds = 2) {
-  const b = ctx.createBuffer(1, ctx.sampleRate * seconds, ctx.sampleRate);
-  const d = b.getChannelData(0);
-  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-  return b;
-}
-function loop(buffer, filterType, freq, q = 0.7) {
-  const src = ctx.createBufferSource(); src.buffer = buffer; src.loop = true;
-  const f = ctx.createBiquadFilter(); f.type = filterType; f.frequency.value = freq; f.Q.value = q;
-  const g = ctx.createGain(); g.gain.value = 0;
-  src.connect(f).connect(g).connect(master); src.start();
-  return g;
+const MASTER = 0.8;
+let ctx = null, master, engine, siren, city;
+let muted = false, hidden = document.hidden, lastT = 0, lastResume = 0;
+let sirenOn = false, sirenMode = 'auto', env = { rain: false, night: false }, worldRef = null;
+const loaded = [], failed = [];
+
+function create() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  ctx = new AC({ latencyHint: 'interactive' });
+  // gentle limiter on the mix: siren + horns + engine can stack up
+  const limiter = ctx.createDynamicsCompressor();
+  limiter.threshold.value = -8; limiter.knee.value = 6; limiter.ratio.value = 6; limiter.attack.value = 0.004; limiter.release.value = 0.25;
+  limiter.connect(ctx.destination);
+  master = gain(ctx, muted ? 0 : MASTER, limiter);
+  // one shared street echo (a short slapback off the buildings) for the siren and horns: cheaper than a convolver
+  const echoIn = gain(ctx, 1);
+  const delay = ctx.createDelay(1); delay.delayTime.value = 0.13;
+  const tone = filter(ctx, 'lowpass', 2400, 0.5);
+  const fb = gain(ctx, 0.28);
+  echoIn.connect(delay); delay.connect(tone); tone.connect(fb); fb.connect(delay);
+  tone.connect(gain(ctx, 0.3, master));
+
+  engine = createEngine(ctx, gain(ctx, 1, master));
+  const sirenOut = gain(ctx, 0.3, master);
+  sirenOut.connect(gain(ctx, 0.5, echoIn));
+  siren = createSiren(ctx, sirenOut);
+  siren.set(sirenOn); siren.setMode(sirenMode);
+  city = createCity(ctx, master, echoIn);
+  city.setEnv(env);
+  if (worldRef) city.setWorld(worldRef.world, worldRef.signals);
+  load();
 }
 
-function start() {
-  if (ctx) return;
-  try {
-    ctx = new (window.AudioContext || window.webkitAudioContext)();
-    master = ctx.createGain(); master.gain.value = muted ? 0 : 0.5; master.connect(ctx.destination);
-    engFilter = ctx.createBiquadFilter(); engFilter.type = 'lowpass'; engFilter.frequency.value = 600;
-    engGain = ctx.createGain(); engGain.gain.value = 0.0;
-    engine = ctx.createOscillator(); engine.type = 'sawtooth';
-    engine2 = ctx.createOscillator(); engine2.type = 'square';
-    engine.connect(engFilter); engine2.connect(engFilter); engFilter.connect(engGain).connect(master);
-    engine.start(); engine2.start();
-    noiseBuf = noise();
-    skidGain = loop(noiseBuf, 'bandpass', 1800, 3);
-    rainGain = loop(noiseBuf, 'lowpass', 1400, 0.3);
-    // Garda two-tone siren
-    sirenOsc = ctx.createOscillator(); sirenOsc.type = 'square';
-    const sf = ctx.createBiquadFilter(); sf.type = 'lowpass'; sf.frequency.value = 2200;
-    sirenGain = ctx.createGain(); sirenGain.gain.value = 0;
-    sirenOsc.connect(sf).connect(sirenGain).connect(master); sirenOsc.start();
-  } catch { ctx = null; }
+function decode(data) {
+  // Safari < 14.1 only has the callback form
+  return new Promise((res, rej) => { const p = ctx.decodeAudioData(data, res, rej); if (p && p.then) p.then(res, rej); });
 }
-window.addEventListener('keydown', start, { once: true });
-window.addEventListener('pointerdown', start, { once: true });
+async function load() {
+  const base = import.meta.env.BASE_URL || './';
+  const queue = [...LOAD_ORDER];
+  const worker = async () => {
+    for (let name; (name = queue.shift());) {
+      try {
+        const r = await fetch(`${base}audio/${name}.mp3`);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const buf = await decode(await r.arrayBuffer());
+        engine.attach(name, buf); siren.attach(name, buf); city.attach(name, buf);
+        loaded.push(name);
+      } catch (e) {
+        failed.push(name);
+        console.warn(`audio: ${name} unavailable (${e && e.message})`);
+      }
+    }
+  };
+  await Promise.all([worker(), worker(), worker()]);
+}
+
+// Create/resume on a gesture. Listeners stay until the context is actually running (iOS can refuse the first one).
+function unlock() {
+  if (!ctx) { try { create(); } catch { ctx = null; return; } if (!ctx) return; }
+  if (ctx.state !== 'running' && !hidden && !muted) ctx.resume().catch(() => {});
+  if (!unlock.primed) {
+    // iOS: starting any buffer inside the gesture unlocks output
+    const s = ctx.createBufferSource(); s.buffer = ctx.createBuffer(1, 1, 22050); s.connect(ctx.destination); s.start(0);
+    unlock.primed = true;
+  }
+  if (ctx.state === 'running') for (const ev of GESTURES) window.removeEventListener(ev, unlock, true);
+}
+const GESTURES = ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown'];
+for (const ev of GESTURES) window.addEventListener(ev, unlock, true);
+
+// hidden tab: stop the audio clock entirely (saves battery; nothing should play behind other tabs)
+document.addEventListener('visibilitychange', () => {
+  hidden = document.hidden;
+  if (!ctx) return;
+  if (hidden) ctx.suspend().catch(() => {});
+  else if (!muted) ctx.resume().catch(() => {});
+});
 
 export const audio = {
   toggle() {
     muted = !muted;
-    if (master) master.gain.setTargetAtTime(muted ? 0 : 0.5, ctx.currentTime, 0.05);
+    if (ctx) {
+      master.gain.setTargetAtTime(muted ? 0 : MASTER, ctx.currentTime, 0.05);
+      // muted: suspend after the fade so the audio thread sleeps; unmuting happens on a click, so resume is allowed
+      if (muted) setTimeout(() => { if (muted && ctx) ctx.suspend().catch(() => {}); }, 250);
+      else ctx.resume().catch(() => {});
+    }
     return !muted;
   },
   get muted() { return muted; },
-  setSiren(on) { sirenOn = on; },
+  setSiren(on) { sirenOn = !!on; if (siren) siren.set(sirenOn); },
+  // cycle the siren tone: auto (wail when fast, yelp when slow) -> wail -> yelp -> hi-lo
+  cycleSirenTone() { sirenMode = SIREN_MODES[(SIREN_MODES.indexOf(sirenMode) + 1) % SIREN_MODES.length]; if (siren) siren.setMode(sirenMode); return sirenMode; },
+  get sirenTone() { return sirenMode; },
+  // the street graph and traffic signals, for pedestrian-crossing sounds at signalised junctions
+  setWorld(world, signals) { worldRef = { world, signals }; if (city) city.setWorld(world, signals); },
   // one-shot cues: 'go', 'checkpoint', 'finish', 'bust', 'fail', 'beep'
   cue(kind) {
     if (!ctx) return;
@@ -63,32 +119,31 @@ export const audio = {
       at += d * 0.9;
     }
   },
-  update(car, input, raining) {
-    if (!ctx || ctx.state !== 'running') { if (ctx && ctx.state === 'suspended') ctx.resume(); return; }
-    const t = ctx.currentTime, spd = Math.abs(car.speed);
-    // fake gearbox: revs climb within each "gear"
-    const gear = Math.min(4, Math.floor(spd / 9));
-    const rev = (spd - gear * 9) / 9;
-    const f = 38 + gear * 6 + rev * 34 + input.throttle * 8;
-    engine.frequency.setTargetAtTime(f, t, 0.05);
-    engine2.frequency.setTargetAtTime(f * 0.5, t, 0.05);
-    engFilter.frequency.setTargetAtTime(350 + rev * 500 + input.throttle * 500, t, 0.08);
-    engGain.gain.setTargetAtTime(0.05 + input.throttle * 0.05 + Math.min(spd, 30) * 0.001, t, 0.08);
-    const skid = Math.max(0, Math.min(1, (Math.abs(car.slip) - 2.5) / 6)) * (spd > 3 ? 1 : 0);
-    skidGain.gain.setTargetAtTime(skid * 0.12, t, 0.05);
-    rainGain.gain.setTargetAtTime(raining ? 0.07 : 0, t, 0.5);
-    if (sirenOsc) {
-      sirenPhase = (t * 1.25) % 1; // hi-lo, 0.4 s each
-      sirenOsc.frequency.setTargetAtTime(sirenPhase < 0.5 ? 960 : 720, t, 0.01);
-      sirenGain.gain.setTargetAtTime(sirenOn ? 0.07 : 0, t, 0.08);
+  // Per frame. `world` is { rain, night, traffic, tram, paused } (a bare boolean is still read as the rain flag).
+  update(car, input, world = {}) {
+    if (!ctx) return;
+    if (ctx.state !== 'running') {
+      // e.g. iOS interrupted us (a call, another app): try again now and then
+      const now = performance.now();
+      if (ctx.state !== 'closed' && !hidden && !muted && now - lastResume > 1000) { lastResume = now; ctx.resume().catch(() => {}); }
+      return;
     }
-    if (car.impact > 3 && !this._thud) {
-      this._thud = true;
-      const src = ctx.createBufferSource(); src.buffer = noiseBuf;
-      const f2 = ctx.createBiquadFilter(); f2.type = 'lowpass'; f2.frequency.value = 220;
-      const g = ctx.createGain(); g.gain.setValueAtTime(Math.min(0.6, car.impact * 0.05), t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
-      src.connect(f2).connect(g).connect(master); src.start(t); src.stop(t + 0.4);
-    }
-    if (car.impact < 1) this._thud = false;
+    const w = typeof world === 'boolean' ? { rain: world } : world;
+    const t = ctx.currentTime, dt = Math.min(0.1, Math.max(0, t - lastT)); lastT = t;
+    if (!!w.rain !== env.rain || !!w.night !== env.night) { env = { rain: !!w.rain, night: !!w.night }; city.setEnv(env); }
+    engine.update(car, input, dt);
+    siren.update(dt, car.speed);
+    city.update(w.paused ? 0 : dt, car, w.traffic, w.tram, sirenOn);
+  },
+  // for the headless tests: fire a one-shot at the listener (e.g. testPlay('horns', 'single'))
+  testPlay(file, part) { return !!city && city.play(file, part, 0, 0, { vol: 0 }); },
+  debug() {
+    if (!ctx) return { created: false, loaded: [...loaded], failed: [...failed] };
+    return {
+      created: true, state: ctx.state, sampleRate: ctx.sampleRate, loaded: [...loaded], failed: [...failed],
+      master: master.gain.value, siren: { on: siren.on, mode: siren.mode, tone: siren.tone, gains: siren.gains() },
+      engine: { rpm: Math.round(engine.state.rpm), gear: engine.state.gear },
+      env: { ...city.env }, targets: { ...city.levels }, gains: city.gains(), events: { ...city.stats },
+    };
   },
 };
