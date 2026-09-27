@@ -26,10 +26,18 @@ import { addGardaKit } from './game/garda.js';
 import { loadCar } from './game/models.js';
 import { loadTrees } from './world/trees.js';
 import { createPipeline, QUALITIES } from './render/pipeline.js';
+import { applyTextureQuality } from './render/texquality.js';
 import { KERB_H } from './world/roads.js';
 
 const canvas = document.getElementById('scene');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: !IS_MOBILE, powerPreference: 'high-performance' });
+// ---- renderer baseline (three r186) ----
+// MSAA on for every device: phones render straight to the screen, so this is their only anti-aliasing.
+// Tile-based mobile GPUs resolve MSAA on-chip, which keeps it cheap at our capped pixel ratio.
+THREE.ColorManagement.enabled = true; // colours given in sRGB (hex, CSS) are converted to linear for lighting
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, stencil: false, powerPreference: 'high-performance' });
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+// pixel ratio: 1.5 on phones (a 3x phone screen would otherwise shade 4x the pixels), 2 on desktop;
+// the adaptive loop below steps it down further if frames run long
 const maxDpr = Math.min(window.devicePixelRatio, IS_MOBILE ? 1.5 : 2);
 let dpr = maxDpr;
 renderer.setPixelRatio(dpr);
@@ -37,6 +45,8 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFShadowMap;
 renderer.shadowMap.autoUpdate = false;
+// ACES Filmic: filmic highlight roll-off (whites and sky don't clip) and stronger mid-tone contrast.
+// Exposure is set per weather / time-of-day preset in atmosphere.js.
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
 const scene = new THREE.Scene();
@@ -314,6 +324,7 @@ function frame() {
 
   requestAnimationFrame(frame);
 }
+console.log('texture quality', JSON.stringify(applyTextureQuality(scene, renderer)));
 frame();
 document.getElementById('loading').classList.add('gone');
 setTimeout(() => hud.toast(IS_MOBILE ? 'Tap ? for help' : 'Press H for controls, T for landmarks', 4500), 600);

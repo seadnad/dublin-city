@@ -29,8 +29,13 @@ void main() {
   col = mix(col, cc, c * smoothstep(0.0, 0.12, d.y));
   col = mix(col, horizon, smoothstep(0.12, 0.0, d.y)); // haze at the horizon
   gl_FragColor = vec4(col, 1.0);
+  #include <tonemapping_fragment>
   #include <colorspace_fragment>
 }`;
+
+// ACES compresses mid-tones, so the whole scene sits slightly darker than the preset values assume;
+// this lifts every preset by the same amount (presets keep their relative brightness).
+const EXPOSURE_BASE = 1.0; // retuned together with the lighting in Stage 2
 
 export const PRESETS = {
   overcast: {
@@ -110,7 +115,7 @@ export function createAtmosphere(scene, renderer) {
     scene.fog.color.set(p.fog); scene.fog.density = p.fogDensity;
     hemi.color.set(p.hemiSky); hemi.groundColor.set(p.hemiGround); hemi.intensity = p.hemi;
     sun.color.set(p.sun); sun.intensity = p.sunI;
-    renderer.toneMappingExposure = p.exposure;
+    renderer.toneMappingExposure = p.exposure * EXPOSURE_BASE;
     if (envRT) envRT.dispose();
     envRT = pmrem.fromScene(envScene, 0.02);
     scene.environment = envRT.texture;

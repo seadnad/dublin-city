@@ -82,7 +82,9 @@ export function buildLamps(scene) {
     const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
     g.addColorStop(0, 'rgba(255,210,150,1)'); g.addColorStop(0.5, 'rgba(255,190,120,0.35)'); g.addColorStop(1, 'rgba(255,180,110,0)');
     ctx.fillStyle = g; ctx.fillRect(0, 0, 64, 64);
-    return new THREE.CanvasTexture(c);
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace; // the gradient's warm tint is an sRGB colour
+    return t;
   })();
   const poolMat = new THREE.MeshBasicMaterial({ map: poolTex, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4 });
   const pools = chunkedInstances(new THREE.PlaneGeometry(12, 12).rotateX(-Math.PI / 2).translate(0, 0.16, 0), poolMat,
