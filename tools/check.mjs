@@ -1,5 +1,5 @@
 // Headless smoke test: serve the app, open it in Chrome, report errors/fps, and screenshot.
-// Usage: node tools/check.mjs [scenario.mjs] [--build]   (scenario default-exports async (page, shot) => {})
+// Usage: node tools/check.mjs [scenario.mjs] [--build] [--mobile] [--url=https://...]   (scenario default-exports async (page, shot) => {})
 import { createServer, preview, build } from 'vite';
 import puppeteer from 'puppeteer-core';
 import fs from 'node:fs';
@@ -18,8 +18,12 @@ const CHROME = [
   'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
 ].find((p) => fs.existsSync(p));
 
+const remote = args.find((a) => a.startsWith('--url='));
 let server, url;
-if (useBuild) {
+if (remote) {
+  url = remote.slice(6);
+  server = { close: async () => {} };
+} else if (useBuild) {
   await build({ logLevel: 'warn' });
   server = await preview({ preview: { port: 4174 } });
   url = 'http://localhost:4174/';
