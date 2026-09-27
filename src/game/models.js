@@ -2,7 +2,7 @@
 // makePlayerCar(): a Group facing +z with userData.update(speed, dt, steer) and userData.setLights(level).
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { addReflections } from '../render/reflect.js';
+import { carMaterialCache } from './carmaterials.js';
 
 const loader = new GLTFLoader();
 const cache = new Map();
@@ -24,19 +24,17 @@ export async function loadCar(name) {
   const group = new THREE.Group();
   group.add(inner);
   const wheels = [], glow = [];
+  const material = carMaterialCache(); // one tuned material per source material, per car (lights are per car)
   src.traverse((o) => {
     if (!o.isMesh) {
       if (/^wheel_/.test(o.name)) wheels.push({ o, front: /front/.test(o.name) });
       return;
     }
     o.castShadow = true; o.receiveShadow = true;
-    // materials are shared between clones of the same model; give each car its own for lights
-    o.material = o.material.clone();
+    o.material = material(o.material);
     const n = o.material.name || '';
-    if (/headlight|drl|taillight|indicator|lightbar/.test(n)) glow.push({ m: o.material, base: o.material.emissiveIntensity, kind: n });
+    if (/headlight|drl|taillight|indicator|lightbar_\d/.test(n) && !glow.some((g) => g.m === o.material)) glow.push({ m: o.material, base: o.material.emissiveIntensity, kind: n });
     if (/^wheel_/.test(o.name)) wheels.push({ o, front: /front/.test(o.name) });
-    if (/glass/.test(n)) { o.material.roughness = 0.04; o.material.metalness = 0.3; }
-    addReflections(o.material, 1);
   });
   let spin = 0;
   const q = new THREE.Quaternion(), qs = new THREE.Quaternion(), X = new THREE.Vector3(1, 0, 0), Y = new THREE.Vector3(0, 1, 0);

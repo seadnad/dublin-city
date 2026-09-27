@@ -231,7 +231,8 @@ async function useCar(name) {
   garda = { update(t, on) {
     const p = (t * 2.2) % 1;
     const a = on && (p < 0.12 || (p > 0.2 && p < 0.32)), b = on && ((p > 0.5 && p < 0.62) || (p > 0.7 && p < 0.82));
-    bars.forEach((mat, i) => { mat.emissiveIntensity = (i % 2 ? b : a) ? 8 : 0.1; });
+    // lenses glow a saturated blue when flashing, and sit as glossy dark-blue plastic between flashes
+    bars.forEach((mat, i) => { mat.emissiveIntensity = (i % 2 ? b : a) ? 5 : 0.25; });
     glow.intensity = a || b ? 18 : 0;
   } };
   if (!bars.length) garda = { update() {} };
