@@ -1,11 +1,11 @@
 // Render pipeline.
-//  high:   4x MSAA HDR scene -> half-res GTAO -> bloom -> tone map -> grade (vignette, grain)
+//  high:   4x MSAA HDR scene -> bloom -> tone map -> grade (vignette, grain)
+//          (GTAO removed: barely visible in this scene for ~half the frame rate; ground AO is baked instead)
 //  medium: HDR scene -> bloom (evening / rain only) -> tone map -> grade -> FXAA
 //  low:    plain forward render with tone mapping (phones)
 import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
@@ -37,7 +37,7 @@ const GradeShader = {
 export const QUALITIES = ['low', 'medium', 'high'];
 
 export function createPipeline(renderer, scene, camera, { quality = 'high' } = {}) {
-  let composer = null, gtao = null, bloom = null, grade = null, fxaa = null;
+  let composer = null, bloom = null, grade = null, fxaa = null;
   let current = null;
   const size = new THREE.Vector2();
 
@@ -51,17 +51,6 @@ export function createPipeline(renderer, scene, camera, { quality = 'high' } = {
     });
     composer = new EffectComposer(renderer, rt);
     composer.addPass(new RenderPass(scene, camera));
-    if (q === 'high') {
-      // AO at half resolution: the blend upsamples it, and the extra normal pass costs a quarter as much
-      gtao = new GTAOPass(scene, camera, size.x / 2, size.y / 2);
-      const halfSize = gtao.setSize.bind(gtao);
-      gtao.setSize = (w, h) => halfSize(Math.max(1, w / 2), Math.max(1, h / 2));
-      gtao.output = GTAOPass.OUTPUT.Default;
-      gtao.blendIntensity = 0.85;
-      gtao.updateGtaoMaterial({ radius: 1.6, distanceExponent: 1.4, thickness: 1.2, scale: 1.0, samples: 8 });
-      gtao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 4, rings: 2, samples: 8 });
-      composer.addPass(gtao);
-    } else gtao = null;
     bloom = new UnrealBloomPass(new THREE.Vector2(size.x / 2, size.y / 2), 0.12, 0.45, 0.92);
     composer.addPass(bloom);
     composer.addPass(new OutputPass());

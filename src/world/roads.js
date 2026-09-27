@@ -6,6 +6,7 @@
 // The field is also uploaded as a texture so shaders know how far each pixel is from the kerb.
 import * as THREE from 'three';
 import { addReflections } from '../render/reflect.js';
+import { groundAOUniforms, GROUND_AO_GLSL, GROUND_AO_APPLY } from '../render/groundao.js';
 import { world, v2, PAVEMENT, offsetPolyline, pointInPolygon, hasParking } from './geo.js';
 import { IS_MOBILE, fbm } from './textures.js';
 import { asphalt, paving, granite, setts, grass } from './surfaces.js';
@@ -465,12 +466,13 @@ function worldMaterial(tex, { repeat, color = 0xffffff, rough = 0.9, normalScale
 // Asphalt with kerb-side gutter grime, lane wear, repair patches and a macro tone so the tile never repeats visibly.
 function patchAsphalt(mat, puddles) {
   mat.onBeforeCompile = (sh) => {
-    Object.assign(sh.uniforms, fieldUniforms, { uPuddles: { value: puddles } });
+    Object.assign(sh.uniforms, fieldUniforms, groundAOUniforms, { uPuddles: { value: puddles } });
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec2 vWXZ;')
       .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWXZ = (modelMatrix * vec4(transformed, 1.0)).xz;');
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', `#include <common>\nvarying vec2 vWXZ;\nuniform sampler2D uPuddles;\n${FIELD_GLSL}`)
+      .replace('#include <common>', `#include <common>\nvarying vec2 vWXZ;\nuniform sampler2D uPuddles;\n${FIELD_GLSL}\n${GROUND_AO_GLSL}`)
+      .replace('#include <aomap_fragment>', `#include <aomap_fragment>\n${GROUND_AO_APPLY}`)
       .replace('#include <map_fragment>', `#include <map_fragment>
         float fk = kerbField(vWXZ);
         float macro = fbm2(vWXZ * 0.045);
@@ -499,12 +501,13 @@ function patchAsphalt(mat, puddles) {
 // Paving top: granite kerb band along the edge, weathering near walls, wet darkening.
 function patchPaving(mat, kerbTex) {
   mat.onBeforeCompile = (sh) => {
-    Object.assign(sh.uniforms, fieldUniforms, { uKerb: { value: kerbTex } });
+    Object.assign(sh.uniforms, fieldUniforms, groundAOUniforms, { uKerb: { value: kerbTex } });
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec2 vWXZ;')
       .replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWXZ = (modelMatrix * vec4(transformed, 1.0)).xz;');
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', `#include <common>\nvarying vec2 vWXZ;\nuniform sampler2D uKerb;\n${FIELD_GLSL}`)
+      .replace('#include <common>', `#include <common>\nvarying vec2 vWXZ;\nuniform sampler2D uKerb;\n${FIELD_GLSL}\n${GROUND_AO_GLSL}`)
+      .replace('#include <aomap_fragment>', `#include <aomap_fragment>\n${GROUND_AO_APPLY}`)
       .replace('#include <map_fragment>', `#include <map_fragment>
         float fk = kerbField(vWXZ);
         diffuseColor.rgb *= 0.9 + 0.2 * fbm2(vWXZ * 0.08);

@@ -28,6 +28,8 @@ import { loadTrees } from './world/trees.js';
 import { createPipeline, QUALITIES } from './render/pipeline.js';
 import { applyTextureQuality } from './render/texquality.js';
 import { createContactShadows } from './render/contact.js';
+import { bakeGroundAO, groundAOUniforms } from './render/groundao.js';
+import { reserved as landmarkFootprints } from './world/sites.js';
 import { KERB_H } from './world/roads.js';
 
 const canvas = document.getElementById('scene');
@@ -58,6 +60,7 @@ const t0 = performance.now();
 const atmosphere = createAtmosphere(scene, renderer);
 const ground = buildGround(scene);
 const buildings = buildBuildings(scene);
+{ const t = performance.now(); bakeGroundAO([...buildings.lots, ...landmarkFootprints], world.bounds); console.log(`ground AO baked in ${Math.round(performance.now() - t)} ms`); }
 const landmarks = buildLandmarks(scene);
 const lamps = buildLamps(scene);
 const rain = buildRain(scene);
@@ -337,7 +340,7 @@ setTimeout(() => hud.toast(IS_MOBILE ? 'Tap ? for help' : 'Press H for controls,
 
 // hooks for the headless smoke test
 window.__dublin = {
-  THREE, scene, camera, world, renderer, pipeline, atmosphere, car, input, rig, traffic, tram, people, pursuit, trial, gameUI, buildings, landmarks, sites, teleportTo, actions, mode,
+  THREE, scene, camera, world, renderer, pipeline, groundAOUniforms, atmosphere, car, input, rig, traffic, tram, people, pursuit, trial, gameUI, buildings, landmarks, sites, teleportTo, actions, mode,
   lockQuality(q, d) { userQuality = true; dpr = d; renderer.setPixelRatio(d); pipeline.setQuality(q); pipeline.setMood(mode); slowTime = fastTime = 0; lastSwitch = time + 1e9; },
   profile() { const o = {}; for (const k of Object.keys(prof)) if (k !== 'n') o[k] = +(prof[k] / Math.max(1, prof.n)).toFixed(2); for (const k of Object.keys(prof)) prof[k] = 0; return o; },
   stats: () => ({ ...renderer.info.render, dpr, segments: segmentCount(), car: { ...car.pos, speed: car.speed, street: car.street && car.street.name } }),
