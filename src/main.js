@@ -102,7 +102,7 @@ headlight.position.set(0, 0.8, 2.2);
 headlight.target.position.set(0, 0, 14);
 carMesh.add(headlight, headlight.target);
 const rig = new CameraRig(camera);
-const playerContact = createContactShadows(scene, 1, { opacity: 0.62 });
+const playerContact = createContactShadows(scene, 1, { opacity: 0.7, shape: 'car' });
 playerContact.alloc();
 
 // Put the car back on the nearest road lane.
@@ -244,15 +244,34 @@ async function useCar(name) {
   scene.add(carMesh);
   // the model has its own lightbar: flash its lenses instead of adding the procedural kit
   const bars = m.userData.lightbar;
-  const glow = new THREE.PointLight(0x3a6bff, 0, 18, 2); glow.position.set(0, 2.0, -0.3); m.add(glow);
-  garda = { update(t, on) {
-    const p = (t * 2.2) % 1;
-    const a = on && (p < 0.12 || (p > 0.2 && p < 0.32)), b = on && ((p > 0.5 && p < 0.62) || (p > 0.7 && p < 0.82));
-    // lenses glow a saturated blue when flashing, and sit as glossy dark-blue plastic between flashes
-    bars.forEach((mat, i) => { mat.emissiveIntensity = (i % 2 ? b : a) ? 5 : 0.25; });
-    glow.intensity = a || b ? (mode.evening ? 40 : 18) : 0;
-  } };
-  if (!bars.length) garda = { update() {} };
+  if (m.userData.flash) {
+    // Garda i40: alternating left / right quad flash on the light bar, grille and rear-screen flashers, with a
+    // small blue light at each end of the bar that flickers in sync and washes the road and nearby walls.
+    // (The model faces +z, so the car's left is +x.)
+    const lampL = new THREE.PointLight(0x2f5dff, 0, 14, 2), lampR = new THREE.PointLight(0x2f5dff, 0, 14, 2);
+    lampL.position.set(0.5, 1.62, -0.15); lampR.position.set(-0.5, 1.62, -0.15);
+    m.add(lampL, lampR);
+    garda = { update(t, on) {
+      let l = 0, r = 0;
+      if (on) {
+        const p = t % 0.9, q = p % 0.45, lit = q < 0.36 && q % 0.09 < 0.045 ? 1 : 0; // four 45 ms pulses per side
+        if (p < 0.45) l = lit; else r = lit;
+      }
+      m.userData.flash(l, r);
+      const k = mode.evening ? 34 : 14;
+      lampL.intensity = l * k; lampR.intensity = r * k;
+    } };
+  } else {
+    const glow = new THREE.PointLight(0x3a6bff, 0, 18, 2); glow.position.set(0, 2.0, -0.3); m.add(glow);
+    garda = { update(t, on) {
+      const p = (t * 2.2) % 1;
+      const a = on && (p < 0.12 || (p > 0.2 && p < 0.32)), b = on && ((p > 0.5 && p < 0.62) || (p > 0.7 && p < 0.82));
+      // lenses glow a saturated blue when flashing, and sit as glossy dark-blue plastic between flashes
+      bars.forEach((mat, i) => { mat.emissiveIntensity = (i % 2 ? b : a) ? 5 : 0.25; });
+      glow.intensity = a || b ? (mode.evening ? 40 : 18) : 0;
+    } };
+    if (!bars.length) garda = { update() {} };
+  }
   carMesh.userData.setLights(atmosphere.state.values.lamps);
   save.set('car', name);
 }
@@ -299,6 +318,8 @@ function frame() {
   pursuit.update(dt);
   trial.update(dt);
   garda.update(time, car.siren);
+  // brake lamps while slowing under braking, reversing lamps when backing up
+  if (carMesh.userData.setBrake) { carMesh.userData.setBrake(input.brake > 0 && car.speed > 0.3); carMesh.userData.setReverse(car.speed < -0.3); }
   if (isOverWater(car.pos.x, car.pos.z)) respawnNearRoad();
   const tp1 = performance.now();
   traffic.update(dt, camera);
@@ -364,7 +385,7 @@ setTimeout(() => hud.toast(IS_MOBILE ? 'Tap ? for help' : 'Press H for controls,
 
 // hooks for the headless smoke test
 window.__dublin = {
-  THREE, scene, camera, world, renderer, pipeline, groundAOUniforms, atmosphere, car, input, rig, traffic, tram, people, pursuit, trial, gameUI, buildings, landmarks, sites, teleportTo, actions, mode, audio,
+  THREE, scene, camera, world, carMesh: () => carMesh, renderer, pipeline, groundAOUniforms, atmosphere, car, input, rig, traffic, tram, people, pursuit, trial, gameUI, buildings, landmarks, sites, teleportTo, actions, mode, audio,
   lockQuality(q, d) { userQuality = true; dpr = d; renderer.setPixelRatio(d); pipeline.setQuality(q); pipeline.setMood(mode); slowTime = fastTime = 0; lastSwitch = time + 1e9; },
   profile() { const o = {}; for (const k of Object.keys(prof)) if (k !== 'n') o[k] = +(prof[k] / Math.max(1, prof.n)).toFixed(2); for (const k of Object.keys(prof)) prof[k] = 0; return o; },
   stats: () => ({ ...renderer.info.render, dpr, segments: segmentCount(), car: { ...car.pos, speed: car.speed, street: car.street && car.street.name } }),

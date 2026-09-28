@@ -644,7 +644,8 @@ COUPE = dict(
 )
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
-for spec in (GARDA, GARDA_RP, HATCH, COUPE):
+# the Garda i40 is built by tools/blender/build_garda.py (one model, livery painted at runtime)
+for spec in (HATCH, COUPE):
     if ONLY and spec['name'] not in ONLY:
         continue
     build(spec)

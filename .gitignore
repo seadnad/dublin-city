@@ -2,3 +2,5 @@ node_modules
 dist
 tools/shots
 tools/audio/cache
+tools/shots-garda
+*.blend1

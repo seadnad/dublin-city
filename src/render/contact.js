@@ -19,9 +19,30 @@ function blobTexture() {
   return t;
 }
 
-export function createContactShadows(scene, max, { opacity = 0.55, round = false, color = 0x000000, additive = false } = {}) {
+// A car's footprint: a very soft body-sized blob plus darker, tighter pools where the tyres meet the road
+// (proportions of the i40: 2.5 m x 5.3 m quad, track 1.59 m, axles +1.46 / -1.31 m).
+function carTexture() {
+  const W = 128, H = 256, c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  g.filter = 'blur(16px)';
+  g.fillStyle = 'rgba(255,255,255,0.55)';
+  g.beginPath(); g.roundRect(28, 30, W - 56, H - 60, 30); g.fill();
+  g.filter = 'blur(7px)';
+  g.fillStyle = 'rgba(255,255,255,0.5)';
+  g.beginPath(); g.roundRect(36, 46, W - 72, H - 92, 20); g.fill();
+  g.filter = 'blur(4px)';
+  g.fillStyle = 'rgba(255,255,255,1)';
+  for (const v of [0.5 - 1.457 / 5.3, 0.5 + 1.3125 / 5.3]) for (const u of [0.5 - 0.318, 0.5 + 0.318]) {
+    g.beginPath(); g.ellipse(u * W, v * H, 8, 20, 0, 0, Math.PI * 2); g.fill();
+  }
+  return new THREE.CanvasTexture(c);
+}
+
+export function createContactShadows(scene, max, { opacity = 0.55, round = false, color = 0x000000, additive = false, shape = null } = {}) {
   let tex;
-  if (round) {
+  if (shape === 'car') tex = carTexture();
+  else if (round) {
     const S = 64, c = document.createElement('canvas');
     c.width = c.height = S;
     const g = c.getContext('2d');

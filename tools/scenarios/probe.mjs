@@ -1,8 +1,9 @@
 export default async function (page) {
-  const r = await page.evaluate(async () => {
-    const d = window.__dublin, n = (id) => { const p = d.world.nodes.get(id); return [Math.round(p.x), Math.round(p.z)]; };
-    const s = d.sites.heuston;
-    return { heuston: [Math.round(s.x), Math.round(s.z), s.w, s.d, s.rot], VQ1: n('VQ1'), VQ2: n('VQ2'), SJ1: n('SJ1'), SJ2: n('SJ2'), SJ3: n('SJ3'), JS3: n('JS3'), WT2: n('WT2') };
+  await new Promise((r) => setTimeout(r, 6000));
+  const r = await page.evaluate(() => {
+    const m = window.__dublin.carMesh(), out = {};
+    m.traverse((o) => { if (o.isMesh) { const mt = o.material; out[mt.name || mt.type + ':' + mt.color.getHexString()] = { tris: (o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count) / 3, vis: o.visible, transparent: mt.transparent }; } });
+    return { model: m.userData.model, parts: out };
   });
-  console.log(JSON.stringify(r));
+  console.log(JSON.stringify(r, null, 0));
 }
