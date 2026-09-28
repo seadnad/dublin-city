@@ -5,13 +5,15 @@ import { world, PAVEMENT, v2, offsetPolyline, resample, pointInPolygon, insetPol
 import { makePuddleTexture, makeStoneTexture, makeWaterNormal, fbm, rng } from './textures.js';
 import { addPolyline, addSegment } from '../game/collision.js';
 import { addReflections } from '../render/reflect.js';
-import { buildStreets, buildMedian, grassPolygon, fieldUniforms, KERB_H } from './roads.js';
+import { buildStreets, buildMedian, grassPolygon, greenLand, fieldUniforms, KERB_H } from './roads.js';
+import { buildCanals } from './canals.js';
 
 export const WATER_Y = -2.6;
 const B = world.bounds;
 
 // ---------------- layout canvas ----------------
-export const PPM = 1.6; // minimap resolution (px per metre)
+// minimap resolution (px per metre), capped so the canvas stays within 4096 px (phone canvas and memory limits)
+export const PPM = Math.min(1.6, 4096 / Math.max(B.w, B.h));
 const CW = Math.round(B.w * PPM), CH = Math.round(B.h * PPM);
 export const toCanvas = (x, z) => [(x - B.minX) * PPM, (z - B.minZ) * PPM];
 
@@ -52,7 +54,7 @@ function trim(pts, da, db) {
 
 export const parkPolys = world.parks.map((p) => ({ name: p.name, poly: insetPolygon(p.poly, roadInsetFor(world, p.ids)) }));
 export const campusPolys = world.campus.map((p) => ({ name: p.name, poly: insetPolygon(p.poly, roadInsetFor(world, p.ids)) }));
-export const dockPolys = world.docks.map((p) => ({ name: p.name, poly: p.ids ? insetPolygon(p.poly, roadInsetFor(world, p.ids)) : p.poly }));
+export const dockPolys = world.docks.map((p) => ({ name: p.name, poly: p.ids ? insetPolygon(p.poly, roadInsetFor(world, p.ids)) : p.poly, canal: p.canal || null, level: p.level ?? WATER_Y + 0.6 }));
 
 function drawLayout() {
   const c = document.createElement('canvas');
@@ -320,6 +322,7 @@ export function buildGround(scene) {
   const groundMaterial = streets.asphaltMat;
   group.add(buildMedian(streets));
   for (const pk of [...parkPolys, ...campusPolys]) group.add(grassPolygon(pk.poly, streets.grassMat));
+  group.add(greenLand(world.greens.map((g) => g.poly), streets.grassMat));
 
   // Ground pieces north and south of the river
   const nb = world.northBank, sb = world.southBank;
@@ -353,7 +356,7 @@ export function buildGround(scene) {
   water.receiveShadow = true;
   group.add(water);
   for (const dk of dockPolys) {
-    const w = new THREE.Mesh(shapeGeometry(dk.poly, WATER_Y + 0.6), waterMat); // docks sit a little higher (locked)
+    const w = new THREE.Mesh(shapeGeometry(dk.poly, dk.level), waterMat); // docks and canals sit higher (locked)
     w.receiveShadow = true;
     group.add(w);
   }
@@ -419,7 +422,8 @@ export function buildGround(scene) {
   for (const br of bridges) group.add(buildBridge(br, groundMaterial));
 
   // Park railings, Trinity railings and the dock edges
-  group.add(buildRailings([...parkPolys, ...campusPolys, ...dockPolys]));
+  group.add(buildRailings([...parkPolys, ...campusPolys, ...dockPolys.filter((dk) => !dk.canal)]));
+  group.add(buildCanals(scene, streets.grassMat, stoneMaterial));
   {
     const segs = [];
     for (const { poly } of parkPolys) poly.forEach((a, i) => segs.push([a, poly[(i + 1) % poly.length]]));

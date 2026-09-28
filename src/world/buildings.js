@@ -5,6 +5,7 @@
 import * as THREE from 'three';
 import { world, PAVEMENT, v2 } from './geo.js';
 import { parkPolys, campusPolys, dockPolys } from './ground.js';
+import { canalBankPolys } from './canals.js';
 import { reserved } from './sites.js';
 import { rng, fbmFast } from './textures.js';
 import { addBox, addSegment } from '../game/collision.js';
@@ -73,6 +74,8 @@ const markOBB = (o, shrink = 0.4) => fillPolygon(obbCorners(o, shrink));
 for (const s of world.segs) fillSegment(s.a, s.b, s.way.width / 2 + s.way.pave);
 fillPolygon(world.riverPoly);
 for (const dk of dockPolys) fillPolygon(dk.poly);
+for (const poly of canalBankPolys()) fillPolygon(poly);
+for (const g of world.greens) fillPolygon(g.poly);
 for (const p of [...parkPolys, ...campusPolys]) fillPolygon(p.poly);
 for (const r of reserved) markOBB(r, -1);
 // Luas platforms stand in the road; keep an apron clear around the track anyway

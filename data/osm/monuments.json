@@ -1,0 +1,8108 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-09-28T22:49:00Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 298085721,
+  "lat": 53.3443701,
+  "lon": -6.2605019,
+  "tags": {
+    "amenity": "fountain",
+    "artist_name": "Edward Delaney",
+    "name": "Four Angels Fountain"
+  }
+},
+{
+  "type": "node",
+  "id": 603833916,
+  "lat": 53.3490908,
+  "lon": -6.2599455,
+  "tags": {
+    "artist_name": "Oisín Kelly",
+    "artwork_type": "statue",
+    "material": "bronze",
+    "name": "Jim Larkin 1876-1947",
+    "name:zh": "詹姆斯·拉金纪念碑",
+    "start_date": "1979",
+    "subject:wikidata": "Q1583571",
+    "subject:wikipedia": "en:James Larkin",
+    "tourism": "artwork",
+    "wikidata": "Q55049885",
+    "wikimedia_commons": "Category:James Larkin Statue, Dublin"
+  }
+},
+{
+  "type": "node",
+  "id": 603833917,
+  "lat": 53.3477095,
+  "lon": -6.2593433,
+  "tags": {
+    "access": "yes",
+    "heritage": "4",
+    "historic": "monument",
+    "name": "Daniel O'Connell",
+    "name:zh": "奥康奈尔纪念雕像",
+    "panoramax": "1024a784-8224-4bca-94e6-1795f9a271c7",
+    "subject:wikidata": "Q314917",
+    "subject:wikipedia": "en:Daniel O'Connell",
+    "website": "https://www.buildingsofireland.ie/buildings-search/building/50010320/oconnell-monument-oconnell-street-lower-dublin-1-dublin",
+    "wikidata": "Q33123185",
+    "wikimedia_commons": "Category:O'Connell Monument",
+    "wikipedia": "en:O'Connell Monument"
+  }
+},
+{
+  "type": "node",
+  "id": 603833919,
+  "lat": 53.3510492,
+  "lon": -6.2608216,
+  "tags": {
+    "historic": "monument",
+    "name": "Theobald Mathew",
+    "name:zh": "西奥博尔德马修纪念碑",
+    "subject:wikidata": "Q983030",
+    "subject:wikipedia": "en:Theobald Mathew (temperance reformer)",
+    "wikidata": "Q55049879",
+    "wikimedia_commons": "Category:Fr. Mathew statue, Dublin"
+  }
+},
+{
+  "type": "node",
+  "id": 603843067,
+  "lat": 53.3493806,
+  "lon": -6.2605406,
+  "tags": {
+    "access": "permissive",
+    "historic": "monument",
+    "location": "indoor",
+    "material": "metal",
+    "monument": "statue",
+    "name": "Cúchulainn",
+    "subject:wikipedia": "en:Cú Chulainn",
+    "wikimedia_commons": "File:Dublin - Kukulín.jpg",
+    "wikipedia": "en:Cú Chulainn#Images"
+  }
+},
+{
+  "type": "node",
+  "id": 631823520,
+  "lat": 53.3467570,
+  "lon": -6.2634324,
+  "tags": {
+    "artist_name": "Jackie McKenna",
+    "artwork_type": "statue",
+    "loc_name": "The Hags with The Bags",
+    "name": "Meeting Place",
+    "tourism": "artwork",
+    "website": "http://www.talkingstatuesdublin.ie/statues/meeting-place/",
+    "wheelchair": "yes",
+    "year": "1988"
+  }
+},
+{
+  "type": "node",
+  "id": 906593798,
+  "lat": 53.3525940,
+  "lon": -6.2614772,
+  "tags": {
+    "heritage": "4",
+    "historic": "monument",
+    "inscription": "TO CHARLES STEWART PARNELL/NO MAN HAS A RIGHT TO FIX THE/BOUNDARY TO THE MARCH OF A NATION/NO MAN HAS A RIGHT/TO SAY TO HIS COUNTRY/THUS FAR SHALL THOU/GO AND NO FURTHER/WE HAVE NEVER ATTEMPTED TO FIX/THE NE-PLUS-ULTRA/TO THE PROGRESS OF/IRELANDS NATIONHO",
+    "name": "Charles Stewart Parnell Monument",
+    "name:zh": "查尔斯斯图尔特帕内尔纪念碑",
+    "website": "https://www.buildingsofireland.ie/buildings-search/building/50010557/charles-stewart-parnell-monument-oconnell-street-upper-parnell-street-dublin-dublin",
+    "wikidata": "Q33123187",
+    "wikimedia_commons": "Category:Parnell Monument"
+  }
+},
+{
+  "type": "node",
+  "id": 1348371015,
+  "lat": 53.3451532,
+  "lon": -6.2589024,
+  "tags": {
+    "artwork_type": "statue",
+    "name": "Thomas Moore Statue",
+    "subject:wikidata": "Q315346",
+    "subject:wikipedia": "en:Thomas Moore",
+    "tourism": "artwork",
+    "wheelchair": "limited"
+  }
+},
+{
+  "type": "node",
+  "id": 1348371037,
+  "lat": 53.3443552,
+  "lon": -6.2606537,
+  "tags": {
+    "artist_name": "Edward Delaney",
+    "historic": "monument",
+    "name": "Thomas Osborne Davis"
+  }
+},
+{
+  "type": "node",
+  "id": 1348371039,
+  "lat": 53.3485258,
+  "lon": -6.2597031,
+  "tags": {
+    "historic": "monument",
+    "name": "Sir John Gray Knt MD JP",
+    "name:zh": "John Gray爵士纪念雕像",
+    "subject:wikidata": "Q6236086",
+    "subject:wikipedia": "en:John Gray (Irish politician)",
+    "wikidata": "Q55049884"
+  }
+},
+{
+  "type": "node",
+  "id": 2628358284,
+  "lat": 53.3530789,
+  "lon": -6.2600844,
+  "tags": {
+    "historic": "memorial",
+    "inscription": "IN REMEMBRANCE\n\nTHIS STONE MARKS THE SITE\nWHERE THE FIRST OF THE THREE\nNO-WARNING CAR BOMB EXPLOSIONS\nOCCURRED ON 17TH MAY 1974\nIN WHICH 11 PEOPLE, INCLUDING\n2 BABY SISTERS AND THEIR PARENTS,\nLOST THEIR LIVES.",
+    "location": "pavement",
+    "material": "stone",
+    "memorial": "plaque",
+    "name": "1974 Dublin Bombing",
+    "subject:wikidata": "Q2870015",
+    "subject:wikipedia": "en:Dublin and Monaghan bombings",
+    "wikimedia_commons": "File:Bombing_memorial,_Parnell_St,_Dublin.jpg"
+  }
+},
+{
+  "type": "node",
+  "id": 2648528098,
+  "lat": 53.3445708,
+  "lon": -6.2591974,
+  "tags": {
+    "artist_name": "John Henry Foley",
+    "artwork_type": "statue",
+    "material": "copper",
+    "name": "Edmund Burke",
+    "start_date": "1868",
+    "tourism": "artwork",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 2648528099,
+  "lat": 53.3443739,
+  "lon": -6.2592135,
+  "tags": {
+    "artist_name": "John Henry Foley",
+    "artwork_type": "statue",
+    "material": "copper",
+    "name": "Oliver Goldsmith",
+    "start_date": "1868",
+    "tourism": "artwork",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 2648528100,
+  "lat": 53.3445562,
+  "lon": -6.2573488,
+  "tags": {
+    "artist_name": "John Hughes",
+    "artwork_type": "statue",
+    "name": "George Salmon",
+    "start_date": "1897",
+    "tourism": "artwork",
+    "wheelchair": "yes",
+    "wikidata": "Q105796831"
+  }
+},
+{
+  "type": "node",
+  "id": 2648528101,
+  "lat": 53.3442391,
+  "lon": -6.2573890,
+  "tags": {
+    "artist_name": "Sir William Goscombe John",
+    "artwork_type": "statue",
+    "material": "marble",
+    "name": "William Lecky",
+    "start_date": "1906",
+    "tourism": "artwork",
+    "wheelchair": "yes",
+    "wikidata": "Q82094233",
+    "wikimedia_commons": "Category:William Edward Hartpole Lecky statue, Trinity College, Dublin"
+  }
+},
+{
+  "type": "node",
+  "id": 2648528102,
+  "lat": 53.3436100,
+  "lon": -6.2570570,
+  "tags": {
+    "artist:wikidata": "Q151580",
+    "artist_name": "Alexander Calder",
+    "artwork_type": "sculpture",
+    "material": "steel",
+    "name": "Cactus Provisoire",
+    "start_date": "1967",
+    "tourism": "artwork",
+    "wheelchair": "limited"
+  }
+},
+{
+  "type": "node",
+  "id": 2875128184,
+  "lat": 53.3444694,
+  "lon": -6.2570848,
+  "tags": {
+    "artist_name": "Henry Moore",
+    "artwork_type": "sculpture",
+    "level": "0",
+    "material": "bronze",
+    "name": "Reclining Connected Forms",
+    "start_date": "1969",
+    "tourism": "artwork",
+    "wheelchair": "yes",
+    "wikidata": "Q19759246",
+    "wikimedia_commons": "Category:Reclining Connected Forms - Henry Moore (LH 612, Trinity College, Dublin)"
+  }
+},
+{
+  "type": "node",
+  "id": 2980297988,
+  "lat": 53.3437457,
+  "lon": -6.2608973,
+  "tags": {
+    "alt_name": "The Tart with the Cart",
+    "artist_name": "Jeanne Rynhart",
+    "artwork_type": "statue",
+    "historic": "yes",
+    "material": "metal",
+    "name": "Molly Malone",
+    "name:wikipedia": "en:Molly Malone",
+    "subject:wikipedia": "en:Molly Malone",
+    "tourism": "artwork",
+    "wheelchair": "yes",
+    "wikidata": "Q12327524",
+    "wikimedia_commons": "Category:Molly Malone (statue)",
+    "wikipedia": "da:Molly Malone (statue)",
+    "year": "1988"
+  }
+},
+{
+  "type": "node",
+  "id": 3224845493,
+  "lat": 53.3452982,
+  "lon": -6.2655030,
+  "tags": {
+    "historic": "memorial",
+    "memorial": "sculpture",
+    "name": "Rory Gallagher Corner",
+    "place": "locality",
+    "subject:wikidata": "Q331922",
+    "subject:wikipedia": "en:Rory Gallagher"
+  }
+},
+{
+  "type": "node",
+  "id": 3559933294,
+  "lat": 53.3462849,
+  "lon": -6.2601433,
+  "tags": {
+    "artwork_type": "mural",
+    "name": "The Icon Walk",
+    "tourism": "artwork"
+  }
+},
+{
+  "type": "node",
+  "id": 3559964247,
+  "lat": 53.3433892,
+  "lon": -6.2674379,
+  "tags": {
+    "artist_name": "John Van Nost (Van Nost the Younger)",
+    "artwork_type": "statue",
+    "name": "Justice",
+    "tourism": "artwork",
+    "year_built": "1753"
+  }
+},
+{
+  "type": "node",
+  "id": 3559964248,
+  "lat": 53.3433052,
+  "lon": -6.2678989,
+  "tags": {
+    "alt_name": "Mars",
+    "artist_name": "John Van Nost (Van Nost the Younger)",
+    "artwork_type": "statue",
+    "name": "Fortitude",
+    "tourism": "artwork",
+    "year_built": "1753"
+  }
+},
+{
+  "type": "node",
+  "id": 3579586288,
+  "lat": 53.3498592,
+  "lon": -6.2572072,
+  "tags": {
+    "artwork_type": "sculpture",
+    "tourism": "artwork"
+  }
+},
+{
+  "type": "node",
+  "id": 3632752121,
+  "lat": 53.3443549,
+  "lon": -6.2604511,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 3632752122,
+  "lat": 53.3443637,
+  "lon": -6.2603478,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 3632752124,
+  "lat": 53.3443876,
+  "lon": -6.2604567,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 3632752125,
+  "lat": 53.3443943,
+  "lon": -6.2603545,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 3632752126,
+  "lat": 53.3444031,
+  "lon": -6.2598670,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 3632752127,
+  "lat": 53.3444209,
+  "lon": -6.2598577,
+  "tags": {
+    "historic": "monument",
+    "name": "Henry Grattan",
+    "subject:wikidata": "Q333041"
+  }
+},
+{
+  "type": "node",
+  "id": 3632752128,
+  "lat": 53.3444304,
+  "lon": -6.2598810,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 3632752129,
+  "lat": 53.3444362,
+  "lon": -6.2597938,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 3632752130,
+  "lat": 53.3444502,
+  "lon": -6.2597186,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 3716531400,
+  "lat": 53.3468115,
+  "lon": -6.2572698,
+  "tags": {
+    "historic": "memorial",
+    "name": "Dublin Gaslight Company 1825"
+  }
+},
+{
+  "type": "node",
+  "id": 3743432720,
+  "lat": 53.3491283,
+  "lon": -6.2667010,
+  "tags": {
+    "historic": "memorial",
+    "memorial": "plaque",
+    "name": "Sir John T Gilbert",
+    "subject:wikidata": "Q6260565",
+    "subject:wikipedia": "en:John Thomas Gilbert",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 4163308397,
+  "lat": 53.3499123,
+  "lon": -6.2598472,
+  "tags": {
+    "artist:wikipedia": "Marjorie Fitzgibbon",
+    "artist_name": "Marjorie Fitzgibbon.",
+    "artwork_type": "statue",
+    "name": "James Joyce Statue",
+    "name:zh": "詹姆斯乔伊斯雕像",
+    "start_date": "1990",
+    "subject:wikipedia": "James Joyce",
+    "tourism": "artwork",
+    "wheelchair": "yes",
+    "wikimedia_commons": "File:James Joyce Statue - Dublin.JPG"
+  }
+},
+{
+  "type": "node",
+  "id": 4494321690,
+  "lat": 53.3438638,
+  "lon": -6.2632888,
+  "tags": {
+    "name": "Letterbox",
+    "name:en": "Letterbox",
+    "tourism": "artwork"
+  }
+},
+{
+  "type": "node",
+  "id": 4608973691,
+  "lat": 53.3449111,
+  "lon": -6.2652017,
+  "tags": {
+    "fixme": "Exact location",
+    "historic": "memorial",
+    "name": "The Diceman's Corner",
+    "place": "locality",
+    "subject:wikidata": "Q7786733",
+    "subject:wikipedia": "en:Thom McGinty"
+  }
+},
+{
+  "type": "node",
+  "id": 5037855483,
+  "lat": 53.3478432,
+  "lon": -6.2667185,
+  "tags": {
+    "historic": "memorial",
+    "memorial": "stone",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 5037855484,
+  "lat": 53.3481954,
+  "lon": -6.2669889,
+  "tags": {
+    "artist_name": "Jackie McKenna",
+    "artwork_type": "sculpture",
+    "material": "bronze",
+    "name": "Ag Crú na Gréine",
+    "ref:BTW": "73",
+    "tourism": "artwork"
+  }
+},
+{
+  "type": "node",
+  "id": 5050667038,
+  "lat": 53.3445418,
+  "lon": -6.2607605,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 5050667039,
+  "lat": 53.3445008,
+  "lon": -6.2610604,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 5050667040,
+  "lat": 53.3445941,
+  "lon": -6.2608552,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 5050667041,
+  "lat": 53.3446709,
+  "lon": -6.2610197,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 5050667042,
+  "lat": 53.3449656,
+  "lon": -6.2611276,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 5050667043,
+  "lat": 53.3448927,
+  "lon": -6.2612515,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 5090079365,
+  "lat": 53.3468003,
+  "lon": -6.2589176,
+  "tags": {
+    "artist_name": "Rachel Joynt",
+    "artwork_type": "sculpture",
+    "material": "bronze;aluminium;stone",
+    "name": "People’s Island",
+    "name:en": "People’s Island",
+    "name:ga": "Oilean na nDaoine",
+    "related:wikidata": "Q7279286",
+    "related:wikipedia": "en:Rachel Joynt",
+    "start_date": "1988",
+    "tourism": "artwork",
+    "website": "https://www.racheljoynt.com/peoples-island-1988/",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "node",
+  "id": 5138726088,
+  "lat": 53.3509484,
+  "lon": -6.2579076,
+  "tags": {
+    "artist_name": "Linda Brunker",
+    "artwork_type": "sculpture",
+    "name": "The Wishing Hand",
+    "ref:BTW": "73",
+    "start_date": "2001",
+    "tourism": "artwork"
+  }
+},
+{
+  "type": "node",
+  "id": 5173138787,
+  "lat": 53.3443824,
+  "lon": -6.2632160,
+  "tags": {
+    "artist_name": "Éamonn O'Doherty",
+    "artwork_type": "sculpture",
+    "material": "metal;stone",
+    "name": "Crann an Óir",
+    "tourism": "artwork"
+  }
+},
+{
+  "type": "node",
+  "id": 5376912544,
+  "lat": 53.3461032,
+  "lon": -6.2630147,
+  "tags": {
+    "historic": "memorial",
+    "memorial": "plaque",
+    "name": "Ha'Penny Bridge",
+    "subject:wikidata": "Q1034624",
+    "subject:wikipedia": "en:Ha'penny Bridge",
+    "wheelchair": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 5376912545,
+  "lat": 53.3465478,
+  "lon": -6.2631931,
+  "tags": {
+    "historic": "memorial",
+    "memorial": "plaque",
+    "name": "Ha'Penny Bridge",
+    "subject:wikidata": "Q1034624",
+    "subject:wikipedia": "en:Ha'penny Bridge",
+    "wheelchair": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 5376912546,
+  "lat": 53.3465276,
+  "lon": -6.2632967,
+  "tags": {
+    "historic": "memorial",
+    "memorial": "plaque",
+    "name": "Ha'Penny Bridge",
+    "subject:wikidata": "Q1034624",
+    "subject:wikipedia": "en:Ha'penny Bridge",
+    "wheelchair": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677401,
+  "lat": 53.3489789,
+  "lon": -6.2597084,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677402,
+  "lat": 53.3487765,
+  "lon": -6.2595998,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677403,
+  "lat": 53.3486659,
+  "lon": -6.2595478,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677412,
+  "lat": 53.3497471,
+  "lon": -6.2600357,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677418,
+  "lat": 53.3500073,
+  "lon": -6.2605667,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677419,
+  "lat": 53.3501113,
+  "lon": -6.2606137,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677420,
+  "lat": 53.3502122,
+  "lon": -6.2606660,
+  "tags": {
+    "height": "7",
+    "leaf_type": "broadleaved",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677421,
+  "lat": 53.3503219,
+  "lon": -6.2607049,
+  "tags": {
+    "height": "7",
+    "leaf_type": "broadleaved",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677422,
+  "lat": 53.3504208,
+  "lon": -6.2607517,
+  "tags": {
+    "height": "7",
+    "leaf_type": "broadleaved",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677423,
+  "lat": 53.3505372,
+  "lon": -6.2608001,
+  "tags": {
+    "height": "7",
+    "leaf_type": "broadleaved",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677424,
+  "lat": 53.3507517,
+  "lon": -6.2608827,
+  "tags": {
+    "height": "7",
+    "leaf_type": "broadleaved",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677425,
+  "lat": 53.3508462,
+  "lon": -6.2609342,
+  "tags": {
+    "height": "7",
+    "leaf_type": "broadleaved",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677426,
+  "lat": 53.3509631,
+  "lon": -6.2609852,
+  "tags": {
+    "height": "7",
+    "leaf_type": "broadleaved",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677427,
+  "lat": 53.3510672,
+  "lon": -6.2610361,
+  "tags": {
+    "height": "7",
+    "leaf_type": "broadleaved",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677428,
+  "lat": 53.3511704,
+  "lon": -6.2610871,
+  "tags": {
+    "height": "7",
+    "leaf_type": "broadleaved",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677429,
+  "lat": 53.3512753,
+  "lon": -6.2611314,
+  "tags": {
+    "height": "7",
+    "leaf_type": "broadleaved",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677430,
+  "lat": 53.3513786,
+  "lon": -6.2611837,
+  "tags": {
+    "height": "7",
+    "leaf_type": "broadleaved",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677431,
+  "lat": 53.3514882,
+  "lon": -6.2612252,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677432,
+  "lat": 53.3516972,
+  "lon": -6.2613191,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677433,
+  "lat": 53.3519165,
+  "lon": -6.2614130,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677434,
+  "lat": 53.3520278,
+  "lon": -6.2614613,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677435,
+  "lat": 53.3522255,
+  "lon": -6.2615511,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677437,
+  "lat": 53.3523896,
+  "lon": -6.2612051,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677438,
+  "lat": 53.3521895,
+  "lon": -6.2611179,
+  "tags": {
+    "height": "7",
+    "leaf_type": "broadleaved",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677439,
+  "lat": 53.3522871,
+  "lon": -6.2611567,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677440,
+  "lat": 53.3520798,
+  "lon": -6.2610616,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677441,
+  "lat": 53.3518728,
+  "lon": -6.2609747,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677442,
+  "lat": 53.3517588,
+  "lon": -6.2609248,
+  "tags": {
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677443,
+  "lat": 53.3512329,
+  "lon": -6.2606888,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677444,
+  "lat": 53.3511272,
+  "lon": -6.2606459,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677445,
+  "lat": 53.3513355,
+  "lon": -6.2607318,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677446,
+  "lat": 53.3508006,
+  "lon": -6.2604934,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677447,
+  "lat": 53.3507005,
+  "lon": -6.2604662,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677448,
+  "lat": 53.3505972,
+  "lon": -6.2604152,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677449,
+  "lat": 53.3504916,
+  "lon": -6.2603683,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677450,
+  "lat": 53.3502810,
+  "lon": -6.2602730,
+  "tags": {
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677451,
+  "lat": 53.3501826,
+  "lon": -6.2602301,
+  "tags": {
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677452,
+  "lat": 53.3500721,
+  "lon": -6.2601859,
+  "tags": {
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402677453,
+  "lat": 53.3499640,
+  "lon": -6.2601349,
+  "tags": {
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5402726765,
+  "lat": 53.3515882,
+  "lon": -6.2612687,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 5596965627,
+  "lat": 53.3479981,
+  "lon": -6.2577723,
+  "tags": {
+    "historic": "memorial",
+    "memorial": "plaque",
+    "name": "Leinster Memorial Church"
+  }
+},
+{
+  "type": "node",
+  "id": 5596965628,
+  "lat": 53.3480333,
+  "lon": -6.2576154,
+  "tags": {
+    "historic": "memorial",
+    "memorial": "plaque",
+    "operator": "Seamens Institute"
+  }
+},
+{
+  "type": "node",
+  "id": 5622623474,
+  "lat": 53.3466582,
+  "lon": -6.2650341,
+  "tags": {
+    "artwork_type": "photo",
+    "name": "Dublin's Last Supper",
+    "tourism": "artwork",
+    "wikidata": "Q122397146",
+    "wikimedia_commons": "Category:Dublin's Last Supper",
+    "wikipedia": "en:Dublin's Last Supper"
+  }
+},
+{
+  "type": "node",
+  "id": 6141244140,
+  "lat": 53.3483097,
+  "lon": -6.2593026,
+  "tags": {
+    "historic": "memorial",
+    "memorial": "plaque",
+    "name": "Ireland's First Radio Broadcast"
+  }
+},
+{
+  "type": "node",
+  "id": 6157780526,
+  "lat": 53.3488966,
+  "lon": -6.2572624,
+  "tags": {
+    "artwork_type": "bust",
+    "tourism": "artwork"
+  }
+},
+{
+  "type": "node",
+  "id": 6157780527,
+  "lat": 53.3488940,
+  "lon": -6.2572949,
+  "tags": {
+    "historic": "memorial",
+    "memorial": "plaque",
+    "name": "The Irish National Flag: 155th Unveiling Anniversary"
+  }
+},
+{
+  "type": "node",
+  "id": 6214680635,
+  "lat": 53.3438367,
+  "lon": -6.2677012,
+  "tags": {
+    "historic": "memorial",
+    "memorial": "plaque",
+    "name": "Éamonn Ceannt",
+    "subject:wikidata": "Q965189",
+    "subject:wikipedia": "en:Éamonn Ceannt"
+  }
+},
+{
+  "type": "node",
+  "id": 6257429319,
+  "lat": 53.3451919,
+  "lon": -6.2689424,
+  "tags": {
+    "artist_name": "Hugh Madden",
+    "artwork_type": "mural",
+    "image": "https://uploads-ssl.webflow.com/5e1339e448d7ea368be9a41f/5e3339274a835e745fe347ec_Smock%20Alley%20by%20Hugh%20Madden%202017%204.jpg",
+    "man_made": "street_cabinet",
+    "name": "Smock Alley",
+    "operator": "Dublin Canvas",
+    "start_date": "2017",
+    "tourism": "artwork",
+    "website": "https://www.dublincanvas.com/dublin-canvas-artist-profiles/hugh-madden-6"
+  }
+},
+{
+  "type": "node",
+  "id": 6258746065,
+  "lat": 53.3440426,
+  "lon": -6.2671489,
+  "tags": {
+    "historic": "memorial",
+    "memorial": "plaque"
+  }
+},
+{
+  "type": "node",
+  "id": 6258746066,
+  "lat": 53.3440458,
+  "lon": -6.2671033,
+  "tags": {
+    "historic": "memorial",
+    "memorial": "plaque",
+    "wheelchair": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 6258746076,
+  "lat": 53.3440272,
+  "lon": -6.2663466,
+  "tags": {
+    "historic": "memorial",
+    "memorial": "plaque",
+    "name": "Rockabilly Chick"
+  }
+},
+{
+  "type": "node",
+  "id": 6279642664,
+  "lat": 53.3482453,
+  "lon": -6.2595820,
+  "tags": {
+    "access": "yes",
+    "heritage": "4",
+    "historic": "monument",
+    "inscription": "William Smith O'Brien Born 17th October 1803 Sentenced to Death for High Treason on the 9th October 1848 Died 16th June 1864",
+    "name": "William Smith O'Brien Monument",
+    "wikidata": "Q55049882",
+    "wikimedia_commons": "Category:William Smith O'Brien statue"
+  }
+},
+{
+  "type": "node",
+  "id": 7835687404,
+  "lat": 53.3442316,
+  "lon": -6.2672518,
+  "tags": {
+    "artist_name": "Iljin",
+    "artwork_type": "mural",
+    "image": "https://uploads-ssl.webflow.com/5e1339e448d7ea368be9a41f/5e2da171d2e0672696b1ad8b_Artwork%20Unkown%20by%20Iljin.jpg",
+    "man_made": "street_cabinet",
+    "operator": "Dublin Canvas",
+    "start_date": "2016",
+    "tourism": "artwork",
+    "website": "https://www.dublincanvas.com/dublin-canvas-artist-profiles/iljin"
+  }
+},
+{
+  "type": "node",
+  "id": 7847680235,
+  "lat": 53.3456413,
+  "lon": -6.2650119,
+  "tags": {
+    "artist_name": "Jack Field",
+    "artwork_type": "mural",
+    "image": "https://pbs.twimg.com/media/DpFD9O3XUAAMeBm?format=jpg&name=4096x4096",
+    "man_made": "street_cabinet",
+    "name": "The Dice Man",
+    "operator": "Dublin Canvas",
+    "start_date": "2018",
+    "tourism": "artwork",
+    "website": "https://www.dublincanvas.com/dublin-canvas-artist-profiles/jack-field-2"
+  }
+},
+{
+  "type": "node",
+  "id": 7847680238,
+  "lat": 53.3458474,
+  "lon": -6.2594010,
+  "tags": {
+    "artist_name": "Claire Prouvost",
+    "artwork_type": "mural",
+    "image": "https://uploads-ssl.webflow.com/5e1339e448d7ea368be9a41f/5e221c6bf6c56d5b17e4bb41_Party%20Huns%20by%20Claire%20Prouvost%204.jpg",
+    "man_made": "street_cabinet",
+    "name": "Party Huns",
+    "operator": "Dublin Canvas",
+    "start_date": "2019",
+    "tourism": "artwork",
+    "website": "https://www.dublincanvas.com/dublin-canvas-artist-profiles/claire-prouvost"
+  }
+},
+{
+  "type": "node",
+  "id": 7859488701,
+  "lat": 53.3531032,
+  "lon": -6.2683661,
+  "tags": {
+    "artist_name": "Pawel Jasinski",
+    "artwork_type": "mural",
+    "image": "https://uploads-ssl.webflow.com/5e1339e448d7ea368be9a41f/5e2a13f23fa1323a40e09820_Lady%20on%20Fruit%20Bike%20by%20Pawel%20Jasinski%202.jpg",
+    "man_made": "street_cabinet",
+    "mapillary": "620223976044921",
+    "name": "Lady on Bike",
+    "operator": "Dublin Canvas",
+    "start_date": "2018",
+    "tourism": "artwork",
+    "website": "https://www.dublincanvas.com/dublin-canvas-artist-profiles/pawel-jasinski-2"
+  }
+},
+{
+  "type": "node",
+  "id": 7862960567,
+  "lat": 53.3441169,
+  "lon": -6.2659515,
+  "tags": {
+    "artist_name": "Cathal Craughwell",
+    "artwork_type": "mural",
+    "image": "https://uploads-ssl.webflow.com/5e1339e448d7ea368be9a41f/5e1f873783568e32f970c2f0_Einstein%27s%20Bike%20by%20Cathal%20Craughwell%204.jpg",
+    "man_made": "street_cabinet",
+    "name": "Einstein",
+    "operator": "Dublin Canvas",
+    "start_date": "2018",
+    "tourism": "artwork",
+    "website": "https://www.dublincanvas.com/dublin-canvas-artist-profiles/cathal-craughwell-4"
+  }
+},
+{
+  "type": "node",
+  "id": 7888190387,
+  "lat": 53.3527563,
+  "lon": -6.2616730,
+  "tags": {
+    "artist_name": "Hugh Madden",
+    "artwork_type": "mural",
+    "image": "https://uploads-ssl.webflow.com/5e1339e448d7ea368be9a41f/5e3550c99615a2bfe56f56d9_Molly%20Malone%20by%20Hugh%20Madden%20-%202016%20-%201.jpg",
+    "man_made": "street_cabinet",
+    "name": "Molly Malone",
+    "operator": "Dublin Canvas",
+    "start_date": "2016",
+    "tourism": "artwork",
+    "website": "https://www.dublincanvas.com/dublin-canvas-artist-profiles/hugh-madden-10"
+  }
+},
+{
+  "type": "node",
+  "id": 7905551470,
+  "lat": 53.3461479,
+  "lon": -6.2680384,
+  "tags": {
+    "artist_name": "Colin Mc Ginley",
+    "artwork_type": "mural",
+    "image": "https://uploads-ssl.webflow.com/5e1339e448d7ea368be9a41f/5e2d960512d9353fe5ef40f8_Dublin%20Characters%20by%20Colin%20Mc%20Ginley%20(3)-2.jpg",
+    "man_made": "street_cabinet",
+    "name": "Dublin Characters",
+    "operator": "Dublin Canvas",
+    "start_date": "2016",
+    "tourism": "artwork",
+    "website": "https://www.dublincanvas.com/dublin-canvas-artist-profiles/colin-mc-ginley"
+  }
+},
+{
+  "type": "node",
+  "id": 9108358350,
+  "lat": 53.3521185,
+  "lon": -6.2616665,
+  "tags": {
+    "historic": "memorial",
+    "inscription": "Anna Parnell\n1852-1911\n\nConradh Talún na mBan\nA d'oibrigh anseo\n\nLadies Land League\nWorked here",
+    "material": "stone",
+    "memorial": "plaque",
+    "name": "Anna Parnell",
+    "subject:wikidata": "Q4766904",
+    "subject:wikipedia": "en:Anna Catherine Parnell"
+  }
+},
+{
+  "type": "node",
+  "id": 9192532688,
+  "lat": 53.3445757,
+  "lon": -6.2649062,
+  "tags": {
+    "historic": "memorial",
+    "inscription": "Frederick Douglass\n\nCeannaire Frith-Schlábhaíochta\nA Labhair Anseo\n\nAnti-Slavery Leader\nSpoke here\n\n1845",
+    "material": "stone",
+    "memorial": "plaque",
+    "name": "Frederick Douglass",
+    "start_date": "2021",
+    "subject:wikidata": "Q215562",
+    "subject:wikipedia": "en:Frederick Douglass"
+  }
+},
+{
+  "type": "node",
+  "id": 9646092297,
+  "lat": 53.3489005,
+  "lon": -6.2598415,
+  "tags": {
+    "denotation": "urban",
+    "height": "3",
+    "leaf_cycle": "deciduous",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 9646092298,
+  "lat": 53.3488943,
+  "lon": -6.2598872,
+  "tags": {
+    "denotation": "urban",
+    "height": "3",
+    "leaf_cycle": "deciduous",
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 9646092309,
+  "lat": 53.3473705,
+  "lon": -6.2597568,
+  "tags": {
+    "denotation": "urban",
+    "leaf_cycle": "deciduous",
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 9646092310,
+  "lat": 53.3473147,
+  "lon": -6.2600006,
+  "tags": {
+    "denotation": "urban",
+    "leaf_cycle": "deciduous",
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 9646092311,
+  "lat": 53.3472820,
+  "lon": -6.2601510,
+  "tags": {
+    "denotation": "urban",
+    "leaf_cycle": "deciduous",
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 9646092312,
+  "lat": 53.3472265,
+  "lon": -6.2603842,
+  "tags": {
+    "denotation": "urban",
+    "leaf_cycle": "deciduous",
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 10066600066,
+  "lat": 53.3449472,
+  "lon": -6.2587627,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 10066600104,
+  "lat": 53.3453994,
+  "lon": -6.2592786,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 10066600109,
+  "lat": 53.3451335,
+  "lon": -6.2589137,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 10066606421,
+  "lat": 53.3452144,
+  "lon": -6.2588994,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 10066606422,
+  "lat": 53.3453197,
+  "lon": -6.2592566,
+  "tags": {
+    "natural": "tree",
+    "ref": "0541"
+  }
+},
+{
+  "type": "node",
+  "id": 10614489841,
+  "lat": 53.3461887,
+  "lon": -6.2580587,
+  "tags": {
+    "historic": "memorial",
+    "memorial": "plaque",
+    "name": "Seán Mac Diarmada"
+  }
+},
+{
+  "type": "node",
+  "id": 10793828085,
+  "lat": 53.3507656,
+  "lon": -6.2586831,
+  "tags": {
+    "artwork_type": "statue",
+    "historic": "memorial",
+    "memorial": "statue",
+    "tourism": "artwork"
+  }
+},
+{
+  "type": "node",
+  "id": 10974040271,
+  "lat": 53.3474693,
+  "lon": -6.2599272,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 11183217505,
+  "lat": 53.3452912,
+  "lon": -6.2648092,
+  "tags": {
+    "direction": "270",
+    "historic": "memorial",
+    "inscription": "This well was probably constructed when Eustace Street was laid out between 1680 and 1720. [...]",
+    "memorial": "plaque",
+    "name": "St Winifred's Well",
+    "wikimedia_commons": "File:Dublin - St Winifred’s Well - 20230909141245.jpg"
+  }
+},
+{
+  "type": "node",
+  "id": 11676401051,
+  "lat": 53.3443458,
+  "lon": -6.2631531,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 11676401052,
+  "lat": 53.3443500,
+  "lon": -6.2630526,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 11676401053,
+  "lat": 53.3443547,
+  "lon": -6.2629499,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 11676401054,
+  "lat": 53.3443559,
+  "lon": -6.2628507,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 11676401055,
+  "lat": 53.3443608,
+  "lon": -6.2627439,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 11752197657,
+  "lat": 53.3436069,
+  "lon": -6.2618747,
+  "tags": {
+    "direction": "50",
+    "historic": "memorial",
+    "inscription": "Fireman John Kite\n\nA fuair ​​​​bás ar dualgas anseo \nDied here in the line of duty\n\n20.3.1884",
+    "material": "stone",
+    "memorial": "plaque",
+    "name": "Fireman John Kite",
+    "source": "https://twitter.com/LordMayorDublin/status/1770483775710847392",
+    "start_date": "2024-03-20"
+  }
+},
+{
+  "type": "node",
+  "id": 11896594107,
+  "lat": 53.3498951,
+  "lon": -6.2597260,
+  "tags": {
+    "artwork_type": "installation",
+    "name": "Dublin Portal",
+    "tourism": "artwork",
+    "website": "https://www.portals.org/"
+  }
+},
+{
+  "type": "node",
+  "id": 11903934568,
+  "lat": 53.3442999,
+  "lon": -6.2596575,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 11903934569,
+  "lat": 53.3442318,
+  "lon": -6.2594378,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 11903934570,
+  "lat": 53.3449252,
+  "lon": -6.2585229,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 11903934572,
+  "lat": 53.3450469,
+  "lon": -6.2586061,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 12035318306,
+  "lat": 53.3453680,
+  "lon": -6.2617996,
+  "tags": {
+    "artwork_type": "statue",
+    "tourism": "artwork"
+  }
+},
+{
+  "type": "node",
+  "id": 12370755868,
+  "lat": 53.3526288,
+  "lon": -6.2610439,
+  "tags": {
+    "historic": "memorial",
+    "inscription": "This Building Was Formely\nThe Tobacco Shop Of\nTHOMAS CLARKE (Fenian)\nFirst Signatory To The\n1916 Proclamation\nExecuted 3rd May 1916\n\nNational Graves Association",
+    "memorial": "plaque"
+  }
+},
+{
+  "type": "node",
+  "id": 12370755869,
+  "lat": 53.3526118,
+  "lon": -6.2610797,
+  "tags": {
+    "historic": "memorial",
+    "inscription": "HERE WAS THE SHOP\nOF THOMAS J.CLARKE.\nFIRST SIGNATORY OF THE\nPROCLAMATION OF\nEASTER WEEK",
+    "inscription:ga": "ANSEO A BHÍ SIOPA THOMÁIS\nUÍ CHLEIRIGH. CEÁD - SHÍNI -\nTHEOIR FORÓGRA PHOB -\nLACHT NA HÉIREANN.",
+    "memorial": "plaque",
+    "wikimedia_commons": "File:Tom_Clarke_1916_commemorative_plague.jpg"
+  }
+},
+{
+  "type": "node",
+  "id": 12585143486,
+  "lat": 53.3436244,
+  "lon": -6.2604955,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 12638752164,
+  "lat": 53.3523688,
+  "lon": -6.2615722,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12639651717,
+  "lat": 53.3522877,
+  "lon": -6.2615734,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12639651718,
+  "lat": 53.3519698,
+  "lon": -6.2614215,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12639651719,
+  "lat": 53.3518630,
+  "lon": -6.2613758,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12639651720,
+  "lat": 53.3516538,
+  "lon": -6.2612998,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12639651721,
+  "lat": 53.3514419,
+  "lon": -6.2611859,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12639651722,
+  "lat": 53.3512291,
+  "lon": -6.2611022,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12639651723,
+  "lat": 53.3510144,
+  "lon": -6.2610107,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12639651724,
+  "lat": 53.3508095,
+  "lon": -6.2609131,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12639651725,
+  "lat": 53.3504884,
+  "lon": -6.2607735,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12639651726,
+  "lat": 53.3503820,
+  "lon": -6.2607170,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12639651727,
+  "lat": 53.3501761,
+  "lon": -6.2606418,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12639651728,
+  "lat": 53.3499600,
+  "lon": -6.2605402,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12639651733,
+  "lat": 53.3480473,
+  "lon": -6.2596892,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12639651734,
+  "lat": 53.3479381,
+  "lon": -6.2596628,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12639651735,
+  "lat": 53.3478247,
+  "lon": -6.2596070,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12645285730,
+  "lat": 53.3500467,
+  "lon": -6.2585132,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "North Earl Street"
+  }
+},
+{
+  "type": "node",
+  "id": 12645285732,
+  "lat": 53.3499753,
+  "lon": -6.2589463,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "North Earl Street"
+  }
+},
+{
+  "type": "node",
+  "id": 12649776496,
+  "lat": 53.3501369,
+  "lon": -6.2601937,
+  "tags": {
+    "name": "Arbres_4hauts",
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 12649812437,
+  "lat": 53.3517935,
+  "lon": -6.2613567,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12652387444,
+  "lat": 53.3501369,
+  "lon": -6.2601937,
+  "tags": {
+    "name": "Arbres_4hauts",
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 12656727570,
+  "lat": 53.3477791,
+  "lon": -6.2591424,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12656727571,
+  "lat": 53.3492315,
+  "lon": -6.2598096,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12656755358,
+  "lat": 53.3517165,
+  "lon": -6.2608810,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12656755592,
+  "lat": 53.3495754,
+  "lon": -6.2613762,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "object:street": "Henry Street"
+  }
+},
+{
+  "type": "node",
+  "id": 12656758296,
+  "lat": 53.3494752,
+  "lon": -6.2621262,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "object:street": "Henry Street"
+  }
+},
+{
+  "type": "node",
+  "id": 12656781324,
+  "lat": 53.3500522,
+  "lon": -6.2601843,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12656785976,
+  "lat": 53.3497606,
+  "lon": -6.2606859,
+  "tags": {
+    "man_made": "planter",
+    "natural": "tree",
+    "object:street": "Henry Street"
+  }
+},
+{
+  "type": "node",
+  "id": 12656789491,
+  "lat": 53.3520128,
+  "lon": -6.2610411,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12656789492,
+  "lat": 53.3496643,
+  "lon": -6.2608286,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "Henry Street"
+  }
+},
+{
+  "type": "node",
+  "id": 12656795411,
+  "lat": 53.3514779,
+  "lon": -6.2608342,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12656797867,
+  "lat": 53.3510757,
+  "lon": -6.2606009,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12656802999,
+  "lat": 53.3504413,
+  "lon": -6.2601179,
+  "tags": {
+    "highway": "street_lamp",
+    "name": "Lampadaire"
+  }
+},
+{
+  "type": "node",
+  "id": 12656803838,
+  "lat": 53.3479026,
+  "lon": -6.2593962,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12656804260,
+  "lat": 53.3497355,
+  "lon": -6.2600338,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12656804261,
+  "lat": 53.3496622,
+  "lon": -6.2609246,
+  "tags": {
+    "man_made": "planter",
+    "natural": "tree",
+    "object:street": "Henry Street"
+  }
+},
+{
+  "type": "node",
+  "id": 12656806253,
+  "lat": 53.3506377,
+  "lon": -6.2604368,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12656806254,
+  "lat": 53.3520378,
+  "lon": -6.2608290,
+  "tags": {
+    "highway": "street_lamp",
+    "name": "Lampadaire"
+  }
+},
+{
+  "type": "node",
+  "id": 12656808024,
+  "lat": 53.3504376,
+  "lon": -6.2603367,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12656809703,
+  "lat": 53.3502568,
+  "lon": -6.2602819,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12656809704,
+  "lat": 53.3508703,
+  "lon": -6.2604919,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12656811432,
+  "lat": 53.3495060,
+  "lon": -6.2618536,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "object:street": "Henry Street"
+  }
+},
+{
+  "type": "node",
+  "id": 12656813206,
+  "lat": 53.3496301,
+  "lon": -6.2610859,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "Henry Street"
+  }
+},
+{
+  "type": "node",
+  "id": 12656813761,
+  "lat": 53.3523499,
+  "lon": -6.2611876,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12656819111,
+  "lat": 53.3495404,
+  "lon": -6.2616426,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "object:street": "Henry Street"
+  }
+},
+{
+  "type": "node",
+  "id": 12656820850,
+  "lat": 53.3501369,
+  "lon": -6.2601937,
+  "tags": {
+    "name": "Arbres_4hauts",
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 12656826841,
+  "lat": 53.3494222,
+  "lon": -6.2624012,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "object:street": "Henry Street"
+  }
+},
+{
+  "type": "node",
+  "id": 12663082230,
+  "lat": 53.3497556,
+  "lon": -6.2599673,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12663082231,
+  "lat": 53.3497231,
+  "lon": -6.2599463,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12663082232,
+  "lat": 53.3496816,
+  "lon": -6.2599272,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12663082233,
+  "lat": 53.3496405,
+  "lon": -6.2599128,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12663082234,
+  "lat": 53.3496069,
+  "lon": -6.2598990,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12663082235,
+  "lat": 53.3495676,
+  "lon": -6.2598775,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12663082236,
+  "lat": 53.3495272,
+  "lon": -6.2598643,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12663082237,
+  "lat": 53.3494778,
+  "lon": -6.2598409,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12663082238,
+  "lat": 53.3494385,
+  "lon": -6.2598254,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12663082239,
+  "lat": 53.3494052,
+  "lon": -6.2598080,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12663082240,
+  "lat": 53.3493716,
+  "lon": -6.2597984,
+  "tags": {
+    "height": "3",
+    "leaf_type": "broadleaved",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12663082241,
+  "lat": 53.3493294,
+  "lon": -6.2597792,
+  "tags": {
+    "height": "3",
+    "leaf_type": "broadleaved",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12663082242,
+  "lat": 53.3492562,
+  "lon": -6.2597463,
+  "tags": {
+    "height": "3",
+    "leaf_type": "broadleaved",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12663082243,
+  "lat": 53.3492190,
+  "lon": -6.2597313,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12663082244,
+  "lat": 53.3492029,
+  "lon": -6.2597732,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673494881,
+  "lat": 53.3500860,
+  "lon": -6.2603500,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673494882,
+  "lat": 53.3502464,
+  "lon": -6.2604213,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673494883,
+  "lat": 53.3502165,
+  "lon": -6.2604080,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673494884,
+  "lat": 53.3501838,
+  "lon": -6.2603935,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673494885,
+  "lat": 53.3501504,
+  "lon": -6.2603786,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673494886,
+  "lat": 53.3501182,
+  "lon": -6.2603643,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673494887,
+  "lat": 53.3507637,
+  "lon": -6.2606387,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673494888,
+  "lat": 53.3507352,
+  "lon": -6.2606262,
+  "tags": {
+    "height": "3",
+    "leaf_type": "broadleaved",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673494889,
+  "lat": 53.3507091,
+  "lon": -6.2606148,
+  "tags": {
+    "height": "3",
+    "leaf_type": "broadleaved",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673494890,
+  "lat": 53.3506735,
+  "lon": -6.2605992,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673494891,
+  "lat": 53.3506472,
+  "lon": -6.2605877,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673494892,
+  "lat": 53.3506157,
+  "lon": -6.2605739,
+  "tags": {
+    "height": "3",
+    "leaf_type": "broadleaved",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673494893,
+  "lat": 53.3510834,
+  "lon": -6.2607786,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673494894,
+  "lat": 53.3510557,
+  "lon": -6.2607665,
+  "tags": {
+    "height": "3",
+    "leaf_type": "broadleaved",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673494895,
+  "lat": 53.3510281,
+  "lon": -6.2607544,
+  "tags": {
+    "height": "3",
+    "leaf_type": "broadleaved",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673494896,
+  "lat": 53.3509739,
+  "lon": -6.2607307,
+  "tags": {
+    "height": "3",
+    "leaf_type": "broadleaved",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673494897,
+  "lat": 53.3509478,
+  "lon": -6.2607193,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673494898,
+  "lat": 53.3509140,
+  "lon": -6.2607045,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673494899,
+  "lat": 53.3517090,
+  "lon": -6.2610450,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673494900,
+  "lat": 53.3516821,
+  "lon": -6.2610372,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673499157,
+  "lat": 53.3485848,
+  "lon": -6.2595090,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673499158,
+  "lat": 53.3482550,
+  "lon": -6.2593557,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673499159,
+  "lat": 53.3481709,
+  "lon": -6.2593040,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673499160,
+  "lat": 53.3480648,
+  "lon": -6.2592655,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673499161,
+  "lat": 53.3479340,
+  "lon": -6.2591964,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673499162,
+  "lat": 53.3478118,
+  "lon": -6.2591398,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673499164,
+  "lat": 53.3481266,
+  "lon": -6.2592733,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673499165,
+  "lat": 53.3482976,
+  "lon": -6.2593971,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673528134,
+  "lat": 53.3477445,
+  "lon": -6.2595824,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673528135,
+  "lat": 53.3478717,
+  "lon": -6.2596259,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673528136,
+  "lat": 53.3479945,
+  "lon": -6.2596797,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673528137,
+  "lat": 53.3480976,
+  "lon": -6.2597159,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673528138,
+  "lat": 53.3482023,
+  "lon": -6.2597660,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673528139,
+  "lat": 53.3485060,
+  "lon": -6.2599157,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673528140,
+  "lat": 53.3486007,
+  "lon": -6.2599378,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673528141,
+  "lat": 53.3487103,
+  "lon": -6.2599850,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673528142,
+  "lat": 53.3488124,
+  "lon": -6.2600329,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673528143,
+  "lat": 53.3489044,
+  "lon": -6.2600713,
+  "tags": {
+    "height": "7",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673528144,
+  "lat": 53.3491447,
+  "lon": -6.2601924,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673528145,
+  "lat": 53.3491349,
+  "lon": -6.2602440,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673528146,
+  "lat": 53.3491647,
+  "lon": -6.2602652,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673528147,
+  "lat": 53.3496385,
+  "lon": -6.2604662,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673528148,
+  "lat": 53.3496801,
+  "lon": -6.2604773,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673528149,
+  "lat": 53.3496899,
+  "lon": -6.2604221,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673528150,
+  "lat": 53.3497429,
+  "lon": -6.2604896,
+  "tags": {
+    "man_made": "planter",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673528151,
+  "lat": 53.3498917,
+  "lon": -6.2605072,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673556701,
+  "lat": 53.3516570,
+  "lon": -6.2610248,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673556702,
+  "lat": 53.3516060,
+  "lon": -6.2610014,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673556703,
+  "lat": 53.3515767,
+  "lon": -6.2609921,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673556704,
+  "lat": 53.3515531,
+  "lon": -6.2609797,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673556705,
+  "lat": 53.3520815,
+  "lon": -6.2612206,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673556706,
+  "lat": 53.3521070,
+  "lon": -6.2612346,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673556707,
+  "lat": 53.3521321,
+  "lon": -6.2612447,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673556708,
+  "lat": 53.3521910,
+  "lon": -6.2612688,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673556709,
+  "lat": 53.3522161,
+  "lon": -6.2612781,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673556710,
+  "lat": 53.3522434,
+  "lon": -6.2612890,
+  "tags": {
+    "height": "3",
+    "natural": "tree",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673588830,
+  "lat": 53.3497242,
+  "lon": -6.2601892,
+  "tags": {
+    "leaf_type": "broadleaved",
+    "man_made": "planter",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673588831,
+  "lat": 53.3497149,
+  "lon": -6.2602436,
+  "tags": {
+    "leaf_type": "broadleaved",
+    "man_made": "planter",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673588832,
+  "lat": 53.3491785,
+  "lon": -6.2599560,
+  "tags": {
+    "man_made": "planter",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673588833,
+  "lat": 53.3491730,
+  "lon": -6.2600027,
+  "tags": {
+    "man_made": "planter",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673588834,
+  "lat": 53.3488737,
+  "lon": -6.2598314,
+  "tags": {
+    "denotation": "urban",
+    "height": "3",
+    "leaf_cycle": "deciduous",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673588835,
+  "lat": 53.3488674,
+  "lon": -6.2598729,
+  "tags": {
+    "denotation": "urban",
+    "height": "3",
+    "leaf_cycle": "deciduous",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673588836,
+  "lat": 53.3489269,
+  "lon": -6.2598495,
+  "tags": {
+    "denotation": "urban",
+    "height": "3",
+    "leaf_cycle": "deciduous",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673588837,
+  "lat": 53.3489181,
+  "lon": -6.2598968,
+  "tags": {
+    "denotation": "urban",
+    "height": "3",
+    "leaf_cycle": "deciduous",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673588838,
+  "lat": 53.3487751,
+  "lon": -6.2597808,
+  "tags": {
+    "denotation": "urban",
+    "height": "3",
+    "leaf_cycle": "deciduous",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673588839,
+  "lat": 53.3487976,
+  "lon": -6.2597885,
+  "tags": {
+    "denotation": "urban",
+    "height": "3",
+    "leaf_cycle": "deciduous",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673588840,
+  "lat": 53.3488195,
+  "lon": -6.2598023,
+  "tags": {
+    "denotation": "urban",
+    "height": "3",
+    "leaf_cycle": "deciduous",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673588841,
+  "lat": 53.3488124,
+  "lon": -6.2598448,
+  "tags": {
+    "denotation": "urban",
+    "height": "3",
+    "leaf_cycle": "deciduous",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673588842,
+  "lat": 53.3487879,
+  "lon": -6.2598347,
+  "tags": {
+    "denotation": "urban",
+    "height": "3",
+    "leaf_cycle": "deciduous",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673588843,
+  "lat": 53.3487657,
+  "lon": -6.2598233,
+  "tags": {
+    "denotation": "urban",
+    "height": "3",
+    "leaf_cycle": "deciduous",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673588844,
+  "lat": 53.3481832,
+  "lon": -6.2595217,
+  "tags": {
+    "denotation": "urban",
+    "height": "3",
+    "leaf_cycle": "deciduous",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673588845,
+  "lat": 53.3481793,
+  "lon": -6.2595633,
+  "tags": {
+    "denotation": "urban",
+    "height": "3",
+    "leaf_cycle": "deciduous",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673588846,
+  "lat": 53.3481556,
+  "lon": -6.2595537,
+  "tags": {
+    "denotation": "urban",
+    "height": "3",
+    "leaf_cycle": "deciduous",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673588847,
+  "lat": 53.3481613,
+  "lon": -6.2595122,
+  "tags": {
+    "denotation": "urban",
+    "height": "3",
+    "leaf_cycle": "deciduous",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673588848,
+  "lat": 53.3479443,
+  "lon": -6.2594602,
+  "tags": {
+    "denotation": "urban",
+    "height": "3",
+    "leaf_cycle": "deciduous",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673588849,
+  "lat": 53.3479483,
+  "lon": -6.2594211,
+  "tags": {
+    "denotation": "urban",
+    "height": "3",
+    "leaf_cycle": "deciduous",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673588850,
+  "lat": 53.3479260,
+  "lon": -6.2594101,
+  "tags": {
+    "denotation": "urban",
+    "height": "3",
+    "leaf_cycle": "deciduous",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673588851,
+  "lat": 53.3479161,
+  "lon": -6.2594492,
+  "tags": {
+    "denotation": "urban",
+    "height": "3",
+    "leaf_cycle": "deciduous",
+    "natural": "tree",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766165,
+  "lat": 53.3479776,
+  "lon": -6.2594343,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766166,
+  "lat": 53.3480725,
+  "lon": -6.2594792,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766167,
+  "lat": 53.3481988,
+  "lon": -6.2595455,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766168,
+  "lat": 53.3482969,
+  "lon": -6.2595778,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766169,
+  "lat": 53.3484716,
+  "lon": -6.2596512,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766170,
+  "lat": 53.3486040,
+  "lon": -6.2597193,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766171,
+  "lat": 53.3487262,
+  "lon": -6.2597628,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766172,
+  "lat": 53.3487206,
+  "lon": -6.2598170,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766173,
+  "lat": 53.3488534,
+  "lon": -6.2598140,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766174,
+  "lat": 53.3489633,
+  "lon": -6.2598571,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766175,
+  "lat": 53.3489548,
+  "lon": -6.2599197,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766176,
+  "lat": 53.3490047,
+  "lon": -6.2598860,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766177,
+  "lat": 53.3491513,
+  "lon": -6.2599480,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Lower"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766178,
+  "lat": 53.3499369,
+  "lon": -6.2602941,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766179,
+  "lat": 53.3500367,
+  "lon": -6.2603354,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766180,
+  "lat": 53.3504031,
+  "lon": -6.2605243,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766181,
+  "lat": 53.3507766,
+  "lon": -6.2606537,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766182,
+  "lat": 53.3505758,
+  "lon": -6.2605561,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766183,
+  "lat": 53.3509927,
+  "lon": -6.2607412,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766184,
+  "lat": 53.3512899,
+  "lon": -6.2608657,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766185,
+  "lat": 53.3514054,
+  "lon": -6.2609133,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766186,
+  "lat": 53.3514931,
+  "lon": -6.2609547,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766187,
+  "lat": 53.3517290,
+  "lon": -6.2610593,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766188,
+  "lat": 53.3518541,
+  "lon": -6.2611276,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766189,
+  "lat": 53.3520553,
+  "lon": -6.2612168,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766190,
+  "lat": 53.3521628,
+  "lon": -6.2612623,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766191,
+  "lat": 53.3522694,
+  "lon": -6.2613032,
+  "tags": {
+    "highway": "street_lamp",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12673766192,
+  "lat": 53.3524202,
+  "lon": -6.2613570,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "object:street": "O'Connell Street Upper"
+  }
+},
+{
+  "type": "node",
+  "id": 12757764994,
+  "lat": 53.3528967,
+  "lon": -6.2617728,
+  "tags": {
+    "amenity": "fountain",
+    "drinking_water": "no",
+    "fountain": "decorative",
+    "heritage": "4",
+    "lit": "no"
+  }
+},
+{
+  "type": "node",
+  "id": 12804264388,
+  "lat": 53.3452349,
+  "lon": -6.2587666,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 12887510609,
+  "lat": 53.3484200,
+  "lon": -6.2601890,
+  "tags": {
+    "highway": "street_lamp",
+    "name": "ABBEY STREET MIDDLE (C)",
+    "operator": "Luas - Transdev Dublin Light Rail Limited",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12887510610,
+  "lat": 53.3482210,
+  "lon": -6.2601520,
+  "tags": {
+    "highway": "street_lamp",
+    "name": "ABBEY STREET MIDDLE (C)",
+    "operator": "Luas - Transdev Dublin Light Rail Limited",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12887510611,
+  "lat": 53.3483160,
+  "lon": -6.2610940,
+  "tags": {
+    "highway": "street_lamp",
+    "name": "ABBEY STREET MIDDLE (C)",
+    "operator": "Luas - Transdev Dublin Light Rail Limited",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12887510612,
+  "lat": 53.3481520,
+  "lon": -6.2609510,
+  "tags": {
+    "highway": "street_lamp",
+    "name": "ABBEY STREET MIDDLE (C)",
+    "operator": "Luas - Transdev Dublin Light Rail Limited",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12887510613,
+  "lat": 53.3482360,
+  "lon": -6.2618040,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "ABBEY STREET MIDDLE (C)",
+    "operator": "Luas - Transdev Dublin Light Rail Limited",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12887510614,
+  "lat": 53.3480740,
+  "lon": -6.2617350,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "ABBEY STREET MIDDLE (C)",
+    "operator": "Luas - Transdev Dublin Light Rail Limited",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12887510621,
+  "lat": 53.3484020,
+  "lon": -6.2589580,
+  "tags": {
+    "highway": "street_lamp",
+    "name": "ABBEY STREET LOWER (C)",
+    "operator": "Luas - Transdev Dublin Light Rail Limited",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12887510632,
+  "lat": 53.3486380,
+  "lon": -6.2585430,
+  "tags": {
+    "highway": "street_lamp",
+    "name": "ABBEY STREET LOWER (C)",
+    "operator": "Luas - Transdev Dublin Light Rail Limited",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12887510633,
+  "lat": 53.3485650,
+  "lon": -6.2590420,
+  "tags": {
+    "highway": "street_lamp",
+    "name": "ABBEY STREET LOWER (C)",
+    "operator": "Luas - Transdev Dublin Light Rail Limited",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894626420,
+  "lat": 53.3483350,
+  "lon": -6.2617690,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "WILLIAMS LANE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12894626421,
+  "lat": 53.3485700,
+  "lon": -6.2619100,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "WILLIAMS LANE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12894626422,
+  "lat": 53.3487780,
+  "lon": -6.2619620,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "WILLIAMS LANE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627190,
+  "lat": 53.3488040,
+  "lon": -6.2619010,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "PRINCE'S STREET NORTH (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627191,
+  "lat": 53.3488450,
+  "lon": -6.2616280,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "PRINCE'S STREET NORTH (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627192,
+  "lat": 53.3488940,
+  "lon": -6.2613110,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "PRINCE'S STREET NORTH (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627193,
+  "lat": 53.3488730,
+  "lon": -6.2610720,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "PRINCE'S STREET NORTH (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627313,
+  "lat": 53.3520570,
+  "lon": -6.2624360,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "PARNELL STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627314,
+  "lat": 53.3522190,
+  "lon": -6.2621020,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "PARNELL STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627315,
+  "lat": 53.3523400,
+  "lon": -6.2618600,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "PARNELL STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627316,
+  "lat": 53.3528250,
+  "lon": -6.2611400,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "PARNELL STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627317,
+  "lat": 53.3527260,
+  "lon": -6.2609140,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "PARNELL STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627434,
+  "lat": 53.3512550,
+  "lon": -6.2623420,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'RAHILLY PARADE (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627499,
+  "lat": 53.3517450,
+  "lon": -6.2608200,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627500,
+  "lat": 53.3520350,
+  "lon": -6.2610210,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627501,
+  "lat": 53.3521140,
+  "lon": -6.2610560,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627502,
+  "lat": 53.3523540,
+  "lon": -6.2611690,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627503,
+  "lat": 53.3524970,
+  "lon": -6.2612240,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627504,
+  "lat": 53.3523770,
+  "lon": -6.2616650,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627505,
+  "lat": 53.3516530,
+  "lon": -6.2613340,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627506,
+  "lat": 53.3514450,
+  "lon": -6.2612370,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627507,
+  "lat": 53.3513180,
+  "lon": -6.2611680,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627508,
+  "lat": 53.3510110,
+  "lon": -6.2610450,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627509,
+  "lat": 53.3507670,
+  "lon": -6.2609350,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627510,
+  "lat": 53.3505230,
+  "lon": -6.2608390,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627511,
+  "lat": 53.3478220,
+  "lon": -6.2611300,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "NORTH LOTTS (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627512,
+  "lat": 53.3476900,
+  "lon": -6.2613000,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "NORTH LOTTS (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627513,
+  "lat": 53.3476480,
+  "lon": -6.2614820,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "NORTH LOTTS (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627514,
+  "lat": 53.3476060,
+  "lon": -6.2616790,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "NORTH LOTTS (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627515,
+  "lat": 53.3475370,
+  "lon": -6.2619220,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "NORTH LOTTS (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627516,
+  "lat": 53.3474790,
+  "lon": -6.2622250,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "NORTH LOTTS (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627520,
+  "lat": 53.3478730,
+  "lon": -6.2609020,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "NORTH LOTTS (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627603,
+  "lat": 53.3496440,
+  "lon": -6.2619910,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "MOORE STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "wire"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627604,
+  "lat": 53.3498000,
+  "lon": -6.2621290,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "MOORE STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "wire"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627605,
+  "lat": 53.3499810,
+  "lon": -6.2622950,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "MOORE STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "wire"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627606,
+  "lat": 53.3501820,
+  "lon": -6.2624890,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "MOORE STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "wire"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627613,
+  "lat": 53.3505850,
+  "lon": -6.2620080,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "MOORE LANE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627614,
+  "lat": 53.3508200,
+  "lon": -6.2621190,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "MOORE LANE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627615,
+  "lat": 53.3516200,
+  "lon": -6.2623540,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "MOORE LANE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627616,
+  "lat": 53.3511270,
+  "lon": -6.2622420,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "MOORE LANE (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627617,
+  "lat": 53.3513610,
+  "lon": -6.2622620,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "MOORE LANE (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627818,
+  "lat": 53.3476290,
+  "lon": -6.2612630,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "LITTON LANE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627819,
+  "lat": 53.3474640,
+  "lon": -6.2611890,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "LITTON LANE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12894627820,
+  "lat": 53.3472690,
+  "lon": -6.2610900,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "LITTON LANE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12894628134,
+  "lat": 53.3496530,
+  "lon": -6.2609650,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "HENRY STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894628135,
+  "lat": 53.3498160,
+  "lon": -6.2610780,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "HENRY PLACE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12894628136,
+  "lat": 53.3499710,
+  "lon": -6.2611770,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "HENRY PLACE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12894628137,
+  "lat": 53.3501520,
+  "lon": -6.2612750,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "HENRY PLACE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12894628138,
+  "lat": 53.3502440,
+  "lon": -6.2614360,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "HENRY PLACE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12894628139,
+  "lat": 53.3501740,
+  "lon": -6.2621750,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "HENRY PLACE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12894628140,
+  "lat": 53.3501770,
+  "lon": -6.2617850,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "HENRY PLACE (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894629148,
+  "lat": 53.3527950,
+  "lon": -6.2613610,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "CAVENDISH ROW (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894629149,
+  "lat": 53.3526750,
+  "lon": -6.2616820,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "CAVENDISH ROW (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12894629151,
+  "lat": 53.3529630,
+  "lon": -6.2618060,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "CAVENDISH ROW (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947521232,
+  "lat": 53.3519920,
+  "lon": -6.2598930,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "THOMAS LANE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947521233,
+  "lat": 53.3515770,
+  "lon": -6.2598200,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "THOMAS LANE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947521234,
+  "lat": 53.3513230,
+  "lon": -6.2596050,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "THOMAS LANE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947521235,
+  "lat": 53.3510970,
+  "lon": -6.2595240,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "THOMAS LANE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947521236,
+  "lat": 53.3508610,
+  "lon": -6.2594140,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "THOMAS LANE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947521237,
+  "lat": 53.3506620,
+  "lon": -6.2593170,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "THOMAS LANE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947521586,
+  "lat": 53.3524400,
+  "lon": -6.2585680,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "SEAN MACDERMOTT STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947521587,
+  "lat": 53.3524720,
+  "lon": -6.2589580,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "SEAN MACDERMOTT STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947521891,
+  "lat": 53.3489730,
+  "lon": -6.2587250,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "SACKVILLE PLACE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947521892,
+  "lat": 53.3488920,
+  "lon": -6.2593440,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "SACKVILLE PLACE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522582,
+  "lat": 53.3489960,
+  "lon": -6.2602710,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "PRINCE'S STREET NORTH (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522731,
+  "lat": 53.3529560,
+  "lon": -6.2603870,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "PARNELL STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522816,
+  "lat": 53.3499910,
+  "lon": -6.2600800,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522817,
+  "lat": 53.3501890,
+  "lon": -6.2601620,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522818,
+  "lat": 53.3504790,
+  "lon": -6.2603150,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522819,
+  "lat": 53.3506600,
+  "lon": -6.2603830,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522820,
+  "lat": 53.3509040,
+  "lon": -6.2604780,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522821,
+  "lat": 53.3510670,
+  "lon": -6.2605620,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522822,
+  "lat": 53.3513560,
+  "lon": -6.2606850,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522823,
+  "lat": 53.3515370,
+  "lon": -6.2607380,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522824,
+  "lat": 53.3522320,
+  "lon": -6.2615810,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522825,
+  "lat": 53.3519340,
+  "lon": -6.2614580,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522826,
+  "lat": 53.3518160,
+  "lon": -6.2614020,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522827,
+  "lat": 53.3503780,
+  "lon": -6.2607700,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522828,
+  "lat": 53.3501250,
+  "lon": -6.2606600,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522829,
+  "lat": 53.3499170,
+  "lon": -6.2605790,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET UPPER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522830,
+  "lat": 53.3481570,
+  "lon": -6.2594490,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522831,
+  "lat": 53.3481410,
+  "lon": -6.2595700,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522832,
+  "lat": 53.3480760,
+  "lon": -6.2594070,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522833,
+  "lat": 53.3480600,
+  "lon": -6.2595580,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522834,
+  "lat": 53.3479400,
+  "lon": -6.2593530,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522835,
+  "lat": 53.3478976,
+  "lon": -6.2594622,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522836,
+  "lat": 53.3478220,
+  "lon": -6.2592980,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522837,
+  "lat": 53.3477890,
+  "lon": -6.2594490,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522838,
+  "lat": 53.3477470,
+  "lon": -6.2590750,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522839,
+  "lat": 53.3478830,
+  "lon": -6.2591450,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522840,
+  "lat": 53.3481000,
+  "lon": -6.2592260,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522841,
+  "lat": 53.3483350,
+  "lon": -6.2593370,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522842,
+  "lat": 53.3485350,
+  "lon": -6.2595090,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522843,
+  "lat": 53.3487160,
+  "lon": -6.2595910,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522844,
+  "lat": 53.3489330,
+  "lon": -6.2596730,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522845,
+  "lat": 53.3492310,
+  "lon": -6.2597360,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522846,
+  "lat": 53.3497370,
+  "lon": -6.2599550,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522847,
+  "lat": 53.3496550,
+  "lon": -6.2604840,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522848,
+  "lat": 53.3491460,
+  "lon": -6.2602630,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522849,
+  "lat": 53.3488720,
+  "lon": -6.2600710,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522850,
+  "lat": 53.3486660,
+  "lon": -6.2599780,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522851,
+  "lat": 53.3484690,
+  "lon": -6.2598850,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522852,
+  "lat": 53.3482440,
+  "lon": -6.2598360,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522853,
+  "lat": 53.3480240,
+  "lon": -6.2597120,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522854,
+  "lat": 53.3477420,
+  "lon": -6.2596330,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522855,
+  "lat": 53.3476180,
+  "lon": -6.2595820,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL STREET LOWER (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522856,
+  "lat": 53.3475200,
+  "lon": -6.2588740,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL BRIDGE (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522857,
+  "lat": 53.3474020,
+  "lon": -6.2588040,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL BRIDGE (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522858,
+  "lat": 53.3474440,
+  "lon": -6.2591930,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL BRIDGE (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522859,
+  "lat": 53.3472800,
+  "lon": -6.2590940,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL BRIDGE (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522860,
+  "lat": 53.3473770,
+  "lon": -6.2595410,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL BRIDGE (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522861,
+  "lat": 53.3472770,
+  "lon": -6.2594700,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "O'CONNELL BRIDGE (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522874,
+  "lat": 53.3478760,
+  "lon": -6.2604970,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "NORTH LOTTS (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947522875,
+  "lat": 53.3478250,
+  "lon": -6.2607240,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "NORTH LOTTS (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947523331,
+  "lat": 53.3511500,
+  "lon": -6.2585410,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "MARLBOROUGH STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947523332,
+  "lat": 53.3513770,
+  "lon": -6.2586470,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "MARLBOROUGH STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947523333,
+  "lat": 53.3516310,
+  "lon": -6.2587420,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "MARLBOROUGH STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947523334,
+  "lat": 53.3518420,
+  "lon": -6.2588280,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "MARLBOROUGH STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947523335,
+  "lat": 53.3520440,
+  "lon": -6.2589270,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "MARLBOROUGH STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947523336,
+  "lat": 53.3522810,
+  "lon": -6.2590480,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "MARLBOROUGH STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947523337,
+  "lat": 53.3524980,
+  "lon": -6.2591140,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "MARLBOROUGH STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947523338,
+  "lat": 53.3527340,
+  "lon": -6.2592250,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "MARLBOROUGH STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947523838,
+  "lat": 53.3496940,
+  "lon": -6.2606630,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "HENRY STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947523841,
+  "lat": 53.3483640,
+  "lon": -6.2588250,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "HARBOUR COURT (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947523842,
+  "lat": 53.3481390,
+  "lon": -6.2588430,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "HARBOUR COURT (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947523846,
+  "lat": 53.3479600,
+  "lon": -6.2586890,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "HARBOUR COURT (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947523847,
+  "lat": 53.3478220,
+  "lon": -6.2586220,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "HARBOUR COURT (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524249,
+  "lat": 53.3525950,
+  "lon": -6.2593730,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "FINDLATER PLACE (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524250,
+  "lat": 53.3524560,
+  "lon": -6.2597090,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "FINDLATER PLACE (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524251,
+  "lat": 53.3523610,
+  "lon": -6.2599240,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "FINDLATER PLACE (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524252,
+  "lat": 53.3522400,
+  "lon": -6.2602740,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "FINDLATER PLACE (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524253,
+  "lat": 53.3521158,
+  "lon": -6.2605845,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "FINDLATER PLACE (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524372,
+  "lat": 53.3477670,
+  "lon": -6.2585790,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "EDEN QUAY (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524373,
+  "lat": 53.3477010,
+  "lon": -6.2590020,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "EDEN QUAY (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524391,
+  "lat": 53.3475850,
+  "lon": -6.2586910,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "EDEN QUAY (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524422,
+  "lat": 53.3499800,
+  "lon": -6.2587140,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "EARL STREET NORTH (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524424,
+  "lat": 53.3499556,
+  "lon": -6.2597906,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "EARL STREET NORTH (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524425,
+  "lat": 53.3498450,
+  "lon": -6.2593800,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "EARL STREET NORTH (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524426,
+  "lat": 53.3500809,
+  "lon": -6.2590026,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "EARL STREET NORTH (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524427,
+  "lat": 53.3498118,
+  "lon": -6.2598496,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "EARL STREET NORTH (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524428,
+  "lat": 53.3499026,
+  "lon": -6.2598856,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "EARL STREET NORTH (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524429,
+  "lat": 53.3499491,
+  "lon": -6.2596216,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "EARL STREET NORTH (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524430,
+  "lat": 53.3498502,
+  "lon": -6.2595853,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "EARL STREET NORTH (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524431,
+  "lat": 53.3499739,
+  "lon": -6.2594086,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "EARL STREET NORTH (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524432,
+  "lat": 53.3498958,
+  "lon": -6.2593781,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "EARL STREET NORTH (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524433,
+  "lat": 53.3500088,
+  "lon": -6.2591949,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "EARL STREET NORTH (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524434,
+  "lat": 53.3499344,
+  "lon": -6.2591566,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "EARL STREET NORTH (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524435,
+  "lat": 53.3500481,
+  "lon": -6.2589815,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "EARL STREET NORTH (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524436,
+  "lat": 53.3500772,
+  "lon": -6.2587593,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "EARL STREET NORTH (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524437,
+  "lat": 53.3500076,
+  "lon": -6.2587308,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "EARL STREET NORTH (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524439,
+  "lat": 53.3501127,
+  "lon": -6.2585404,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "EARL STREET NORTH (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524442,
+  "lat": 53.3491610,
+  "lon": -6.2586720,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "EARL PLACE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524443,
+  "lat": 53.3494330,
+  "lon": -6.2587960,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "EARL PLACE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947524444,
+  "lat": 53.3498300,
+  "lon": -6.2589450,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "EARL PLACE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947525271,
+  "lat": 53.3505170,
+  "lon": -6.2592030,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "CATHEDRAL STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947525272,
+  "lat": 53.3506790,
+  "lon": -6.2586400,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "CATHEDRAL STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947525273,
+  "lat": 53.3506250,
+  "lon": -6.2586270,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "CATHEDRAL STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947525274,
+  "lat": 53.3505510,
+  "lon": -6.2590660,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "CATHEDRAL STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947525275,
+  "lat": 53.3506050,
+  "lon": -6.2590940,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "CATHEDRAL STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947525276,
+  "lat": 53.3505490,
+  "lon": -6.2595620,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "CATHEDRAL STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947525277,
+  "lat": 53.3504670,
+  "lon": -6.2600910,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "CATHEDRAL STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947525278,
+  "lat": 53.3522710,
+  "lon": -6.2593410,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "CATHAL BRUGHA STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947525279,
+  "lat": 53.3522610,
+  "lon": -6.2598970,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "CATHAL BRUGHA STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947525280,
+  "lat": 53.3520690,
+  "lon": -6.2602660,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "CATHAL BRUGHA STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947525281,
+  "lat": 53.3520628,
+  "lon": -6.2608060,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "CATHAL BRUGHA STREET (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947525501,
+  "lat": 53.3529360,
+  "lon": -6.2586990,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "BRITAIN PLACE (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947525874,
+  "lat": 53.3475820,
+  "lon": -6.2600580,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "BACHELORS WAY (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947525875,
+  "lat": 53.3477710,
+  "lon": -6.2601100,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "BACHELORS WAY (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947525876,
+  "lat": 53.3479880,
+  "lon": -6.2601620,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "BACHELORS WAY (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947525877,
+  "lat": 53.3481680,
+  "lon": -6.2601990,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "BACHELORS WAY (C)",
+    "operator": "Dublin City Council",
+    "support": "wall"
+  }
+},
+{
+  "type": "node",
+  "id": 12947525878,
+  "lat": 53.3475410,
+  "lon": -6.2596990,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "BACHELORS WALK (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947525879,
+  "lat": 53.3474120,
+  "lon": -6.2600800,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "BACHELORS WALK (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947525880,
+  "lat": 53.3472830,
+  "lon": -6.2605360,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "BACHELORS WALK (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947525881,
+  "lat": 53.3473530,
+  "lon": -6.2597370,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "BACHELORS WALK (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947525882,
+  "lat": 53.3472760,
+  "lon": -6.2600100,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "BACHELORS WALK (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 12947525883,
+  "lat": 53.3472330,
+  "lon": -6.2601920,
+  "tags": {
+    "highway": "street_lamp",
+    "lamp_type": "electric",
+    "name": "BACHELORS WALK (C)",
+    "operator": "Dublin City Council",
+    "support": "pole"
+  }
+},
+{
+  "type": "node",
+  "id": 13083901235,
+  "lat": 53.3527478,
+  "lon": -6.2618096,
+  "tags": {
+    "denotation": "urban",
+    "leaf_type": "broadleaved",
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 13254558101,
+  "lat": 53.3500098,
+  "lon": -6.2603378,
+  "tags": {
+    "historic": "memorial",
+    "memorial": "statue",
+    "name": "Father Mathew"
+  }
+},
+{
+  "type": "node",
+  "id": 13398489041,
+  "lat": 53.3529935,
+  "lon": -6.2600375,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 13398489045,
+  "lat": 53.3525945,
+  "lon": -6.2594004,
+  "tags": {
+    "highway": "street_lamp"
+  }
+},
+{
+  "type": "node",
+  "id": 13398489046,
+  "lat": 53.3525745,
+  "lon": -6.2591657,
+  "tags": {
+    "highway": "street_lamp"
+  }
+},
+{
+  "type": "node",
+  "id": 13398537003,
+  "lat": 53.3525571,
+  "lon": -6.2612485,
+  "tags": {
+    "highway": "street_lamp"
+  }
+},
+{
+  "type": "node",
+  "id": 13398537035,
+  "lat": 53.3527236,
+  "lon": -6.2616770,
+  "tags": {
+    "highway": "street_lamp"
+  }
+},
+{
+  "type": "node",
+  "id": 13570356472,
+  "lat": 53.3433260,
+  "lon": -6.2585581,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 13570356476,
+  "lat": 53.3439941,
+  "lon": -6.2585152,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 13570356477,
+  "lat": 53.3433337,
+  "lon": -6.2590592,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 13570356478,
+  "lat": 53.3435048,
+  "lon": -6.2591021,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 13912463714,
+  "lat": 53.3475674,
+  "lon": -6.2588360,
+  "tags": {
+    "highway": "street_lamp"
+  }
+},
+{
+  "type": "node",
+  "id": 13923359777,
+  "lat": 53.3521268,
+  "lon": -6.2591104,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 13923359778,
+  "lat": 53.3520448,
+  "lon": -6.2590857,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 13923359779,
+  "lat": 53.3519635,
+  "lon": -6.2590444,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 13923359780,
+  "lat": 53.3518951,
+  "lon": -6.2590142,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 13925961788,
+  "lat": 53.3485257,
+  "lon": -6.2588365,
+  "tags": {
+    "highway": "street_lamp"
+  }
+},
+{
+  "type": "node",
+  "id": 13942445587,
+  "lat": 53.3436671,
+  "lon": -6.2606106,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 14127980339,
+  "lat": 53.3525340,
+  "lon": -6.2620134,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "node",
+  "id": 14127980340,
+  "lat": 53.3525881,
+  "lon": -6.2620331,
+  "tags": {
+    "natural": "tree"
+  }
+},
+{
+  "type": "way",
+  "id": 25631085,
+  "bounds": {
+    "minlat": 53.3454208,
+    "minlon": -6.2634248,
+    "maxlat": 53.3456118,
+    "maxlon": -6.2628091
+  },
+  "nodes": [
+    1442761,
+    13889334752,
+    279363853,
+    4388188599,
+    12035318315,
+    559335997,
+    559335996,
+    12035318316,
+    279363854,
+    12957286426,
+    13889334754,
+    1426051371,
+    1442761
+  ],
+  "geometry": [
+    { "lat": 53.3456118, "lon": -6.2628427 },
+    { "lat": 53.3455665, "lon": -6.2628233 },
+    { "lat": 53.3454345, "lon": -6.2628091 },
+    { "lat": 53.3454352, "lon": -6.2628782 },
+    { "lat": 53.3454307, "lon": -6.2630722 },
+    { "lat": 53.3454297, "lon": -6.2631141 },
+    { "lat": 53.3454268, "lon": -6.2632214 },
+    { "lat": 53.3454244, "lon": -6.2632892 },
+    { "lat": 53.3454213, "lon": -6.2633755 },
+    { "lat": 53.3454208, "lon": -6.2634180 },
+    { "lat": 53.3455445, "lon": -6.2634248 },
+    { "lat": 53.3455882, "lon": -6.2634167 },
+    { "lat": 53.3456118, "lon": -6.2628427 }
+  ],
+  "tags": {
+    "area": "yes",
+    "highway": "pedestrian",
+    "lit": "yes",
+    "name": "Temple Bar Square",
+    "name:ga": "Cearnóg Bharra An Tempaill",
+    "smoothness": "good",
+    "surface": "paving_stones",
+    "wikidata": "Q95492779"
+  }
+},
+{
+  "type": "way",
+  "id": 41640626,
+  "bounds": {
+    "minlat": 53.3470580,
+    "minlon": -6.2592416,
+    "maxlat": 53.3474725,
+    "maxlon": -6.2589724
+  },
+  "nodes": [
+    511114251,
+    5101079531,
+    511114254,
+    2760746621,
+    7180674181,
+    511114260,
+    5101079526,
+    511114276,
+    7180674180,
+    2760746619,
+    511114251
+  ],
+  "geometry": [
+    { "lat": 53.3470580, "lon": -6.2590157 },
+    { "lat": 53.3470627, "lon": -6.2589919 },
+    { "lat": 53.3470665, "lon": -6.2589724 },
+    { "lat": 53.3470794, "lon": -6.2589795 },
+    { "lat": 53.3474611, "lon": -6.2591889 },
+    { "lat": 53.3474725, "lon": -6.2591952 },
+    { "lat": 53.3474686, "lon": -6.2592153 },
+    { "lat": 53.3474635, "lon": -6.2592416 },
+    { "lat": 53.3474521, "lon": -6.2592353 },
+    { "lat": 53.3470708, "lon": -6.2590228 },
+    { "lat": 53.3470580, "lon": -6.2590157 }
+  ],
+  "tags": {
+    "area:highway": "footway",
+    "layer": "1",
+    "lit": "yes",
+    "smoothness": "excellent",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 41640630,
+  "bounds": {
+    "minlat": 53.3476188,
+    "minlon": -6.2596790,
+    "maxlat": 53.3483529,
+    "maxlon": -6.2592430
+  },
+  "nodes": [
+    2892088918,
+    2892088921,
+    7178701733,
+    2892088919,
+    2871983488,
+    2892088920,
+    2892088922,
+    2892088916,
+    4405330043,
+    13769784124,
+    13769784123,
+    4043195869,
+    2892088926,
+    2904701109,
+    2892088925,
+    7178701735,
+    7178701734,
+    2892088918
+  ],
+  "geometry": [
+    { "lat": 53.3476291, "lon": -6.2593741 },
+    { "lat": 53.3476222, "lon": -6.2593629 },
+    { "lat": 53.3476188, "lon": -6.2593459 },
+    { "lat": 53.3476188, "lon": -6.2593285 },
+    { "lat": 53.3476250, "lon": -6.2592935 },
+    { "lat": 53.3476299, "lon": -6.2592654 },
+    { "lat": 53.3476405, "lon": -6.2592493 },
+    { "lat": 53.3476507, "lon": -6.2592430 },
+    { "lat": 53.3476658, "lon": -6.2592433 },
+    { "lat": 53.3477158, "lon": -6.2592667 },
+    { "lat": 53.3477679, "lon": -6.2592911 },
+    { "lat": 53.3482980, "lon": -6.2595390 },
+    { "lat": 53.3483529, "lon": -6.2595645 },
+    { "lat": 53.3483444, "lon": -6.2596275 },
+    { "lat": 53.3483375, "lon": -6.2596790 },
+    { "lat": 53.3482824, "lon": -6.2596556 },
+    { "lat": 53.3476363, "lon": -6.2593819 },
+    { "lat": 53.3476291, "lon": -6.2593741 }
+  ],
+  "tags": {
+    "area": "yes",
+    "highway": "pedestrian",
+    "lit": "yes",
+    "noname": "yes",
+    "surface": "paving_stones"
+  }
+},
+{
+  "type": "way",
+  "id": 41640635,
+  "bounds": {
+    "minlat": 53.3484043,
+    "minlon": -6.2613874,
+    "maxlat": 53.3524922,
+    "maxlon": -6.2595942
+  },
+  "nodes": [
+    3248525118,
+    5281437628,
+    10754809543,
+    10754809547,
+    10754809545,
+    5281437629,
+    2649896047,
+    2904701110,
+    2892088931,
+    4043195860,
+    7178701732,
+    532751167,
+    7178701739,
+    7178701741,
+    11836987486,
+    5300250101,
+    7175337382,
+    5301585463,
+    11836987483,
+    11836987484,
+    7175337383,
+    11836987485,
+    7178701740,
+    11836987498,
+    12020904941,
+    11836987497,
+    5300250104,
+    7501272697,
+    7501272696,
+    7180674183,
+    3248525118
+  ],
+  "geometry": [
+    { "lat": 53.3497447, "lon": -6.2602920 },
+    { "lat": 53.3491511, "lon": -6.2600331 },
+    { "lat": 53.3491209, "lon": -6.2600199 },
+    { "lat": 53.3490582, "lon": -6.2599925 },
+    { "lat": 53.3485696, "lon": -6.2597791 },
+    { "lat": 53.3484737, "lon": -6.2597372 },
+    { "lat": 53.3484043, "lon": -6.2597064 },
+    { "lat": 53.3484097, "lon": -6.2596563 },
+    { "lat": 53.3484188, "lon": -6.2595942 },
+    { "lat": 53.3484906, "lon": -6.2596216 },
+    { "lat": 53.3490755, "lon": -6.2598800 },
+    { "lat": 53.3498070, "lon": -6.2602045 },
+    { "lat": 53.3513123, "lon": -6.2608718 },
+    { "lat": 53.3520404, "lon": -6.2611960 },
+    { "lat": 53.3524158, "lon": -6.2613405 },
+    { "lat": 53.3524922, "lon": -6.2613745 },
+    { "lat": 53.3524911, "lon": -6.2613823 },
+    { "lat": 53.3524568, "lon": -6.2613874 },
+    { "lat": 53.3524286, "lon": -6.2613870 },
+    { "lat": 53.3524081, "lon": -6.2613868 },
+    { "lat": 53.3523401, "lon": -6.2613697 },
+    { "lat": 53.3522674, "lon": -6.2613429 },
+    { "lat": 53.3520310, "lon": -6.2612422 },
+    { "lat": 53.3519754, "lon": -6.2612191 },
+    { "lat": 53.3519726, "lon": -6.2612179 },
+    { "lat": 53.3513972, "lon": -6.2609787 },
+    { "lat": 53.3511749, "lon": -6.2608575 },
+    { "lat": 53.3504186, "lon": -6.2605495 },
+    { "lat": 53.3501370, "lon": -6.2604684 },
+    { "lat": 53.3497984, "lon": -6.2603188 },
+    { "lat": 53.3497447, "lon": -6.2602920 }
+  ],
+  "tags": {
+    "area:highway": "pedestrian",
+    "lit": "yes",
+    "noname": "yes",
+    "smoothness": "good",
+    "surface": "paving_stones"
+  }
+},
+{
+  "type": "way",
+  "id": 74600959,
+  "bounds": {
+    "minlat": 53.3426605,
+    "minlon": -6.2667436,
+    "maxlat": 53.3428057,
+    "maxlon": -6.2664002
+  },
+  "nodes": [
+    881446358,
+    3212252130,
+    881446235,
+    3212252136,
+    881446274,
+    3212252142,
+    3212252143,
+    881446108,
+    3212252134,
+    881446160,
+    3212252131,
+    881446258,
+    3212252129,
+    881446358
+  ],
+  "geometry": [
+    { "lat": 53.3426605, "lon": -6.2664734 },
+    { "lat": 53.3426824, "lon": -6.2664419 },
+    { "lat": 53.3427132, "lon": -6.2664002 },
+    { "lat": 53.3427585, "lon": -6.2664242 },
+    { "lat": 53.3427656, "lon": -6.2664522 },
+    { "lat": 53.3427881, "lon": -6.2664642 },
+    { "lat": 53.3428057, "lon": -6.2665812 },
+    { "lat": 53.3427721, "lon": -6.2667436 },
+    { "lat": 53.3427198, "lon": -6.2667191 },
+    { "lat": 53.3426955, "lon": -6.2667157 },
+    { "lat": 53.3426956, "lon": -6.2666335 },
+    { "lat": 53.3426878, "lon": -6.2665793 },
+    { "lat": 53.3426734, "lon": -6.2665081 },
+    { "lat": 53.3426605, "lon": -6.2664734 }
+  ],
+  "tags": {
+    "historic": "memorial",
+    "leisure": "garden",
+    "memorial": "sculpture",
+    "name": "Garda Memorial Garden",
+    "name:en": "Garda Memorial Garden",
+    "name:ga": "Gairdín Cuimhneacháin Gharda Síochána",
+    "wikimedia_commons": "Category:An Garda Síochána Memorial Garden, Dublin",
+    "year_built": "2010"
+  }
+},
+{
+  "type": "way",
+  "id": 96578181,
+  "bounds": {
+    "minlat": 53.3497912,
+    "minlon": -6.2602709,
+    "maxlat": 53.3498111,
+    "maxlon": -6.2602376
+  },
+  "nodes": [
+    9943954454,
+    9943954455,
+    9943954456,
+    1118688022,
+    2365997424,
+    1118688019,
+    2365997426,
+    1118716050,
+    2365997430,
+    9943954451,
+    9943954452,
+    9943954453,
+    1118688015,
+    2365997432,
+    1118716045,
+    2365997428,
+    1118688023,
+    2365997422,
+    2365997420,
+    9943954454
+  ],
+  "geometry": [
+    { "lat": 53.3497946, "lon": -6.2602669 },
+    { "lat": 53.3497925, "lon": -6.2602626 },
+    { "lat": 53.3497913, "lon": -6.2602575 },
+    { "lat": 53.3497912, "lon": -6.2602520 },
+    { "lat": 53.3497922, "lon": -6.2602467 },
+    { "lat": 53.3497941, "lon": -6.2602423 },
+    { "lat": 53.3497968, "lon": -6.2602391 },
+    { "lat": 53.3497999, "lon": -6.2602376 },
+    { "lat": 53.3498032, "lon": -6.2602378 },
+    { "lat": 53.3498063, "lon": -6.2602399 },
+    { "lat": 53.3498088, "lon": -6.2602435 },
+    { "lat": 53.3498104, "lon": -6.2602482 },
+    { "lat": 53.3498111, "lon": -6.2602536 },
+    { "lat": 53.3498107, "lon": -6.2602591 },
+    { "lat": 53.3498092, "lon": -6.2602640 },
+    { "lat": 53.3498069, "lon": -6.2602679 },
+    { "lat": 53.3498039, "lon": -6.2602702 },
+    { "lat": 53.3498006, "lon": -6.2602709 },
+    { "lat": 53.3497974, "lon": -6.2602697 },
+    { "lat": 53.3497946, "lon": -6.2602669 }
+  ],
+  "tags": {
+    "alt_name": "Millenium Spire;Monument of Light",
+    "alt_name:ga": "Spuaic Bhaile Átha Cliath",
+    "building": "yes",
+    "height": "121.2",
+    "historic": "monument",
+    "loc_name": "Stiffy by the Liffey;The Erection at the Intersection;Stiletto in the Ghetto",
+    "name": "Spire of Dublin",
+    "name:ga": "An Túr Solais",
+    "name:gcf": "Spayè a Diblin",
+    "name:ko": "더블린 첨탑",
+    "name:zh": "都柏林尖塔",
+    "roof:colour": "#C0C0C0",
+    "roof:height": "121.2",
+    "roof:material": "metal",
+    "roof:shape": "pyramidal",
+    "toilets:wheelchair": "no",
+    "tourism": "attraction",
+    "wheelchair": "yes",
+    "wikidata": "Q1134365",
+    "wikimedia_commons": "Category:The Spire of Dublin",
+    "wikipedia": "en:Spire of Dublin"
+  }
+},
+{
+  "type": "way",
+  "id": 233153573,
+  "bounds": {
+    "minlat": 53.3450083,
+    "minlon": -6.2590923,
+    "maxlat": 53.3452764,
+    "maxlon": -6.2586430
+  },
+  "nodes": [
+    2414927952,
+    13352821436,
+    13352821437,
+    13352821435,
+    2414927944,
+    14115099489,
+    2414927945,
+    14115099491,
+    14115099490,
+    14115099488,
+    6652353773,
+    2414927955,
+    2414927959,
+    2414927963,
+    2414927967,
+    2414927969,
+    13352821438,
+    2414927971,
+    2414927974,
+    2414927976,
+    2414927978,
+    2414927980,
+    6652353774,
+    2414927983,
+    2414927982,
+    2414927972,
+    7172637373,
+    2414927957,
+    2414927953,
+    13923359614,
+    2414927952
+  ],
+  "geometry": [
+    { "lat": 53.3450429, "lon": -6.2590802 },
+    { "lat": 53.3450221, "lon": -6.2590923 },
+    { "lat": 53.3450155, "lon": -6.2590911 },
+    { "lat": 53.3450112, "lon": -6.2590837 },
+    { "lat": 53.3450083, "lon": -6.2590711 },
+    { "lat": 53.3450091, "lon": -6.2590578 },
+    { "lat": 53.3450151, "lon": -6.2590487 },
+    { "lat": 53.3450353, "lon": -6.2590334 },
+    { "lat": 53.3450550, "lon": -6.2590153 },
+    { "lat": 53.3450802, "lon": -6.2589872 },
+    { "lat": 53.3451091, "lon": -6.2589396 },
+    { "lat": 53.3451168, "lon": -6.2589243 },
+    { "lat": 53.3451717, "lon": -6.2588113 },
+    { "lat": 53.3452029, "lon": -6.2587431 },
+    { "lat": 53.3452370, "lon": -6.2586648 },
+    { "lat": 53.3452453, "lon": -6.2586477 },
+    { "lat": 53.3452541, "lon": -6.2586430 },
+    { "lat": 53.3452604, "lon": -6.2586534 },
+    { "lat": 53.3452628, "lon": -6.2586662 },
+    { "lat": 53.3452643, "lon": -6.2586857 },
+    { "lat": 53.3452659, "lon": -6.2587692 },
+    { "lat": 53.3452674, "lon": -6.2588515 },
+    { "lat": 53.3452737, "lon": -6.2589495 },
+    { "lat": 53.3452764, "lon": -6.2589690 },
+    { "lat": 53.3452726, "lon": -6.2589908 },
+    { "lat": 53.3452641, "lon": -6.2590004 },
+    { "lat": 53.3452463, "lon": -6.2590041 },
+    { "lat": 53.3451499, "lon": -6.2590323 },
+    { "lat": 53.3450915, "lon": -6.2590527 },
+    { "lat": 53.3450464, "lon": -6.2590782 },
+    { "lat": 53.3450429, "lon": -6.2590802 }
+  ],
+  "tags": {
+    "area": "yes",
+    "highway": "pedestrian",
+    "lit": "yes",
+    "noname": "yes",
+    "surface": "paving_stones"
+  }
+},
+{
+  "type": "way",
+  "id": 251392271,
+  "bounds": {
+    "minlat": 53.3471848,
+    "minlon": -6.2573420,
+    "maxlat": 53.3472057,
+    "maxlon": -6.2573046
+  },
+  "nodes": [
+    2576164997,
+    2576164999,
+    2576165000,
+    2576165002,
+    2576164997
+  ],
+  "geometry": [
+    { "lat": 53.3472008, "lon": -6.2573420 },
+    { "lat": 53.3471848, "lon": -6.2573347 },
+    { "lat": 53.3471896, "lon": -6.2573046 },
+    { "lat": 53.3472057, "lon": -6.2573118 },
+    { "lat": 53.3472008, "lon": -6.2573420 }
+  ],
+  "tags": {
+    "alt_name": "Patrick Sheehan Memorial",
+    "historic": "memorial",
+    "memorial": "sculpture",
+    "name": "Padraig Sheahan Memorial",
+    "note": "Dublin City Council, Record of Protected Structures (2010), no. 1017",
+    "start_date": "1906",
+    "wheelchair": "yes",
+    "wikidata": "Q101242694",
+    "wikimedia_commons": "Category:Patrick Sheahan Memorial"
+  }
+},
+{
+  "type": "way",
+  "id": 265385821,
+  "bounds": {
+    "minlat": 53.3425752,
+    "minlon": -6.2596818,
+    "maxlat": 53.3432705,
+    "maxlon": -6.2591582
+  },
+  "nodes": [
+    2657444637,
+    2657444639,
+    13686406492,
+    2657371758,
+    12167965953,
+    2657371756,
+    2657371754,
+    13507044492,
+    13507044490,
+    13765402908,
+    13765402909,
+    13765402910,
+    13765402911,
+    13686406481,
+    13765372888,
+    2710588636,
+    2710588639,
+    2710588637,
+    2710588626,
+    2710588621,
+    9101664,
+    2710588622,
+    2657440925,
+    2657444635,
+    4711673731,
+    2657444637
+  ],
+  "geometry": [
+    { "lat": 53.3429847, "lon": -6.2595764 },
+    { "lat": 53.3431060, "lon": -6.2595396 },
+    { "lat": 53.3431524, "lon": -6.2595295 },
+    { "lat": 53.3431711, "lon": -6.2595254 },
+    { "lat": 53.3431883, "lon": -6.2595210 },
+    { "lat": 53.3432109, "lon": -6.2595153 },
+    { "lat": 53.3432412, "lon": -6.2595300 },
+    { "lat": 53.3432705, "lon": -6.2595160 },
+    { "lat": 53.3432546, "lon": -6.2594790 },
+    { "lat": 53.3432434, "lon": -6.2594559 },
+    { "lat": 53.3432240, "lon": -6.2594038 },
+    { "lat": 53.3432087, "lon": -6.2593616 },
+    { "lat": 53.3431578, "lon": -6.2592009 },
+    { "lat": 53.3431488, "lon": -6.2591582 },
+    { "lat": 53.3431342, "lon": -6.2591646 },
+    { "lat": 53.3431149, "lon": -6.2591730 },
+    { "lat": 53.3431252, "lon": -6.2592429 },
+    { "lat": 53.3430955, "lon": -6.2593499 },
+    { "lat": 53.3427013, "lon": -6.2595001 },
+    { "lat": 53.3425752, "lon": -6.2595473 },
+    { "lat": 53.3425877, "lon": -6.2596073 },
+    { "lat": 53.3426226, "lon": -6.2596818 },
+    { "lat": 53.3426917, "lon": -6.2596464 },
+    { "lat": 53.3428655, "lon": -6.2596057 },
+    { "lat": 53.3429187, "lon": -6.2595900 },
+    { "lat": 53.3429847, "lon": -6.2595764 }
+  ],
+  "tags": {
+    "area": "yes",
+    "highway": "pedestrian",
+    "lit": "yes",
+    "smoothness": "excellent",
+    "surface": "paving_stones"
+  }
+},
+{
+  "type": "way",
+  "id": 272015934,
+  "bounds": {
+    "minlat": 53.3440169,
+    "minlon": -6.2589052,
+    "maxlat": 53.3448320,
+    "maxlon": -6.2573745
+  },
+  "nodes": [
+    2629308102,
+    2629308103,
+    2629308104,
+    2629308105,
+    2629308106,
+    2629124627,
+    560216748,
+    560969209,
+    2639834149,
+    2639834148,
+    560969211,
+    560216724,
+    560969202,
+    2629305832,
+    2629305831,
+    560216711,
+    560216713,
+    560216706,
+    560216699,
+    560216701,
+    560969193,
+    2629305828,
+    560969192,
+    560216692,
+    560969207,
+    560969205,
+    560216731,
+    560216735,
+    2629305803,
+    2629305809,
+    2629305811,
+    2629305804,
+    2629305805,
+    3195927818,
+    7501272703,
+    3195927816,
+    3197337255,
+    3197337257,
+    3197337259,
+    3197337258,
+    3197337256,
+    3195927817,
+    2628956343,
+    560216677,
+    560216791,
+    2769423486,
+    2866511317,
+    2866511318,
+    2866217826,
+    2866217829,
+    560216806,
+    2899582009,
+    2629308101,
+    2629124622,
+    11977968877,
+    2629308102
+  ],
+  "geometry": [
+    { "lat": 53.3446206, "lon": -6.2578372 },
+    { "lat": 53.3446255, "lon": -6.2579522 },
+    { "lat": 53.3446024, "lon": -6.2579542 },
+    { "lat": 53.3446100, "lon": -6.2581627 },
+    { "lat": 53.3446331, "lon": -6.2581604 },
+    { "lat": 53.3446364, "lon": -6.2582538 },
+    { "lat": 53.3447118, "lon": -6.2582462 },
+    { "lat": 53.3447200, "lon": -6.2584764 },
+    { "lat": 53.3447129, "lon": -6.2584771 },
+    { "lat": 53.3447197, "lon": -6.2586640 },
+    { "lat": 53.3447268, "lon": -6.2586633 },
+    { "lat": 53.3447341, "lon": -6.2588663 },
+    { "lat": 53.3446690, "lon": -6.2588729 },
+    { "lat": 53.3445923, "lon": -6.2588806 },
+    { "lat": 53.3445905, "lon": -6.2588303 },
+    { "lat": 53.3445220, "lon": -6.2588372 },
+    { "lat": 53.3445205, "lon": -6.2587966 },
+    { "lat": 53.3444533, "lon": -6.2588034 },
+    { "lat": 53.3443862, "lon": -6.2588105 },
+    { "lat": 53.3443878, "lon": -6.2588505 },
+    { "lat": 53.3443155, "lon": -6.2588583 },
+    { "lat": 53.3443167, "lon": -6.2588906 },
+    { "lat": 53.3441944, "lon": -6.2589029 },
+    { "lat": 53.3441716, "lon": -6.2589052 },
+    { "lat": 53.3441647, "lon": -6.2587154 },
+    { "lat": 53.3441581, "lon": -6.2585244 },
+    { "lat": 53.3441503, "lon": -6.2583234 },
+    { "lat": 53.3442230, "lon": -6.2583155 },
+    { "lat": 53.3442186, "lon": -6.2582031 },
+    { "lat": 53.3442424, "lon": -6.2582005 },
+    { "lat": 53.3442339, "lon": -6.2579800 },
+    { "lat": 53.3442124, "lon": -6.2579823 },
+    { "lat": 53.3442082, "lon": -6.2578740 },
+    { "lat": 53.3440523, "lon": -6.2578902 },
+    { "lat": 53.3440480, "lon": -6.2578046 },
+    { "lat": 53.3440459, "lon": -6.2577768 },
+    { "lat": 53.3440440, "lon": -6.2577234 },
+    { "lat": 53.3440226, "lon": -6.2577255 },
+    { "lat": 53.3440199, "lon": -6.2576493 },
+    { "lat": 53.3440169, "lon": -6.2575666 },
+    { "lat": 53.3440399, "lon": -6.2575643 },
+    { "lat": 53.3440377, "lon": -6.2575050 },
+    { "lat": 53.3440354, "lon": -6.2574354 },
+    { "lat": 53.3440716, "lon": -6.2574311 },
+    { "lat": 53.3444087, "lon": -6.2574190 },
+    { "lat": 53.3447096, "lon": -6.2573810 },
+    { "lat": 53.3447374, "lon": -6.2573790 },
+    { "lat": 53.3448224, "lon": -6.2573745 },
+    { "lat": 53.3448227, "lon": -6.2574000 },
+    { "lat": 53.3448262, "lon": -6.2575882 },
+    { "lat": 53.3448294, "lon": -6.2577660 },
+    { "lat": 53.3448302, "lon": -6.2577855 },
+    { "lat": 53.3448320, "lon": -6.2578176 },
+    { "lat": 53.3447528, "lon": -6.2578253 },
+    { "lat": 53.3446767, "lon": -6.2578332 },
+    { "lat": 53.3446206, "lon": -6.2578372 }
+  ],
+  "tags": {
+    "alt_name": "Front Square",
+    "alt_name:en": "Front Square",
+    "alt_name:ga": "An Cearnóg Tosaigh",
+    "area": "yes",
+    "bicycle": "permissive",
+    "foot": "permissive",
+    "highway": "pedestrian",
+    "lit": "yes",
+    "motor_vehicle": "private",
+    "name": "Parliament Square",
+    "name:en": "Parliament Square",
+    "name:ga": "Cearnóg na Parlaiminte",
+    "smoothness": "intermediate",
+    "surface": "sett"
+  }
+},
+{
+  "type": "way",
+  "id": 284624965,
+  "bounds": {
+    "minlat": 53.3434769,
+    "minlon": -6.2593567,
+    "maxlat": 53.3439258,
+    "maxlon": -6.2592475
+  },
+  "nodes": [
+    2883476433,
+    2883476434,
+    2883476435,
+    2883476436,
+    2883476437,
+    2883476438,
+    12964611847,
+    12964611855,
+    12964611856,
+    12964611857,
+    2883476433
+  ],
+  "geometry": [
+    { "lat": 53.3439258, "lon": -6.2592531 },
+    { "lat": 53.3438381, "lon": -6.2592837 },
+    { "lat": 53.3436995, "lon": -6.2593182 },
+    { "lat": 53.3435704, "lon": -6.2593430 },
+    { "lat": 53.3434948, "lon": -6.2593539 },
+    { "lat": 53.3434769, "lon": -6.2593567 },
+    { "lat": 53.3435712, "lon": -6.2593066 },
+    { "lat": 53.3436847, "lon": -6.2592706 },
+    { "lat": 53.3437666, "lon": -6.2592566 },
+    { "lat": 53.3438462, "lon": -6.2592475 },
+    { "lat": 53.3439258, "lon": -6.2592531 }
+  ],
+  "tags": {
+    "area": "yes",
+    "highway": "pedestrian",
+    "lit": "yes",
+    "note": "Taxi stand removed as part of Luas Cross City works.",
+    "smoothness": "excellent",
+    "surface": "paving_stones"
+  }
+},
+{
+  "type": "way",
+  "id": 289872318,
+  "bounds": {
+    "minlat": 53.3447963,
+    "minlon": -6.2682155,
+    "maxlat": 53.3449114,
+    "maxlon": -6.2680764
+  },
+  "nodes": [
+    2934094836,
+    2934094837,
+    11310691666,
+    2934094838,
+    2934094839,
+    2934094836
+  ],
+  "geometry": [
+    { "lat": 53.3448843, "lon": -6.2682155 },
+    { "lat": 53.3447963, "lon": -6.2681309 },
+    { "lat": 53.3448276, "lon": -6.2680848 },
+    { "lat": 53.3448427, "lon": -6.2680764 },
+    { "lat": 53.3449114, "lon": -6.2681571 },
+    { "lat": 53.3448843, "lon": -6.2682155 }
+  ],
+  "tags": {
+    "addr:housenumber": "13-14",
+    "addr:street": "Exchange Street Lower",
+    "heritage": "4",
+    "landuse": "brownfield",
+    "name": "Mannix Flynn's space",
+    "tourism": "artwork"
+  }
+},
+{
+  "type": "way",
+  "id": 293297586,
+  "bounds": {
+    "minlat": 53.3504730,
+    "minlon": -6.2585452,
+    "maxlat": 53.3513578,
+    "maxlon": -6.2567593
+  },
+  "nodes": [
+    2968810471,
+    2968810472,
+    13761285732,
+    13761285731,
+    2968810482,
+    7180674184,
+    7180767085,
+    2968810483,
+    11987608800,
+    13761285756,
+    2968810484,
+    13761285755,
+    6945128304,
+    13761285760,
+    6945128305,
+    13761285761,
+    9278975935,
+    2968810485,
+    2968810486,
+    2968810487,
+    13761285733,
+    13761285734,
+    2968810461,
+    2968810462,
+    2968810471
+  ],
+  "geometry": [
+    { "lat": 53.3512573, "lon": -6.2568907 },
+    { "lat": 53.3512264, "lon": -6.2570967 },
+    { "lat": 53.3511184, "lon": -6.2578153 },
+    { "lat": 53.3510963, "lon": -6.2578052 },
+    { "lat": 53.3510495, "lon": -6.2581067 },
+    { "lat": 53.3510879, "lon": -6.2581210 },
+    { "lat": 53.3513121, "lon": -6.2582191 },
+    { "lat": 53.3513578, "lon": -6.2582391 },
+    { "lat": 53.3513492, "lon": -6.2583064 },
+    { "lat": 53.3513235, "lon": -6.2584904 },
+    { "lat": 53.3512858, "lon": -6.2584737 },
+    { "lat": 53.3512745, "lon": -6.2585452 },
+    { "lat": 53.3512611, "lon": -6.2585399 },
+    { "lat": 53.3512431, "lon": -6.2585326 },
+    { "lat": 53.3508902, "lon": -6.2583780 },
+    { "lat": 53.3505035, "lon": -6.2582105 },
+    { "lat": 53.3504849, "lon": -6.2582023 },
+    { "lat": 53.3504730, "lon": -6.2581975 },
+    { "lat": 53.3505191, "lon": -6.2579004 },
+    { "lat": 53.3507879, "lon": -6.2580182 },
+    { "lat": 53.3508473, "lon": -6.2576976 },
+    { "lat": 53.3508231, "lon": -6.2576893 },
+    { "lat": 53.3509242, "lon": -6.2569621 },
+    { "lat": 53.3509540, "lon": -6.2567593 },
+    { "lat": 53.3512573, "lon": -6.2568907 }
+  ],
+  "tags": {
+    "area": "yes",
+    "highway": "pedestrian",
+    "lit": "yes",
+    "noname": "yes",
+    "smoothness": "good",
+    "surface": "paving_stones"
+  }
+},
+{
+  "type": "way",
+  "id": 313590899,
+  "bounds": {
+    "minlat": 53.3439334,
+    "minlon": -6.2577852,
+    "maxlat": 53.3440459,
+    "maxlon": -6.2575050
+  },
+  "nodes": [
+    429638451,
+    13596731017,
+    3195927817,
+    3197337256,
+    3197337258,
+    3197337259,
+    3197337257,
+    3197337255,
+    3195927816,
+    13596731016,
+    13596731020,
+    429638452,
+    13596731014,
+    13596731004,
+    13596731003,
+    13596731013,
+    429638451
+  ],
+  "geometry": [
+    { "lat": 53.3439530, "lon": -6.2575581 },
+    { "lat": 53.3439514, "lon": -6.2575140 },
+    { "lat": 53.3440377, "lon": -6.2575050 },
+    { "lat": 53.3440399, "lon": -6.2575643 },
+    { "lat": 53.3440169, "lon": -6.2575666 },
+    { "lat": 53.3440199, "lon": -6.2576493 },
+    { "lat": 53.3440226, "lon": -6.2577255 },
+    { "lat": 53.3440440, "lon": -6.2577234 },
+    { "lat": 53.3440459, "lon": -6.2577768 },
+    { "lat": 53.3439614, "lon": -6.2577852 },
+    { "lat": 53.3439600, "lon": -6.2577444 },
+    { "lat": 53.3439597, "lon": -6.2577369 },
+    { "lat": 53.3439585, "lon": -6.2577049 },
+    { "lat": 53.3439371, "lon": -6.2577070 },
+    { "lat": 53.3439334, "lon": -6.2576050 },
+    { "lat": 53.3439546, "lon": -6.2576029 },
+    { "lat": 53.3439530, "lon": -6.2575581 }
+  ],
+  "tags": {
+    "building": "yes",
+    "historic": "memorial",
+    "memorial": "war_memorial",
+    "name": "Hall of Honour",
+    "name:ga": "An Halla Onóra",
+    "wheelchair": "no"
+  }
+},
+{
+  "type": "way",
+  "id": 314630987,
+  "bounds": {
+    "minlat": 53.3443081,
+    "minlon": -6.2613495,
+    "maxlat": 53.3443875,
+    "maxlon": -6.2609064
+  },
+  "nodes": [
+    3206752692,
+    3783453673,
+    3206752703,
+    3206752687,
+    3783453674,
+    13783403503,
+    13783403504,
+    3206752685,
+    13783403505,
+    13783403506,
+    13783379497,
+    13783379498,
+    13783403507,
+    3206752691,
+    3206752692
+  ],
+  "geometry": [
+    { "lat": 53.3443313, "lon": -6.2612950 },
+    { "lat": 53.3443659, "lon": -6.2610605 },
+    { "lat": 53.3443875, "lon": -6.2609064 },
+    { "lat": 53.3443208, "lon": -6.2609365 },
+    { "lat": 53.3443194, "lon": -6.2609935 },
+    { "lat": 53.3443171, "lon": -6.2610691 },
+    { "lat": 53.3443093, "lon": -6.2612992 },
+    { "lat": 53.3443081, "lon": -6.2613317 },
+    { "lat": 53.3443082, "lon": -6.2613413 },
+    { "lat": 53.3443103, "lon": -6.2613471 },
+    { "lat": 53.3443128, "lon": -6.2613495 },
+    { "lat": 53.3443154, "lon": -6.2613490 },
+    { "lat": 53.3443208, "lon": -6.2613451 },
+    { "lat": 53.3443256, "lon": -6.2613382 },
+    { "lat": 53.3443313, "lon": -6.2612950 }
+  ],
+  "tags": {
+    "area": "yes",
+    "highway": "pedestrian",
+    "lit": "yes",
+    "surface": "paving_stones"
+  }
+},
+{
+  "type": "way",
+  "id": 314630988,
+  "bounds": {
+    "minlat": 53.3443581,
+    "minlon": -6.2599086,
+    "maxlat": 53.3445968,
+    "maxlon": -6.2595040
+  },
+  "nodes": [
+    3206752712,
+    3206752721,
+    3206752726,
+    9494015377,
+    3206752731,
+    9494015376,
+    3206752737,
+    9494015374,
+    9494015373,
+    9494015375,
+    9494015387,
+    3206752730,
+    3206752728,
+    3206752727,
+    3206752724,
+    3206752722,
+    3783453667,
+    3206752714,
+    3206752713,
+    3206752712
+  ],
+  "geometry": [
+    { "lat": 53.3443581, "lon": -6.2598696 },
+    { "lat": 53.3444087, "lon": -6.2596462 },
+    { "lat": 53.3444180, "lon": -6.2596182 },
+    { "lat": 53.3444360, "lon": -6.2595865 },
+    { "lat": 53.3444509, "lon": -6.2595758 },
+    { "lat": 53.3444947, "lon": -6.2595635 },
+    { "lat": 53.3445394, "lon": -6.2595537 },
+    { "lat": 53.3445647, "lon": -6.2595361 },
+    { "lat": 53.3445968, "lon": -6.2595040 },
+    { "lat": 53.3445808, "lon": -6.2595364 },
+    { "lat": 53.3445646, "lon": -6.2595768 },
+    { "lat": 53.3445317, "lon": -6.2596809 },
+    { "lat": 53.3445024, "lon": -6.2597723 },
+    { "lat": 53.3444750, "lon": -6.2598866 },
+    { "lat": 53.3444713, "lon": -6.2599008 },
+    { "lat": 53.3444639, "lon": -6.2599086 },
+    { "lat": 53.3444250, "lon": -6.2599000 },
+    { "lat": 53.3443679, "lon": -6.2598880 },
+    { "lat": 53.3443618, "lon": -6.2598814 },
+    { "lat": 53.3443581, "lon": -6.2598696 }
+  ],
+  "tags": {
+    "area": "yes",
+    "highway": "pedestrian",
+    "lit": "yes",
+    "noname": "yes",
+    "smoothness": "good",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 314630989,
+  "bounds": {
+    "minlat": 53.3443322,
+    "minlon": -6.2606936,
+    "maxlat": 53.3444306,
+    "maxlon": -6.2600059
+  },
+  "nodes": [
+    3206752709,
+    3783453670,
+    3206752716,
+    3206752719,
+    3206752720,
+    3206752718,
+    3206752717,
+    3783453668,
+    3206752711,
+    3206752706,
+    3206752704,
+    3206752701,
+    3206752698,
+    3206752697,
+    3206752695,
+    3206752694,
+    3206752693,
+    3206752696,
+    3206752699,
+    3206752702,
+    3206752708,
+    3206752709
+  ],
+  "geometry": [
+    { "lat": 53.3443878, "lon": -6.2606512 },
+    { "lat": 53.3444052, "lon": -6.2603912 },
+    { "lat": 53.3444097, "lon": -6.2603237 },
+    { "lat": 53.3444276, "lon": -6.2600719 },
+    { "lat": 53.3444306, "lon": -6.2600333 },
+    { "lat": 53.3444276, "lon": -6.2600182 },
+    { "lat": 53.3444179, "lon": -6.2600079 },
+    { "lat": 53.3444097, "lon": -6.2600073 },
+    { "lat": 53.3443898, "lon": -6.2600059 },
+    { "lat": 53.3443813, "lon": -6.2600091 },
+    { "lat": 53.3443753, "lon": -6.2600197 },
+    { "lat": 53.3443675, "lon": -6.2600440 },
+    { "lat": 53.3443563, "lon": -6.2601791 },
+    { "lat": 53.3443488, "lon": -6.2603253 },
+    { "lat": 53.3443385, "lon": -6.2604852 },
+    { "lat": 53.3443322, "lon": -6.2606268 },
+    { "lat": 53.3443323, "lon": -6.2606597 },
+    { "lat": 53.3443412, "lon": -6.2606827 },
+    { "lat": 53.3443567, "lon": -6.2606936 },
+    { "lat": 53.3443734, "lon": -6.2606869 },
+    { "lat": 53.3443832, "lon": -6.2606718 },
+    { "lat": 53.3443878, "lon": -6.2606512 }
+  ],
+  "tags": {
+    "area": "yes",
+    "highway": "pedestrian",
+    "noname": "yes",
+    "surface": "paving_stones"
+  }
+},
+{
+  "type": "way",
+  "id": 316157753,
+  "bounds": {
+    "minlat": 53.3444288,
+    "minlon": -6.2631204,
+    "maxlat": 53.3445578,
+    "maxlon": -6.2626718
+  },
+  "nodes": [
+    3222675575,
+    3222675572,
+    3222675563,
+    3222675561,
+    3660239676,
+    3222675057,
+    3222675053,
+    3222675055,
+    3222675060,
+    3222675565,
+    3222675570,
+    3660239675,
+    3222675575
+  ],
+  "geometry": [
+    { "lat": 53.3445578, "lon": -6.2626718 },
+    { "lat": 53.3445480, "lon": -6.2626742 },
+    { "lat": 53.3445028, "lon": -6.2627196 },
+    { "lat": 53.3444714, "lon": -6.2627905 },
+    { "lat": 53.3444655, "lon": -6.2628302 },
+    { "lat": 53.3444586, "lon": -6.2628762 },
+    { "lat": 53.3444288, "lon": -6.2628701 },
+    { "lat": 53.3444374, "lon": -6.2629673 },
+    { "lat": 53.3444676, "lon": -6.2630515 },
+    { "lat": 53.3445147, "lon": -6.2631100 },
+    { "lat": 53.3445395, "lon": -6.2631204 },
+    { "lat": 53.3445499, "lon": -6.2628667 },
+    { "lat": 53.3445578, "lon": -6.2626718 }
+  ],
+  "tags": {
+    "access": "private",
+    "area": "yes",
+    "highway": "pedestrian"
+  }
+},
+{
+  "type": "way",
+  "id": 341426302,
+  "bounds": {
+    "minlat": 53.3469971,
+    "minlon": -6.2595471,
+    "maxlat": 53.3474296,
+    "maxlon": -6.2591895
+  },
+  "nodes": [
+    3486188414,
+    7180674178,
+    7180674179,
+    5302062350,
+    5101079547,
+    3486188419,
+    3486188413,
+    990597768,
+    3486188414
+  ],
+  "geometry": [
+    { "lat": 53.3470235, "lon": -6.2591895 },
+    { "lat": 53.3470365, "lon": -6.2591964 },
+    { "lat": 53.3474190, "lon": -6.2594055 },
+    { "lat": 53.3474296, "lon": -6.2594114 },
+    { "lat": 53.3474162, "lon": -6.2594792 },
+    { "lat": 53.3474027, "lon": -6.2595471 },
+    { "lat": 53.3469971, "lon": -6.2593225 },
+    { "lat": 53.3470103, "lon": -6.2592560 },
+    { "lat": 53.3470235, "lon": -6.2591895 }
+  ],
+  "tags": {
+    "area:highway": "footway",
+    "layer": "1",
+    "lit": "yes",
+    "smoothness": "excellent",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 341426303,
+  "bounds": {
+    "minlat": 53.3471148,
+    "minlon": -6.2589529,
+    "maxlat": 53.3475329,
+    "maxlon": -6.2586629
+  },
+  "nodes": [
+    3486188415,
+    7180674177,
+    7180674182,
+    3486188421,
+    990597770,
+    3486188422,
+    3486188417,
+    3486188416,
+    3486188415
+  ],
+  "geometry": [
+    { "lat": 53.3471148, "lon": -6.2587286 },
+    { "lat": 53.3471275, "lon": -6.2587356 },
+    { "lat": 53.3475082, "lon": -6.2589464 },
+    { "lat": 53.3475199, "lon": -6.2589529 },
+    { "lat": 53.3475269, "lon": -6.2589174 },
+    { "lat": 53.3475329, "lon": -6.2588871 },
+    { "lat": 53.3471279, "lon": -6.2586629 },
+    { "lat": 53.3471220, "lon": -6.2586927 },
+    { "lat": 53.3471148, "lon": -6.2587286 }
+  ],
+  "tags": {
+    "area:highway": "footway",
+    "layer": "1",
+    "lit": "yes",
+    "smoothness": "excellent",
+    "surface": "concrete"
+  }
+},
+{
+  "type": "way",
+  "id": 548794184,
+  "bounds": {
+    "minlat": 53.3526775,
+    "minlon": -6.2615648,
+    "maxlat": 53.3527773,
+    "maxlon": -6.2614726
+  },
+  "nodes": [
+    5301585437,
+    7178701749,
+    5301585438,
+    5301585439,
+    5301585440,
+    5301585441,
+    5301585442,
+    5301585443,
+    5301585444,
+    5301585447,
+    5301585437
+  ],
+  "geometry": [
+    { "lat": 53.3526931, "lon": -6.2614726 },
+    { "lat": 53.3526843, "lon": -6.2615122 },
+    { "lat": 53.3526775, "lon": -6.2615389 },
+    { "lat": 53.3527046, "lon": -6.2615475 },
+    { "lat": 53.3527433, "lon": -6.2615569 },
+    { "lat": 53.3527727, "lon": -6.2615648 },
+    { "lat": 53.3527726, "lon": -6.2615583 },
+    { "lat": 53.3527773, "lon": -6.2615270 },
+    { "lat": 53.3527502, "lon": -6.2615153 },
+    { "lat": 53.3527464, "lon": -6.2615097 },
+    { "lat": 53.3526931, "lon": -6.2614726 }
+  ],
+  "tags": {
+    "area": "yes",
+    "highway": "pedestrian",
+    "lit": "yes",
+    "noname": "yes",
+    "surface": "paving_stones"
+  }
+},
+{
+  "type": "way",
+  "id": 548794186,
+  "bounds": {
+    "minlat": 53.3525131,
+    "minlon": -6.2616240,
+    "maxlat": 53.3526189,
+    "maxlon": -6.2614054
+  },
+  "nodes": [
+    5301585450,
+    7178701747,
+    5301585451,
+    11836987478,
+    11836987479,
+    5301585452,
+    11836987480,
+    5301585453,
+    5301585454,
+    5301585461,
+    5301585455,
+    7178701743,
+    5301585456,
+    5301585457,
+    5301585460,
+    5301585458,
+    5301585450
+  ],
+  "geometry": [
+    { "lat": 53.3525957, "lon": -6.2615435 },
+    { "lat": 53.3526102, "lon": -6.2615027 },
+    { "lat": 53.3526189, "lon": -6.2614646 },
+    { "lat": 53.3526111, "lon": -6.2614326 },
+    { "lat": 53.3525937, "lon": -6.2614102 },
+    { "lat": 53.3525784, "lon": -6.2614054 },
+    { "lat": 53.3525652, "lon": -6.2614125 },
+    { "lat": 53.3525532, "lon": -6.2614308 },
+    { "lat": 53.3525381, "lon": -6.2614858 },
+    { "lat": 53.3525367, "lon": -6.2615177 },
+    { "lat": 53.3525273, "lon": -6.2615634 },
+    { "lat": 53.3525131, "lon": -6.2616132 },
+    { "lat": 53.3525204, "lon": -6.2616240 },
+    { "lat": 53.3525437, "lon": -6.2615931 },
+    { "lat": 53.3525716, "lon": -6.2615644 },
+    { "lat": 53.3525798, "lon": -6.2615562 },
+    { "lat": 53.3525957, "lon": -6.2615435 }
+  ],
+  "tags": {
+    "area": "yes",
+    "highway": "pedestrian",
+    "lit": "yes",
+    "noname": "yes",
+    "smoothness": "good",
+    "surface": "paving_stones"
+  }
+},
+{
+  "type": "way",
+  "id": 553864229,
+  "bounds": {
+    "minlat": 53.3443884,
+    "minlon": -6.2594917,
+    "maxlat": 53.3444903,
+    "maxlon": -6.2594327
+  },
+  "nodes": [
+    5345859791,
+    9494015382,
+    5345859792,
+    5345859793,
+    5345859794,
+    9494015383,
+    9494015385,
+    5345859791
+  ],
+  "geometry": [
+    { "lat": 53.3444903, "lon": -6.2594433 },
+    { "lat": 53.3444460, "lon": -6.2594418 },
+    { "lat": 53.3443985, "lon": -6.2594327 },
+    { "lat": 53.3443884, "lon": -6.2594799 },
+    { "lat": 53.3444262, "lon": -6.2594917 },
+    { "lat": 53.3444450, "lon": -6.2594760 },
+    { "lat": 53.3444662, "lon": -6.2594589 },
+    { "lat": 53.3444903, "lon": -6.2594433 }
+  ],
+  "tags": {
+    "area:highway": "traffic_island",
+    "noname": "yes",
+    "surface": "paving_stones"
+  }
+},
+{
+  "type": "way",
+  "id": 553864233,
+  "bounds": {
+    "minlat": 53.3440853,
+    "minlon": -6.2598873,
+    "maxlat": 53.3443953,
+    "maxlon": -6.2593201
+  },
+  "nodes": [
+    5345859801,
+    5345859802,
+    5345859803,
+    5345859804,
+    13569891381,
+    13569902472,
+    2577838403,
+    2577838400,
+    2667299526,
+    5345859807,
+    2668778204,
+    2668783643,
+    5345930979,
+    5345859809,
+    9494015386,
+    9494015388,
+    5345859810,
+    5345859801
+  ],
+  "geometry": [
+    { "lat": 53.3443953, "lon": -6.2595426 },
+    { "lat": 53.3443634, "lon": -6.2596320 },
+    { "lat": 53.3443006, "lon": -6.2598189 },
+    { "lat": 53.3442882, "lon": -6.2598873 },
+    { "lat": 53.3442703, "lon": -6.2598816 },
+    { "lat": 53.3442210, "lon": -6.2598661 },
+    { "lat": 53.3442238, "lon": -6.2597905 },
+    { "lat": 53.3442267, "lon": -6.2596895 },
+    { "lat": 53.3442284, "lon": -6.2596081 },
+    { "lat": 53.3442266, "lon": -6.2595736 },
+    { "lat": 53.3441359, "lon": -6.2594598 },
+    { "lat": 53.3440853, "lon": -6.2593994 },
+    { "lat": 53.3440950, "lon": -6.2593588 },
+    { "lat": 53.3441057, "lon": -6.2593201 },
+    { "lat": 53.3442162, "lon": -6.2594056 },
+    { "lat": 53.3442788, "lon": -6.2594741 },
+    { "lat": 53.3443350, "lon": -6.2595139 },
+    { "lat": 53.3443953, "lon": -6.2595426 }
+  ],
+  "tags": {
+    "area": "yes",
+    "highway": "pedestrian",
+    "lit": "yes",
+    "noname": "yes",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 553868719,
+  "bounds": {
+    "minlat": 53.3432747,
+    "minlon": -6.2594880,
+    "maxlat": 53.3441057,
+    "maxlon": -6.2592526
+  },
+  "nodes": [
+    12964611866,
+    13507044491,
+    12545738118,
+    5345930968,
+    13765402906,
+    13765402907,
+    5345930982,
+    5345930969,
+    2883476438,
+    2883476437,
+    2883476436,
+    2883476435,
+    2883476434,
+    2883476433,
+    5345930970,
+    5345930971,
+    12964611892,
+    5345859809,
+    5345930979,
+    2668783643,
+    2668788054,
+    2668795520,
+    2668797203,
+    2668804226,
+    2668932484,
+    2668936053,
+    2668955697,
+    2668955719,
+    2668968365,
+    2668968368,
+    11531494073,
+    2668968371,
+    12964611866
+  ],
+  "geometry": [
+    { "lat": 53.3433386, "lon": -6.2594880 },
+    { "lat": 53.3433088, "lon": -6.2594161 },
+    { "lat": 53.3432928, "lon": -6.2593796 },
+    { "lat": 53.3432747, "lon": -6.2593340 },
+    { "lat": 53.3432954, "lon": -6.2593284 },
+    { "lat": 53.3433284, "lon": -6.2593479 },
+    { "lat": 53.3433505, "lon": -6.2593577 },
+    { "lat": 53.3433672, "lon": -6.2593655 },
+    { "lat": 53.3434769, "lon": -6.2593567 },
+    { "lat": 53.3434948, "lon": -6.2593539 },
+    { "lat": 53.3435704, "lon": -6.2593430 },
+    { "lat": 53.3436995, "lon": -6.2593182 },
+    { "lat": 53.3438381, "lon": -6.2592837 },
+    { "lat": 53.3439258, "lon": -6.2592531 },
+    { "lat": 53.3439541, "lon": -6.2592526 },
+    { "lat": 53.3440007, "lon": -6.2592620 },
+    { "lat": 53.3440548, "lon": -6.2592888 },
+    { "lat": 53.3441057, "lon": -6.2593201 },
+    { "lat": 53.3440950, "lon": -6.2593588 },
+    { "lat": 53.3440853, "lon": -6.2593994 },
+    { "lat": 53.3440139, "lon": -6.2593127 },
+    { "lat": 53.3439596, "lon": -6.2593251 },
+    { "lat": 53.3438968, "lon": -6.2593442 },
+    { "lat": 53.3437910, "lon": -6.2593706 },
+    { "lat": 53.3437283, "lon": -6.2593878 },
+    { "lat": 53.3436791, "lon": -6.2594035 },
+    { "lat": 53.3436092, "lon": -6.2594253 },
+    { "lat": 53.3435481, "lon": -6.2594394 },
+    { "lat": 53.3434894, "lon": -6.2594556 },
+    { "lat": 53.3434312, "lon": -6.2594608 },
+    { "lat": 53.3433703, "lon": -6.2594766 },
+    { "lat": 53.3433540, "lon": -6.2594811 },
+    { "lat": 53.3433386, "lon": -6.2594880 }
+  ],
+  "tags": {
+    "area": "yes",
+    "highway": "pedestrian",
+    "lit": "yes",
+    "smoothness": "excellent",
+    "surface": "paving_stones"
+  }
+},
+{
+  "type": "way",
+  "id": 913333117,
+  "bounds": {
+    "minlat": 53.3523886,
+    "minlon": -6.2615045,
+    "maxlat": 53.3524869,
+    "maxlon": -6.2614156
+  },
+  "nodes": [
+    8484182973,
+    8484182980,
+    8484182977,
+    8484182974,
+    8484182975,
+    8484182971,
+    8484182976,
+    8484182981,
+    8484182978,
+    8484182979,
+    8484182973
+  ],
+  "geometry": [
+    { "lat": 53.3524642, "lon": -6.2614278 },
+    { "lat": 53.3524533, "lon": -6.2614265 },
+    { "lat": 53.3524361, "lon": -6.2614244 },
+    { "lat": 53.3523886, "lon": -6.2614156 },
+    { "lat": 53.3524184, "lon": -6.2614586 },
+    { "lat": 53.3524336, "lon": -6.2614805 },
+    { "lat": 53.3524522, "lon": -6.2615045 },
+    { "lat": 53.3524687, "lon": -6.2614671 },
+    { "lat": 53.3524869, "lon": -6.2614253 },
+    { "lat": 53.3524777, "lon": -6.2614272 },
+    { "lat": 53.3524642, "lon": -6.2614278 }
+  ],
+  "tags": {
+    "area": "yes",
+    "highway": "pedestrian",
+    "lit": "yes",
+    "noname": "yes",
+    "surface": "paving_stones"
+  }
+},
+{
+  "type": "way",
+  "id": 1086510645,
+  "bounds": {
+    "minlat": 53.3436385,
+    "minlon": -6.2612934,
+    "maxlat": 53.3438131,
+    "maxlon": -6.2605565
+  },
+  "nodes": [
+    9955531000,
+    9955531001,
+    9955531002,
+    1290372470,
+    13610601765,
+    13610601763,
+    1290372477,
+    10914709118,
+    9955531006,
+    9955531007,
+    9955531008,
+    9955531009,
+    9955531010,
+    14146019764,
+    9955531011,
+    9955531012,
+    10914709117,
+    9955531000
+  ],
+  "geometry": [
+    { "lat": 53.3436797, "lon": -6.2605565 },
+    { "lat": 53.3436385, "lon": -6.2606035 },
+    { "lat": 53.3436838, "lon": -6.2607228 },
+    { "lat": 53.3436901, "lon": -6.2607925 },
+    { "lat": 53.3436824, "lon": -6.2609040 },
+    { "lat": 53.3436762, "lon": -6.2610138 },
+    { "lat": 53.3436558, "lon": -6.2612897 },
+    { "lat": 53.3436734, "lon": -6.2612934 },
+    { "lat": 53.3436846, "lon": -6.2612861 },
+    { "lat": 53.3437210, "lon": -6.2611775 },
+    { "lat": 53.3437514, "lon": -6.2611366 },
+    { "lat": 53.3437994, "lon": -6.2610045 },
+    { "lat": 53.3438131, "lon": -6.2609468 },
+    { "lat": 53.3438109, "lon": -6.2609094 },
+    { "lat": 53.3438107, "lon": -6.2609059 },
+    { "lat": 53.3438018, "lon": -6.2608697 },
+    { "lat": 53.3437031, "lon": -6.2606166 },
+    { "lat": 53.3436797, "lon": -6.2605565 }
+  ],
+  "tags": {
+    "area": "yes",
+    "highway": "pedestrian",
+    "lit": "yes",
+    "smoothness": "excellent",
+    "surface": "paving_stones"
+  }
+},
+{
+  "type": "way",
+  "id": 1188429981,
+  "bounds": {
+    "minlat": 53.3443208,
+    "minlon": -6.2609365,
+    "maxlat": 53.3443875,
+    "maxlon": -6.2607070
+  },
+  "nodes": [
+    11248152965,
+    3206752703,
+    3206752687,
+    11248152966,
+    11248152965
+  ],
+  "geometry": [
+    { "lat": 53.3443874, "lon": -6.2607135 },
+    { "lat": 53.3443875, "lon": -6.2609064 },
+    { "lat": 53.3443208, "lon": -6.2609365 },
+    { "lat": 53.3443282, "lon": -6.2607070 },
+    { "lat": 53.3443874, "lon": -6.2607135 }
+  ],
+  "tags": {
+    "area": "yes",
+    "highway": "pedestrian",
+    "noname": "yes",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1231698556,
+  "bounds": {
+    "minlat": 53.3521516,
+    "minlon": -6.2604617,
+    "maxlat": 53.3524800,
+    "maxlon": -6.2597120
+  },
+  "nodes": [
+    11422931821,
+    11422931822,
+    11422931829,
+    11422931828,
+    11422931823,
+    11422931827,
+    11422931824,
+    5301585490,
+    11422931826,
+    11422931821
+  ],
+  "geometry": [
+    { "lat": 53.3524552, "lon": -6.2598189 },
+    { "lat": 53.3523223, "lon": -6.2597162 },
+    { "lat": 53.3523156, "lon": -6.2597120 },
+    { "lat": 53.3522087, "lon": -6.2601427 },
+    { "lat": 53.3521516, "lon": -6.2604288 },
+    { "lat": 53.3521944, "lon": -6.2604530 },
+    { "lat": 53.3522021, "lon": -6.2604617 },
+    { "lat": 53.3523917, "lon": -6.2600458 },
+    { "lat": 53.3524800, "lon": -6.2598522 },
+    { "lat": 53.3524552, "lon": -6.2598189 }
+  ],
+  "tags": {
+    "area": "yes",
+    "highway": "pedestrian",
+    "lit": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1442235359,
+  "bounds": {
+    "minlat": 53.3438500,
+    "minlon": -6.2664595,
+    "maxlat": 53.3439376,
+    "maxlon": -6.2662202
+  },
+  "nodes": [
+    13233638356,
+    13233638358,
+    13233638357,
+    13233638359,
+    13233638360,
+    662858764,
+    13233638356
+  ],
+  "geometry": [
+    { "lat": 53.3439376, "lon": -6.2662482 },
+    { "lat": 53.3438811, "lon": -6.2662202 },
+    { "lat": 53.3438500, "lon": -6.2663964 },
+    { "lat": 53.3438831, "lon": -6.2664129 },
+    { "lat": 53.3438769, "lon": -6.2664479 },
+    { "lat": 53.3439004, "lon": -6.2664595 },
+    { "lat": 53.3439376, "lon": -6.2662482 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:housenumber": "2",
+    "addr:street": "Palace Street",
+    "building": "yes",
+    "historic": "memorial",
+    "name": "The Sick and Indigent Roomkeepers' Society",
+    "website": "https://www.roomkeepers.com/",
+    "wikidata": "Q7764091",
+    "wikipedia": "en:The Sick and Indigent Roomkeepers' Society"
+  }
+},
+{
+  "type": "way",
+  "id": 1504266042,
+  "bounds": {
+    "minlat": 53.3431488,
+    "minlon": -6.2595160,
+    "maxlat": 53.3433386,
+    "maxlon": -6.2591582
+  },
+  "nodes": [
+    13507044492,
+    13133056467,
+    12964611866,
+    13507044491,
+    12545738118,
+    5345930968,
+    13765402912,
+    5345930963,
+    12545738115,
+    12545738116,
+    13686406481,
+    13765402911,
+    13765402910,
+    13765402909,
+    13765402908,
+    13507044490,
+    13507044492
+  ],
+  "geometry": [
+    { "lat": 53.3432705, "lon": -6.2595160 },
+    { "lat": 53.3433031, "lon": -6.2595026 },
+    { "lat": 53.3433386, "lon": -6.2594880 },
+    { "lat": 53.3433088, "lon": -6.2594161 },
+    { "lat": 53.3432928, "lon": -6.2593796 },
+    { "lat": 53.3432747, "lon": -6.2593340 },
+    { "lat": 53.3432607, "lon": -6.2593283 },
+    { "lat": 53.3432157, "lon": -6.2592713 },
+    { "lat": 53.3431852, "lon": -6.2592298 },
+    { "lat": 53.3431575, "lon": -6.2591615 },
+    { "lat": 53.3431488, "lon": -6.2591582 },
+    { "lat": 53.3431578, "lon": -6.2592009 },
+    { "lat": 53.3432087, "lon": -6.2593616 },
+    { "lat": 53.3432240, "lon": -6.2594038 },
+    { "lat": 53.3432434, "lon": -6.2594559 },
+    { "lat": 53.3432546, "lon": -6.2594790 },
+    { "lat": 53.3432705, "lon": -6.2595160 }
+  ],
+  "tags": {
+    "area": "yes",
+    "highway": "pedestrian",
+    "lit": "yes",
+    "smoothness": "excellent",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1507263545,
+  "bounds": {
+    "minlat": 53.3442770,
+    "minlon": -6.2616884,
+    "maxlat": 53.3443256,
+    "maxlon": -6.2610691
+  },
+  "nodes": [
+    3206752691,
+    13783379499,
+    13783379500,
+    13783403501,
+    13783403502,
+    13783403503,
+    13783403504,
+    3206752685,
+    13783403505,
+    13783403506,
+    13783379497,
+    13783379498,
+    13783403507,
+    3206752691
+  ],
+  "geometry": [
+    { "lat": 53.3443256, "lon": -6.2613382 },
+    { "lat": 53.3442894, "lon": -6.2616884 },
+    { "lat": 53.3442770, "lon": -6.2616862 },
+    { "lat": 53.3443005, "lon": -6.2613290 },
+    { "lat": 53.3443115, "lon": -6.2610700 },
+    { "lat": 53.3443171, "lon": -6.2610691 },
+    { "lat": 53.3443093, "lon": -6.2612992 },
+    { "lat": 53.3443081, "lon": -6.2613317 },
+    { "lat": 53.3443082, "lon": -6.2613413 },
+    { "lat": 53.3443103, "lon": -6.2613471 },
+    { "lat": 53.3443128, "lon": -6.2613495 },
+    { "lat": 53.3443154, "lon": -6.2613490 },
+    { "lat": 53.3443208, "lon": -6.2613451 },
+    { "lat": 53.3443256, "lon": -6.2613382 }
+  ],
+  "tags": {
+    "area:highway": "traffic_island",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1526445114,
+  "bounds": {
+    "minlat": 53.3471643,
+    "minlon": -6.2592968,
+    "maxlat": 53.3474368,
+    "maxlon": -6.2591283
+  },
+  "nodes": [
+    13912463715,
+    13912463716,
+    13912463717,
+    13912463718,
+    13912463719,
+    13912463720,
+    13912463715
+  ],
+  "geometry": [
+    { "lat": 53.3471643, "lon": -6.2591418 },
+    { "lat": 53.3473067, "lon": -6.2592239 },
+    { "lat": 53.3474322, "lon": -6.2592968 },
+    { "lat": 53.3474368, "lon": -6.2592748 },
+    { "lat": 53.3472069, "lon": -6.2591474 },
+    { "lat": 53.3471660, "lon": -6.2591283 },
+    { "lat": 53.3471643, "lon": -6.2591418 }
+  ],
+  "tags": {
+    "area:highway": "traffic_island",
+    "raised": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1527887358,
+  "bounds": {
+    "minlat": 53.3451988,
+    "minlon": -6.2591003,
+    "maxlat": 53.3452379,
+    "maxlon": -6.2590597
+  },
+  "nodes": [
+    13923359615,
+    13923359616,
+    13923359617,
+    13923359618,
+    13923359615
+  ],
+  "geometry": [
+    { "lat": 53.3452356, "lon": -6.2590597 },
+    { "lat": 53.3451988, "lon": -6.2590784 },
+    { "lat": 53.3451997, "lon": -6.2591003 },
+    { "lat": 53.3452379, "lon": -6.2590952 },
+    { "lat": 53.3452356, "lon": -6.2590597 }
+  ],
+  "tags": {
+    "area:highway": "traffic_island"
+  }
+},
+{
+  "type": "way",
+  "id": 1527887359,
+  "bounds": {
+    "minlat": 53.3451824,
+    "minlon": -6.2591760,
+    "maxlat": 53.3452348,
+    "maxlon": -6.2591512
+  },
+  "nodes": [
+    13923359619,
+    13923359620,
+    13923359621,
+    13923359622,
+    13923359619
+  ],
+  "geometry": [
+    { "lat": 53.3452337, "lon": -6.2591760 },
+    { "lat": 53.3452348, "lon": -6.2591517 },
+    { "lat": 53.3451824, "lon": -6.2591512 },
+    { "lat": 53.3451830, "lon": -6.2591657 },
+    { "lat": 53.3452337, "lon": -6.2591760 }
+  ],
+  "tags": {
+    "area:highway": "traffic_island"
+  }
+},
+{
+  "type": "relation",
+  "id": 4436278,
+  "bounds": {
+    "minlat": 53.3457272,
+    "minlon": -6.2618390,
+    "maxlat": 53.3467107,
+    "maxlon": -6.2599188
+  },
+  "members": [
+    {
+      "type": "way",
+      "ref": 129212227,
+      "role": "",
+      "geometry": [
+         { "lat": 53.3460523, "lon": -6.2618390 },
+         { "lat": 53.3461065, "lon": -6.2613279 },
+         { "lat": 53.3461274, "lon": -6.2611604 },
+         { "lat": 53.3461797, "lon": -6.2606576 }
+      ]
+    },
+    {
+      "type": "way",
+      "ref": 37264302,
+      "role": "",
+      "geometry": [
+         { "lat": 53.3462779, "lon": -6.2599869 },
+         { "lat": 53.3462604, "lon": -6.2601469 },
+         { "lat": 53.3461797, "lon": -6.2606576 }
+      ]
+    },
+    {
+      "type": "way",
+      "ref": 129212226,
+      "role": "",
+      "geometry": [
+         { "lat": 53.3465574, "lon": -6.2607335 },
+         { "lat": 53.3464675, "lon": -6.2606885 },
+         { "lat": 53.3461797, "lon": -6.2606576 },
+         { "lat": 53.3457272, "lon": -6.2605991 }
+      ]
+    },
+    {
+      "type": "way",
+      "ref": 129212232,
+      "role": "",
+      "geometry": [
+         { "lat": 53.3457692, "lon": -6.2599188 },
+         { "lat": 53.3458245, "lon": -6.2599250 },
+         { "lat": 53.3460850, "lon": -6.2599542 },
+         { "lat": 53.3462403, "lon": -6.2599818 },
+         { "lat": 53.3462779, "lon": -6.2599869 },
+         { "lat": 53.3466350, "lon": -6.2600346 },
+         { "lat": 53.3467107, "lon": -6.2600776 }
+      ]
+    }
+  ],
+  "tags": {
+    "name": "Icon Walk",
+    "route": "foot",
+    "tourism": "artwork",
+    "type": "route",
+    "website": "http://iconfactorydublin.ie/newsite/?page_id=58"
+  }
+}
+
+  ]
+}

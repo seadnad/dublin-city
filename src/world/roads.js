@@ -175,14 +175,16 @@ export const FIELD_GLSL = /* glsl */ `
 `;
 
 // ---------------- marching squares → pavement blocks ----------------
-function contours() {
+// Marching squares on a grid of values (positive = inside): closed loops in world x/z.
+function contours(F = field, nx = NX, nz = NZ, ox = B.minX, oz = B.minZ, g = G) {
+  const NX = nx, NZ = nz;
   const segs = new Map(); // edgeId -> [edgeId, ...]
   const pos = new Map();  // edgeId -> {x, z}
-  const V = (i, j) => field[j * NX + i];
+  const V = (i, j) => F[j * NX + i];
   const edgePoint = (id, i0, j0, i1, j1) => {
     if (!pos.has(id)) {
       const a = V(i0, j0), b = V(i1, j1), t = a / (a - b);
-      pos.set(id, { x: B.minX + (i0 + (i1 - i0) * t) * G, z: B.minZ + (j0 + (j1 - j0) * t) * G });
+      pos.set(id, { x: ox + (i0 + (i1 - i0) * t) * g, z: oz + (j0 + (j1 - j0) * t) * g });
     }
     return id;
   };
@@ -628,6 +630,67 @@ export function buildStreets(scene, puddles) {
   scene.add(group);
   console.log(`streets: ${pave.loops} pavement blocks in ${Math.round(performance.now() - t0)} ms`);
   return { group, asphaltMat, pavingMat, kerbMat, grassMat, settMat, asphaltTex: A };
+}
+
+// Open green land (Phoenix Park, the grounds round the stadiums): grass everywhere inside the outline except the
+// roads and a footpath strip along them. A second contour pass on the kerb field, offset by the footpath width and
+// clipped to the outline, so the grass edge follows every road curve and junction.
+export function greenLand(outlines, mat, { path = 2.5, cell = 2 } = {}) {
+  const group = new THREE.Group();
+  for (const poly of outlines) {
+    let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+    for (const p of poly) { x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); z0 = Math.min(z0, p.z); z1 = Math.max(z1, p.z); }
+    x0 -= 2 * cell; z0 -= 2 * cell;
+    const nx = Math.ceil((x1 - x0) / cell) + 3, nz = Math.ceil((z1 - z0) / cell) + 3;
+    const F = new Float32Array(nx * nz);
+    for (let j = 0; j < nz; j++) {
+      const z = z0 + j * cell;
+      // signed distance to the outline: scanline inside test + nearest edge
+      const xs = [];
+      for (let e = 0, f = poly.length - 1; e < poly.length; f = e++) {
+        const a = poly[e], b = poly[f];
+        if ((a.z > z) !== (b.z > z)) xs.push(a.x + ((z - a.z) / (b.z - a.z)) * (b.x - a.x));
+      }
+      xs.sort((p, q) => p - q);
+      for (let i = 0; i < nx; i++) {
+        const x = x0 + i * cell;
+        let inside = false;
+        for (let k = 0; k < xs.length && xs[k] <= x; k++) inside = !inside;
+        let d = Infinity;
+        for (let e = 0, f = poly.length - 1; e < poly.length; f = e++) d = Math.min(d, segDist(x, z, poly[e], poly[f]));
+        const sd = inside ? d : -d;
+        F[j * nx + i] = (i === 0 || j === 0 || i === nx - 1 || j === nz - 1) ? -1 : Math.min(sd, fieldAt(x, z) - path);
+      }
+    }
+    const loops = contours(F, nx, nz, x0, z0, cell).map((l) => simplifyLoop(l, 0.08)).filter((l) => l.length >= 3 && Math.abs(area(l)) > 4);
+    const sample = (x, z) => {
+      const fx = (x - x0) / cell, fz = (z - z0) / cell, i = Math.max(0, Math.min(nx - 1, Math.round(fx))), j = Math.max(0, Math.min(nz - 1, Math.round(fz)));
+      return F[j * nx + i];
+    };
+    const isOuter = (l) => {
+      const a = l[0], b = l[1], m = v2.lerp(a, b, 0.5), d = v2.norm(v2.sub(b, a));
+      const s = Math.sign(area(l)) || 1;
+      return sample(m.x - d.z * s * cell, m.z + d.x * s * cell) > 0;
+    };
+    const outers = [], holes = [];
+    for (const l of loops) (isOuter(l) ? outers : holes).push(l);
+    const shapes = outers.map((l) => ({ shape: new THREE.Shape(l.map((p) => new THREE.Vector2(p.x, -p.z))), loop: l, a: Math.abs(area(l)) }));
+    for (const h of holes) {
+      let best = null;
+      for (const s of shapes) if (pointInPolygon(h[0], s.loop) && (!best || s.a < best.a)) best = s;
+      if (best) best.shape.holes.push(new THREE.Path(h.map((p) => new THREE.Vector2(p.x, -p.z))));
+    }
+    if (!shapes.length) continue;
+    const geo = new THREE.ShapeGeometry(shapes.map((s) => s.shape));
+    geo.rotateX(-Math.PI / 2);
+    geo.translate(0, KERB_H + 0.004, 0);
+    const uv = geo.attributes.uv, pp = geo.attributes.position;
+    for (let i = 0; i < pp.count; i++) uv.setXY(i, pp.getX(i), pp.getZ(i));
+    const m = new THREE.Mesh(geo, mat);
+    m.receiveShadow = true;
+    group.add(m);
+  }
+  return group;
 }
 
 // Grass surfaces laid on top of the pavement (parks, lawns).

@@ -258,11 +258,125 @@ function build() {
     ? { name, poly: pts.map(([lat, lon]) => project(lat, lon)), ids: null }
     : { name, poly: polyOf(pts), ids: pts }));
 
+  // open green land (traced [lat, lon] outlines): grass everywhere but the roads and their footpaths
+  const greens = Object.entries(data.greens || {}).map(([name, pts]) => ({ name, poly: pts.map(([lat, lon]) => project(lat, lon)) }));
+  const canals = Object.entries(data.canals || {}).map(([name, c]) => buildCanal(name, c, segs, segsNear));
+  // each stretch of canal water between two bridges or locks is a basin like the docks (water, walls, collision)
+  for (const c of canals) for (const pool of c.pools) docks.push({ name: c.name, poly: pool.poly, ids: null, canal: c, level: pool.level });
+
   const line = (l) => ({ name: l.name, pts: l.route.map((id) => ({ x: nodes.get(id).x, z: nodes.get(id).z, id })), stops: l.stops });
   const luasLines = [line(data.luas), ...(data.luasGreen ? [line(data.luasGreen)] : [])];
   const luas = luasLines[0];
 
-  return { nodes, ways, edges, bounds, segs, segsNear, nearestRoad, northBank, southBank, riverPoly, parks, campus, docks, luas, luasLines };
+  return { nodes, ways, edges, bounds, segs, segsNear, nearestRoad, northBank, southBank, riverPoly, parks, campus, docks, canals, greens, luas, luasLines };
+}
+
+// ---------- canals ----------
+// A canal is a traced centreline ([lat, lon] points, listed from its upper end down to the Liffey), a water width
+// (game metres, not compressed, like the roads) and optional lock positions. Where a road crosses, the water stops
+// short of the carriageway and footpaths: the road runs over on a (flat) bridge, and each stretch of water between
+// two crossings or locks becomes its own pool, stepping down at every lock. Grass banks run along both sides, as
+// wide as the nearby roads allow.
+const CANAL_TOP = -0.75, LOCK_DROP = 0.2, CANAL_MIN = -2.1;
+function buildCanal(name, c, segs, segsNear) {
+  const width = c.width ?? 9, verge = c.verge ?? 5;
+  const pts = resample(c.pts.map(([lat, lon]) => project(lat, lon)), 2);
+  const S = [0];
+  for (let i = 1; i < pts.length; i++) S.push(S[i - 1] + v2.len(v2.sub(pts[i], pts[i - 1])));
+  const total = S[S.length - 1];
+  const at = (s) => {
+    let i = 1;
+    while (i < pts.length - 1 && S[i] < s) i++;
+    const t = (s - S[i - 1]) / (S[i] - S[i - 1] || 1);
+    const p = v2.lerp(pts[i - 1], pts[i], Math.max(0, Math.min(1, t)));
+    const d = v2.norm(v2.sub(pts[i], pts[i - 1]));
+    return { x: p.x, z: p.z, d, n: { x: -d.z, z: d.x } };
+  };
+  // how far (x, z) is inside any road's carriageway + footpath corridor (> 0 = inside)
+  const intrusion = (x, z, pad = 0.6) => {
+    let worst = -Infinity;
+    for (const s of segsNear(x, z)) {
+      const q = closestOnSegment({ x, z }, s.a, s.b);
+      worst = Math.max(worst, s.way.width / 2 + s.way.pave + pad - Math.sqrt(q.d2));
+    }
+    return worst;
+  };
+  // road crossings: where a road segment intersects the centreline
+  const crossings = [];
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1], b = pts[i];
+    for (const s of segsNear((a.x + b.x) / 2, (a.z + b.z) / 2)) {
+      const r = segIntersect(a, b, s.a, s.b);
+      if (r !== null && !crossings.some((k) => k.way === s.way && Math.abs(k.s - (S[i - 1] + r * (S[i] - S[i - 1]))) < 3)) {
+        crossings.push({ s: S[i - 1] + r * (S[i] - S[i - 1]), way: s.way, road: v2.norm(v2.sub(s.b, s.a)) });
+      }
+    }
+  }
+  crossings.sort((p, q) => p.s - q.s);
+  // the gap each crossing needs: step out along the canal until the water's edges clear the road corridor
+  const clear = (s) => { const p = at(s); return [-width / 2, 0, width / 2].every((o) => intrusion(p.x + p.n.x * o, p.z + p.n.z * o) < 0); };
+  const gaps = crossings.map((k) => {
+    let s0 = k.s, s1 = k.s;
+    while (s0 > 0 && !clear(s0)) s0 -= 0.5;
+    while (s1 < total && !clear(s1)) s1 += 0.5;
+    return { s0, s1, kind: 'bridge', crossing: k };
+  });
+  const locks = (c.locks || []).map((ll) => {
+    const p = project(ll[0], ll[1]);
+    let best = 0, bd = Infinity;
+    for (let i = 0; i < pts.length; i++) { const d = v2.len(v2.sub(pts[i], p)); if (d < bd) { bd = d; best = S[i]; } }
+    return best;
+  });
+  for (const s of locks) gaps.push({ s0: s - 0.4, s1: s + 0.4, kind: 'lock' });
+  gaps.sort((p, q) => p.s0 - q.s0);
+  // merge overlapping gaps, then the pools are what's left
+  const merged = [];
+  for (const g of gaps) {
+    const last = merged[merged.length - 1];
+    if (last && g.s0 <= last.s1 + 1) { last.s1 = Math.max(last.s1, g.s1); if (g.kind === 'lock') last.lock = true; else (last.bridges ||= []).push(g.crossing); }
+    else merged.push({ s0: g.s0, s1: g.s1, lock: g.kind === 'lock', bridges: g.kind === 'bridge' ? [g.crossing] : [] });
+  }
+  const pools = [];
+  let s = 0, level = CANAL_TOP;
+  for (const g of [...merged, { s0: total, s1: total }]) {
+    if (g.s0 - s > 3) {
+      const run = [];
+      for (let t = s; t < g.s0; t += 2) run.push(at(t));
+      run.push(at(g.s0));
+      const left = run.map((p) => ({ x: p.x + p.n.x * width / 2, z: p.z + p.n.z * width / 2 }));
+      const right = run.map((p) => ({ x: p.x - p.n.x * width / 2, z: p.z - p.n.z * width / 2 }));
+      // grass banks: out from each edge as far as the verge width, stopping short of any road corridor
+      const bank = (side) => run.map((p) => {
+        let w = 0;
+        while (w < verge) {
+          const o = side * (width / 2 + w + 0.5);
+          if (intrusion(p.x + p.n.x * o, p.z + p.n.z * o, 0.2) >= 0) break;
+          w += 0.5;
+        }
+        return w;
+      });
+      const bl = bank(1), br = bank(-1);
+      const edge = (side, ws) => run.map((p, i) => ({ x: p.x + p.n.x * side * (width / 2 + ws[i]), z: p.z + p.n.z * side * (width / 2 + ws[i]) }));
+      pools.push({
+        s0: s, s1: g.s0, level, centre: run,
+        poly: [...left, ...right.slice().reverse()],
+        banks: [{ inner: left, outer: edge(1, bl), w: bl }, { inner: right, outer: edge(-1, br), w: br }],
+      });
+    }
+    if (g.lock) level = Math.max(CANAL_MIN, level - LOCK_DROP);
+    s = g.s1;
+  }
+  const ends = merged.map((g) => ({ ...g, a: at(g.s0), b: at(g.s1) }));
+  return { name, width, pts, total, pools, gaps: ends, locks };
+}
+
+// Intersection of segments ab and cd: the parameter t along ab, or null.
+function segIntersect(a, b, c, d) {
+  const r = { x: b.x - a.x, z: b.z - a.z }, q = { x: d.x - c.x, z: d.z - c.z };
+  const den = r.x * q.z - r.z * q.x;
+  if (Math.abs(den) < 1e-9) return null;
+  const t = ((c.x - a.x) * q.z - (c.z - a.z) * q.x) / den, u = ((c.x - a.x) * r.z - (c.z - a.z) * r.x) / den;
+  return t >= 0 && t <= 1 && u >= 0 && u <= 1 ? t : null;
 }
 
 function extendToEdges(pts, bounds) {
