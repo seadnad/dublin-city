@@ -58,12 +58,19 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 0.4, 950);
 
 // ---------- world ----------
+// The aerial intro (boot.js) keeps animating while this builds: report progress and give it a frame between steps.
+const intro = window.__intro || null;
+const nextFrame = () => new Promise((r) => { let done = false; const go = () => { if (!done) { done = true; r(); } }; requestAnimationFrame(go); setTimeout(go, 60); });
+const step = async (frac, text) => { if (!intro) return; intro.progress(frac, text); await nextFrame(); };
 const t0 = performance.now();
 const atmosphere = createAtmosphere(scene, renderer);
 const ground = buildGround(scene);
+await step(0.62, 'Raising the buildings…');
 const buildings = buildBuildings(scene);
 { const t = performance.now(); bakeGroundAO([...buildings.lots, ...landmarkFootprints], world.bounds); console.log(`ground AO baked in ${Math.round(performance.now() - t)} ms`); }
+await step(0.68, 'Placing the landmarks…');
 const landmarks = buildLandmarks(scene);
+await step(0.72, 'Lighting the streets…');
 const lamps = buildLamps(scene);
 // reflections of quay lamps and the docklands lights on the water after dark
 const nearWater = (x, z) => [[7, 0], [-7, 0], [0, 7], [0, -7]].some(([dx, dz]) => isOverWater(x + dx, z + dz));
@@ -75,6 +82,7 @@ const waterGlow = buildWaterGlow(scene, [
   ...waterGlowSources,
 ]);
 { const t = performance.now(); bakeLampLight(lamps.spots, world.bounds); console.log(`lamp light baked in ${Math.round(performance.now() - t)} ms`); }
+await step(0.76, 'Setting out the furniture…');
 const rain = buildRain(scene);
 const furniture = buildFurniture(scene);
 const signals = createSignals(scene);
@@ -120,6 +128,7 @@ function respawnNearRoad() {
 }
 
 // ---------- traffic + Luas ----------
+await step(0.8, 'Starting the traffic…');
 const traffic = createTraffic(scene, IS_MOBILE ? { cars: 12, buses: 3, taxis: 3, parked: 120 } : { cars: 26, buses: 6, taxis: 5, parked: 320 });
 const tram = combineTrams(world.luasLines.map((line) => createLuas(scene, line)));
 const people = createPeople(scene, { count: IS_MOBILE ? 110 : 300 });
@@ -211,6 +220,21 @@ onKey('m', actions.map);
 
 // ---------- game modes ----------
 let frozen = false;
+// intro descent: blends from the aerial intro's camera pose into the chase rig's pose, eased, then hands over
+let flight = null;
+const flightQ = new THREE.Quaternion();
+function applyFlight() {
+  // wall-clock, so a slow first few frames (late shader work) never stretch the descent
+  flight.t = flight.skip ? 1 : Math.min(1, (performance.now() - flight.start) / (flight.dur * 1000));
+  const t = flight.t, e = t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
+  // position eases in a little later than rotation, so the view tips down toward the car before closing in
+  const ep = Math.min(1, e * e * (3 - 2 * e));
+  camera.position.lerpVectors(flight.pos, camera.position, ep);
+  flightQ.copy(flight.quat).slerp(camera.quaternion, e);
+  camera.quaternion.copy(flightQ);
+  camera.fov = flight.fov + (62 - flight.fov) * e; camera.updateProjectionMatrix();
+  if (t >= 1) { flight = null; frozen = false; document.getElementById('hud').classList.remove('intro-hidden'); camera.fov = 62; camera.updateProjectionMatrix(); window.__dublin.ready = true; }
+}
 const gameUI = createGameUI({
   onPursuit: () => { trial.stop(); pursuit.start(); },
   onTrial: (r) => { pursuit.stop(); trial.start(r); rig.snap(); },
@@ -336,6 +360,7 @@ function frame() {
   carMesh.userData.update(car.speed, dt, car.steer * 0.5);
   playerContact.set(0, car.pos.x, rideY, car.pos.z, car.heading, 2.5, 5.3); playerContact.commit();
   rig.update(dt, car, carMesh);
+  if (flight) applyFlight();
   focus.set(car.pos.x, 0, car.pos.z);
   ground.update(dt, time);
   // the city gets wet over a few seconds when rain starts and dries more slowly
@@ -385,6 +410,7 @@ console.log('texture quality', JSON.stringify(applyTextureQuality(scene, rendere
 // behind the loading screen; if it isn't available the first frame simply compiles as before.
 const loadingText = document.querySelector('#loading p');
 if (loadingText) loadingText.textContent = 'Preparing shaders…';
+if (intro) intro.progress(0.86, 'Preparing shaders…');
 const tc = performance.now();
 // wait (briefly) for the player's car and the trees too, so their shaders join the batch instead of stalling a
 // frame just after the loading screen lifts
@@ -399,7 +425,16 @@ settle(Promise.all([carReady, treesReady]), 8000).then(() => {
   frame();
   console.log(`first frame took ${Math.round(performance.now() - tf)} ms`);
   document.getElementById('loading').classList.add('gone');
-  window.__dublin.ready = true;
+  if (!intro) { window.__dublin.ready = true; return; }
+  // the aerial view pans to the start, then the real camera descends from that pose to the chase view
+  intro.progress(1, 'Ready');
+  frozen = true;
+  document.getElementById('hud').classList.add('intro-hidden');
+  intro.panTo({ x: car.pos.x, z: car.pos.z, heading: car.heading }).then(() => {
+    const p = intro.pose();
+    flight = { t: 0, skip: intro.skip(), start: performance.now(), dur: 2.6, pos: p.position, quat: p.quaternion, fov: p.fov };
+    intro.finish(intro.skip() ? 250 : 1100);
+  });
 });
 setTimeout(() => hud.toast(IS_MOBILE ? 'Tap ? for help' : 'Press H for controls, T for landmarks', 4500), 600);
 
