@@ -221,7 +221,7 @@ kbd { display: inline-block; min-width: 1.5em; padding: 1px 5px; border-radius: 
 #intro.fade { opacity: 0; pointer-events: none; }
 #intro-ui { position: fixed; inset: 0; z-index: 41; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: max(9vh, 48px); color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,0.45); transition: opacity 0.7s ease; cursor: pointer; }
 #intro-ui h1 { margin: 0; font: 800 clamp(34px, 8vw, 76px)/1 system-ui, sans-serif; letter-spacing: 0.32em; padding-left: 0.32em; }
-#intro-ui .sub { margin: 8px 0 22px; font-size: 13px; letter-spacing: 0.3em; text-transform: uppercase; opacity: 0.85; }
+#intro-ui h1 { margin-bottom: 24px; }
 #intro-ui .bar { width: min(260px, 60vw); height: 3px; background: rgba(255,255,255,0.28); border-radius: 2px; overflow: hidden; }
 #intro-ui .bar i { display: block; height: 100%; width: 0; background: #fff; transition: width 0.4s ease; }
 #intro-ui .step { margin: 10px 0 0; font-size: 12px; letter-spacing: 0.08em; opacity: 0.85; min-height: 1.2em; }
@@ -230,3 +230,4 @@ kbd { display: inline-block; min-width: 1.5em; padding: 1px 5px; border-radius: 
 #intro-ui.ready .bar, #intro-ui.ready .step { opacity: 0.5; }
 #intro-ui.fade, #intro-ui.skipping { opacity: 0; pointer-events: none; }
 #hud.intro-hidden { opacity: 0; pointer-events: none; } #hud { transition: opacity 0.6s ease; }
+.pad button:focus { outline: 3px solid #f2c94c; outline-offset: 2px; }

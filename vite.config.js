@@ -4,4 +4,5 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   base: './',
   build: { target: 'es2020', chunkSizeWarningLimit: 1200 },
+  worker: { format: 'es' }, // the intro renders in a module worker (src/intro/worker.js)
 });

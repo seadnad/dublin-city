@@ -38,6 +38,9 @@ export class Car {
     this.boost = 0;
   }
 
+  // stop dead where it is (no creep while the game holds the car: intro, countdowns)
+  hold() { this.vel.x = this.vel.z = 0; this.yawRate = 0; this.speed = 0; this.slip = 0; }
+
   teleport(x, z, heading) {
     this.pos.x = x; this.pos.z = z; this.heading = heading;
     this.vel.x = this.vel.z = 0; this.yawRate = 0; this.speed = 0;

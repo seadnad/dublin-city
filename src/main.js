@@ -12,7 +12,7 @@ import { IS_MOBILE } from './world/textures.js';
 import { segmentCount } from './game/collision.js';
 import { Car } from './game/car.js';
 import { makePlayerCar } from './game/fleet.js';
-import { input, updateInput, onKey, buildTouchControls } from './game/input.js';
+import { input, updateInput, onKey, buildTouchControls, pad } from './game/input.js';
 import { CameraRig } from './game/camera.js';
 import { createTraffic } from './game/traffic.js';
 import { createLuas, combineTrams } from './game/luas.js';
@@ -327,6 +327,7 @@ onKey('x', () => { if (pursuit.active) return; car.siren = !car.siren; audio.set
 // audio: siren tone (auto / wail / yelp / hi-lo)
 onKey('z', () => { const m = audio.cycleSirenTone(); hud.toast(`Siren tone: ${{ auto: 'auto (wail / yelp)', wail: 'wail', yelp: 'yelp', hilo: 'hi-lo' }[m]}`); });
 onKey('h', () => hud.togglePanel('help'));
+pad.onConnect = (name) => hud.toast(`Controller connected: ${/xbox|xinput/i.test(name) ? 'Xbox' : /054c|dualshock|dualsense|playstation/i.test(name) ? 'PlayStation' : 'gamepad'}`);
 onKey('t', () => hud.togglePanel('places'));
 onKey('escape', () => { hud.togglePanel(null); worldMap.close(); if (gameUI.playOpen) gameUI.togglePlay(false); });
 onKey('f', () => hud.toggleFps());
@@ -363,7 +364,9 @@ function frame() {
 
   const tp0 = performance.now();
   updateInput(dt);
-  car.update(dt, frozen ? { throttle: 0, brake: 1, steer: 0, handbrake: true } : input);
+  if (frozen) car.hold();
+  car.update(dt, frozen ? { throttle: 0, brake: 0, steer: 0, handbrake: true } : input);
+  if (frozen) car.hold();
   pursuit.update(dt);
   trial.update(dt);
   garda.update(time, car.siren);
