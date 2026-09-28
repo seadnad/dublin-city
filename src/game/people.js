@@ -218,15 +218,19 @@ export function createPeople(scene, { count = 240 } = {}) {
   return {
     people,
     setRain(on) { raining = on; for (const p of people) aLook.array[p.i * 4 + 3] = on && p.umbrella ? 1 : 0; aLook.needsUpdate = true; },
-    update(dt, focus, car) {
+    update(dtFrame, focus, car) {
       frame++;
       refreshNearby(focus);
       if (!initialised) { for (const p of people) place(p, { x: focus.x, z: focus.z, min: 0, max: 130 }); initialised = true; }
       const cs = car ? Math.abs(car.speed) : 0;
       const cfx = car ? Math.sin(car.heading) : 0, cfz = car ? Math.cos(car.heading) : 0;
       for (const p of people) {
-        const dxF = p.x - focus.x, dzF = p.z - focus.z;
-        if (dxF * dxF + dzF * dzF > 150 * 150) place(p, { x: focus.x, z: focus.z, min: 70, max: 140 });
+        const dxF = p.x - focus.x, dzF = p.z - focus.z, d2 = dxF * dxF + dzF * dzF;
+        if (d2 > 150 * 150) place(p, { x: focus.x, z: focus.z, min: 70, max: 140 });
+        // beyond 45 m nobody can tell a 30 Hz walk from a 60 Hz one: update on alternate frames, double step
+        const far = d2 > 45 * 45;
+        if (far && ((frame + p.i) & 1)) continue;
+        const dt = far ? dtFrame * 2 : dtFrame;
         let moving = 0;
         if (p.dodge > 0) {
           p.dodge -= dt;

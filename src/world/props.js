@@ -68,7 +68,8 @@ export function buildLamps(scene) {
   const poleMat = addReflections(new THREE.MeshStandardMaterial({ color: 0x7a8086, roughness: 0.45, metalness: 0.9 }), 0.7); // galvanised steel
   const ironMat = addReflections(new THREE.MeshStandardMaterial({ color: 0x1f2723, roughness: 0.4, metalness: 0 }), 0.6); // painted cast iron
   const headMat = new THREE.MeshStandardMaterial({ color: 0xf4efe0, emissive: 0xffc98a, emissiveIntensity: 0 });
-  const lanternMat = new THREE.MeshStandardMaterial({ color: 0xfff4e0, emissive: 0xffc070, emissiveIntensity: 0, transparent: true, opacity: 0.85, side: THREE.DoubleSide });
+  // opaque: at 0.85 opacity the blend was invisible but cost sorting and fill on every lantern
+  const lanternMat = new THREE.MeshStandardMaterial({ color: 0xf2e8d4, emissive: 0xffc070, emissiveIntensity: 0, side: THREE.DoubleSide });
   const make = (geo, mat, list, shadow = false) => chunkedInstances(geo, mat, list, { shadow });
   const pole = new THREE.CylinderGeometry(0.07, 0.13, 7.6, 8).translate(0, 3.8, 0);
   const arm = new THREE.BoxGeometry(0.09, 0.09, 1.7).translate(0, 7.5, 0.8);
@@ -143,12 +144,14 @@ export function buildLamps(scene) {
   return {
     count: spots.length,
     spots,
-    setWet(w) { wet = w; streak.value = w; poolMat.opacity = level * (0.12 + 0.75 * w); },
+    setWet(w) { wet = w; streak.value = w; poolMat.opacity = level * (0.12 + 0.75 * w); pools.visible = poolMat.opacity > 0.001; },
     setLevel(v) {
       level = v;
       headMat.emissiveIntensity = v * 3;
       lanternMat.emissiveIntensity = 0.05 + v * 3.2;
       poolMat.opacity = v * (0.12 + 0.75 * wet);
+      // hidden by day: a few hundred 12 m blended quads at zero opacity still cost full fill rate
+      pools.visible = poolMat.opacity > 0.001;
     },
     update(dt, focus) {
       t -= dt;

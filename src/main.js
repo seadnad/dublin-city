@@ -27,6 +27,7 @@ import { addGardaKit } from './game/garda.js';
 import { loadCar } from './game/models.js';
 import { loadTrees } from './world/trees.js';
 import { createPipeline } from './render/pipeline.js';
+import { batchStatic } from './render/batch.js';
 import { profile, LITE, mode as gfxModeNow, setMode as setGfxMode, learn as learnGfx, forget as forgetGfx, MODES as GFX_MODES, MODE_NAMES as GFX_NAMES, GPU, WEAK_GPU } from './render/quality.js';
 import { applyTextureQuality } from './render/texquality.js';
 import { createContactShadows } from './render/contact.js';
@@ -74,6 +75,11 @@ const buildings = buildBuildings(scene);
 { const t = performance.now(); bakeGroundAO([...buildings.lots, ...landmarkFootprints], world.bounds); console.log(`ground AO baked in ${Math.round(performance.now() - t)} ms`); }
 await step(0.68, 'Placing the landmarks…');
 const landmarks = buildLandmarks(scene);
+{
+  const t = performance.now();
+  const b = batchStatic(scene, [...landmarks.groups, ...ground.group.children.filter((c) => c.isGroup)], { name: 'landmarks (batched)' });
+  console.log(`static batch: ${b.before} meshes -> ${b.after} in ${Math.round(performance.now() - t)} ms`);
+}
 await step(0.72, 'Lighting the streets…');
 const lamps = buildLamps(scene);
 // reflections of quay lamps and the docklands lights on the water after dark

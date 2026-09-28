@@ -717,11 +717,11 @@ export function buildBuildings(scene) {
   cgeo.translate(0, 0.5, 0);
   const cm = chunkedInstances(cgeo, new THREE.MeshStandardMaterial({ roughness: 0.9 }),
     chimneys.map((c) => ({ x: c.x, y: c.y - 0.2, z: c.z, rot: c.rot, s: new THREE.Vector3(1, c.h, 1), color: c.color })),
-    { shadow: true, colors: (c) => c.color.clone().multiplyScalar(0.8), size: 180 });
+    { shadow: true, colors: (c) => c.color.clone().multiplyScalar(0.8), size: 450 });
   const pgeo = new THREE.CylinderGeometry(0.1, 0.13, 1, 5, 1, true);
   pgeo.translate(0, 0.5, 0);
   const pm = chunkedInstances(pgeo, new THREE.MeshStandardMaterial({ color: 0x9a5a3c, roughness: 0.85, side: THREE.DoubleSide }),
-    pots.map((p) => ({ x: p.x, y: p.y, z: p.z, s: new THREE.Vector3(1, p.h, 1) })), { size: 180 });
+    pots.map((p) => ({ x: p.x, y: p.y, z: p.z, s: new THREE.Vector3(1, p.h, 1) })), { size: 450 });
   scene.add(cm, pm);
   buildGeorgianFronts(scene);
 

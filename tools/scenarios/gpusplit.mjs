@@ -20,6 +20,11 @@ export default async function (page, shot, { fps }) {
     'shadows off': null,
     'instanced (lamps, trees, props)': (o) => o.isInstancedMesh && !(o.geometry.attributes.aExtra),
     'buildings': (o) => o.name === 'buildings',
+    'streets': (o) => o.name === 'streets',
+    'batched landmarks': (o) => o.name === 'landmarks (batched)',
+    'people': (o) => o.isInstancedMesh && o.geometry.attributes.aPart,
+    'trees': (o) => o.isInstancedMesh && /bark|leaves/.test(o.material.name || ''),
+    'transparent': (o) => o.isMesh && o.material && o.material.transparent,
     'landmarks (Builder)': (o) => o.isGroup && o.children.length && o.children.every((c) => c.isMesh && !c.isInstancedMesh) && o.name && !/buildings|streets|ground/.test(o.name),
   };
   for (const [label, test] of Object.entries(groups)) {

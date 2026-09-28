@@ -5,7 +5,11 @@ import * as THREE from 'three';
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _up = new THREE.Vector3(0, 1, 0), _p = new THREE.Vector3(), _s = new THREE.Vector3();
 
 // items: { x, y?, z, rot?, s?: number | Vector3 }
-export function chunkedInstances(geo, mat, items, { size = 300, shadow = false, receive = true, colors = null, y = 0 } = {}) {
+// Block size follows the mesh weight: every block is a draw call (twice with shadows), so tiny props (bins, bollards,
+// lamp parts: a few dozen vertices) use big blocks, while heavy meshes such as trees use small ones so off-screen
+// instances are culled rather than drawn.
+export function chunkedInstances(geo, mat, items, { size = null, shadow = false, receive = true, colors = null, y = 0 } = {}) {
+  if (size === null) size = geo.attributes.position.count > 300 ? 250 : 600;
   const group = new THREE.Group();
   const buckets = new Map();
   items.forEach((it, i) => {
