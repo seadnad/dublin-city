@@ -704,7 +704,8 @@
     "St Stephen's Green": ["SGNW", "DS1", "KS1", "SGNE", "SGSE", "HC0", "SGSW", "SGW"],
     "Merrion Square": ["MSNW", "MSNE", "MSSE", "MSSW"],
     "St Patrick's Park": ["PK1", "BD3", "BD2", "PK2"],
-    "Christ Church grounds": ["WTC", "WTB", "HS1", "CC1", "CC2", "CC3", "CC4", "LE1", "FS1", "FS2"]
+    "Christ Church grounds": ["WTC", "WTB", "HS1", "CC1", "CC2", "CC3", "CC4", "LE1", "FS1", "FS2"],
+    "Mountjoy Square": ["RN07", "RN08", "RN09", "RN10"]
   },
   "campus": {
     "Trinity College": ["CG1", "CS1", "PS1", "PS2", "MSNW", "NS3", "NS2", "NS1", "CG3", "CGC", "CGT", "CGM"]

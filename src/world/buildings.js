@@ -98,9 +98,15 @@ const GEORGIAN_ST = /Merrion|Stephen's Green|Dawson|Kildare|Harcourt|Leeson|Bagg
 const TEMPLE_BAR = /Temple Bar|Temple Lane|Fleet|Essex Street|Eustace|Crown Alley|Anglesea|Sycamore|Cope|Fownes|Fishamble|Exchequer|Wicklow/;
 const DOCK_ST = /North Wall|Rogerson|City Quay|Mayor|Commons|Memorial|Lombard|Sandwith|Townsend|Pearse|Store|Amiens|Tara|George's Quay/;
 
+// Docklands: east of the Custom House, north of Pearse Street, south of Sheriff Street
+const inDocks = (x, z) => x > 300 && z < 150 && z > -320;
+// Victorian and Edwardian red-brick terraces of the canal ring: two storeys with small front gardens
+const TERRACE_ST = /North Circular|Ballybough|Clonliffe|Jones's|Russell|Summerhill Parade|Poplar|Portland Row|Seville|North Strand|Whitworth|Drumcondra|Prussia|Aughrim|Infirmary|Grove Road|Canal Road|Heytesbury|Clanbrassil Street Upper|South Circular|Lennox|Charlemont Mall|Avenue|Ardilaun|Great Charles|Haddington|Berkeley|Mountjoy Street|Blessington|Long Lane|Camden Row|New Bride/;
+export const isTerrace = (way) => !!way && TERRACE_ST.test(way.name);
+
 function styleFor(x, z, way) {
   const name = way ? way.name : '';
-  const docks = x > 300 && z < 150; // Docklands: east of the Custom House, north of Pearse Street
+  const docks = inDocks(x, z);
   if (docks && !GEORGIAN_ST.test(name)) return S.MODERN;
   if (x > 200 && DOCK_ST.test(name)) return rand() < 0.65 ? S.MODERN : S.BRICK;
   if (TEMPLE_BAR.test(name)) return rand() < 0.75 ? S.TEMPLEBAR : S.BRICK;
@@ -158,15 +164,18 @@ for (const way of ordered) {
       let s = 0;
       while (s < L) {
         const mid = v2.add(a, v2.scale(dir, s));
-        const style = styleFor(mid.x, mid.z, way);
+        const terrace = isTerrace(way) && !inDocks(mid.x, mid.z);
+        const style = terrace ? (rand() < 0.85 ? S.GEORGIAN : S.STUCCO) : styleFor(mid.x, mid.z, way);
         const spec = lotSpec(style);
+        if (terrace) Object.assign(spec, { w: 2 * spec.bay + 0.5, d: 9 + rand() * 3, floors: rand() < 0.8 ? 2 : 3, fh: 3.2 });
+        const garden = terrace ? 2.2 : 0;
         if (s + spec.w > L + 3) { s += 2; continue; }
         let placed = false;
         for (const df of [1, 0.7, 0.5]) {
           const d = spec.d * df;
           if (d < 6) break;
           const c = v2.add(a, v2.scale(dir, s + spec.w / 2));
-          const o = { x: c.x + n.x * (setback + d / 2), z: c.z + n.z * (setback + d / 2), rot, w: spec.w, d };
+          const o = { x: c.x + n.x * (setback + garden + d / 2), z: c.z + n.z * (setback + garden + d / 2), rot, w: spec.w, d };
           if (testOBB(o)) { place(o, style, spec, true); placed = true; break; }
         }
         s += placed ? spec.w : 1.5;
@@ -183,13 +192,14 @@ for (let z = B.minZ + 10; z < B.maxZ - 10; z += 11) {
     const road = world.nearestRoad(x, z);
     const seg = road ? road.seg : null;
     const rot = seg ? Math.atan2(seg.b.x - seg.a.x, seg.b.z - seg.a.z) : 0;
-    const style = x > 300 && z < 150 ? S.MODERN : rand() < 0.5 ? S.BRICK : S.STUCCO;
+    const style = inDocks(x, z) ? S.MODERN : rand() < 0.5 ? S.BRICK : S.STUCCO;
     for (const size of [14, 10, 7]) {
       const o = { x, z, rot, w: size + rand() * 3, d: size + rand() * 3 };
       if (testOBB(o)) {
         const spec = lotSpec(style);
         // block interiors stay lower than the street frontage (keeps Docklands from becoming a wall of towers)
         spec.floors = style === S.MODERN ? 3 + Math.floor(rand() * 4) : Math.max(3, spec.floors - 1);
+        if (road && isTerrace(road.way)) spec.floors = 2; // back returns and mews behind the terraces
         place(o, style, spec, false);
         break;
       }
