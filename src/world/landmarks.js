@@ -601,6 +601,8 @@ Object.assign(M, {
   planter: new THREE.MeshStandardMaterial({ color: 0x55595a, roughness: 0.8 }),
   planting: new THREE.MeshStandardMaterial({ color: 0x5f8a3a, roughness: 0.95 }),
   timber: new THREE.MeshStandardMaterial({ color: 0x6d4f3a, roughness: 0.85 }),
+  corten: new THREE.MeshStandardMaterial({ color: 0x7a3f22, roughness: 0.85 }),
+  autumn: new THREE.MeshStandardMaterial({ color: 0x9a4a2a, roughness: 0.95 }),
   // after dark: the Convention Centre's drum rings and roof edge, the Beckett harp, the red light-sticks, the 3Arena front
   ccdRing: glow(0xb04cff, 0, 3.2),
   ccdEdge: glow(0x8a5cff, 0, 2.2),
@@ -823,15 +825,37 @@ const precastTex = canvasTex(96, 116, (ctx, w, h) => {
 M.precast = new THREE.MeshStandardMaterial({ map: precastTex, roughness: 0.8 });
 
 function grattanOffice(site) {
-  // seven-storey precast office: a deep window grid, a glazed set-back top floor under a slatted canopy
+  // seven-storey precast office on the Grattan Street corner (local +x): set back from Grand Canal Street behind a
+  // raised granite forecourt, steps up along the front and round the corner, a recessed glazed ground floor behind
+  // the grid's piers, a glazed set-back top floor under a slatted canopy
   const b = new Builder(site);
-  const W = site.w, D = site.d, H = 6 * 3.6;
-  b.facade(W, H, D, M.precast, M.lead, {}, 3, 3.6);
-  b.box(W - 3, 3.4, D - 3, M.curtain, { y: H });
-  const top = H + 3.4;
-  for (const sx of [-1, 1]) b.box(0.3, 0.3, D + 2, M.dark, { x: sx * (W / 2 + 0.6), y: top + 0.6 });
-  for (let x = -W / 2 - 0.6; x <= W / 2 + 0.6; x += 0.9) b.box(0.12, 0.35, D + 2, M.dark, { x, y: top + 0.9 });
+  const W = site.w, D = site.d, P = 1.2, F = site.plaza, R = 0.3, T = 0.4, n = Math.round(P / R);
+  const front = D / 2 + F;
+  // podium: under the building, the forecourt and a strip down the corner side
+  b.box(W + 3, P, D + F, M.paving, { z: F / 2 });
+  for (let k = 0; k < n; k++) {
+    const y = k * R, out = (n - k) * T;
+    b.box(W + 3, R, T, M.granite, { y, z: front + out - T / 2 }); // front flight
+    b.box(T, R, F + 2, M.granite, { x: W / 2 + 1.5 + out - T / 2, y, z: front - F / 2 - 1 }); // corner flight
+  }
+  // recessed ground floor: glass behind a row of piers
+  const G = 4.2;
+  b.box(W - 2.4, G, D - 2.4, M.curtain, { y: P });
+  for (let x = -W / 2 + 0.4; x <= W / 2 - 0.3; x += W / 5) for (const z of [-D / 2 + 0.4, D / 2 - 0.4]) b.box(0.8, G, 0.8, M.portlandSmooth, { x, y: P, z });
+  for (const z of [-D / 4, 0, D / 4]) for (const x of [-W / 2 + 0.4, W / 2 - 0.4]) b.box(0.8, G, 0.8, M.portlandSmooth, { x, y: P, z });
+  // the six upper floors of deep precast window grid
+  const H = 6 * 3.6, y0 = P + G;
+  b.facade(W, H, D, M.precast, M.lead, { y: y0 }, 3, 3.6);
+  b.box(W - 3, 3.4, D - 3, M.curtain, { y: y0 + H });
+  const top = y0 + H + 3.4;
+  for (const sx of [-1, 1]) b.box(0.3, 0.3, D + 4, M.dark, { x: sx * (W / 2 + 1.2), y: top + 0.6 });
+  for (let x = -W / 2 - 1.2; x <= W / 2 + 1.2; x += 0.9) b.box(0.12, 0.35, D + 4, M.dark, { x, y: top + 0.9 });
   for (const [x, z] of [[-W / 2 + 0.8, -D / 2 + 0.8], [W / 2 - 0.8, -D / 2 + 0.8], [W / 2 - 0.8, D / 2 - 0.8], [-W / 2 + 0.8, D / 2 - 0.8]]) b.box(0.3, 1.2, 0.3, M.dark, { x, y: top, z });
+  // glass balustrade along the forecourt edge beside the steps, and a weathering-steel planter with a small tree
+  b.box(W * 0.35, 1, 0.08, M.glass, { x: -W / 2 + W * 0.2, y: P, z: front - 0.1 });
+  b.box(5, 0.9, 1.6, M.corten, { x: -W / 6, y: P, z: front - 2.4 });
+  b.cyl(0.12, 0.15, 2.4, M.timber, { x: -W / 6 - 1.2, y: P + 0.9, z: front - 2.4 }, 6);
+  b.add(new THREE.SphereGeometry(1.3, 10, 8), M.autumn, { x: -W / 6 - 1.2, y: P + 3.6, z: front - 2.4 });
   b.solid(0, 0, W, D);
   return b.build('Grand Canal Street office');
 }

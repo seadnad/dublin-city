@@ -181,9 +181,10 @@ export const sites = {
     view: spot('HQM', 'HQ1', 0.55),
   },
   grandCanalSt: {
-    // the precast-concrete office block on the corner of Grattan Street
-    name: 'Grand Canal Street', ...beside('GC1', 'GCM', 0.3, -1, 24, 20, { gap: 1 }), labelY: 30,
-    view: spot('MSNE', 'GC1', 0.8),
+    // the precast-concrete office block on the corner of Grattan Street (south side), set back behind a raised
+    // forecourt with steps up from the footpath
+    name: 'Grand Canal Street', ...beside('GT1', 'GCM', 0.52, -1, 24, 20, { gap: 7 }), plaza: 6.5, labelY: 30,
+    view: spot('HOL1', 'GT1', 0.3),
   },
   stephensGreen: {
     name: "St Stephen's Green", ...centroid(sgPark.poly), rot: 0, w: 0, d: 0, labelY: 30, park: sgPark,
@@ -241,7 +242,9 @@ export const reserved = [
   shifted(extraSites.sgCentre, -extraSites.sgCentre.w / 2 - 8, 0, 16, extraSites.sgCentre.d), // broad footpath facing the Green
   { ...extraSites.castle, w: 44, d: 36, ...shifted(extraSites.castle, 0, -16, 44, 34) },
   shifted(sites.convention, 0, sites.convention.d / 2 + 6.5, sites.convention.w, 13), // its forecourt
-  sites.grandCanalSt, sites.heuston, sites.guinness, sites.convention, sites.threeArena, sites.grandCanal, sites.grandCanal.square,
+  sites.grandCanalSt, shifted(sites.grandCanalSt, 0, sites.grandCanalSt.d / 2 + 3.25, sites.grandCanalSt.w + 4, 6.5), // its raised forecourt
+  shifted(sites.grandCanalSt, sites.grandCanalSt.w / 2 + 9, 3, 18, sites.grandCanalSt.d + 6.5), // open corner to Grattan Street (steps, parking)
+  sites.heuston, sites.guinness, sites.convention, sites.threeArena, sites.grandCanal, sites.grandCanal.square,
   // Heuston's forecourt, open to the quay
   // Heuston forecourt: the Luas stop, bus bays and lawn in front of the east front, kept open to the road
   { x: heustonFront.x + 16, z: heustonFront.z + 4, rot: 0.14, w: 30, d: 44 },
