@@ -2,6 +2,7 @@
 // AREA=temple-bar|hapenny|christ-church|st-patricks|heuston ; TAG prefixes the file names.
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const AREAS = {
+  hapenny: { centre: 'HPS', height: 110, views: [['ormond-quay-east', 'NQ5', 'NQ6', 0.35], ['wellington-quay-east', 'SQ5', 'SQ6', 0.55], ['crampton-west', 'SQ7', 'HPS', 0.35], ['liffey-st-south', 'AB2', 'NQ6', 0.75], ['merchants-arch-north', 'TBQ', 'HPS', 0.2]] },
   'temple-bar': { centre: 'TBQ', height: 170, views: [['tb-west-from-asdills', 'TAS', 'TBQ', 0.1], ['tb-east-from-templelane', 'TTL', 'TFO', 0.05], ['crown-alley-north', 'CCA', 'TBQ', 0.1], ['eustace-north', 'DEU', 'TEU', 0.2], ['fleet-west', 'FPL', 'FAP', 0.3], ['essex-east', 'ES1', 'TEU', 0.1]] },
 };
 export default async function (page, shot) {

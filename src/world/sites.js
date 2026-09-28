@@ -178,6 +178,13 @@ export const extraSites = {
   clockCorner: beside('CG0', 'DAN', 0.4, 1, 16, 16, { gap: 0.15 }),
   // Grafton Street: Bewley's, Brown Thomas at the Wicklow Street corner with Weir & Sons across it,
   // and the St Stephen's Green Shopping Centre at the top
+  // Merchants' Hall (Frederick Darley, 1821): the granite hall on the quay the Merchant's Arch passage runs through,
+  // 14 x 14.7 m, with the passage in its west bay lined up with the Ha'penny Bridge (docs/research/temple-bar.md)
+  merchantsHall: beside('SQ6', 'HPS', 1, -1, 14, 14, { shift: 4.67, gap: 0.15 }),
+  // the red pub corner, SE of Temple Bar x Temple Lane South (invented name; the real one is a protected brand)
+  redPub: (() => { const tl = wayBetween('DM1', 'TTL'); return beside('TTL', 'TFO', 0, -1, 16, 13, { shift: tl.width / 2 + tl.pave + 8.2, gap: 0.15 }); })(),
+  // Temple Bar Square: the flagged square on the south side of Temple Bar, west of Crown Alley
+  tbSquare: (() => { const ca = wayBetween('TBQ', 'CCA'); return beside('TBQ', 'TFO', 0, 1, 21, 13, { shift: ca.width / 2 + ca.pave + 10.8, gap: 0.1 }); })(),
   bewleys: beside('GR1', 'GR2', 0.78, -1, 12, 18, { gap: 0.15 }),
   brownThomas: beside('GR1', 'GR2', 0.3, -1, 28, 22, { gap: 0.15 }),
   weir: beside('CG3', 'GR1', 0.9, -1, 10, 14, { gap: 0.15 }),
@@ -195,7 +202,7 @@ export const extraSites = {
 export const reserved = [
   sites.gpo, sites.bankOfIreland, sites.christChurch, sites.customHouse, sites.trinity, ...grounds,
   sites.cityHall, sites.centralBank, extraSites.olympia, extraSites.clockCorner,
-  extraSites.bewleys, extraSites.brownThomas, extraSites.weir, extraSites.sgCentre,
+  extraSites.bewleys, extraSites.brownThomas, extraSites.weir, extraSites.sgCentre, extraSites.merchantsHall, extraSites.redPub, extraSites.tbSquare,
   shifted(extraSites.sgCentre, -extraSites.sgCentre.w / 2 - 8, 0, 16, extraSites.sgCentre.d), // broad footpath facing the Green
   { ...extraSites.castle, w: 44, d: 36, ...shifted(extraSites.castle, 0, -16, 44, 34) },
   shifted(sites.convention, 0, sites.convention.d / 2 + 6.5, sites.convention.w, 13), // its forecourt

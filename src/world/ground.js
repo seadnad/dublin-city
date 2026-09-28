@@ -269,7 +269,28 @@ for (const way of world.ways) {
   bridges.push({ way, name: way.name, p0, p1, dir, width: way.width, length: (span[1] - span[0]) * L, centre: v2.lerp(p0, p1, 0.5) });
 }
 
+// footbridges between two quay nodes: the quay parapet opens at their landings, and the steps block cars
+export const footbridges = [{ name: "Ha'penny Bridge", a: 'NQ6', b: 'HPS', halfGap: 3.9 }].map((f) => {
+  const a = world.nodes.get(f.a), b = world.nodes.get(f.b);
+  const span = findRiverSpan(a, b, 4);
+  const L = v2.len(v2.sub(b, a));
+  const p0 = v2.lerp(a, b, span[0]), p1 = v2.lerp(a, b, span[1]);
+  return { ...f, dir: v2.norm(v2.sub(b, a)), length: (span[1] - span[0]) * L, centre: v2.lerp(p0, p1, 0.5), p0, p1 };
+});
+for (const f of footbridges) {
+  const n = { x: -f.dir.z, z: f.dir.x };
+  for (const [p, s] of [[f.p0, -1], [f.p1, 1]]) {
+    const c = v2.add(p, v2.scale(f.dir, s * 1.2));
+    addSegment(c.x - n.x * 2.2, c.z - n.z * 2.2, c.x + n.x * 2.2, c.z + n.z * 2.2);
+  }
+}
+
 function inBridgeGap(p) {
+  for (const f of footbridges) {
+    const d = v2.sub(p, f.centre);
+    const along = v2.dot(d, f.dir), across = d.x * -f.dir.z + d.z * f.dir.x;
+    if (Math.abs(along) < f.length / 2 + 6 && Math.abs(across) < f.halfGap) return true;
+  }
   for (const br of bridges) {
     const d = v2.sub(p, br.centre);
     const along = v2.dot(d, br.dir), across = d.x * -br.dir.z + d.z * br.dir.x;

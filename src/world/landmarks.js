@@ -10,6 +10,7 @@ import { addBox } from '../game/collision.js';
 import { chunkedInstances } from './chunks.js';
 import { plantTrees } from './trees.js';
 import { KERB_H } from './roads.js';
+import { placeHapenny } from './heroes.js';
 
 const rand = rng(1742);
 
@@ -1182,6 +1183,39 @@ function weirAndSons(site) {
   b.solid(cx, cz, 0.4, 0.4);
   return b.build('Weir & Sons');
 }
+function merchantsHall(site) {
+  // local +z faces the quay, local +x is east (E below mirrors the layout so the passage is in the west bay). Rusticated granite ground floor with three round-headed openings -
+  // a window (east), the door with its fanlight (centre) and the open passage (west) - two storeys of pedimented
+  // sashes in Portland ashlar above, a cornice and parapet. The passage runs right through, vaulted.
+  const b = new Builder(site);
+  const W = site.w, D = site.d, G = 4.8, H = 13, bay = W / 3, pw = 2.8;
+  const E = -1; // west is -x
+  const px = E * bay; // passage centre (west bay)
+  for (let k = 0; k < 3; k++) b.archWall(bay, G, 0.7, k === 2 ? pw : 2.4, 4.1, M.granite, { x: E * (-bay + k * bay), z: D / 2 - 0.35 });
+  // ground-floor mass behind the front wall, split round the passage
+  b.box(W - bay - (bay - pw) / 2 + 0.01, G, D - 0.7, M.granite, { x: E * (-(W / 2) + (W - bay - (bay - pw) / 2) / 2), z: -0.35 });
+  b.box((bay - pw) / 2, G, D - 0.7, M.granite, { x: E * (W / 2 - (bay - pw) / 4), z: -0.35 });
+  b.box(bay, G, 0.7, M.granite, { x: px, z: -D / 2 + 0.35, sx: 1, sy: 1, sz: 1 }); // rear wall piece above the passage mouth
+  b.box(pw + 0.02, 0.4, D, M.granite, { x: px, y: 3.9 }); // vault soffit
+  // door and window in the other two openings
+  b.box(2.2, 3.4, 0.1, M.dark, { x: 0, z: D / 2 - 0.45 });
+  b.box(2.2, 3.2, 0.1, M.glass, { x: -E * bay, y: 0.6, z: D / 2 - 0.45 });
+  // upper floors
+  b.facade(W, H - G, D, M.facade, M.slate, { y: G }, bay, (H - G) / 2);
+  b.box(W + 0.6, 0.35, D + 0.4, M.portlandSmooth, { y: G - 0.1 });
+  b.box(W + 0.8, 0.7, D + 0.6, M.portlandSmooth, { y: H });
+  b.box(W + 0.2, 1.0, 0.3, M.portland, { y: H + 0.7, z: D / 2 - 0.1 });
+  // gilt name over the door, window boxes of flowers on the first floor
+  b.add(new THREE.PlaneGeometry(4.6, 0.55), signMat("MERCHANTS' HALL", { bg: '#1c1f22', fg: '#d4a63a', font: 'bold 34px Georgia' }), { y: 4.35, z: D / 2 + 0.02 });
+  for (let k = 0; k < 3; k++) {
+    b.box(1.6, 0.3, 0.35, M.timber, { x: -bay + k * bay, y: G + 0.9, z: D / 2 + 0.18 });
+    b.box(1.5, 0.25, 0.3, M.flowers, { x: -bay + k * bay, y: G + 1.2, z: D / 2 + 0.18 });
+  }
+  b.solid(E * (-(W / 2) + (W - bay - (bay - pw) / 2) / 2), 0, W - bay - (bay - pw) / 2, D);
+  b.solid(E * (W / 2 - (bay - pw) / 4), 0, (bay - pw) / 2, D);
+  return b.build("Merchants' Hall");
+}
+
 function stephensGreenCentre(site) {
   // St Stephen's Green Shopping Centre (1988): a white cast-iron "conservatory" front four storeys high over a
   // granite shop floor, a glazed mansard roof, and the rounded corner facing the Fusiliers' Arch crowned with a
@@ -1373,6 +1407,132 @@ function gpo(site) {
   return b.build('GPO');
 }
 
+// ---------- Temple Bar (docs/research/temple-bar.md) ----------
+// dark Dublin brick with white 2-over-2 sashes and stone sills: one bay 4 m x 3.1 m
+const darkBrickTex = canvasTex(128, 100, (ctx, w, h) => {
+  ctx.fillStyle = '#5e3a2e'; ctx.fillRect(0, 0, w, h);
+  for (let y = 0; y < h; y += 4) { ctx.fillStyle = 'rgba(30,15,10,0.35)'; ctx.fillRect(0, y, w, 1); }
+  for (let i = 0; i < 300; i++) { ctx.fillStyle = `rgba(${90 + Math.random() * 50},${50 + Math.random() * 20},35,0.25)`; ctx.fillRect(Math.random() * w, Math.random() * h, 7, 3); }
+  ctx.fillStyle = '#b8b0a2'; ctx.fillRect(40, 82, 48, 5);
+  ctx.fillStyle = '#f2f0ea'; ctx.fillRect(44, 20, 40, 62);
+  ctx.fillStyle = '#26303a'; ctx.fillRect(48, 24, 32, 26); ctx.fillRect(48, 53, 32, 26);
+});
+// a pub front 16 m x 4.2 m: glossy red joinery, black fascia with gilt lettering, pilasters, lit windows
+const pubFrontTex = (name, base = '#b3121b') => canvasTex(1024, 270, (ctx, w, h) => {
+  const px = w / 16;
+  ctx.fillStyle = base; ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = '#141414'; ctx.fillRect(0, 10, w, 0.9 * px);                       // fascia
+  ctx.fillStyle = '#d4a63a'; ctx.font = `bold ${0.62 * px}px Georgia`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(name, w / 2, 10 + 0.45 * px);
+  ctx.fillStyle = '#6a0a10'; ctx.fillRect(0, 0, w, 10); ctx.fillRect(0, 10 + 0.9 * px, w, 6);   // cornice shadow
+  for (let k = 0; k <= 5; k++) {                                                       // pilasters
+    const x = k * (w / 5) - 10;
+    ctx.fillStyle = '#8f0e16'; ctx.fillRect(x, 10 + 0.9 * px, 20, h);
+    ctx.fillStyle = '#d4a63a'; ctx.fillRect(x + 3, 10 + 0.9 * px + 4, 14, 5);
+  }
+  for (let k = 0; k < 5; k++) {                                                        // windows / doors
+    const x = k * (w / 5) + 22, ww = w / 5 - 44, top = 10 + 0.9 * px + 22, door = k === 1 || k === 3;
+    ctx.fillStyle = '#2a1a12'; ctx.fillRect(x, top, ww, h - top - (door ? 0 : 0.7 * px));
+    const g = ctx.createLinearGradient(0, top, 0, h); g.addColorStop(0, '#f2b766'); g.addColorStop(1, '#6b3a1c');
+    ctx.fillStyle = g; ctx.fillRect(x + 6, top + 6, ww - 12, h - top - (door ? 6 : 0.7 * px + 6));
+    ctx.fillStyle = base; if (!door) ctx.fillRect(x, h - 0.7 * px, ww, 0.7 * px);     // stall riser
+    ctx.fillStyle = '#141414'; for (let j = 1; j < 3; j++) ctx.fillRect(x + (ww * j) / 3, top, 3, h - top - (door ? 0 : 0.7 * px));
+  }
+});
+const wallNameTex = (name) => canvasTex(1024, 128, (ctx, w, h) => {
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = '#ede6d6'; ctx.font = 'bold 92px Georgia'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(name, w / 2, h / 2 + 4);
+});
+Object.assign(M, {
+  darkBrick: new THREE.MeshStandardMaterial({ map: darkBrickTex, roughness: 0.9 }),
+  pubRed: new THREE.MeshStandardMaterial({ map: pubFrontTex("CRAMPTON'S BAR"), roughness: 0.35, emissive: 0xffffff, emissiveMap: pubFrontTex("CRAMPTON'S BAR"), emissiveIntensity: 0.04 }),
+  pubRedSide: new THREE.MeshStandardMaterial({ map: pubFrontTex('EST. 1840 · MUSIC NIGHTLY'), roughness: 0.35 }),
+  wallName: new THREE.MeshStandardMaterial({ map: wallNameTex("CRAMPTON'S BAR"), transparent: true, alphaTest: 0.3, roughness: 0.8, depthWrite: false }),
+  basket: new THREE.MeshStandardMaterial({ color: 0x3f6b2a, roughness: 0.95 }),
+  basketFlowers: new THREE.MeshStandardMaterial({ color: 0xd63a6a, roughness: 0.9 }),
+  neonRed: glow(0xff2a3a, 0.4, 3.2),
+  flagsSquare: new THREE.MeshStandardMaterial({ color: 0x9e9c97, map: stoneT, roughness: 0.8 }),
+});
+// the pub windows glow warmly after dark
+neon.push({ m: M.pubRed, day: 0.04, night: 0.7 });
+
+function redPub(site) {
+  // The landmark red pub corner (style only, invented name): glossy red ground floor wrapping the corner under a
+  // black-and-gilt fascia, three storeys of dark brick with white sashes and painted wall lettering, hanging
+  // baskets, scroll lanterns and a neon blade. Local +z faces Temple Bar, local -x faces Temple Lane South.
+  const b = new Builder(site);
+  const W = site.w, D = site.d, G = 4.2, H = G + 3 * 3.1;
+  b.facade(W, H - G, D, M.darkBrick, M.slate, { y: G }, 4, 3.1);
+  b.box(W, G, D, M.darkBrick);
+  b.add(new THREE.PlaneGeometry(W, G), M.pubRed, { y: G / 2, z: D / 2 + 0.03 });
+  b.add(new THREE.PlaneGeometry(D, G), M.pubRedSide, { x: -W / 2 - 0.03, y: G / 2, ry: -Math.PI / 2 });
+  b.box(W + 0.3, 0.25, 0.5, M.dark, { y: G, z: D / 2 + 0.1 }); b.box(0.5, 0.25, D + 0.3, M.dark, { x: -W / 2 - 0.1, y: G });
+  b.box(W + 0.4, 0.5, D + 0.4, M.portlandSmooth, { y: H });
+  b.add(new THREE.PlaneGeometry(W * 0.9, 1.1), M.wallName, { y: H - 1.2, z: D / 2 + 0.04 });
+  // baskets over the fascia, lanterns on scroll brackets, the neon blade on the corner
+  for (let k = 0; k < 6; k++) {
+    const x = -W / 2 + 1.6 + k * ((W - 3.2) / 5);
+    b.box(0.03, 0.5, 0.03, M.dark, { x, y: G + 0.4, z: D / 2 + 0.6 });
+    b.add(new THREE.IcosahedronGeometry(0.42, 1), M.basket, { x, y: G + 0.25, z: D / 2 + 0.6 });
+    b.add(new THREE.IcosahedronGeometry(0.3, 0), M.basketFlowers, { x, y: G + 0.5, z: D / 2 + 0.6 });
+  }
+  for (const [x, z] of [[-W / 2 + 4, D / 2], [W / 2 - 4, D / 2]]) {
+    b.box(0.04, 0.04, 0.6, M.dark, { x, y: G + 1.9, z: z + 0.3 });
+    b.add(new THREE.CylinderGeometry(0.16, 0.12, 0.4, 4), M.lampGlow, { x, y: G + 1.5, z: z + 0.6 });
+  }
+  b.box(0.15, 3.4, 0.9, M.neonRed, { x: -W / 2 - 0.1, y: G + 0.8, z: D / 2 - 1.2 });
+  b.solid(0, 0, W, D);
+  return b.build("Crampton's Bar");
+}
+
+function templeBarSquare(sq) {
+  // granite flags wall to wall, benches, a young tree and a modern black lamp column
+  const b = new Builder(sq);
+  const W = sq.w, D = sq.d;
+  b.box(W, 0.05, D, M.flagsSquare, { y: 0.02 });
+  for (const x of [-W / 3, -W / 9, W / 9, W / 3]) {
+    b.box(1.8, 0.08, 0.5, M.timber, { x, y: 0.45, z: -D / 2 + 1.2 });
+    b.box(1.6, 0.45, 0.1, M.dark, { x, y: 0, z: -D / 2 + 1.2 });
+  }
+  b.cyl(0.12, 0.15, 6, M.dark, { x: W / 4, z: 1 }, 8);
+  b.box(0.9, 0.2, 0.35, M.dark, { x: W / 4, y: 6, z: 1 });
+  b.cyl(0.06, 0.09, 2.6, M.timber, { x: -W / 4, z: 1 }, 6);
+  b.add(new THREE.IcosahedronGeometry(1.6, 1), M.planting, { x: -W / 4, y: 3.6, z: 1 });
+  b.solid(W / 4, 1, 0.4, 0.4); b.solid(-W / 4, 1, 0.5, 0.5);
+  return b.build('Temple Bar Square');
+}
+
+function templeBarDressing() {
+  // festoon bulbs strung across the pedestrian lanes, hanging baskets along the cobbled streets
+  const b = new Builder({ x: 0, z: 0, rot: 0 });
+  const r = rng(1840);
+  for (const way of world.ways) {
+    if (way.surface !== 'sett' && way.surface !== 'flags') continue;
+    const festoon = way.access === 'pedestrian' || way.pedestrian;
+    const half = way.width / 2 + way.pave;
+    let acc = 0;
+    for (let k = 0; k < way.pts.length - 1; k++) {
+      const a = way.pts[k], c = way.pts[k + 1], L = v2.len(v2.sub(c, a)), d = v2.norm(v2.sub(c, a)), n = { x: -d.z, z: d.x };
+      for (let s = 5 - acc; s < L - 2; s += 5) {
+        const p = v2.add(a, v2.scale(d, s)), idx = Math.round((acc + s) / 5);
+        if (festoon && idx % 2 === 0) {
+          const ry = Math.atan2(n.x, n.z);
+          b.box(0.03, 0.03, half * 2, M.dark, { x: p.x, y: 5.6, z: p.z, ry });
+          for (let t = -half + 0.5; t < half; t += 0.7) b.add(new THREE.OctahedronGeometry(0.07, 0), M.festoon, { x: p.x + n.x * t, y: 5.5 - 0.25 * Math.cos((t / half) * Math.PI / 2), z: p.z + n.z * t });
+        }
+        if (r() < 0.55) {
+          const side = idx % 2 ? 1 : -1, q = v2.add(p, v2.scale(n, side * (half - 0.35)));
+          b.add(new THREE.IcosahedronGeometry(0.34, 0), M.basket, { x: q.x, y: 3.4, z: q.z });
+          b.add(new THREE.IcosahedronGeometry(0.24, 0), M.basketFlowers, { x: q.x, y: 3.6, z: q.z });
+        }
+      }
+      acc = (acc + L) % 5;
+    }
+  }
+  return b.build('Temple Bar dressing');
+}
+
 // ---------- trees ----------
 function buildTrees(scene) {
   const spots = [];
@@ -1464,16 +1624,23 @@ function buildTrees(scene) {
 export function buildLandmarks(scene) {
   const S = sites;
   const groups = [
-    spire(S.spire), gpo(S.gpo), oconnellBridge(S.oconnellBridge), hapenny(S.hapenny), trinity(S.trinity),
+    spire(S.spire), gpo(S.gpo), oconnellBridge(S.oconnellBridge), trinity(S.trinity),
     bankOfIreland(S.bankOfIreland), christChurch(S.christChurch), customHouse(S.customHouse),
     oconnellMonument(), fusiliersArch(S.stephensGreen.park),
     cityHall(S.cityHall), dublinCastle(extraSites.castle), centralBank(S.centralBank), olympia(extraSites.olympia),
     clockCorner(extraSites.clockCorner), grattanIsland(extraSites.grattan),
+    merchantsHall(extraSites.merchantsHall), redPub(extraSites.redPub), templeBarSquare(extraSites.tbSquare), templeBarDressing(),
     bewleys(extraSites.bewleys), brownThomas(extraSites.brownThomas), weirAndSons(extraSites.weir), stephensGreenCentre(extraSites.sgCentre), graftonDressing(),
     heuston(S.heuston), guinness(S.guinness), jamesGate(extraSites.jamesGate), beckettHarp(S.beckett), convention(S.convention),
     threeArena(S.threeArena), grattanOffice(S.grandCanalSt), grandCanalTheatre(S.grandCanal), grandCanalSquare(S.grandCanal.square), markerHotel(extraSites.marker), gcsOffice(extraSites.gcsOffice),
   ];
   for (const g of groups) scene.add(g);
+  // Ha'penny Bridge: the Blender hero model (falls back to the procedural bridge if it can't load)
+  let hapennyHero = null, nightLevel = 0;
+  placeHapenny(scene, S.hapenny).then((h) => {
+    if (!h) { scene.add(hapenny(S.hapenny)); return; }
+    hapennyHero = h; h.setNight(nightLevel);
+  });
   for (const g of grounds) {
     const c = Math.cos(g.rot), s = Math.sin(g.rot), hx = g.w / 2, hz = g.d / 2;
     paintArea([[-hx, -hz], [hx, -hz], [hx, hz], [-hx, hz]].map(([lx, lz]) => ({ x: g.x + lx * c + lz * s, z: g.z - lx * s + lz * c })), COLORS.lawn);
@@ -1495,7 +1662,10 @@ export function buildLandmarks(scene) {
     groups, labels, trees,
     setLabels(on) { labels.visible = on; },
     // docklands lighting after dark (0 = day, 1 = night)
-    setNight(level) { for (const n of neon) n.m.emissiveIntensity = n.day + (n.night - n.day) * level; },
+    setNight(level) {
+      for (const n of neon) n.m.emissiveIntensity = n.day + (n.night - n.day) * level;
+      nightLevel = level; if (hapennyHero) hapennyHero.setNight(level);
+    },
     update(camera) {
       // hide labels that are far away or behind the camera
       for (const sp of labels.children) {
