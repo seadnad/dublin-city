@@ -5,6 +5,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { chunkedInstances } from './chunks.js';
 import { world, v2 } from './geo.js';
 import { IS_MOBILE } from './textures.js';
+import { LITE } from '../render/quality.js';
 import { addBox } from '../game/collision.js';
 
 // ---------- street lamps ----------
@@ -132,7 +133,7 @@ export function buildLamps(scene) {
   scene.add(...Object.values(meshes), pools);
 
   // a handful of real point lights that hop to the lamps nearest the player
-  const N = IS_MOBILE ? 2 : 3;
+  const N = LITE ? 2 : 3;
   const lights = [];
   for (let i = 0; i < N; i++) {
     const l = new THREE.PointLight(0xffc68a, 0, 24, 1.6);
@@ -165,7 +166,7 @@ export function buildLamps(scene) {
 
 // ---------- rain ----------
 export function buildRain(scene) {
-  const N = IS_MOBILE ? 2600 : 7000;
+  const N = LITE ? 2600 : 7000;
   const pos = new Float32Array(N * 2 * 3), end = new Float32Array(N * 2);
   for (let i = 0; i < N; i++) {
     const x = Math.random() * 70, y = Math.random() * 34, z = Math.random() * 70;

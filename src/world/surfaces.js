@@ -3,8 +3,9 @@
 // Generated once on canvas; tiled with world-space UVs.
 import * as THREE from 'three';
 import { IS_MOBILE, rng, fbmFast as fbm } from './textures.js';
+import { LITE } from '../render/quality.js';
 
-const SIZE = IS_MOBILE ? 512 : 1024;
+const SIZE = LITE ? 512 : 1024;
 
 function mkCanvas(size) {
   const c = document.createElement('canvas');
@@ -90,7 +91,7 @@ export function paving() {
     height[i] = h;
   }
   // chewing gum spots and small dark stains
-  for (let k = 0; k < (IS_MOBILE ? 60 : 220); k++) {
+  for (let k = 0; k < (LITE ? 60 : 220); k++) {
     const g = rand() < 0.6 ? 95 + rand() * 30 : 175 + rand() * 25;
     blob(s, col, height, rand() * s, rand() * s, s / 1024 * (2 + rand() * 4), [g, g, g - 4], 0.85, 0.2);
   }

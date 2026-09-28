@@ -3,6 +3,7 @@
 // pillars, lights, grilles and Irish number plates. The instance colour tints only painted areas (atlas alpha).
 import * as THREE from 'three';
 import { IS_MOBILE } from '../world/textures.js';
+import { LITE } from '../render/quality.js';
 import { createContactShadows } from '../render/contact.js';
 import { addReflections } from '../render/reflect.js';
 
@@ -186,7 +187,7 @@ function bodyGeometry(t) {
 function carMaterial(atlas) {
   const m = new THREE.MeshPhysicalMaterial({
     map: atlas.map, emissiveMap: atlas.emissiveMap, emissive: 0xffffff, emissiveIntensity: 0.15,
-    roughness: 0.32, metalness: 0.35, clearcoat: IS_MOBILE ? 0 : 0.8, clearcoatRoughness: 0.2,
+    roughness: 0.32, metalness: 0.35, clearcoat: LITE ? 0 : 0.8, clearcoatRoughness: 0.2,
   });
   m.onBeforeCompile = (sh) => {
     // tint painted panels only (atlas alpha = paint mask); glass, trim and lights keep their colour
@@ -323,7 +324,7 @@ function busAtlas(route) {
     }
   }
   g.fillStyle = '#e4e3de'; g.fillRect(S * 0.66, S * 0.6, S * 0.34, S * 0.4);
-  const map = new THREE.CanvasTexture(shrink(c, IS_MOBILE ? 512 : 1024)); map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 8;
+  const map = new THREE.CanvasTexture(shrink(c, LITE ? 512 : 1024)); map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 8;
   const emissiveMap = new THREE.CanvasTexture(shrink(e, 512)); emissiveMap.colorSpace = THREE.SRGBColorSpace;
   return { map, emissiveMap };
 }

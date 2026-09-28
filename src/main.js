@@ -26,7 +26,8 @@ import { createTrial } from './game/modes/trial.js';
 import { addGardaKit } from './game/garda.js';
 import { loadCar } from './game/models.js';
 import { loadTrees } from './world/trees.js';
-import { createPipeline, QUALITIES } from './render/pipeline.js';
+import { createPipeline } from './render/pipeline.js';
+import { profile, LITE, mode as gfxModeNow, setMode as setGfxMode, learn as learnGfx, forget as forgetGfx, MODES as GFX_MODES, MODE_NAMES as GFX_NAMES, GPU, WEAK_GPU } from './render/quality.js';
 import { applyTextureQuality } from './render/texquality.js';
 import { createContactShadows } from './render/contact.js';
 import { bakeGroundAO, groundAOUniforms } from './render/groundao.js';
@@ -41,10 +42,11 @@ const canvas = document.getElementById('scene');
 THREE.ColorManagement.enabled = true; // colours given in sRGB (hex, CSS) are converted to linear for lighting
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, stencil: false, powerPreference: 'high-performance' });
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-// pixel ratio: 1.5 on phones (a 3x phone screen would otherwise shade 4x the pixels), 2 on desktop;
-// the adaptive loop below steps it down further if frames run long
-const maxDpr = Math.min(window.devicePixelRatio, IS_MOBILE ? 1.5 : 2);
-let dpr = maxDpr;
+// pixel ratio and pipeline tier come from the graphics setting (render/quality.js): Auto starts phones and integrated
+// GPUs on the phone settings, and the adaptive loop below steps down quickly if frames still run long
+let maxDpr = profile.maxDpr;
+let dpr = profile.startDpr ?? maxDpr;
+console.log('graphics', JSON.stringify({ mode: gfxModeNow, ...profile, gpu: GPU, weak: WEAK_GPU }));
 renderer.setPixelRatio(dpr);
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
@@ -55,7 +57,9 @@ renderer.shadowMap.autoUpdate = false;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 0.4, 950);
+// lite profile: 600 m view distance (a third fewer draw calls on the busy quays; draw-call overhead is what limits
+// integrated-GPU laptops, not pixels), with slightly thicker fog so the edge doesn't pop
+const camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 0.4, LITE ? 600 : 950);
 
 // ---------- world ----------
 // The aerial intro (boot.js) keeps animating while this builds: report progress and give it a frame between steps.
@@ -129,9 +133,9 @@ function respawnNearRoad() {
 
 // ---------- traffic + Luas ----------
 await step(0.8, 'Starting the traffic…');
-const traffic = createTraffic(scene, IS_MOBILE ? { cars: 12, buses: 3, taxis: 3, parked: 120 } : { cars: 26, buses: 6, taxis: 5, parked: 320 });
+const traffic = createTraffic(scene, LITE ? { cars: 12, buses: 3, taxis: 3, parked: 120 } : { cars: 26, buses: 6, taxis: 5, parked: 320 });
 const tram = combineTrams(world.luasLines.map((line) => createLuas(scene, line)));
-const people = createPeople(scene, { count: IS_MOBILE ? 110 : 300 });
+const people = createPeople(scene, { count: LITE ? 110 : 300 });
 traffic.setPlayer(car);
 traffic.setTram(tram);
 traffic.setSignals(signals);
@@ -190,15 +194,22 @@ const actions = {
   play: () => gameUI.togglePlay(),
 };
 const hud = createHUD({ sites, actions });
-// Desktop starts at medium and steps up to high (ambient occlusion) if there is frame-time headroom.
-const pipeline = createPipeline(renderer, scene, camera, { quality: IS_MOBILE ? 'low' : 'medium' });
+const pipeline = createPipeline(renderer, scene, camera, { quality: profile.tier });
 const failed = { high: false, medium: false };
-let userQuality = false;
-onKey('q', () => {
-  const q = QUALITIES[(QUALITIES.indexOf(pipeline.quality) + 1) % QUALITIES.length];
-  pipeline.setQuality(q); pipeline.setMood(mode); lastSwitch = time; userQuality = true;
-  hud.toast(`Graphics: ${q}`);
-});
+let userQuality = gfxModeNow !== 'auto', fpsCap = profile.fpsCap, gfxMode = gfxModeNow;
+// switch graphics mode live (tier and resolution now; crowd counts and shadow size from the next load)
+function applyGfx(m) {
+  const p = setGfxMode(m);
+  gfxMode = m; userQuality = m !== 'auto'; fpsCap = p.fpsCap;
+  if (m === 'auto') { forgetGfx(); failed.high = failed.medium = false; }
+  maxDpr = p.maxDpr; dpr = p.startDpr ?? maxDpr;
+  renderer.setPixelRatio(dpr); pipeline.setQuality(p.tier); pipeline.setMood(mode); pipeline.setPixelRatio();
+  lastSwitch = time; slowTime = fastTime = 0;
+  const reload = p.lite !== LITE ? ' (reload for the full effect)' : '';
+  hud.toast(`Graphics: ${GFX_NAMES[m]}${reload}`);
+}
+actions.gfx = applyGfx;
+onKey('q', () => applyGfx(GFX_MODES[(GFX_MODES.indexOf(gfxMode) + 1) % GFX_MODES.length]));
 hud.setOn('sound', true);
 buildTouchControls(document.getElementById('hud'));
 onKey('r', actions.rain);
@@ -236,6 +247,7 @@ function applyFlight() {
   if (t >= 1) { flight = null; frozen = false; document.getElementById('hud').classList.remove('intro-hidden'); camera.fov = 62; camera.updateProjectionMatrix(); window.__dublin.ready = true; }
 }
 const gameUI = createGameUI({
+  gfx: { modes: GFX_MODES, names: GFX_NAMES, get: () => gfxMode, set: (m) => applyGfx(m) },
   onPursuit: () => { trial.stop(); pursuit.start(); },
   onTrial: (r) => { pursuit.stop(); trial.start(r); rig.snap(); },
   onFree: () => { pursuit.stop(); trial.stop(); hud.toast('Free roam'); },
@@ -329,7 +341,14 @@ let slowTime = 0, fastTime = 0, rideY = 0;
 let frameNo = 0;
 const prof = { car: 0, traffic: 0, people: 0, other: 0, render: 0, n: 0 };
 const focus = new THREE.Vector3(), viewDir = new THREE.Vector3();
+let lastFrameAt = 0, learnT = 0;
 function frame() {
+  // Battery saver: cap the frame rate (skip whole frames, so the CPU and GPU both rest)
+  if (fpsCap) {
+    const now = performance.now();
+    if (now - lastFrameAt < 1000 / fpsCap - 2) { requestAnimationFrame(frame); return; }
+    lastFrameAt = now;
+  }
   timer.update();
   const rawDt = timer.getDelta();
   // the world pauses while the map is open
@@ -386,20 +405,28 @@ function frame() {
   const tp6 = performance.now();
   prof.car += tp1 - tp0; prof.traffic += tp2 - tp1; prof.people += tp4 - tp3; prof.other += tp5 - tp4; prof.render += tp6 - tp5; prof.n++;
 
-  // adaptive resolution: drop pixel ratio if we're persistently slow, restore when there's headroom
-  // (ignores the first seconds and one-off hitches such as shader compiles after a mode switch)
-  if (time < 4 || time - lastSwitch < 2.5 || rawDt > 0.2) { /* skip */ } else if (rawDt > 1 / 45) { slowTime += rawDt; fastTime = 0; } else if (rawDt < 1 / 58) { fastTime += rawDt; slowTime = Math.max(0, slowTime - rawDt); }
-  // step down: high -> medium -> low (phones start at low), then resolution; step back up in reverse
+  // adaptive quality (Auto) and resolution (all modes but Battery saver). Very slow frames count too (capped): a
+  // machine running at 3 fps used to be ignored as "one-off hitches" and never stepped down. The first second
+  // after the intro and after each switch is skipped (shader compiles).
+  const settled = !flight && time > 1.5 && time - lastSwitch > 1.0;
+  const fdt = Math.min(rawDt, 0.25);
+  if (!settled || worldMap.isOpen || fpsCap) { /* skip */ }
+  else if (fdt > 1 / 45) { slowTime += fdt * (fdt > 1 / 20 ? 2 : 1); fastTime = 0; }
+  else if (fdt < 1 / 58) { fastTime += fdt; slowTime = Math.max(0, slowTime - fdt); }
   const setQ = (q) => { pipeline.setQuality(q); pipeline.setMood(mode); lastSwitch = time; slowTime = fastTime = 0; };
-  if (slowTime > 1.5) {
+  const setDpr = (v) => { dpr = v; renderer.setPixelRatio(dpr); pipeline.setPixelRatio(); lastSwitch = time; slowTime = fastTime = 0; };
+  if (slowTime > 0.8) {
+    // step down: high -> medium -> low, then resolution (a big step if frames are very slow)
     if (!userQuality && pipeline.quality === 'high') { failed.high = true; setQ('medium'); }
     else if (!userQuality && pipeline.quality === 'medium') { failed.medium = true; setQ('low'); }
-    else if (dpr > 0.7) { dpr = Math.max(0.7, dpr - 0.25); renderer.setPixelRatio(dpr); pipeline.setPixelRatio(); slowTime = 0; }
+    else if (dpr > 0.6) setDpr(Math.max(0.6, dpr - (fdt > 1 / 20 ? 0.4 : 0.2)));
   } else if (fastTime > 6) {
-    if (dpr < maxDpr) { dpr = Math.min(maxDpr, dpr + 0.25); renderer.setPixelRatio(dpr); pipeline.setPixelRatio(); fastTime = 0; }
-    else if (!userQuality && !IS_MOBILE && pipeline.quality === 'low' && !failed.medium) setQ('medium');
-    else if (!userQuality && !IS_MOBILE && pipeline.quality === 'medium' && !failed.high) setQ('high');
+    if (dpr < maxDpr) setDpr(Math.min(maxDpr, dpr + 0.2));
+    else if (!userQuality && pipeline.quality === 'low' && !failed.medium && !LITE) setQ('medium');
+    else if (!userQuality && pipeline.quality === 'medium' && !failed.high) setQ('high');
   }
+  // Auto remembers where it settled, so the next visit starts there instead of learning again
+  if (!userQuality && settled && (learnT += fdt) > 10) { learnT = 0; learnGfx(pipeline.quality, dpr); }
 
   requestAnimationFrame(frame);
 }
@@ -442,6 +469,7 @@ setTimeout(() => hud.toast(IS_MOBILE ? 'Tap ? for help' : 'Press H for controls,
 window.__dublin = {
   ready: false, // set once shaders are compiled and the first frame has drawn
   THREE, scene, camera, world, carMesh: () => carMesh, renderer, pipeline, groundAOUniforms, atmosphere, car, input, rig, traffic, tram, people, pursuit, trial, gameUI, buildings, landmarks, sites, teleportTo, actions, mode, audio,
+  gfx: () => ({ mode: gfxMode, tier: pipeline.quality, dpr, maxDpr, lite: LITE, fpsCap }),
   lockQuality(q, d) { userQuality = true; dpr = d; renderer.setPixelRatio(d); pipeline.setQuality(q); pipeline.setMood(mode); slowTime = fastTime = 0; lastSwitch = time + 1e9; },
   profile() { const o = {}; for (const k of Object.keys(prof)) if (k !== 'n') o[k] = +(prof[k] / Math.max(1, prof.n)).toFixed(2); for (const k of Object.keys(prof)) prof[k] = 0; return o; },
   stats: () => ({ ...renderer.info.render, dpr, segments: segmentCount(), car: { ...car.pos, speed: car.speed, street: car.street && car.street.name } }),

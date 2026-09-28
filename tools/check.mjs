@@ -13,8 +13,9 @@ const scenarioPath = args.find((a) => a.endsWith('.mjs'));
 const outDir = path.resolve('tools/shots');
 fs.mkdirSync(outDir, { recursive: true });
 
-const CHROME = [
+const CHROME = process.env.BROWSER || [
   'C:/Program Files/Google/Chrome/Application/chrome.exe',
+  'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
   'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
 ].find((p) => fs.existsSync(p));
 

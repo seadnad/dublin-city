@@ -6,6 +6,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { world, v2 } from './geo.js';
 import { KERB_H, fieldAt } from './roads.js';
 import { rng, IS_MOBILE } from './textures.js';
+import { LITE } from '../render/quality.js';
 import { addBox } from '../game/collision.js';
 import { chunkedInstances } from './chunks.js';
 import { plantTrees } from './trees.js';
@@ -15,7 +16,7 @@ const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _up = new THREE.Vec
 const compose = (x, y, z, rot, s = _one) => _m.compose(_p.set(x, y, z), _q.setFromAxisAngle(_up, rot), s);
 
 // street furniture casts shadows on desktop; on phones the sun shadow is kept to buildings, trees, vehicles and people
-function instanced(geo, mat, items, { shadow = !IS_MOBILE, colors } = {}) {
+function instanced(geo, mat, items, { shadow = !LITE, colors } = {}) {
   return chunkedInstances(geo, mat, items, { shadow, colors, y: KERB_H });
 }
 const junctionClear = (node) => { let w = 0; for (const way of node.ways) w = Math.max(w, way.width); return node.edges.length > 2 ? w / 2 + 2.5 : 0; };

@@ -10,6 +10,7 @@ import { groundAOUniforms, GROUND_AO_GLSL, GROUND_AO_APPLY } from '../render/gro
 import { lampUniforms } from '../render/lamplight.js';
 import { world, v2, PAVEMENT, offsetPolyline, pointInPolygon, hasParking, insetPolygon, roadInsetFor } from './geo.js';
 import { IS_MOBILE, fbm } from './textures.js';
+import { LITE } from '../render/quality.js';
 import { asphalt, paving, granite, setts, grass } from './surfaces.js';
 
 export const KERB_H = 0.13;
@@ -667,4 +668,4 @@ export function buildMedian(mats) {
   return group;
 }
 
-export const QUALITY = { mobile: IS_MOBILE };
+export const QUALITY = { mobile: LITE };

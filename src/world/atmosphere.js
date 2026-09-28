@@ -1,6 +1,7 @@
 // Sky dome, lighting, fog and weather/time-of-day presets.
 import * as THREE from 'three';
 import { IS_MOBILE } from './textures.js';
+import { LITE } from '../render/quality.js';
 import { noiseTexture } from './roads.js';
 import { setReflectLevel } from '../render/reflect.js';
 
@@ -164,10 +165,10 @@ export function createAtmosphere(scene, renderer) {
   const sun = new THREE.DirectionalLight(0xffffff, 1);
   sun.castShadow = true;
   // Shadows cover the area in front of the camera (see update), not a big square centred on the car:
-  // desktop 120 m at 2048 px = 5.9 cm per texel, phones 100 m at 1536 px = 6.5 cm per texel.
-  const S = IS_MOBILE ? 1536 : 2048;
+  // full: 120 m at 2048 px = 5.9 cm per texel; lite (phones, integrated GPUs): 100 m at 1536 px = 6.5 cm per texel.
+  const S = LITE ? 1536 : 2048;
   sun.shadow.mapSize.set(S, S);
-  const ext = IS_MOBILE ? 50 : 60;
+  const ext = LITE ? 50 : 60;
   const texel = (2 * ext) / S;
   Object.assign(sun.shadow.camera, { left: -ext, right: ext, top: ext, bottom: -ext, near: 40, far: 420 });
   // biases of about one to two texels: enough to avoid acne on large facades without detaching contact shadows
@@ -232,7 +233,7 @@ export function createAtmosphere(scene, renderer) {
     uniforms.top.value.set(p.top); uniforms.horizon.value.set(p.horizon);
     uniforms.cloudA.value.set(p.cloudA); uniforms.cloudB.value.set(p.cloudB);
     uniforms.cover.value = p.cover;
-    scene.fog.color.set(p.fog); scene.fog.density = p.fogDensity;
+    scene.fog.color.set(p.fog); scene.fog.density = p.fogDensity * (LITE ? 1.35 : 1); // lite: the 600 m view distance fades into fog
     hemi.color.set(p.hemiSky); hemi.groundColor.set(p.hemiGround); hemi.intensity = p.hemi;
     sun.color.set(p.sun); sun.intensity = p.sunI;
     sunDir.set(...p.sunDir).normalize();

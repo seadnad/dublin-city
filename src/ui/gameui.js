@@ -8,7 +8,7 @@ export const save = {
 };
 const MEDAL = { gold: '🥇', silver: '🥈', bronze: '🥉' };
 
-export function createGameUI({ onPursuit, onTrial, onFree, onCar, trialInfo, toast }) {
+export function createGameUI({ onPursuit, onTrial, onFree, onCar, trialInfo, toast, gfx }) {
   const root = document.getElementById('hud');
   root.insertAdjacentHTML('beforeend', `
     <div class="mission" id="mission" hidden>
@@ -35,7 +35,10 @@ export function createGameUI({ onPursuit, onTrial, onFree, onCar, trialInfo, toa
         <button data-car="garda" class="${car === 'garda' ? 'on' : ''}">Garda i40 patrol</button>
         <button data-car="garda_rp" class="${car === 'garda_rp' ? 'on' : ''}">Roads Policing</button>
         <button data-car="hatch" class="${car === 'hatch' ? 'on' : ''}">i30 N</button>
-      </div>`;
+      </div>
+      ${gfx ? `<div class="cars gfx">Graphics:
+        ${gfx.modes.map((m) => `<button data-gfx="${m}" class="${gfx.get() === m ? 'on' : ''}">${gfx.names[m]}</button>`).join('')}
+      </div>` : ''}`;
     play.innerHTML += `
       <button class="card pursuit" data-mode="pursuit">
         <b>Garda Pursuit</b>
@@ -54,6 +57,7 @@ export function createGameUI({ onPursuit, onTrial, onFree, onCar, trialInfo, toa
       }).join('')}
       <button class="card free" data-mode="free"><b>Free roam</b><small>Just drive.</small></button>`;
     q(play, '.close').onclick = () => { play.hidden = true; };
+    play.querySelectorAll('[data-gfx]').forEach((b) => b.addEventListener('click', () => { gfx.set(b.dataset.gfx); renderPlay(); }));
     play.querySelectorAll('[data-car]').forEach((b) => b.addEventListener('click', () => { onCar(b.dataset.car); save.set('car', b.dataset.car); renderPlay(); }));
     play.querySelectorAll('[data-mode], [data-route]').forEach((b) => b.addEventListener('click', () => {
       play.hidden = true;
