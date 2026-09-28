@@ -22,8 +22,19 @@ function warpX(u) {
   return b - (b - a) * k - (a - u);
 }
 
+// Likewise a band of latitudes from Dame Street to the south quays is stretched north-south: at half scale with
+// real-width roads there was no room left between Temple Bar and the quay for Merchant's Arch and the quay-front
+// buildings. Depends on latitude only, so north-south streets stay straight; everything north of it shifts north.
+const STRETCH_N = { a: (53.3442 - LAT0) * M_PER_LAT, b: (53.3462 - LAT0) * M_PER_LAT, k: 1.4 };
+function warpN(v) {
+  const { a, b, k } = STRETCH_N;
+  if (v <= a) return v;
+  if (v <= b) return a + (v - a) * k;
+  return a + (b - a) * k + (v - b);
+}
+
 export function project(lat, lon) {
-  return { x: warpX((lon - LON0) * M_PER_LON) * SCALE, z: -(lat - LAT0) * M_PER_LAT * SCALE };
+  return { x: warpX((lon - LON0) * M_PER_LON) * SCALE, z: -warpN((lat - LAT0) * M_PER_LAT) * SCALE };
 }
 
 // ---------- small vector helpers ----------
@@ -69,6 +80,11 @@ export function offsetPolyline(pts, d) {
     }
   }
   return out;
+}
+
+// offsetPolyline with a distance per point
+export function offsetPolylineVar(pts, ds) {
+  return pts.map((p, i) => offsetPolyline(pts, ds[i])[i]);
 }
 
 export function resample(pts, step) {
@@ -150,6 +166,10 @@ function build() {
       bridge: w.type === 'bridge', speed: TYPE_SPEED[w.type] ?? 10,
       pave: w.pave ?? PAVEMENT, // footpath width each side; wider on the grand streets
       pedestrian: !!w.pedestrian, // paved wall to wall (Grafton Street): no traffic, but the player may drive it
+      // access: 'pedestrian' keeps AI traffic off (the player may still drive it, slowly); 'destination' is
+      // access-only (AI avoid it as a through route). oneway: 1 = only in node order, -1 = only against it.
+      // surface: 'sett' paves the carriageway with granite setts whatever the access.
+      access: w.access || null, oneway: w.oneway || 0, surface: w.surface || (w.type === 'lane' && !w.pedestrian ? 'sett' : null),
     };
     for (const id of w.nodes) nodes.get(id).ways.push(way);
     return way;
@@ -162,6 +182,9 @@ function build() {
       const A = nodes.get(way.nodeIds[i]), B = nodes.get(way.nodeIds[i + 1]);
       const len = Math.hypot(B.x - A.x, B.z - A.z);
       const e1 = { from: A, to: B, way, len }, e2 = { from: B, to: A, way, len };
+      // may AI traffic drive this edge? (the player can drive anything)
+      const open = !way.pedestrian && way.access !== 'pedestrian';
+      e1.car = open && way.oneway !== -1; e2.car = open && way.oneway !== 1;
       A.edges.push(e1); B.edges.push(e2); edges.push(e1, e2);
     }
   }
@@ -213,8 +236,16 @@ function build() {
   const south = data.river.south.map((id) => ({ x: nodes.get(id).x, z: nodes.get(id).z }));
   extendToEdges(north, bounds); extendToEdges(south, bounds);
   // north quay runs west→east; the water is to the south (+z) which is the right side → positive offset
-  const northBank = offsetPolyline(north, quayHalf);
-  const southBank = offsetPolyline(south, -quayHalf);
+  const bankOffset = (ids) => {
+    const d = ids.map((id) => {
+      let w = 0;
+      for (const way of nodes.get(id).ways) if (way.type === 'quay') w = Math.max(w, way.width / 2 + way.pave);
+      return w || quayHalf;
+    });
+    return [d[0], ...d, d[d.length - 1]]; // extendToEdges added a point at each end
+  };
+  const northBank = offsetPolylineVar(north, bankOffset(data.river.north));
+  const southBank = offsetPolylineVar(south, bankOffset(data.river.south).map((v) => -v));
   northBank[0].x = southBank[0].x = bounds.minX; northBank[northBank.length - 1].x = southBank[southBank.length - 1].x = bounds.maxX;
   const riverPoly = [...northBank, ...southBank.slice().reverse()];
 

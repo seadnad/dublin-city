@@ -594,10 +594,10 @@ export function buildStreets(scene, puddles) {
   group.add(pave.mesh);
   group.add(...buildMarkings(lineMat, textMat));
 
-  // granite setts on the Temple Bar lanes
+  // granite setts on every way surfaced with them (the Temple Bar lanes, pedestrian or not)
   const sr = new Ribbons();
   for (const way of world.ways) {
-    if (way.type !== 'lane' || way.pedestrian) continue;
+    if (way.surface !== 'sett' || way.pedestrian) continue;
     for (let k = 0; k < way.pts.length - 1; k++) {
       const a = way.pts[k], b = way.pts[k + 1], d = v2.norm(v2.sub(b, a)), n = { x: -d.z * way.width / 2, z: d.x * way.width / 2 };
       const ext = v2.scale(d, 2);

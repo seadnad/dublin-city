@@ -5,9 +5,9 @@ import { world, v2, laneOffset } from '../../world/geo.js';
 import { fmt } from './pursuit.js';
 
 export const ROUTES = [
-  { id: 'liffey', name: 'Liffey Loop', blurb: 'Both quays and three bridges', path: ['NQ8', 'NQ9', 'NQ10', 'SQ10', 'SQ9', 'SQ8', 'SQ7', 'SQ6', 'SQ5', 'SQ4', 'NQ4', 'NQ5', 'NQ6', 'NQ7', 'NQ8'] },
+  { id: 'liffey', name: 'Liffey Loop', blurb: 'Both quays and three bridges', path: ['NQ8', 'NQ9', 'NQ10', 'SQ10', 'SQ9', 'SQ8', 'SQ7', 'HPS', 'SQ6', 'SQ5', 'SQ4', 'NQ4', 'NQ5', 'NQ6', 'NQ7', 'NQ8'] },
   { id: 'georgian', name: 'Georgian Sprint', blurb: 'Nassau St, Merrion Square and the Green', path: ['CG3', 'NS1', 'NS2', 'NS3', 'MSNW', 'MSNE', 'MSSE', 'MSSW', 'MR1', 'SGNE', 'SGSE', 'HC0', 'SGSW', 'SGNW', 'GR2', 'GR1', 'CG3'] },
-  { id: 'templebar', name: 'Temple Bar & Christ Church', blurb: 'Cobbled lanes, Winetavern St, back along the quays', path: ['WM1', 'FL1', 'TBQ', 'TBE', 'ES1', 'PARL', 'EW1', 'LE1', 'CC1', 'HS1', 'SQ2', 'SQ3', 'SQ4', 'SQ5', 'SQ6', 'SQ7', 'SQ8', 'WM1'] },
+  { id: 'templebar', name: 'Temple Bar & Christ Church', blurb: 'Cobbled lanes, Winetavern St, back along the quays', path: ['WM1', 'FPL', 'FAP', 'FL1', 'TAS', 'TBQ', 'TFO', 'TTL', 'TEU', 'ES1', 'PARL', 'EW1', 'LE1', 'CC1', 'HS1', 'SQ2', 'SQ3', 'SQ4', 'SQ5', 'SQ6', 'HPS', 'SQ7', 'SQ8', 'WM1'] },
 ];
 
 // Daily route: a seeded random drive through the graph, the same for everyone on a given day.

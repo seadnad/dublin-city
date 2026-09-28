@@ -114,12 +114,12 @@ export function createPeople(scene, { count = 240 } = {}) {
   const lanes = [];
   for (const way of world.ways) {
     if (way.bridge) continue;
-    const weight = way.pedestrian ? 9 : /Grafton|Henry|Temple Bar|Fleet|Essex|Anglesea|Crown|Eustace|Westmoreland|College Green|Dame/.test(way.name) ? 4
+    const weight = way.pedestrian ? 9 : way.access === 'pedestrian' ? 6 : /Grafton|Henry|Temple Bar|Fleet|Essex|Anglesea|Crown|Eustace|Westmoreland|College Green|Dame/.test(way.name) ? 4
       : way.type === 'boulevard' ? 4 : way.type === 'lane' ? 3 : way.type === 'primary' || way.type === 'quay' ? 1.6 : 1;
     for (const side of [1, -1]) {
       const off = way.type === 'lane' ? way.width / 2 - 0.9 : way.width / 2 + 1.25;
       lanes.push({ way, side, pts: offsetPolyline(way.pts, side > 0 ? -off : off), weight });
-      if (way.pedestrian) lanes.push({ way, side, pts: offsetPolyline(way.pts, side > 0 ? -1.6 : 1.6), weight });
+      if (way.pedestrian || way.access === 'pedestrian') lanes.push({ way, side, pts: offsetPolyline(way.pts, side > 0 ? -1.2 : 1.2), weight }); // crowds walk the carriageway too
     }
   }
   // lanes near a point, weighted by how busy the street is (refreshed as the player moves)

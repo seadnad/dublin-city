@@ -41,7 +41,8 @@ const oc = v2.norm(v2.sub(N('OC2'), N('OC1')));
 const oconnellBridge = bridges.find((b) => b.name === "O'Connell Bridge");
 
 // Ha'penny Bridge: pedestrian, from Liffey Street to Merchant's Arch
-const hpA = N('NQ6'), hpB = N('SQ6');
+// square to the river, from the Liffey Street landing to the landing opposite Merchant's Arch
+const hpA = N('NQ6'), hpB = N('HPS');
 const hpDir = v2.norm(v2.sub(hpB, hpA));
 let hp0 = null, hp1 = null;
 for (let i = 0; i <= 200; i++) {
@@ -89,7 +90,7 @@ export const sites = {
   hapenny: {
     name: "Ha'penny Bridge", x: (hp0.x + hp1.x) / 2, z: (hp0.z + hp1.z) / 2, rot: Math.atan2(hpDir.x, hpDir.z),
     w: 3.2, d: v2.len(v2.sub(hp1, hp0)) + 2, labelY: 16,
-    view: spot('SQ7', 'SQ6', 0.15),
+    view: spot('SQ7', 'HPS', 0.2),
   },
   trinity: {
     name: 'Trinity College', ...trinityFront, labelY: 36, campanile,
@@ -97,19 +98,19 @@ export const sites = {
   },
   cityHall: {
     // at the top of Parliament Street, where Dame Street becomes Lord Edward Street
-    name: 'City Hall', ...beside('DM2', 'DM3', 1, 1, 26, 24, { shift: -5, gap: 3 }), labelY: 30,
+    name: 'City Hall', ...beside('DSY', 'DM3', 1, 1, 26, 24, { shift: -5, gap: 3 }), labelY: 30,
     view: spot('SQ4', 'PARL', 0.55),
   },
   centralBank: {
-    name: 'Central Bank', ...beside('DMc', 'DM1', 0.5, -1, 26, 18, { gap: 7 }), plaza: 6, labelY: 44,
-    view: spot('DM2', 'DM1', 0.35),
+    name: 'Central Bank', ...beside('DAN', 'DMc', 0.62, -1, 24, 14, { gap: 4 }), plaza: 4, labelY: 44,
+    view: spot('DFU', 'DMc', 0.3),
   },
   bankOfIreland: {
     name: 'Bank of Ireland', ...(() => {
       const arm = wayBetween('CGT', 'CGM'), W = 36, L = v2.len(v2.sub(N('CG0'), N('CGT')));
-      return beside('CGT', 'CG0', (arm.width / 2 + arm.pave + 1 + W / 2) / L, -1, W, 32, { gap: 0.5 });
+      return beside('CGT', 'CG0', (arm.width / 2 + arm.pave + 7.5 + W / 2) / L, -1, W, 32, { gap: 0.5 }); // clear of the north arm even at College Green's slope
     })(), labelY: 28,
-    view: spot('DM1', 'DMc', 0.2),
+    view: spot('DMc', 'DAN', 0.2),
   },
   christChurch: {
     // set back in its grounds in the block between Winetavern St, Fishamble St and Christchurch Place
@@ -173,8 +174,8 @@ export const extraSites = {
   // the Cork Hill gate of Dublin Castle, on Lord Edward Street (the Upper Yard sits behind it)
   castle: beside('DM3', 'LE1', 0.55, 1, 40, 2, { gap: 0.5 }),
   // 72 Dame Street, on the Temple Bar side like the Central Bank
-  olympia: beside('DM2', 'DM3', 0.35, -1, 12, 16, { gap: 0.15 }),
-  clockCorner: beside('CG0', 'DMc', 0.22, 1, 16, 16, { gap: 0.15 }),
+  olympia: beside('DSY', 'DM3', 0.2, -1, 12, 16, { gap: 0.15 }),
+  clockCorner: beside('CG0', 'DAN', 0.4, 1, 16, 16, { gap: 0.15 }),
   // Grafton Street: Bewley's, Brown Thomas at the Wicklow Street corner with Weir & Sons across it,
   // and the St Stephen's Green Shopping Centre at the top
   bewleys: beside('GR1', 'GR2', 0.78, -1, 12, 18, { gap: 0.15 }),

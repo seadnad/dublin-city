@@ -92,7 +92,7 @@ const PANELS = ['#c8c8c4', '#3a3d40', '#9aa0a3', '#b9b2a4'].map(hex);
 const pick = (arr) => arr[Math.floor(rand() * arr.length)];
 
 const GEORGIAN_ST = /Merrion|Stephen's Green|Dawson|Kildare|Harcourt|Leeson|Baggot|Clare|Gardiner|Westland|Cuffe|King Street|Church Street|Merrion Row/;
-const TEMPLE_BAR = /Temple Bar|Fleet|Essex Street|Eustace|Crown Alley|Anglesea|Sycamore|Fishamble|Exchequer|Wicklow/;
+const TEMPLE_BAR = /Temple Bar|Temple Lane|Fleet|Essex Street|Eustace|Crown Alley|Anglesea|Sycamore|Cope|Fownes|Fishamble|Exchequer|Wicklow/;
 const DOCK_ST = /North Wall|Rogerson|City Quay|Mayor|Commons|Memorial|Lombard|Sandwith|Townsend|Pearse|Store|Amiens|Tara|George's Quay/;
 
 function styleFor(x, z, way) {

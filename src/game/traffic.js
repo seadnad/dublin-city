@@ -20,16 +20,17 @@ function laneLine(edge, extra = 0) {
 }
 
 function pickNext(edge, isBus) {
-  const options = edge.to.edges.filter((e) => e.to !== edge.from && !e.way.pedestrian && (!isBus || e.way.type !== 'lane'));
-  if (!options.length) return edge.to.edges.find((e) => e.to === edge.from) || edge.to.edges[0];
-  // prefer continuing on the same street or bigger roads
-  const weights = options.map((e) => (e.way === edge.way ? 2.5 : 1) * (e.way.type === 'lane' ? 0.25 : 1));
+  // legal moves only: one-ways, pedestrian zones and (for buses) lanes are respected
+  const options = edge.to.edges.filter((e) => e.to !== edge.from && e.car && (!isBus || e.way.type !== 'lane'));
+  if (!options.length) return edge.to.edges.find((e) => e.to === edge.from && e.car) || edge.to.edges.find((e) => e.to === edge.from) || edge.to.edges[0];
+  // prefer continuing on the same street or bigger roads; access-only streets are rarely used as a through route
+  const weights = options.map((e) => (e.way === edge.way ? 2.5 : 1) * (e.way.type === 'lane' ? 0.25 : 1) * (e.way.access === 'destination' ? 0.3 : 1));
   let r = rand() * weights.reduce((a, b) => a + b, 0);
   for (let i = 0; i < options.length; i++) { r -= weights[i]; if (r <= 0) return options[i]; }
   return options[0];
 }
 
-const drivable = world.edges.filter((e) => e.len > 15 && e.way.type !== 'lane' && !e.way.pedestrian);
+const drivable = world.edges.filter((e) => e.len > 15 && e.way.type !== 'lane' && e.car);
 
 class AICar {
   constructor(handle, isBus) {
