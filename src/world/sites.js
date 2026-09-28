@@ -57,13 +57,19 @@ const campanile = { x: trinityFront.x + tfDir.x * 62, z: trinityFront.z + tfDir.
 const sgPark = parkPolys.find((p) => p.name === "St Stephen's Green");
 
 // Heuston: the head building faces east over the station forecourt, the train shed runs west behind it
-const heustonFront = project(53.3465, -6.2922);
+// Heuston lies south of St John's Road West, parallel to it, its head building facing east over a forecourt
+// to Steevens Lane. Local +z points east along the road; the train shed runs west behind the head building.
+const heustonAt = (along, w, d) => {
+  const a = N('SJ1'), c = N('SJ3'), dir = v2.norm(v2.sub(c, a)), south = { x: dir.z, z: -dir.x };
+  const off = 36; // road half width + footpath, the bend at SJ2, and half the station's width
+  return { x: a.x + dir.x * along + south.x * off, z: a.z + dir.z * along + south.z * off, rot: Math.atan2(-dir.x, -dir.z), w, d };
+};
 // Grand Canal Square (positions from the OSM footprints): the theatre at the west end with its glass front facing
 // east down the square to the water, the Marker Hotel along the north side, 1 Grand Canal Square to the south.
 // Theatre local +z faces west (Macken Street), so its glass front (local -z) looks east.
 const at = (lat, lon) => project(lat, lon);
 const theatre = { ...at(53.34414, -6.23995), rot: -Math.PI / 2, w: 26, d: 34 };
-const gcSquare = { ...at(53.34409, -6.23885), rot: -Math.PI / 2, w: 30, d: 38 };
+const gcSquare = { ...at(53.34408, -6.23897), rot: -Math.PI / 2, w: 28, d: 33 };
 const beckett = bridges.find((b) => b.name === 'Samuel Beckett Bridge');
 
 export const sites = {
@@ -72,7 +78,7 @@ export const sites = {
     view: spot('OC1', 'OC2', 0.1),
   },
   gpo: {
-    name: 'GPO', ...beside('OC1', 'OC2', 1, 1, 54, 32, { shift: -30, gap: 3 }), labelY: 34,
+    name: 'GPO', ...beside('OC1', 'OC2', 1, 1, 54, 32, { shift: -26, gap: 3 }), labelY: 34,
     view: spot('OC1', 'OC2', 0.05),
   },
   oconnellBridge: {
@@ -99,7 +105,10 @@ export const sites = {
     view: spot('DM2', 'DM1', 0.35),
   },
   bankOfIreland: {
-    name: 'Bank of Ireland', ...beside('CGT', 'CG0', 0.5, -1, 42, 34, { gap: 0.5 }), labelY: 28,
+    name: 'Bank of Ireland', ...(() => {
+      const arm = wayBetween('CGT', 'CGM'), W = 36, L = v2.len(v2.sub(N('CG0'), N('CGT')));
+      return beside('CGT', 'CG0', (arm.width / 2 + arm.pave + 1 + W / 2) / L, -1, W, 32, { gap: 0.5 });
+    })(), labelY: 28,
     view: spot('DM1', 'DMc', 0.2),
   },
   christChurch: {
@@ -108,11 +117,11 @@ export const sites = {
     view: spot('SQ2', 'HS1', 0.3),
   },
   customHouse: {
-    name: 'Custom House', ...beside('NQ10', 'NQ11', 1, 1, 104, 32, { gap: 3 }), labelY: 50,
+    name: 'Custom House', ...beside('NQ10', 'NQ11', 1, 1, 100, 24, { gap: 3 }), labelY: 50,
     view: spot('SQ9', 'SQ10', 0.3),
   },
   heuston: {
-    name: 'Heuston Station', x: heustonFront.x - 52, z: heustonFront.z, rot: Math.PI / 2, w: 34, d: 104, labelY: 30,
+    name: 'Heuston Station', ...heustonAt(8 + 14 + 52, 34, 104), labelY: 30,
     view: spot('WT2', 'VQ2', 0.55),
   },
   guinness: {
@@ -156,7 +165,7 @@ function shifted(site, lx, lz, w, d) {
 // Open grounds kept free of filler buildings and painted as lawn.
 export const grounds = [
   shifted(sites.christChurch, 3, 6, 60, 44),
-  shifted(sites.customHouse, 0, -6, 128, 50),
+  shifted(sites.customHouse, 0, -3, 124, 34),
 ];
 
 // Smaller landmarks that are modelled but not in the teleport list
@@ -191,7 +200,7 @@ export const reserved = [
   shifted(sites.convention, 0, sites.convention.d / 2 + 6.5, sites.convention.w, 13), // its forecourt
   sites.grandCanalSt, sites.heuston, sites.guinness, sites.convention, sites.threeArena, sites.grandCanal, sites.grandCanal.square,
   // Heuston's forecourt, open to the quay
-  { x: heustonFront.x + 12, z: heustonFront.z, rot: Math.PI / 2, w: 34, d: 24 },
+  heustonAt(8 + 7, 34, 14), // its forecourt
 
   // the Marker Hotel on Pearse Street, south side of the square
   (extraSites.marker = { ...at(53.34454, -6.2391), rot: 0, w: 36, d: 12 }),

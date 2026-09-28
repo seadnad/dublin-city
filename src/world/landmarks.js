@@ -211,33 +211,6 @@ function spire(site) {
   return b.build('The Spire');
 }
 
-function gpo(site) {
-  const b = new Builder(site);
-  const W = site.w, D = site.d, H = 17;
-  b.facade(W, H, D, M.facade, M.lead, { z: 0 });
-  b.box(W + 0.6, 0.9, D + 0.6, M.portland, { y: H - 0.2 }); // cornice
-  b.balustrade(-W / 2, W / 2, H + 0.7, D / 2, M.portland);
-  b.box(W, 1.2, D - 2, M.lead, { y: H + 0.7 });
-  // hexastyle Ionic portico projecting over the footpath
-  const pz = D / 2 + 3.4, colH = 12.5, pd = 5.2;
-  b.box(24, 0.6, pd, M.granite, { z: D / 2 + pd / 2 });
-  for (let i = 0; i < 6; i++) {
-    const x = -10 + i * 4;
-    b.column(x, pz, colH, 0.72, M.portland, 0.6);
-    b.solid(x, pz, 1.9, 1.9);
-  }
-  b.box(24.5, 2.0, pd + 0.3, M.portland, { y: colH + 0.6, z: D / 2 + pd / 2 });
-  b.pediment(24.5, 4.2, pd, M.portland, { y: colH + 2.6, z: D / 2 + pd / 2 });
-  b.statue(0, colH + 6.6, pz, 1.3, M.portland);
-  b.statue(-11, colH + 2.6, pz, 1.2, M.portland);
-  b.statue(11, colH + 2.6, pz, 1.2, M.portland);
-  // flagpole with the tricolour
-  b.cyl(0.08, 0.1, 10, M.iron, { x: 0, y: H + 1.2, z: 0 }, 6);
-  b.add(new THREE.PlaneGeometry(3.6, 1.8), M.flag, { x: 1.85, y: H + 10, z: 0 });
-  b.solid(0, 0, W, D);
-  return b.build('GPO');
-}
-
 function oconnellBridge(site) {
   // lamp standards on both parapets, and a central island with triple-headed lamps
   const b = new Builder(site);
@@ -1272,6 +1245,132 @@ function graftonDressing() {
     addBox(p.x, p.z, 1, 1, 0);
   }
   return b.build('Grafton Street dressing');
+}
+
+// ---------- the GPO ----------
+// Portland-stone Palladian bay for the GPO's long front: one 4 m bay over the full 17 m height
+const gpoWallTex = canvasTex(128, 544, (ctx, w, h) => {
+  const px = h / 17, y = (m) => h - m * px;
+  ctx.fillStyle = '#e2dac8'; ctx.fillRect(0, 0, w, h);
+  for (let i = 0; i < 500; i++) { ctx.fillStyle = `rgba(90,85,75,${Math.random() * 0.05})`; ctx.fillRect(Math.random() * w, Math.random() * h, 5 + Math.random() * 14, 2 + Math.random() * 5); }
+  // rusticated granite ground floor
+  ctx.fillStyle = '#cdc5b4'; ctx.fillRect(0, y(5.2), w, 5.2 * px);
+  ctx.fillStyle = 'rgba(70,66,58,0.4)'; for (let m = 0.6; m < 5.2; m += 0.6) ctx.fillRect(0, y(m), w, 2);
+  const win = (cy, hh, hood) => {
+    const ww = 1.3 * px, x0 = (w - ww) / 2;
+    ctx.fillStyle = '#efebe1'; ctx.fillRect(x0 - 5, y(cy + hh) - 5, ww + 10, hh * px + 10);
+    ctx.fillStyle = '#242a2e'; ctx.fillRect(x0, y(cy + hh), ww, hh * px);
+    ctx.fillStyle = '#e4dfd4'; for (let r = 1; r < 3; r++) ctx.fillRect(x0, y(cy + hh) + (hh * px * r) / 3, ww, 1.5);
+    ctx.fillRect(x0 + ww / 2 - 1, y(cy + hh), 2, hh * px);
+    if (hood) { ctx.fillStyle = '#f1ede4'; ctx.fillRect(x0 - 9, y(cy + hh + 0.35), ww + 18, 0.3 * px); }
+  };
+  win(1.4, 2.6, false); win(6.6, 3, true); win(11.2, 2.2, true); win(14.3, 1.4, false);
+  ctx.fillStyle = '#ece8de'; ctx.fillRect(0, y(5.35), w, 5); ctx.fillRect(0, y(10.6), w, 4);
+});
+// the wall inside the portico (24 m x 12.5 m): five bays of arched doorways under fanned voussoirs, a clock
+// over the centre door, green lanterns, arched windows above, and round dark oculi under the entablature
+const gpoPorticoTex = canvasTex(768, 400, (ctx, w, h) => {
+  const px = w / 24, y = (m) => h - m * px;
+  ctx.fillStyle = '#ddd4c2'; ctx.fillRect(0, 0, w, h);
+  for (let i = 0; i < 900; i++) { ctx.fillStyle = `rgba(90,85,75,${Math.random() * 0.05})`; ctx.fillRect(Math.random() * w, Math.random() * h, 8, 3); }
+  for (let k = 0; k < 5; k++) {
+    const cx = (k + 0.5) * (w / 5);
+    // fanned voussoirs round the door arch
+    ctx.strokeStyle = 'rgba(110,104,92,0.55)'; ctx.lineWidth = 2;
+    for (let a = 0; a <= 12; a++) { const t = Math.PI + (a / 12) * Math.PI; ctx.beginPath(); ctx.moveTo(cx + Math.cos(t) * 1.3 * px, y(3.6) + Math.sin(t) * 1.3 * px); ctx.lineTo(cx + Math.cos(t) * 2.3 * px, y(3.6) + Math.sin(t) * 2.3 * px); ctx.stroke(); }
+    ctx.fillStyle = '#1e2428';
+    ctx.beginPath(); ctx.moveTo(cx - 1.3 * px, y(0)); ctx.lineTo(cx - 1.3 * px, y(3.6)); ctx.arc(cx, y(3.6), 1.3 * px, Math.PI, 0); ctx.lineTo(cx + 1.3 * px, y(0)); ctx.fill();
+    ctx.strokeStyle = '#6b6252'; ctx.lineWidth = 2; for (let r = 1; r < 4; r++) { ctx.beginPath(); ctx.moveTo(cx - 1.3 * px, y(r * 1.1)); ctx.lineTo(cx + 1.3 * px, y(r * 1.1)); ctx.stroke(); }
+    // arched window on the upper floor
+    ctx.fillStyle = '#e8e3d8'; ctx.fillRect(cx - 1.05 * px, y(6.2), 2.1 * px, 0.25 * px);
+    ctx.fillStyle = '#262d33';
+    ctx.beginPath(); ctx.moveTo(cx - 0.8 * px, y(6.4)); ctx.lineTo(cx - 0.8 * px, y(8.6)); ctx.arc(cx, y(8.6), 0.8 * px, Math.PI, 0); ctx.lineTo(cx + 0.8 * px, y(6.4)); ctx.fill();
+    ctx.strokeStyle = '#d9d3c6'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx, y(6.4)); ctx.lineTo(cx, y(9.3)); ctx.stroke();
+    // oculus
+    if (k % 2 === 0) { ctx.fillStyle = '#161b24'; ctx.beginPath(); ctx.arc(cx, y(11), 0.7 * px, 0, Math.PI * 2); ctx.fill(); }
+    // green lanterns either side of the doors
+    if (k !== 2) { ctx.fillStyle = '#6fa590'; ctx.fillRect(cx - 0.25 * px, y(5.2), 0.5 * px, 0.8 * px); }
+  }
+  // the clock over the central door
+  ctx.fillStyle = '#6a8f89'; ctx.beginPath(); ctx.arc(w / 2, y(5.1), 0.62 * px, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#e9ece6'; ctx.beginPath(); ctx.arc(w / 2, y(5.1), 0.5 * px, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#222'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(w / 2, y(5.1)); ctx.lineTo(w / 2, y(5.5)); ctx.moveTo(w / 2, y(5.1)); ctx.lineTo(w / 2 + 0.3 * px, y(5.0)); ctx.stroke();
+}, true);
+gpoPorticoTex.wrapS = gpoPorticoTex.wrapT = THREE.ClampToEdgeWrapping;
+// carved frieze: anthemion and scroll band on the entablature
+const gpoFriezeTex = canvasTex(256, 32, (ctx, w, h) => {
+  ctx.fillStyle = '#e2ddd1'; ctx.fillRect(0, 0, w, h);
+  ctx.strokeStyle = '#9d9585'; ctx.lineWidth = 2;
+  for (let x = 0; x < w; x += 32) {
+    ctx.beginPath(); ctx.arc(x + 8, h / 2, 6, 0.5, Math.PI * 1.8); ctx.stroke();
+    ctx.beginPath(); ctx.arc(x + 24, h / 2, 6, Math.PI * 1.5, Math.PI * 0.8); ctx.stroke();
+    for (let f = -2; f <= 2; f++) { ctx.beginPath(); ctx.moveTo(x + 16, h - 5); ctx.lineTo(x + 16 + f * 3, 5); ctx.stroke(); }
+  }
+});
+// fluted shaft: light/shadow stripes, 24 flutes round the column
+const flutedTex = canvasTex(96, 8, (ctx, w, h) => {
+  for (let i = 0; i < 24; i++) {
+    const g = ctx.createLinearGradient(i * 4, 0, i * 4 + 4, 0);
+    g.addColorStop(0, '#bdb7a9'); g.addColorStop(0.5, '#ece8de'); g.addColorStop(1, '#d4cfc3');
+    ctx.fillStyle = g; ctx.fillRect(i * 4, 0, 4, h);
+  }
+});
+Object.assign(M, {
+  gpoWall: new THREE.MeshStandardMaterial({ map: gpoWallTex, roughness: 0.8 }),
+  gpoPortico: new THREE.MeshStandardMaterial({ map: gpoPorticoTex, roughness: 0.8 }),
+  gpoFrieze: new THREE.MeshStandardMaterial({ map: gpoFriezeTex, roughness: 0.8 }),
+  fluted: new THREE.MeshStandardMaterial({ map: flutedTex, roughness: 0.7, color: 0xfff8ea }),
+  // the portico ceiling sits in shadow; a little emission stands in for light bounced up off the pavement
+  soffit: new THREE.MeshStandardMaterial({ color: 0xd8d0c0, roughness: 0.9, emissive: 0x6a6457, emissiveIntensity: 0.35 }),
+});
+
+// fluted Ionic column: moulded base, fluted shaft, capital with a volute scroll either side
+function ionicColumn(b, x, z, h, r, y = 0) {
+  b.box(r * 2.7, 0.35, r * 2.7, M.portlandSmooth, { x, y, z });
+  b.cyl(r * 1.2, r * 1.25, 0.3, M.portlandSmooth, { x, y: y + 0.35, z }, 16);
+  const shaft = new THREE.CylinderGeometry(r * 0.86, r, h - 1.6, 20, 1, true).translate(0, (h - 1.6) / 2, 0);
+  b.add(shaft, M.fluted, { x, y: y + 0.65, z });
+  b.cyl(r * 0.95, r * 0.88, 0.3, M.portlandSmooth, { x, y: y + h - 0.95, z }, 16);
+  for (const s of [-1, 1]) b.cyl(r * 0.42, r * 0.42, r * 1.9, M.portlandSmooth, { x: x + s * r * 1.05, y: y + h - 0.55, z: z - r * 0.95, rx: Math.PI / 2 }, 12);
+  b.box(r * 2.5, 0.28, r * 2.5, M.portlandSmooth, { x, y: y + h - 0.28, z });
+}
+
+function gpo(site) {
+  const b = new Builder(site);
+  const W = site.w, D = site.d, H = 17;
+  b.facade(W, H, D, M.gpoWall, M.lead, { z: 0 }, 4, 17);
+  b.box(W + 0.6, 0.9, D + 0.6, M.portlandSmooth, { y: H - 0.2 }); // cornice
+  b.balustrade(-W / 2, -12.5, H + 0.7, D / 2, M.portland);
+  b.balustrade(12.5, W / 2, H + 0.7, D / 2, M.portland);
+  b.box(W, 1.2, D - 2, M.lead, { y: H + 0.7 });
+  // hexastyle Ionic portico projecting over the footpath
+  const pd = 5.4, pz = D / 2 + pd - 1.1, colH = 12.5, base = 0.3, PW = 24;
+  b.box(PW + 1, base, pd + 0.6, M.granite, { z: D / 2 + pd / 2 });
+  b.add(new THREE.PlaneGeometry(PW, colH), M.gpoPortico, { y: base + colH / 2, z: D / 2 + 0.03 });
+  for (let i = 0; i < 6; i++) {
+    const x = -10 + i * 4;
+    ionicColumn(b, x, pz, colH, 0.72, base);
+    b.solid(x, pz, 1.9, 1.9);
+    if (i === 0 || i === 5) b.box(1.4, colH, 0.35, M.fluted, { x, y: base, z: D / 2 + 0.2 }); // pilasters behind
+  }
+  // entablature: architrave, carved frieze, dentil cornice, and the pediment with Hibernia, Mercury and Fidelity
+  const ez = D / 2 + pd / 2, ey = base + colH;
+  b.box(PW + 0.5, 0.8, pd + 0.3, M.portlandSmooth, { y: ey, z: ez });
+  b.add(new THREE.PlaneGeometry(PW, pd + 0.2).rotateX(Math.PI / 2), M.soffit, { y: ey - 0.02, z: ez });
+  b.box(PW + 0.5, 0.9, pd + 0.3, M.portlandSmooth, { y: ey + 0.8, z: ez });
+  b.add(new THREE.PlaneGeometry(PW + 0.5, 0.9), M.gpoFrieze, { y: ey + 1.25, z: ez + pd / 2 + 0.16 });
+  b.box(PW + 1.1, 0.5, pd + 0.8, M.portlandSmooth, { y: ey + 1.7, z: ez });
+  for (let x = -PW / 2; x <= PW / 2; x += 0.5) b.box(0.22, 0.2, 0.2, M.portlandSmooth, { x, y: ey + 1.5, z: ez + pd / 2 + 0.2 });
+  b.pediment(PW + 1.1, 4.2, pd + 0.4, M.portlandSmooth, { y: ey + 2.2, z: ez });
+  b.box(1.6, 1, 1.6, M.portlandSmooth, { y: ey + 6.3, z: pz - 1 });
+  b.statue(0, ey + 7.3, pz - 1, 1.5, M.portland); // Hibernia
+  b.statue(-PW / 2, ey + 2.2, pz - 1, 1.35, M.portland); // Mercury
+  b.statue(PW / 2, ey + 2.2, pz - 1, 1.35, M.portland); // Fidelity
+  // flagpole with the tricolour
+  b.cyl(0.08, 0.1, 10, M.iron, { x: 0, y: H + 1.2, z: 0 }, 6);
+  b.add(new THREE.PlaneGeometry(3.6, 1.8), M.flag, { x: 1.85, y: H + 10, z: 0 });
+  b.solid(0, 0, W, D);
+  return b.build('GPO');
 }
 
 // ---------- trees ----------
