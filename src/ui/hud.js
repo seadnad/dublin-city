@@ -13,6 +13,7 @@ const ICONS = {
   play: '<path d="M7 4.5v15l12-7.5-12-7.5Z"/>',
   help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 1-1 1.7v.5M12 17h.01"/>',
   sound: '<path d="M4 9h4l5-4v14l-5-4H4V9Z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>',
+  photo: '<circle cx="12" cy="12" r="9"/><path d="M12 3l3.5 6M21 12h-7M16.5 19.8 13 14M7.5 19.8 11 13.8M3 12h7M7.5 4.2 11 10"/>',
   map: '<path d="M9 4 3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5L9 4Z"/><path d="M9 4v13.5M15 6.5V20"/>',
 };
 const svg = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</svg>`;
@@ -49,6 +50,7 @@ export function createHUD({ sites, actions }) {
       <button data-a="rain" title="Rain (R)">${svg('rain')}<span>Rain</span><kbd>R</kbd></button>
       <button data-a="evening" title="Night (N)">${svg('moon')}<span>Night</span><kbd>N</kbd></button>
       <button data-a="camera" title="Camera (C)">${svg('camera')}<span>Camera</span><kbd>C</kbd></button>
+      <button data-a="photo" title="Photo mode (P)">${svg('photo')}<span>Photo</span><kbd>P</kbd></button>
       <button data-a="map" title="Map (M)">${svg('map')}<span>Map</span><kbd>M</kbd></button>
       <button data-a="places" title="Landmarks (T)">${svg('pin')}<span>Places</span><kbd>T</kbd></button>
       <button data-a="sound" title="Sound (V)">${svg('sound')}<span>Sound</span><kbd>V</kbd></button>
@@ -75,8 +77,9 @@ export function createHUD({ sites, actions }) {
         <tr><td><kbd>X</kbd> <kbd>Z</kbd></td><td>Siren and blue lights / siren tone</td></tr>
         <tr><td><kbd>M</kbd></td><td>World map (click streets for a waypoint)</td></tr>
         <tr><td><kbd>T</kbd> <kbd>1</kbd>&ndash;<kbd>9</kbd></td><td>Landmark list / teleport</td></tr>
+        <tr><td><kbd>P</kbd></td><td>Photo mode: drag to orbit, scroll to zoom, right-drag to pan, WASD to move, Space to snap</td></tr>
         <tr><td><kbd>Backspace</kbd></td><td>Reset car onto the road</td></tr>
-        <tr><td>🎮</td><td>Controller: stick steers, RT go, LT brake / reverse, A or B handbrake, Y siren, X camera, LB siren tone, RB night, View map, Menu play; in menus D-pad + A, B back</td></tr><tr><td><kbd>Q</kbd></td><td>Graphics: Auto / High / Medium / Low / Battery saver (also in Play)</td></tr>
+        <tr><td>🎮</td><td>Controller: stick steers, RT go, LT brake / reverse, A or B handbrake, Y siren, X camera, LB siren tone, RB night, View map, Menu play, right stick click photo mode; in menus D-pad + A, B back</td></tr><tr><td><kbd>Q</kbd></td><td>Graphics: Auto / High / Medium / Low / Battery saver (also in Play)</td></tr>
         <tr><td><kbd>V</kbd> <kbd>F</kbd></td><td>Sound / frame rate</td></tr>
       </table>
       <p class="touch-note">On a phone: steer with the left pad, pedals on the right, <b>HB</b> is the handbrake.</p>

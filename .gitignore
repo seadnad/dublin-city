@@ -5,3 +5,4 @@ tools/audio/cache
 tools/shots-garda
 *.blend1
 tools/blender/__pycache__/
+tools/video

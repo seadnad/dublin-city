@@ -12,7 +12,8 @@ import { IS_MOBILE } from './world/textures.js';
 import { segmentCount } from './game/collision.js';
 import { Car } from './game/car.js';
 import { makePlayerCar } from './game/fleet.js';
-import { input, updateInput, onKey, buildTouchControls, pad } from './game/input.js';
+import { input, updateInput, onKey, buildTouchControls, pad, readPad } from './game/input.js';
+import { createPhotoMode } from './game/photo.js';
 import { CameraRig } from './game/camera.js';
 import { createTraffic } from './game/traffic.js';
 import { createLuas, combineTrams } from './game/luas.js';
@@ -200,6 +201,15 @@ const actions = {
   play: () => gameUI.togglePlay(),
 };
 const hud = createHUD({ sites, actions });
+// photo mode: free camera, frozen (or live) world, the HUD hidden
+const hudEl = document.getElementById('hud');
+const photo = createPhotoMode({
+  camera, canvas: renderer.domElement, getPad: readPad,
+  onEnter: () => hudEl.classList.add('photo-hidden'),
+  onExit: () => { hudEl.classList.remove('photo-hidden'); carMesh.visible = true; camera.fov = 62; camera.updateProjectionMatrix(); rig.snap(); },
+});
+actions.photo = () => { if (photo.active) photo.exit(); else if (!flight && !worldMap.isOpen) photo.enter(car.pos); };
+onKey('p', actions.photo);
 const pipeline = createPipeline(renderer, scene, camera, { quality: profile.tier });
 const failed = { high: false, medium: false };
 let userQuality = gfxModeNow !== 'auto', fpsCap = profile.fpsCap, gfxMode = gfxModeNow;
@@ -359,14 +369,16 @@ function frame() {
   timer.update();
   const rawDt = timer.getDelta();
   // the world pauses while the map is open
-  const dt = worldMap.isOpen ? 0 : Math.min(rawDt, 0.05);
+  const still = worldMap.isOpen || (photo.active && !photo.live);
+  const dt = still ? 0 : Math.min(rawDt, 0.05);
   time += dt;
 
   const tp0 = performance.now();
   updateInput(dt);
-  if (frozen) car.hold();
-  car.update(dt, frozen ? { throttle: 0, brake: 0, steer: 0, handbrake: true } : input);
-  if (frozen) car.hold();
+  const held = frozen || photo.active;
+  if (held) car.hold();
+  car.update(dt, held ? { throttle: 0, brake: 0, steer: 0, handbrake: true } : input);
+  if (held) car.hold();
   pursuit.update(dt);
   trial.update(dt);
   garda.update(time, car.siren);
@@ -386,8 +398,10 @@ function frame() {
   carMesh.position.set(car.pos.x, rideY + car.bump * 0.12, car.pos.z);
   carMesh.rotation.set(car.pitch, car.heading, car.roll);
   carMesh.userData.update(car.speed, dt, car.steer * 0.5);
-  playerContact.set(0, car.pos.x, rideY, car.pos.z, car.heading, 2.5, 5.3); playerContact.commit();
-  rig.update(dt, car, carMesh);
+  carMesh.visible = !photo.hideCar;
+  playerContact.set(0, car.pos.x, rideY, car.pos.z, car.heading, photo.hideCar ? 0.01 : 2.5, photo.hideCar ? 0.01 : 5.3); playerContact.commit();
+  if (photo.active) photo.update(Math.min(rawDt, 0.1));
+  else rig.update(dt, car, carMesh);
   if (flight) applyFlight();
   focus.set(car.pos.x, 0, car.pos.z);
   ground.update(dt, time);
@@ -405,12 +419,19 @@ function frame() {
   rain.update(dt, time, camera);
   hud.update(dt, { car, traffic, tram });
   // audio reads the city state it needs (weather, traffic, tram) rather than being called from those modules
-  audio.update(car, input, { rain: mode.rain, night: mode.evening, traffic: traffic.list, tram, paused: worldMap.isOpen });
+  audio.update(car, input, { rain: mode.rain, night: mode.evening, traffic: traffic.list, tram, paused: still });
 
   const tp5 = performance.now();
   // shadow map every frame: with half-rate updates the car's own shadow lagged and jittered at speed
   renderer.shadowMap.needsUpdate = true;
   pipeline.render(dt);
+  // photo snap: re-render this frame at a higher resolution and read it back before the browser presents it
+  if (photo.wantsSnap) {
+    const hi = Math.min(2, Math.max(dpr, window.devicePixelRatio));
+    if (hi > dpr) { renderer.setPixelRatio(hi); pipeline.setPixelRatio(); renderer.shadowMap.needsUpdate = true; pipeline.render(0); }
+    photo.capture();
+    if (hi > dpr) { renderer.setPixelRatio(dpr); pipeline.setPixelRatio(); }
+  }
   const tp6 = performance.now();
   prof.car += tp1 - tp0; prof.traffic += tp2 - tp1; prof.people += tp4 - tp3; prof.other += tp5 - tp4; prof.render += tp6 - tp5; prof.n++;
 
@@ -419,7 +440,7 @@ function frame() {
   // after the intro and after each switch is skipped (shader compiles).
   const settled = !flight && time > 1.5 && time - lastSwitch > 1.0;
   const fdt = Math.min(rawDt, 0.25);
-  if (!settled || worldMap.isOpen || fpsCap) { /* skip */ }
+  if (!settled || worldMap.isOpen || photo.active || fpsCap) { /* skip */ }
   else if (fdt > 1 / 45) { slowTime += fdt * (fdt > 1 / 20 ? 2 : 1); fastTime = 0; }
   else if (fdt < 1 / 58) { fastTime += fdt; slowTime = Math.max(0, slowTime - fdt); }
   const setQ = (q) => { pipeline.setQuality(q); pipeline.setMood(mode); lastSwitch = time; slowTime = fastTime = 0; };
@@ -476,6 +497,7 @@ setTimeout(() => hud.toast(IS_MOBILE ? 'Tap ? for help' : 'Press H for controls,
 
 // hooks for the headless smoke test
 window.__dublin = {
+  photo,
   ready: false, // set once shaders are compiled and the first frame has drawn
   THREE, scene, camera, world, carMesh: () => carMesh, renderer, pipeline, groundAOUniforms, atmosphere, car, input, rig, traffic, tram, people, pursuit, trial, gameUI, buildings, landmarks, sites, teleportTo, actions, mode, audio,
   gfx: () => ({ mode: gfxMode, tier: pipeline.quality, dpr, maxDpr, lite: LITE, fpsCap }),

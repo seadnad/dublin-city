@@ -25,9 +25,9 @@ export function onKey(key, fn) { actions.set(key.toLowerCase(), fn); }
 // ---- game controllers (standard mapping: Xbox / PlayStation / most Bluetooth pads)
 // Driving: left stick steers, RT / R2 accelerates, LT / L2 brakes and reverses (both analogue), A / Cross or B /
 // Circle is the handbrake. Buttons: Y / Triangle siren, X / Square camera, LB / L1 siren tone, RB / R1 night,
-// View / Share map, Menu / Options play menu, D-pad up rain, D-pad down places. In a menu the D-pad (or left stick)
+// View / Share map, Menu / Options play menu, D-pad up rain, D-pad down places, right stick click photo mode. In a menu the D-pad (or left stick)
 // moves between buttons, A / Cross presses, B / Circle closes.
-const PAD_ACTIONS = { 3: 'x', 2: 'c', 4: 'z', 5: 'n', 8: 'm', 9: 'g', 12: 'r', 13: 't' };
+const PAD_ACTIONS = { 11: 'p', 3: 'x', 2: 'c', 4: 'z', 5: 'n', 8: 'm', 9: 'g', 12: 'r', 13: 't' };
 const padPrev = [];
 export const pad = { connected: false, name: '' };
 let padSeen = false;
@@ -35,7 +35,7 @@ window.addEventListener('gamepadconnected', (e) => { padSeen = true; pad.connect
 window.addEventListener('gamepaddisconnected', () => { pad.connected = false; });
 const dead = (v, d = 0.14) => (Math.abs(v) < d ? 0 : Math.sign(v) * (Math.abs(v) - d) / (1 - d));
 const btn = (g, i) => (g.buttons[i] ? g.buttons[i].value || (g.buttons[i].pressed ? 1 : 0) : 0);
-function readPad() {
+export function readPad() {
   if (!padSeen || !navigator.getGamepads) return null;
   for (const g of navigator.getGamepads()) if (g && g.connected) return g;
   return null;
