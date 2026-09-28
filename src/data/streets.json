@@ -7,7 +7,7 @@
       "north": 53.3672,
       "south": 53.328,
       "west": -6.336,
-      "east": -6.2255
+      "east": -6.22
     }
   },
   "nodes": {
@@ -185,10 +185,9 @@
     "HOL1": [53.34195, -6.24615],
     "GT1": [53.34146, -6.2436],
     "GCM": [53.34046, -6.24135],
-    "GCB": [53.33978, -6.2382],
-    "BW1": [53.33947, -6.2368],
+    "GCB": [53.33871, -6.23911],
+    "BW1": [53.33809, -6.23694],
     "GT0": [53.33963, -6.2438],
-    "MT1": [53.33866, -6.2385],
     "CGC": [53.34395, -6.25972],
     "CGM": [53.34466, -6.25955],
     "DSM": [53.34138, -6.2583],
@@ -470,7 +469,45 @@
     "PX70": [53.35693, -6.30672],
     "PX71": [53.35683, -6.30494],
     "PX72": [53.34739, -6.32713],
-    "PX73": [53.34693, -6.32947]
+    "PX73": [53.34693, -6.32947],
+    "AVCP": [53.33823, -6.24004],
+    "AVGB": [53.33851, -6.23848],
+    "AVJ1": [53.33722, -6.23466],
+    "AVHR1": [53.33645, -6.23712],
+    "AVNM": [53.33472, -6.23708],
+    "AVNL": [53.33312, -6.23598],
+    "AVNP": [53.33232, -6.23542],
+    "AVPR1": [53.33258, -6.24041],
+    "AVPR2": [53.33229, -6.23761],
+    "AVPR3": [53.33177, -6.2349],
+    "AVBB": [53.32955, -6.23205],
+    "AVSH1": [53.33544, -6.23247],
+    "AVSH2": [53.33473, -6.2322],
+    "AVLS": [53.33386, -6.23187],
+    "AVSH3": [53.33231, -6.23173],
+    "AVL0": [53.33257, -6.23504],
+    "AVL1": [53.33329, -6.23341],
+    "AVL2": [53.33394, -6.23074],
+    "AVLX": [53.33406, -6.2291],
+    "AVL3": [53.33423, -6.22752],
+    "AVL4": [53.33446, -6.22575],
+    "AVLB": [53.3343, -6.22543],
+    "AVLH": [53.33415, -6.22508],
+    "AVNA2": [53.33481, -6.22459],
+    "AVNA1": [53.3354, -6.22357],
+    "AVTN": [53.33615, -6.22209],
+    "AVTR1": [53.33673, -6.2222],
+    "AVLT": [53.33794, -6.22251],
+    "AVLR1": [53.33781, -6.2246],
+    "AVLBE": [53.33768, -6.22639],
+    "AVLBW": [53.33762, -6.22693],
+    "AVBA3": [53.33752, -6.22836],
+    "AVBH": [53.33745, -6.22957],
+    "AVBA2": [53.33739, -6.23043],
+    "AVBA1": [53.33721, -6.23356],
+    "AVSL1": [53.33762, -6.23377],
+    "AVSL2": [53.33918, -6.23275],
+    "AVSL3": [53.34058, -6.23196]
   },
   "ways": [
     { "name": "Arran Quay", "type": "quay", "nodes": ["AQ2", "AQ1", "NQ0"] },
@@ -644,8 +681,7 @@
     { "name": "Blood Stoney Road", "type": "secondary", "nodes": ["SQ17", "HQM"] },
     { "name": "Ringsend Road", "type": "primary", "nodes": ["PS5", "RR1", "SD1"] },
     { "name": "Grand Canal Street Lower", "type": "primary", "width": 13, "nodes": ["HOL1", "GT1", "GCM", "GCB"] },
-    { "name": "Grand Canal Street Upper", "type": "primary", "width": 13, "nodes": ["GCB", "BW1"] },
-    { "name": "Mount Street Lower", "type": "secondary", "width": 13, "nodes": ["MSNE", "GT0", "MT1"] },
+    { "name": "Mount Street Lower", "type": "secondary", "width": 13, "nodes": ["MSNE", "GT0"] },
     { "name": "Grattan Street", "type": "secondary", "width": 10, "nodes": ["GT0", "GT1"] },
     { "name": "Barrow Street", "type": "secondary", "nodes": ["BW1", "RR1"] },
     { "name": "Macken Street", "type": "secondary", "nodes": ["MC2", "GCM"] },
@@ -779,7 +815,24 @@
     { "name": "North Road", "type": "secondary", "width": 8, "nodes": ["PX56", "PX58", "PX59"] },
     { "name": "North Road", "type": "secondary", "width": 7, "oneway": -1, "nodes": ["PX59", "PX60", "PX61", "PX62"] },
     { "name": "Lords Walk", "type": "lane", "width": 7, "nodes": ["PX15", "PX65", "PX66", "PX67", "PX68", "PX69"] },
-    { "name": "Spa Road", "type": "lane", "width": 6, "nodes": ["PX70", "PX71", "PX59"] }
+    { "name": "Spa Road", "type": "lane", "width": 6, "nodes": ["PX70", "PX71", "PX59"] },
+    { "name": "Clanwilliam Place", "type": "secondary", "width": 7, "nodes": ["GXSMS1", "AVCP", "GCB"] },
+    { "name": "Macquay Bridge", "type": "bridge", "width": 12, "nodes": ["GCB", "AVGB"] },
+    { "name": "Grand Canal Street Upper", "type": "primary", "width": 12, "nodes": ["AVGB", "BW1", "AVJ1"] },
+    { "name": "Haddington Road", "type": "secondary", "width": 10, "nodes": ["GXSHD2", "AVHR1", "AVJ1"] },
+    { "name": "Northumberland Road", "type": "secondary", "width": 12, "nodes": ["GXSHD2", "AVNM", "AVNL", "AVNP"] },
+    { "name": "Pembroke Road", "type": "secondary", "width": 12, "nodes": ["GXSPB1", "AVPR1", "AVPR2", "AVNP"] },
+    { "name": "Pembroke Road", "type": "secondary", "width": 14, "nodes": ["AVNP", "AVPR3", "AVBB"] },
+    { "name": "Shelbourne Road", "type": "secondary", "width": 9, "nodes": ["AVJ1", "AVSH1", "AVSH2", "AVLS", "AVSH3", "AVBB"] },
+    { "name": "Lansdowne Road", "type": "secondary", "width": 9, "nodes": ["AVNP", "AVL0", "AVL1", "AVLS", "AVL2", "AVLX", "AVL3", "AVL4"] },
+    { "name": "Lansdowne Road Bridge", "type": "bridge", "width": 10, "nodes": ["AVL4", "AVLB"] },
+    { "name": "Lansdowne Road", "type": "secondary", "width": 9, "nodes": ["AVLB", "AVLH"] },
+    { "name": "Newbridge Avenue", "type": "secondary", "width": 8, "nodes": ["AVLH", "AVNA2", "AVNA1", "AVTN"] },
+    { "name": "Tritonville Road", "type": "secondary", "width": 8, "nodes": ["AVTN", "AVTR1", "AVLT"] },
+    { "name": "Londonbridge Road", "type": "secondary", "width": 9, "nodes": ["AVLT", "AVLR1", "AVLBE"] },
+    { "name": "London Bridge", "type": "bridge", "width": 6, "nodes": ["AVLBE", "AVLBW"] },
+    { "name": "Bath Avenue", "type": "secondary", "width": 9, "nodes": ["AVLBW", "AVBA3", "AVBH", "AVBA2", "AVBA1", "AVJ1"] },
+    { "name": "South Lotts Road", "type": "secondary", "width": 9, "nodes": ["AVJ1", "AVSL1", "AVSL2", "AVSL3", "SD1"] }
   ],
   "river": {
     "name": "River Liffey",
@@ -896,6 +949,16 @@
       [53.35127, -6.30783],
       [53.35117, -6.30808],
       [53.35109, -6.30895]
+    ],
+    "Grand Canal Dock (inner basin)": [
+      [53.34205, -6.23869],
+      [53.3412, -6.23887],
+      [53.34029, -6.23907],
+      [53.33972, -6.2378],
+      [53.34029, -6.23768],
+      [53.34094, -6.23754],
+      [53.34156, -6.23739],
+      [53.34205, -6.23729]
     ]
   },
   "luasGreen": {
@@ -947,7 +1010,14 @@
         [53.33603, -6.24266],
         [53.33631, -6.24222],
         [53.3372, -6.24085],
-        [53.33764, -6.24018]
+        [53.33764, -6.24018],
+        [53.33838, -6.23909],
+        [53.3386, -6.23875],
+        [53.3388, -6.23868],
+        [53.339, -6.23909],
+        [53.3393, -6.23921],
+        [53.3397, -6.23915],
+        [53.34008, -6.23906]
       ],
       "locks": [
         [53.33007, -6.2646],
@@ -955,7 +1025,8 @@
         [53.33199, -6.25315],
         [53.33373, -6.24716],
         [53.3361, -6.24255],
-        [53.3374, -6.24055]
+        [53.3374, -6.24055],
+        [53.33844, -6.239]
       ]
     },
     "Royal Canal": {
@@ -987,6 +1058,23 @@
         [53.36159, -6.26006],
         [53.3567, -6.24458],
         [53.3479, -6.24046]
+      ]
+    },
+    "River Dodder": {
+      "width": 16,
+      "verge": 3,
+      "pts": [
+        [53.33309, -6.22779],
+        [53.33374, -6.22732],
+        [53.33401, -6.22666],
+        [53.33438, -6.22558],
+        [53.33473, -6.22508],
+        [53.335, -6.22503],
+        [53.33547, -6.22534],
+        [53.33761, -6.22661],
+        [53.33946, -6.22784],
+        [53.34166, -6.22899],
+        [53.34382, -6.22962]
       ]
     }
   },
