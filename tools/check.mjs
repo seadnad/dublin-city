@@ -37,6 +37,7 @@ if (remote) {
 const browser = await puppeteer.launch({
   executablePath: CHROME,
   headless: 'new',
+  ...(process.env.PROFILE_DIR ? { userDataDir: process.env.PROFILE_DIR } : {}), // reuse a profile (warm shader / HTTP caches)
   args: ['--ignore-gpu-blocklist', '--enable-gpu', '--use-angle=d3d11', '--window-size=1280,720', ...(process.env.PERF ? ['--disable-gpu-vsync', '--disable-frame-rate-limit'] : [])],
 });
 const page = await browser.newPage();

@@ -74,6 +74,9 @@ export function createPipeline(renderer, scene, camera, { quality = 'high' } = {
   return {
     get quality() { return current; },
     setQuality(q) { build(q); },
+    // the target the scene is drawn into: shaders compile differently for it (no tone mapping / sRGB out) than for
+    // the screen, so warm-up compiles must use the same one
+    get sceneTarget() { return composer ? composer.renderTarget1 : null; },
     setSize(w, h) { if (composer) { composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(w, h); updateFxaa(); } },
     setPixelRatio() { if (composer) { renderer.getSize(size); composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(size.x, size.y); updateFxaa(); } },
     // mode: { evening, rain }

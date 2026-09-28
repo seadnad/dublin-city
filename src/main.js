@@ -275,11 +275,11 @@ async function useCar(name) {
   carMesh.userData.setLights(atmosphere.state.values.lamps);
   save.set('car', name);
 }
-useCar(save.get('car', 'garda'));
+const carReady = useCar(save.get('car', 'garda'));
 const CAR_NAMES = { garda: 'Garda Hyundai i40 patrol car', garda_rp: 'Garda Roads Policing i40', hatch: 'Hyundai i30 N' };
 actions.car = (name) => { useCar(name); hud.toast(CAR_NAMES[name] || name); };
 loadCar('coupe').then((m) => { suspectModel = m; });
-loadTrees().then((s) => console.log('trees loaded:', s.join(', ')));
+const treesReady = loadTrees().then((s) => console.log('trees loaded:', s.join(', ')));
 onKey('g', actions.play);
 onKey('x', () => { if (pursuit.active) return; car.siren = !car.siren; audio.setSiren(car.siren); hud.toast(car.siren ? 'Siren on' : 'Siren off'); });
 // audio: siren tone (auto / wail / yelp / hi-lo)
@@ -379,12 +379,33 @@ function frame() {
   requestAnimationFrame(frame);
 }
 console.log('texture quality', JSON.stringify(applyTextureQuality(scene, renderer)));
-frame();
-document.getElementById('loading').classList.add('gone');
+// Compile every shader before the first frame. On Windows, Chrome translates each program through Direct3D, and
+// compiling ~100 of them synchronously inside the first render froze the page for 15+ s on a cold cache.
+// compileAsync hands them to the driver in parallel (KHR_parallel_shader_compile) and keeps the page responsive
+// behind the loading screen; if it isn't available the first frame simply compiles as before.
+const loadingText = document.querySelector('#loading p');
+if (loadingText) loadingText.textContent = 'Preparing shaders…';
+const tc = performance.now();
+// wait (briefly) for the player's car and the trees too, so their shaders join the batch instead of stalling a
+// frame just after the loading screen lifts
+const settle = (p, ms) => Promise.race([p.catch(() => {}), new Promise((r) => setTimeout(r, ms))]);
+settle(Promise.all([carReady, treesReady]), 8000).then(() => {
+  renderer.setRenderTarget(pipeline.sceneTarget);
+  return renderer.compileAsync ? renderer.compileAsync(scene, camera) : null;
+}).catch(() => {}).then(() => {
+  renderer.setRenderTarget(null);
+  console.log(`shaders compiled in ${Math.round(performance.now() - tc)} ms`);
+  const tf = performance.now();
+  frame();
+  console.log(`first frame took ${Math.round(performance.now() - tf)} ms`);
+  document.getElementById('loading').classList.add('gone');
+  window.__dublin.ready = true;
+});
 setTimeout(() => hud.toast(IS_MOBILE ? 'Tap ? for help' : 'Press H for controls, T for landmarks', 4500), 600);
 
 // hooks for the headless smoke test
 window.__dublin = {
+  ready: false, // set once shaders are compiled and the first frame has drawn
   THREE, scene, camera, world, carMesh: () => carMesh, renderer, pipeline, groundAOUniforms, atmosphere, car, input, rig, traffic, tram, people, pursuit, trial, gameUI, buildings, landmarks, sites, teleportTo, actions, mode, audio,
   lockQuality(q, d) { userQuality = true; dpr = d; renderer.setPixelRatio(d); pipeline.setQuality(q); pipeline.setMood(mode); slowTime = fastTime = 0; lastSwitch = time + 1e9; },
   profile() { const o = {}; for (const k of Object.keys(prof)) if (k !== 'n') o[k] = +(prof[k] / Math.max(1, prof.n)).toFixed(2); for (const k of Object.keys(prof)) prof[k] = 0; return o; },
