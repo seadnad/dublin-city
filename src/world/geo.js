@@ -15,11 +15,15 @@ const M_PER_LON = 111320 * Math.cos((LAT0 * Math.PI) / 180);
 // The band from College Green to Christ Church is stretched east-west so Dame Street reads closer to its real
 // length (the uniform 50% compression made it feel short); everything west of the band shifts over with it.
 const STRETCH = { a: (-6.2675 - LON0) * M_PER_LON, b: (-6.2612 - LON0) * M_PER_LON, k: 1.6 };
+// Phoenix Park is bigger than the whole city centre: west of Parkgate everything is squeezed east-west to 0.7 (0.35 of
+// real overall) so Chesterfield Avenue stays one long straight without the park swallowing the map.
+const PARK_X = { c: (-6.2985 - LON0) * M_PER_LON, k: 0.7 };
 function warpX(u) {
   const { a, b, k } = STRETCH;
   if (u >= b) return u;
   if (u >= a) return b - (b - u) * k;
-  return b - (b - a) * k - (a - u);
+  if (u >= PARK_X.c) return b - (b - a) * k - (a - u);
+  return b - (b - a) * k - (a - PARK_X.c) - (PARK_X.c - u) * PARK_X.k;
 }
 
 // Likewise a band of latitudes from Dame Street to the south quays is stretched north-south: at half scale with
@@ -246,6 +250,12 @@ function build() {
   };
   const northBank = offsetPolylineVar(north, bankOffset(data.river.north));
   const southBank = offsetPolylineVar(south, bankOffset(data.river.south).map((v) => -v));
+  // upstream of Heuston the Liffey leaves the quays: a traced centreline (west to east) and a width, past Islandbridge
+  if (data.river.west) {
+    const c = resample(data.river.west.pts.map(([lat, lon]) => project(lat, lon)), 6), hw = data.river.west.width / 2;
+    northBank.splice(0, 1, ...offsetPolyline(c, -hw)); southBank.splice(0, 1, ...offsetPolyline(c, hw));
+    northBank.unshift({ x: bounds.minX, z: northBank[0].z }); southBank.unshift({ x: bounds.minX, z: southBank[0].z });
+  }
   northBank[0].x = southBank[0].x = bounds.minX; northBank[northBank.length - 1].x = southBank[southBank.length - 1].x = bounds.maxX;
   const riverPoly = [...northBank, ...southBank.slice().reverse()];
 
