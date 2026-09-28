@@ -219,6 +219,7 @@ export const stoneTex = makeStoneTexture(256);
 export const stoneMaterial = new THREE.MeshStandardMaterial({ map: stoneTex, roughness: 0.9, color: 0xd8d4cc });
 export const deckMaterial = new THREE.MeshStandardMaterial({ color: 0xd9dcdc, roughness: 0.55 }); // painted steel / fair-faced concrete
 const railMaterial = new THREE.MeshStandardMaterial({ color: 0xeef0f0, roughness: 0.35, metalness: 0.2 });
+const ironWhiteMaterial = new THREE.MeshStandardMaterial({ color: 0xdcdcd6, roughness: 0.45 }); // painted cast iron
 
 // world-space UVs in metres (the asphalt material's texture repeat turns them into tiles)
 function setGroundUVs(geo) {
@@ -454,9 +455,11 @@ function buildBridge(br, groundMaterial) {
   const angle = Math.atan2(br.dir.x, br.dir.z);
   // 20th-century bridges get one flat arch; the docklands bridges (Samuel Beckett, Tom Clarke) are slim
   // steel/concrete decks on piers, no arches at all
-  const modern = /Beckett|Tom Clarke/.test(br.name);
-  const arches = modern ? 0 : /Butt|Talbot|Sherwin|Rory/.test(br.name) ? 1 : 3;
-  const bodyMat = modern ? deckMaterial : stoneMaterial;
+  // Frank Sherwin (1982) is a flat three-span concrete deck on slim piers, like the docklands bridges;
+  // Sean Heuston Bridge (1828) is a single white cast-iron arch
+  const modern = /Beckett|Tom Clarke|Sherwin/.test(br.name), iron = /Heuston/.test(br.name);
+  const arches = modern ? 0 : /Butt|Talbot|Rory|Heuston/.test(br.name) ? 1 : 3;
+  const bodyMat = modern ? deckMaterial : iron ? ironWhiteMaterial : stoneMaterial;
   // body: arch shape extruded across the width
   const shape = new THREE.Shape();
   const bottom = modern ? -1.7 : WATER_Y - 1.5, top = -0.08;
@@ -495,7 +498,7 @@ function buildBridge(br, groundMaterial) {
   // parapets
   const parH = 1.05;
   for (const side of [-1, 1]) {
-    const p = new THREE.Mesh(modern ? new THREE.BoxGeometry(0.25, parH, L + 1.5) : new THREE.BoxGeometry(0.7, parH, L + 1.5), modern ? railMaterial : stoneMaterial);
+    const p = new THREE.Mesh(modern || iron ? new THREE.BoxGeometry(0.25, parH, L + 1.5) : new THREE.BoxGeometry(0.7, parH, L + 1.5), modern ? railMaterial : iron ? ironWhiteMaterial : stoneMaterial);
     p.position.set(side * (W / 2 + 0.35), parH / 2, 0);
     p.castShadow = p.receiveShadow = true;
     g.add(p);

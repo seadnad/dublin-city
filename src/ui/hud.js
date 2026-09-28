@@ -27,6 +27,7 @@ const BLURBS = {
   cityHall: 'The Royal Exchange at the top of Parliament Street',
   centralBank: 'Floors hung from the roof, on Central Plaza',
   christChurch: 'Medieval cathedral and the Synod Hall bridge',
+  stPatricks: "Minot's Tower and the granite spire over the park",
   customHouse: 'Gandon’s domed masterpiece on the quays',
   stephensGreen: 'Victorian park, entered by the Fusiliers’ Arch',
   heuston: 'Kingsbridge terminus, where the western quays end',

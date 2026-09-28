@@ -1,10 +1,9 @@
 export default async function (page) {
+  await page.evaluate((ids) => { window.__ids = ids; }, process.env.IDS || '');
   const r = await page.evaluate(async () => {
-    const d = window.__dublin, { project } = await import('/src/world/geo.js');
-    const n = (id) => { const p = d.world.nodes.get(id); return [+p.x.toFixed(1), +p.z.toFixed(1)]; };
-    const hall = project(53.34594, -6.26284);
-    const way = (name) => { const w = d.world.ways.find((x) => x.name === name); return { width: w.width, pave: w.pave }; };
-    return { HPS: n('HPS'), TBQ: n('TBQ'), TAS: n('TAS'), TFO: n('TFO'), hallCentre: [+hall.x.toFixed(1), +hall.z.toFixed(1)], aston: way('Aston Quay'), tb: way('Temple Bar') };
+    const d = window.__dublin, n = (id) => { const p = d.world.nodes.get(id); return p ? [+p.x.toFixed(1), +p.z.toFixed(1)] : null; };
+    const o = {}; for (const id of (window.__ids || '').split(',')) o[id] = n(id);
+    return o;
   });
-  console.log(JSON.stringify(r));
+  console.log('NODES', JSON.stringify(r));
 }

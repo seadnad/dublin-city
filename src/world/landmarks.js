@@ -10,7 +10,7 @@ import { addBox } from '../game/collision.js';
 import { chunkedInstances } from './chunks.js';
 import { plantTrees } from './trees.js';
 import { KERB_H } from './roads.js';
-import { placeHapenny } from './heroes.js';
+import { placeHapenny, placeParts, setStoneNight } from './heroes.js';
 
 const rand = rng(1742);
 
@@ -397,7 +397,7 @@ function christChurch(site) {
   b.solid(-10, 0, 26, 12); b.solid(7, 0, 10, 24); b.solid(19, 0, 16, 11);
 
   // Synod Hall across Winetavern Street, joined to the cathedral by the covered bridge
-  const synod = reserved[reserved.length - 1];
+  const synod = site.synod;
   const s = new Builder(synod);
   s.facade(16, 13, 18, G, M.lead, {}, 5, 9);
   s.gable(16, 5, 18, M.lead, { y: 13 });
@@ -1509,6 +1509,7 @@ function templeBarDressing() {
   const r = rng(1840);
   for (const way of world.ways) {
     if (way.surface !== 'sett' && way.surface !== 'flags') continue;
+    if (!/Temple Bar|Temple Lane|Fleet|Essex Street|Eustace|Crown Alley|Anglesea|Sycamore|Cope|Fownes|Merchant/.test(way.name)) continue;
     const festoon = way.access === 'pedestrian' || way.pedestrian;
     const half = way.width / 2 + way.pave;
     let acc = 0;
@@ -1530,10 +1531,114 @@ function templeBarDressing() {
       acc = (acc + L) % 5;
     }
   }
-  return b.build('Temple Bar dressing');
+  const g = b.build('Temple Bar dressing');
+  g.traverse((o) => { if (o.isMesh) o.castShadow = false; }); // bulbs and baskets: shadows cost draw calls for nothing
+  return g;
+}
+
+// ---------- St Patrick's Park and the Iveagh Play Centre (docs/research/st-patricks.md) ----------
+Object.assign(M, {
+  pavers: new THREE.MeshStandardMaterial({ color: 0x8c5e50, roughness: 0.9 }),
+  ochre: new THREE.MeshStandardMaterial({ map: facadeTex, color: 0xe0b765, roughness: 0.85 }),
+  parkBrick: new THREE.MeshStandardMaterial({ color: 0xa0493a, map: stoneT, roughness: 0.9 }),
+  iveaghBrick: new THREE.MeshStandardMaterial({ map: canvasTex(128, 115, (ctx, w, h) => {
+    ctx.fillStyle = '#a7452d'; ctx.fillRect(0, 0, w, h);
+    for (let y = 0; y < h; y += 4) { ctx.fillStyle = 'rgba(60,20,12,0.3)'; ctx.fillRect(0, y, w, 1); }
+    ctx.fillStyle = '#dad4c5'; ctx.fillRect(0, 0, 10, h); ctx.fillRect(w - 10, 0, 10, h); ctx.fillRect(0, h - 10, w, 10); // Portland dressings
+    ctx.fillStyle = '#dad4c5'; ctx.fillRect(34, 20, 60, 72);
+    ctx.fillStyle = '#26303a'; ctx.fillRect(40, 26, 48, 60);
+    ctx.fillStyle = '#dad4c5'; ctx.fillRect(62, 26, 4, 60); ctx.fillRect(40, 52, 48, 4);
+  }), roughness: 0.85 }),
+});
+
+function stPatricksPark(park) {
+  // the formal Edwardian park (1901): an east-west axis of red-brown pavers from the Patrick St gate to the raised
+  // brick terrace along Bride St, the Victorian fountain in its round granite-kerbed pool about 45% along, a second
+  // small fountain, and the Liberty Bell sculpture; benches along the axis
+  const b = new Builder({ x: 0, z: 0, rot: 0 });
+  let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+  for (const p of park.poly) { x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); z0 = Math.min(z0, p.z); z1 = Math.max(z1, p.z); }
+  const zc = (z0 + z1) / 2, fx = x0 + (x1 - x0) * 0.45, y = KERB_H + 0.012;
+  b.box(x1 - x0 - 9, 0.02, 3.2, M.pavers, { x: (x0 + x1 - 9) / 2, y, z: zc });
+  // round pool with a two-tier cast bowl
+  b.add(new THREE.CylinderGeometry(6.2, 6.2, 0.5, 28).translate(0, 0.25, 0), M.granite, { x: fx, z: zc, sz: 0.7 });
+  b.add(new THREE.CylinderGeometry(5.8, 5.8, 0.52, 28).translate(0, 0.26, 0), M.water, { x: fx, z: zc, sz: 0.7 });
+  b.cyl(0.35, 0.55, 2.2, M.bronze, { x: fx, y: 0.4, z: zc }, 10);
+  b.cyl(1.9, 0.5, 0.45, M.bronze, { x: fx, y: 2.4, z: zc }, 16);
+  b.cyl(0.18, 0.22, 1.2, M.bronze, { x: fx, y: 2.8, z: zc }, 8);
+  b.cyl(0.9, 0.25, 0.3, M.bronze, { x: fx, y: 3.9, z: zc }, 12);
+  b.add(new THREE.SphereGeometry(0.22, 8, 6), M.bronze, { x: fx, y: 4.35, z: zc });
+  b.solid(fx, zc, 12, 8.4);
+  // second small fountain (a stone drinking-fountain column) and the Liberty Bell (two tall white bell forms)
+  const f2 = x0 + (x1 - x0) * 0.72;
+  b.cyl(0.35, 0.45, 1.6, M.granite, { x: f2, z: zc }, 8);
+  for (const dz of [-2.4, -3.6]) b.add(new THREE.ConeGeometry(0.55, 4.2, 10, 1, true).rotateX(Math.PI), M.iron, { x: f2 + 1.2, y: 4.2, z: zc + dz });
+  // the Literary Parade: a raised red-brick terrace along the east edge, alcoves with limestone arches
+  const tl = (z1 - z0) * 0.72, tx = x1 - 4.5;
+  b.box(6, 2.6, tl, M.parkBrick, { x: tx, z: zc });
+  b.box(6.4, 0.25, tl + 0.4, M.portland, { x: tx, y: 2.6, z: zc });
+  for (let k = 0; k < 8; k++) {
+    const az = zc - tl / 2 + (k + 0.5) * (tl / 8);
+    b.add(new THREE.PlaneGeometry(1.6, 1.9), M.dark, { x: tx - 3.02, y: 1.25, z: az, ry: -Math.PI / 2 });
+    b.cyl(0.8, 0.8, 0.1, M.portland, { x: tx - 3.0, y: 2.1, z: az, rz: Math.PI / 2 }, 12);
+  }
+  b.solid(tx, zc, 6, tl);
+  // benches along the axis
+  for (const bx of [x0 + 8, x0 + 16, fx + 11, fx + 19]) for (const s of [-1, 1]) {
+    b.box(1.8, 0.08, 0.5, M.timber, { x: bx, y: KERB_H + 0.45, z: zc + s * 2.6 });
+    b.box(1.6, 0.45, 0.1, M.dark, { x: bx, y: KERB_H, z: zc + s * 2.6 });
+  }
+  return { group: b.build("St Patrick's Park"), fountain: { x: fx, z: zc } };
+}
+
+function drSteevens(site) {
+  // Dr Steevens' Hospital: a courtyard block of ochre render with grey dressings, a slate mansard with dormers and
+  // a small cupola; generic massing only (not a hero)
+  const b = new Builder(site);
+  const W = site.w, D = site.d, H = 9.5;
+  b.facade(W, H, D, M.ochre, M.slate, {}, 4, 4.5);
+  b.box(W + 0.4, 0.5, D + 0.4, M.portlandSmooth, { y: H });
+  b.box(W - 2, 3.2, D - 2, M.slate, { y: H + 0.5 });
+  b.cyl(1.2, 1.4, 2.2, M.portlandSmooth, { y: H + 3.7 }, 8);
+  b.dome(1.3, M.lead, { y: H + 5.9 });
+  b.solid(0, 0, W, D);
+  return b.build("Dr Steevens' Hospital");
+}
+
+function iveaghPlayCentre(site) {
+  // Iveagh Play Centre / Liberties College (1915): three storeys of red brick with Portland pilasters and banding,
+  // a shaped central gable with oculus and balustrade, ball finials, and the green copper cupola. Local +z faces
+  // Bull Alley and the park.
+  const b = new Builder(site);
+  const W = site.w, D = site.d, H = 12;
+  b.facade(W, H, D, M.iveaghBrick, M.slate, {}, 4, 4);
+  b.box(W + 0.4, 0.5, D + 0.4, M.portland, { y: H });
+  b.box(W + 0.2, 0.4, D + 0.2, M.portland, { y: 4 });
+  b.balustrade(-W / 2, W / 2, H + 0.5, D / 2, M.portland);
+  // the central shaped gable
+  b.box(9, 4.5, 0.8, M.iveaghBrick, { y: H, z: D / 2 - 0.3 });
+  b.prism(9.4, 2.6, 0.9, M.portland, { y: H + 4.5, z: D / 2 - 0.3 });
+  b.cyl(1.0, 1.0, 0.15, M.dark, { y: H + 2.3, z: D / 2 + 0.12, rx: Math.PI / 2 }, 16);
+  for (const sx of [-1, 1]) b.add(new THREE.SphereGeometry(0.35, 8, 6), M.portland, { x: sx * 4.5, y: H + 4.9, z: D / 2 - 0.3 });
+  // copper cupola on a drum
+  b.cyl(1.6, 1.8, 2.2, M.portland, { y: H + 0.5 }, 12);
+  b.dome(1.9, M.copper, { y: H + 2.7 });
+  b.cyl(0.15, 0.25, 1.4, M.copper, { y: H + 4.4 }, 8);
+  b.solid(0, 0, W, D);
+  return b.build('Iveagh Play Centre');
 }
 
 // ---------- trees ----------
+// is p inside any reserved landmark footprint (rotated rectangles, 2 m margin)?
+function inAnyFootprint(p) {
+  for (const r of reserved) {
+    const c = Math.cos(r.rot || 0), s = Math.sin(r.rot || 0), dx = p.x - r.x, dz = p.z - r.z;
+    const lx = dx * c - dz * s, lz = dx * s + dz * c;
+    if (Math.abs(lx) < r.w / 2 + 2 && Math.abs(lz) < r.d / 2 + 2) return true;
+  }
+  return false;
+}
+
 function buildTrees(scene) {
   const spots = [];
   const scatter = (poly, n, inset = 5) => {
@@ -1545,6 +1650,7 @@ function buildTrees(scene) {
       const p = { x: minX + rand() * (maxX - minX), z: minZ + rand() * (maxZ - minZ) };
       if (!pointInPolygon(p, inner)) continue;
       if (spots.some((q) => (q.x - p.x) ** 2 + (q.z - p.z) ** 2 < 30)) continue;
+      if (inAnyFootprint(p)) continue; // not through a landmark standing in the grounds
       if (pondAt && (p.x - pondAt.x) ** 2 / 400 + (p.z - pondAt.z) ** 2 / 100 < 1.4) continue;
       spots.push({ ...p, s: 0.9 + rand() * 0.6 });
       n--;
@@ -1580,6 +1686,12 @@ function buildTrees(scene) {
       }
       plantShrubs(scene, shrubs);
       scatter(pk.poly, 110, 18);
+    } else if (pk.name === "St Patrick's Park") {
+      let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+      for (const p of pk.poly) { x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); z0 = Math.min(z0, p.z); z1 = Math.max(z1, p.z); }
+      pondAt = { x: x0 + (x1 - x0) * 0.45, z: (z0 + z1) / 2 };
+      scatter(pk.poly, 40, 4);
+      pondAt = null;
     } else scatter(pk.poly, 70);
   }
   pondAt = null;
@@ -1625,16 +1737,25 @@ export function buildLandmarks(scene) {
   const S = sites;
   const groups = [
     spire(S.spire), gpo(S.gpo), oconnellBridge(S.oconnellBridge), trinity(S.trinity),
-    bankOfIreland(S.bankOfIreland), christChurch(S.christChurch), customHouse(S.customHouse),
+    bankOfIreland(S.bankOfIreland), customHouse(S.customHouse),
     oconnellMonument(), fusiliersArch(S.stephensGreen.park),
     cityHall(S.cityHall), dublinCastle(extraSites.castle), centralBank(S.centralBank), olympia(extraSites.olympia),
     clockCorner(extraSites.clockCorner), grattanIsland(extraSites.grattan),
+    iveaghPlayCentre(extraSites.iveaghPlay),
     merchantsHall(extraSites.merchantsHall), redPub(extraSites.redPub), templeBarSquare(extraSites.tbSquare), templeBarDressing(),
     bewleys(extraSites.bewleys), brownThomas(extraSites.brownThomas), weirAndSons(extraSites.weir), stephensGreenCentre(extraSites.sgCentre), graftonDressing(),
-    heuston(S.heuston), guinness(S.guinness), jamesGate(extraSites.jamesGate), beckettHarp(S.beckett), convention(S.convention),
+    drSteevens(extraSites.steevens), guinness(S.guinness), jamesGate(extraSites.jamesGate), beckettHarp(S.beckett), convention(S.convention),
     threeArena(S.threeArena), grattanOffice(S.grandCanalSt), grandCanalTheatre(S.grandCanal), grandCanalSquare(S.grandCanal.square), markerHotel(extraSites.marker), gcsOffice(extraSites.gcsOffice),
   ];
   for (const g of groups) scene.add(g);
+  // Heuston Station (Blender hero; the old procedural model if it can't load)
+  placeParts(scene, 'heuston', S.heuston, 'Heuston Station').then((g) => { if (!g) scene.add(heuston(S.heuston)); });
+  // St Patrick's Cathedral (Blender hero) and its park dressing
+  placeParts(scene, 'stpatricks', S.stPatricks, "St Patrick's Cathedral");
+  const spPark = parkPolys.find((p) => p.name === "St Patrick's Park");
+  if (spPark) scene.add(stPatricksPark(spPark).group);
+  // Christ Church: the Blender hero group (falls back to the old procedural model if it can't load)
+  placeParts(scene, 'christchurch', S.christChurch, 'Christ Church Cathedral').then((g) => { if (!g) scene.add(christChurch(S.christChurch)); });
   // Ha'penny Bridge: the Blender hero model (falls back to the procedural bridge if it can't load)
   let hapennyHero = null, nightLevel = 0;
   placeHapenny(scene, S.hapenny).then((h) => {
@@ -1665,6 +1786,7 @@ export function buildLandmarks(scene) {
     setNight(level) {
       for (const n of neon) n.m.emissiveIntensity = n.day + (n.night - n.day) * level;
       nightLevel = level; if (hapennyHero) hapennyHero.setNight(level);
+      setStoneNight(level);
     },
     update(camera) {
       // hide labels that are far away or behind the camera

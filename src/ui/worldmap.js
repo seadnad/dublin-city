@@ -15,10 +15,10 @@ const MAIN = new Set(['boulevard', 'primary', 'quay', 'bridge']);
 // district names, anchored at nodes (GTA-style faint capitals)
 const DISTRICTS = [
   ['SMITHFIELD', 'CHS1'], ['NORTH CITY', 'OC3'], ['DOCKLANDS', 'MY1'], ['TEMPLE BAR', 'TBQ'],
-  ['THE LIBERTIES', 'NI1'], ['TRINITY', 'NS2', 0, -40], ['GRAFTON QUARTER', 'GR2', -60], ['MERRION', 'MSNE', -60, 20],
+  ['THE LIBERTIES', 'PK2', -70], ['TRINITY', 'NS2', 0, -40], ['GRAFTON QUARTER', 'GR2', -60], ['MERRION', 'MSNE', -60, 20],
 ];
 // short icon glyphs for each landmark
-const GLYPH = { spire: 'S', gpo: 'P', oconnellBridge: 'B', hapenny: 'H', trinity: 'T', bankOfIreland: '£', christChurch: '✚', customHouse: 'C', stephensGreen: '♣', heuston: 'R', guinness: 'G', beckett: 'B', convention: 'CC', threeArena: '3', grandCanal: 'Th', grandCanalSt: 'O', cityHall: 'H', centralBank: '€' };
+const GLYPH = { spire: 'S', gpo: 'P', oconnellBridge: 'B', hapenny: 'H', trinity: 'T', bankOfIreland: '£', christChurch: '✚', stPatricks: '✚', customHouse: 'C', stephensGreen: '♣', heuston: 'R', guinness: 'G', beckett: 'B', convention: 'CC', threeArena: '3', grandCanal: 'Th', grandCanalSt: 'O', cityHall: 'H', centralBank: '€' };
 
 export function createWorldMap({ sites, lots, getLive, onTeleport, onWaypoint }) {
   const root = document.createElement('div');

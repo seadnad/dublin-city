@@ -60,11 +60,13 @@ const sgPark = parkPolys.find((p) => p.name === "St Stephen's Green");
 // Heuston: the head building faces east over the station forecourt, the train shed runs west behind it
 // Heuston lies south of St John's Road West, parallel to it, its head building facing east over a forecourt
 // to Steevens Lane. Local +z points east along the road; the train shed runs west behind the head building.
-const heustonAt = (along, w, d) => {
-  const a = N('SJ1'), c = N('SJ3'), dir = v2.norm(v2.sub(c, a)), south = { x: dir.z, z: -dir.x };
-  const off = 36; // road half width + footpath, the bend at SJ2, and half the station's width
-  return { x: a.x + dir.x * along + south.x * off, z: a.z + dir.z * along + south.z * off, rot: Math.atan2(-dir.x, -dir.z), w, d };
-};
+// docs/research/heuston.md: the station lies NORTH of St John's Road West, between it and the Liffey, its head
+// building facing east (8 degrees north of due east) over the forecourt and the Luas stop. The model is 32.5 m
+// north-south and ~115 m east-west (with the shed); its north side sits just inside the game's south bank.
+const heustonFront = (() => {
+  const f = project(53.34656, -6.2922), bank = project(53.34692, -6.2922);
+  return { x: f.x, z: bank.z + 17.5 };
+})();
 // Grand Canal Square (positions from the OSM footprints): the theatre at the west end with its glass front facing
 // east down the square to the water, the Marker Hotel along the north side, 1 Grand Canal Square to the south.
 // Theatre local +z faces west (Macken Street), so its glass front (local -z) looks east.
@@ -112,18 +114,49 @@ export const sites = {
     })(), labelY: 28,
     view: spot('DMc', 'DAN', 0.2),
   },
-  christChurch: {
-    // set back in its grounds in the block between Winetavern St, Fishamble St and Christchurch Place
-    name: 'Christ Church Cathedral', x: N('HS1').x + 34, z: N('HS1').z - 36, rot: 0, w: 46, d: 22, labelY: 52,
-    view: spot('SQ2', 'HS1', 0.3),
-  },
+  christChurch: (() => {
+    // docs/research/christ-church.md: the cathedral sits in its grounds between Winetavern St (west), Fishamble St
+    // (east) and the curve of Christchurch Place (south), its east end turned ~5 degrees north; the Synod Hall is
+    // across Winetavern St, and the covered bridge spans the street from the Synod Hall's east face to the
+    // cathedral's SW link block. Plan scale 0.6 (the model is built that way).
+    const wt = wayBetween('WTB', 'HS1'), hs = N('HS1'), rot = 0.087;
+    const westFront = { x: hs.x + wt.width / 2 + PAVEMENT + 1.2, z: hs.z - 32.5 };
+    const synodFace = { x: hs.x - wt.width / 2 - PAVEMENT - 0.6, z: hs.z - 23.2 };
+    const bridgeZ = hs.z - 21.2;
+    // the cathedral model's origin is the west front on the nave axis; its footprint centre is ~16 m east
+    const c = Math.cos(rot), s = Math.sin(rot), L = 33.6, W = 18.6;
+    return {
+      name: 'Christ Church Cathedral', x: westFront.x + (L / 2) * c, z: westFront.z - (L / 2) * s, rot, w: L, d: W, labelY: 40,
+      view: spot('CC2', 'CC1', 0.3),
+      parts: {
+        cathedral: { x: westFront.x, z: westFront.z, rot },
+        synod: { x: synodFace.x, z: synodFace.z, rot: 0 },
+        bridge: { x: (synodFace.x + westFront.x) / 2, z: bridgeZ, rot: 0, len: (westFront.x - synodFace.x + 0.6) / 18 },
+      },
+      synod: { x: synodFace.x - 8.4, z: synodFace.z, rot: 0, w: 16.8, d: 25.8 },
+    };
+  })(),
+  stPatricks: (() => {
+    // west front on the Patrick St building line (a 2.5 m railed forecourt), nave axis just south of the park;
+    // the model is scaled 0.56 x 0.52 in plan (50.8 x 24 m) with real heights: Minot's Tower and the 66 m spire
+    const a = N('PK2'), c = N('PK3'), pat = wayBetween('PK2', 'PK3'), zAxis = a.z + 6;
+    const xRoad = a.x + ((zAxis - a.z) / (c.z - a.z)) * (c.x - a.x);
+    const x0 = xRoad + pat.width / 2 + pat.pave + 2.5, L = 50.8;
+    return {
+      name: "St Patrick's Cathedral", x: x0 + L / 2, z: zAxis, rot: 0, w: L, d: 24.2, labelY: 70,
+      view: spot('PK1', 'PK2', 0.35),
+      parts: { cathedral: { x: x0, z: zAxis, rot: 0 } },
+    };
+  })(),
   customHouse: {
     name: 'Custom House', ...beside('NQ10', 'NQ11', 1, 1, 100, 24, { gap: 3 }), labelY: 50,
     view: spot('SQ9', 'SQ10', 0.3),
   },
   heuston: {
-    name: 'Heuston Station', ...heustonAt(8 + 14 + 52, 34, 104), labelY: 30,
+    // footprint for the filler and the footprint test: the site's local +z is the front (east), w runs north-south
+    name: 'Heuston Station', x: heustonFront.x - 57 * Math.cos(0.14), z: heustonFront.z + 57 * Math.sin(0.14), rot: Math.PI / 2 + 0.14, w: 32.5, d: 114, labelY: 30,
     view: spot('WT2', 'VQ2', 0.55),
+    parts: { station: { x: heustonFront.x, z: heustonFront.z, rot: 0.14 } },
   },
   guinness: {
     name: 'Guinness Storehouse', ...beside('BV1', 'MK1', 0.55, -1, 40, 34, { gap: 2 }), labelY: 44,
@@ -165,7 +198,7 @@ function shifted(site, lx, lz, w, d) {
 }
 // Open grounds kept free of filler buildings and painted as lawn.
 export const grounds = [
-  shifted(sites.christChurch, 3, 6, 60, 44),
+
   shifted(sites.customHouse, 0, -3, 124, 34),
 ];
 
@@ -181,6 +214,8 @@ export const extraSites = {
   // Merchants' Hall (Frederick Darley, 1821): the granite hall on the quay the Merchant's Arch passage runs through,
   // 14 x 14.7 m, with the passage in its west bay lined up with the Ha'penny Bridge (docs/research/temple-bar.md)
   merchantsHall: beside('SQ6', 'HPS', 1, -1, 14, 14, { shift: 4.67, gap: 0.15 }),
+  // Iveagh Play Centre, facing St Patrick's Park across Bull Alley
+  iveaghPlay: beside('PK1', 'BD3', 0.5, 1, 34, 15, { gap: 0.3 }),
   // the red pub corner, SE of Temple Bar x Temple Lane South (invented name; the real one is a protected brand)
   redPub: (() => { const tl = wayBetween('DM1', 'TTL'); return beside('TTL', 'TFO', 0, -1, 16, 13, { shift: tl.width / 2 + tl.pave + 8.2, gap: 0.15 }); })(),
   // Temple Bar Square: the flagged square on the south side of Temple Bar, west of Crown Alley
@@ -200,7 +235,7 @@ export const extraSites = {
 
 // Footprints the filler generator must avoid (landmark buildings; parks/campus handled separately).
 export const reserved = [
-  sites.gpo, sites.bankOfIreland, sites.christChurch, sites.customHouse, sites.trinity, ...grounds,
+  sites.gpo, sites.bankOfIreland, sites.christChurch, sites.stPatricks, extraSites.iveaghPlay, sites.customHouse, sites.trinity, ...grounds,
   sites.cityHall, sites.centralBank, extraSites.olympia, extraSites.clockCorner,
   extraSites.bewleys, extraSites.brownThomas, extraSites.weir, extraSites.sgCentre, extraSites.merchantsHall, extraSites.redPub, extraSites.tbSquare,
   shifted(extraSites.sgCentre, -extraSites.sgCentre.w / 2 - 8, 0, 16, extraSites.sgCentre.d), // broad footpath facing the Green
@@ -208,18 +243,18 @@ export const reserved = [
   shifted(sites.convention, 0, sites.convention.d / 2 + 6.5, sites.convention.w, 13), // its forecourt
   sites.grandCanalSt, sites.heuston, sites.guinness, sites.convention, sites.threeArena, sites.grandCanal, sites.grandCanal.square,
   // Heuston's forecourt, open to the quay
-  heustonAt(8 + 7, 34, 14), // its forecourt
+  // Heuston forecourt: the Luas stop, bus bays and lawn in front of the east front, kept open to the road
+  { x: heustonFront.x + 16, z: heustonFront.z + 4, rot: 0.14, w: 30, d: 44 },
+  // Dr Steevens' Hospital (1720s): across St John's Road West from the station, facing north over its lawn
+  (extraSites.steevens = { ...at(53.34537, -6.29229), rot: Math.PI, w: 40, d: 30 }),
 
   // the Marker Hotel on Pearse Street, south side of the square
   (extraSites.marker = { ...at(53.34454, -6.2391), rot: 0, w: 36, d: 12 }),
   (extraSites.gcsOffice = { ...at(53.34348, -6.2392), rot: Math.PI, w: 26, d: 26 }),
   // St James's Gate, in the brewery wall on James's Street
   (extraSites.jamesGate = { ...beside('TS3', 'JS1', 0.5, 1, 14, 4, { gap: 0.2 }) }),
-  // Synod Hall across Winetavern Street from Christ Church
-  (() => {
-    const cc = sites.christChurch;
-    return { x: N('HS1').x - 17, z: cc.z - 2, rot: cc.rot, w: 16, d: 18 };
-  })(),
+  // the Synod Hall across Winetavern Street from Christ Church
+  sites.christChurch.synod,
 ].filter(Boolean);
 
 export { campusPolys, parkPolys };
