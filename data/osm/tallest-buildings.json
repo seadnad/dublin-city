@@ -1,0 +1,6212 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-09-29T17:29:40Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 2468752964,
+  "lat": 53.3575782,
+  "lon": -6.3029449,
+  "tags": {
+    "communication:military": "yes",
+    "man_made": "tower",
+    "tower:construction": "lattice",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 3559946600,
+  "lat": 53.3430514,
+  "lon": -6.2666052,
+  "tags": {
+    "alt_name:en": "Gunners Tower",
+    "alt_name:en_1": "Wardrobe Tower",
+    "alt_name:en_2": "Black Tower",
+    "alt_name:ga": "Túr na nGunnadóirí",
+    "alt_name:ga_1": "Túr Vardrúis",
+    "alt_name:ga_2": "Túr Dubh",
+    "building:material": "stone",
+    "man_made": "tower",
+    "name": "The Record Tower",
+    "name:en": "The Record Tower",
+    "name:ga": "Túr na dTaifead",
+    "tower:construction": "freestanding",
+    "tower:type": "defensive",
+    "year_built": "1226"
+  }
+},
+{
+  "type": "node",
+  "id": 3559946606,
+  "lat": 53.3426887,
+  "lon": -6.2680424,
+  "tags": {
+    "man_made": "tower",
+    "name": "Bermingham Tower",
+    "name:en": "Bermingham Tower",
+    "tower:construction": "freestanding",
+    "tower:type": "defensive",
+    "year_built": "1777"
+  }
+},
+{
+  "type": "node",
+  "id": 3559946607,
+  "lat": 53.3427967,
+  "lon": -6.2672282,
+  "tags": {
+    "alt_name:en": "Middle Tower",
+    "alt_name:ga": "Túr Láir",
+    "man_made": "tower",
+    "name": "The Octagonal Tower",
+    "name:en": "Octagonal Tower",
+    "name:ga": "An Túr Ochtagánach",
+    "tower:construction": "freestanding",
+    "tower:type": "defensive",
+    "year_built": "1753"
+  }
+},
+{
+  "type": "node",
+  "id": 3559964246,
+  "lat": 53.3433703,
+  "lon": -6.2676745,
+  "tags": {
+    "man_made": "tower",
+    "name": "Bedford Tower",
+    "tower:type": "clock",
+    "website": "https://www.dublincastle.ie/the-bedford-tower-castle-gates-guard-house/",
+    "year_built": "1761"
+  }
+},
+{
+  "type": "node",
+  "id": 4345141304,
+  "lat": 53.3299144,
+  "lon": -6.2358948,
+  "tags": {
+    "man_made": "tower",
+    "tower:type": "bell_tower"
+  }
+},
+{
+  "type": "node",
+  "id": 4970250917,
+  "lat": 53.3490454,
+  "lon": -6.2782444,
+  "tags": {
+    "direction": "90",
+    "lamp_mount": "high_mast",
+    "lamp_type": "LED",
+    "light:colour": "white",
+    "light:lit": "dusk-dawn",
+    "light:shape": "spherical",
+    "man_made": "tower",
+    "operator": "Dublin City Council",
+    "support": "pole",
+    "tower:type": "lighting"
+  }
+},
+{
+  "type": "node",
+  "id": 4970250918,
+  "lat": 53.3489169,
+  "lon": -6.2782771,
+  "tags": {
+    "direction": "90",
+    "lamp_mount": "high_mast",
+    "lamp_type": "LED",
+    "light:colour": "white",
+    "light:lit": "dusk-dawn",
+    "light:shape": "spherical",
+    "man_made": "tower",
+    "operator": "Dublin City Council",
+    "support": "pole",
+    "tower:type": "lighting"
+  }
+},
+{
+  "type": "node",
+  "id": 4970250919,
+  "lat": 53.3487883,
+  "lon": -6.2783098,
+  "tags": {
+    "direction": "90",
+    "lamp_mount": "high_mast",
+    "lamp_type": "LED",
+    "light:colour": "white",
+    "light:lit": "dusk-dawn",
+    "light:shape": "spherical",
+    "man_made": "tower",
+    "operator": "Dublin City Council",
+    "support": "pole",
+    "tower:type": "lighting"
+  }
+},
+{
+  "type": "node",
+  "id": 4970253821,
+  "lat": 53.3485312,
+  "lon": -6.2783752,
+  "tags": {
+    "direction": "90",
+    "lamp_mount": "high_mast",
+    "lamp_type": "LED",
+    "light:colour": "white",
+    "light:lit": "dusk-dawn",
+    "light:shape": "spherical",
+    "man_made": "tower",
+    "operator": "Dublin City Council",
+    "support": "pole",
+    "tower:type": "lighting"
+  }
+},
+{
+  "type": "node",
+  "id": 4970253822,
+  "lat": 53.3484027,
+  "lon": -6.2784079,
+  "tags": {
+    "direction": "90",
+    "lamp_mount": "high_mast",
+    "lamp_type": "LED",
+    "light:colour": "white",
+    "light:lit": "dusk-dawn",
+    "light:shape": "spherical",
+    "man_made": "tower",
+    "operator": "Dublin City Council",
+    "support": "pole",
+    "tower:type": "lighting"
+  }
+},
+{
+  "type": "node",
+  "id": 4970253823,
+  "lat": 53.3482741,
+  "lon": -6.2784406,
+  "tags": {
+    "direction": "90",
+    "lamp_mount": "high_mast",
+    "lamp_type": "LED",
+    "light:colour": "white",
+    "light:lit": "dusk-dawn",
+    "light:shape": "spherical",
+    "man_made": "tower",
+    "operator": "Dublin City Council",
+    "support": "pole",
+    "tower:type": "lighting"
+  }
+},
+{
+  "type": "node",
+  "id": 4970253824,
+  "lat": 53.3481456,
+  "lon": -6.2784733,
+  "tags": {
+    "direction": "90",
+    "lamp_mount": "high_mast",
+    "lamp_type": "LED",
+    "light:colour": "white",
+    "light:lit": "dusk-dawn",
+    "light:shape": "spherical",
+    "man_made": "tower",
+    "operator": "Dublin City Council",
+    "support": "pole",
+    "tower:type": "lighting"
+  }
+},
+{
+  "type": "node",
+  "id": 4970253825,
+  "lat": 53.3480171,
+  "lon": -6.2785060,
+  "tags": {
+    "direction": "90",
+    "lamp_mount": "high_mast",
+    "lamp_type": "LED",
+    "light:colour": "white",
+    "light:lit": "dusk-dawn",
+    "light:shape": "spherical",
+    "man_made": "tower",
+    "operator": "Dublin City Council",
+    "support": "pole",
+    "tower:type": "lighting"
+  }
+},
+{
+  "type": "node",
+  "id": 4970253826,
+  "lat": 53.3478885,
+  "lon": -6.2785387,
+  "tags": {
+    "direction": "90",
+    "lamp_mount": "high_mast",
+    "lamp_type": "LED",
+    "light:colour": "white",
+    "light:lit": "dusk-dawn",
+    "light:shape": "spherical",
+    "man_made": "tower",
+    "operator": "Dublin City Council",
+    "support": "pole",
+    "tower:type": "lighting"
+  }
+},
+{
+  "type": "node",
+  "id": 4970253827,
+  "lat": 53.3491739,
+  "lon": -6.2782117,
+  "tags": {
+    "direction": "90",
+    "lamp_mount": "high_mast",
+    "lamp_type": "LED",
+    "light:colour": "white",
+    "light:lit": "dusk-dawn",
+    "light:shape": "spherical",
+    "man_made": "tower",
+    "operator": "Dublin City Council",
+    "support": "pole",
+    "tower:type": "lighting"
+  }
+},
+{
+  "type": "node",
+  "id": 4970253828,
+  "lat": 53.3477600,
+  "lon": -6.2785714,
+  "tags": {
+    "direction": "90",
+    "lamp_mount": "high_mast",
+    "lamp_type": "LED",
+    "light:colour": "white",
+    "light:lit": "dusk-dawn",
+    "light:shape": "spherical",
+    "man_made": "tower",
+    "operator": "Dublin City Council",
+    "support": "pole",
+    "tower:type": "lighting"
+  }
+},
+{
+  "type": "node",
+  "id": 5246131692,
+  "lat": 53.3548304,
+  "lon": -6.2782193,
+  "tags": {
+    "amenity": "clock",
+    "check_date": "2026-01-19",
+    "date": "no",
+    "display": "analog",
+    "indoor": "no",
+    "man_made": "tower",
+    "support": "wall_mounted",
+    "tower:construction": "freestanding",
+    "tower:material": "stone",
+    "tower:type": "clock"
+  }
+},
+{
+  "type": "node",
+  "id": 5337771574,
+  "lat": 53.3664028,
+  "lon": -6.2738536,
+  "tags": {
+    "amenity": "clock",
+    "date": "no",
+    "display": "analog",
+    "man_made": "tower",
+    "support": "ornamental",
+    "tower:construction": "tower",
+    "tower:type": "clock"
+  }
+},
+{
+  "type": "node",
+  "id": 11154320448,
+  "lat": 53.3661710,
+  "lon": -6.2766508,
+  "tags": {
+    "man_made": "tower",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 11902076422,
+  "lat": 53.3431913,
+  "lon": -6.2722113,
+  "tags": {
+    "access": "customers",
+    "description": "Access for visitors to the Dublinia Museum",
+    "man_made": "tower",
+    "name": "St. Michael’s Tower",
+    "tower:type": "bell_tower",
+    "website": "https://www.dublinia.ie/about-dublinia/st-michaels-tower/"
+  }
+},
+{
+  "type": "node",
+  "id": 12750170113,
+  "lat": 53.3486546,
+  "lon": -6.2783353,
+  "tags": {
+    "direction": "90",
+    "lamp_mount": "high_mast",
+    "lamp_type": "LED",
+    "light:colour": "white",
+    "light:lit": "dusk-dawn",
+    "light:shape": "spherical",
+    "man_made": "tower",
+    "operator": "Dublin City Council",
+    "support": "pole",
+    "tower:type": "lighting"
+  }
+},
+{
+  "type": "node",
+  "id": 13270567901,
+  "lat": 53.3496329,
+  "lon": -6.2654230,
+  "tags": {
+    "man_made": "tower",
+    "tower:type": "communication"
+  }
+},
+{
+  "type": "node",
+  "id": 13797399653,
+  "lat": 53.3567168,
+  "lon": -6.2459528,
+  "tags": {
+    "height": "16",
+    "man_made": "tower",
+    "tower:construction": "freestanding",
+    "tower:type": "bell_tower"
+  }
+},
+{
+  "type": "node",
+  "id": 13996273314,
+  "lat": 53.3301589,
+  "lon": -6.3172653,
+  "tags": {
+    "height": "2.5",
+    "man_made": "tower",
+    "tower:construction": "sewer",
+    "tower:type": "water"
+  }
+},
+{
+  "type": "node",
+  "id": 14022430550,
+  "lat": 53.3496829,
+  "lon": -6.2804929,
+  "tags": {
+    "man_made": "tower",
+    "tower:construction": "freestanding",
+    "tower:type": "bell_tower"
+  }
+},
+{
+  "type": "way",
+  "id": 23722561,
+  "bounds": {
+    "minlat": 53.3469209,
+    "minlon": -6.2290970,
+    "maxlat": 53.3480494,
+    "maxlon": -6.2277479
+  },
+  "geometry": [
+    { "lat": 53.3470347, "lon": -6.2279279 },
+    { "lat": 53.3470373, "lon": -6.2279661 },
+    { "lat": 53.3469285, "lon": -6.2279866 },
+    { "lat": 53.3469209, "lon": -6.2279880 },
+    { "lat": 53.3469220, "lon": -6.2280043 },
+    { "lat": 53.3469303, "lon": -6.2281286 },
+    { "lat": 53.3469776, "lon": -6.2288345 },
+    { "lat": 53.3471010, "lon": -6.2288112 },
+    { "lat": 53.3471202, "lon": -6.2290970 },
+    { "lat": 53.3480292, "lon": -6.2289370 },
+    { "lat": 53.3480407, "lon": -6.2289350 },
+    { "lat": 53.3480162, "lon": -6.2286407 },
+    { "lat": 53.3480494, "lon": -6.2286345 },
+    { "lat": 53.3479899, "lon": -6.2277479 },
+    { "lat": 53.3472513, "lon": -6.2278871 },
+    { "lat": 53.3471330, "lon": -6.2279094 },
+    { "lat": 53.3471082, "lon": -6.2279141 },
+    { "lat": 53.3470347, "lon": -6.2279279 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:street": "Northwall Quay",
+    "alt_name": "3 Arena",
+    "amenity": "theatre",
+    "building": "yes",
+    "capacity": "13000",
+    "email": "enquiry@3arena.ie",
+    "heritage": "4",
+    "local_name": "The Point",
+    "name": "3Arena",
+    "name:1988-2007": "The Point Depot",
+    "name:2008-2014": "O2Arena",
+    "operator": "Live Nation",
+    "phone": "+353 1 819 8888",
+    "website": "https://3arena.ie/",
+    "wheelchair": "yes",
+    "wikidata": "Q1899515",
+    "wikimedia_commons": "Category:3Arena",
+    "wikipedia": "en:3Arena"
+  }
+},
+{
+  "type": "way",
+  "id": 42239607,
+  "bounds": {
+    "minlat": 53.3571770,
+    "minlon": -6.2631023,
+    "maxlat": 53.3575353,
+    "maxlon": -6.2625028
+  },
+  "geometry": [
+    { "lat": 53.3575353, "lon": -6.2626866 },
+    { "lat": 53.3574628, "lon": -6.2625223 },
+    { "lat": 53.3574103, "lon": -6.2625874 },
+    { "lat": 53.3573729, "lon": -6.2625028 },
+    { "lat": 53.3571770, "lon": -6.2627455 },
+    { "lat": 53.3572172, "lon": -6.2628367 },
+    { "lat": 53.3571954, "lon": -6.2628637 },
+    { "lat": 53.3572304, "lon": -6.2629429 },
+    { "lat": 53.3572723, "lon": -6.2630379 },
+    { "lat": 53.3572900, "lon": -6.2630161 },
+    { "lat": 53.3573280, "lon": -6.2631023 },
+    { "lat": 53.3575282, "lon": -6.2628543 },
+    { "lat": 53.3574829, "lon": -6.2627516 },
+    { "lat": 53.3575353, "lon": -6.2626866 }
+  ],
+  "tags": {
+    "addr:street": "Hardwicke Place",
+    "architect:1802": "Francis Johnston",
+    "architect:1990": "James O’Connor",
+    "building": "church",
+    "heritage": "4",
+    "mapillary": "136829661803091",
+    "name": "St George's Church",
+    "was:anglican": "Church of Ireland",
+    "was:denomination": "anglican",
+    "was:religion": "christian",
+    "wikidata": "Q7588110",
+    "wikimedia_commons": "Category:St. George's Church, Dublin",
+    "wikipedia": "en:St. George's Church, Dublin",
+    "year_of_construction": "1802"
+  }
+},
+{
+  "type": "way",
+  "id": 42266091,
+  "bounds": {
+    "minlat": 53.3483680,
+    "minlon": -6.2555013,
+    "maxlat": 53.3485551,
+    "maxlon": -6.2551865
+  },
+  "geometry": [
+    { "lat": 53.3483680, "lon": -6.2554351 },
+    { "lat": 53.3483812, "lon": -6.2553533 },
+    { "lat": 53.3483892, "lon": -6.2553031 },
+    { "lat": 53.3483971, "lon": -6.2552543 },
+    { "lat": 53.3484079, "lon": -6.2551865 },
+    { "lat": 53.3484416, "lon": -6.2552017 },
+    { "lat": 53.3484538, "lon": -6.2552072 },
+    { "lat": 53.3484836, "lon": -6.2552206 },
+    { "lat": 53.3485141, "lon": -6.2552344 },
+    { "lat": 53.3485551, "lon": -6.2552528 },
+    { "lat": 53.3485450, "lon": -6.2553155 },
+    { "lat": 53.3485366, "lon": -6.2553683 },
+    { "lat": 53.3485287, "lon": -6.2554174 },
+    { "lat": 53.3485152, "lon": -6.2555013 },
+    { "lat": 53.3484757, "lon": -6.2554836 },
+    { "lat": 53.3484455, "lon": -6.2554699 },
+    { "lat": 53.3484166, "lon": -6.2554569 },
+    { "lat": 53.3484134, "lon": -6.2554555 },
+    { "lat": 53.3483680, "lon": -6.2554351 }
+  ],
+  "tags": {
+    "addr:street": "Eden Quay",
+    "building": "office",
+    "building:levels": "16",
+    "height": "59.4",
+    "name": "Liberty Hall",
+    "name:en": "Liberty Hall",
+    "name:ga": "Halla na Saoirse",
+    "operator": "SIPTU",
+    "start_date": "1965",
+    "wikidata": "Q1823025",
+    "wikimedia_commons": "Category:Liberty Hall, Dublin",
+    "wikipedia": "en:Liberty Hall"
+  }
+},
+{
+  "type": "way",
+  "id": 43316026,
+  "bounds": {
+    "minlat": 53.3435136,
+    "minlon": -6.2737827,
+    "maxlat": 53.3439844,
+    "maxlon": -6.2732821
+  },
+  "geometry": [
+    { "lat": 53.3438248, "lon": -6.2737827 },
+    { "lat": 53.3438060, "lon": -6.2736635 },
+    { "lat": 53.3437336, "lon": -6.2736940 },
+    { "lat": 53.3435987, "lon": -6.2737492 },
+    { "lat": 53.3435435, "lon": -6.2737731 },
+    { "lat": 53.3435136, "lon": -6.2735788 },
+    { "lat": 53.3435688, "lon": -6.2735549 },
+    { "lat": 53.3435593, "lon": -6.2734886 },
+    { "lat": 53.3436902, "lon": -6.2734298 },
+    { "lat": 53.3436831, "lon": -6.2733748 },
+    { "lat": 53.3437184, "lon": -6.2733573 },
+    { "lat": 53.3437238, "lon": -6.2733929 },
+    { "lat": 53.3437628, "lon": -6.2733776 },
+    { "lat": 53.3437564, "lon": -6.2733397 },
+    { "lat": 53.3438653, "lon": -6.2732922 },
+    { "lat": 53.3439844, "lon": -6.2732821 },
+    { "lat": 53.3439824, "lon": -6.2733777 },
+    { "lat": 53.3439433, "lon": -6.2733899 },
+    { "lat": 53.3439565, "lon": -6.2734743 },
+    { "lat": 53.3439736, "lon": -6.2735831 },
+    { "lat": 53.3439181, "lon": -6.2736093 },
+    { "lat": 53.3439381, "lon": -6.2737347 },
+    { "lat": 53.3438886, "lon": -6.2737542 },
+    { "lat": 53.3438248, "lon": -6.2737827 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:street": "High Street",
+    "alt_name": "St Audoen's Roman-Catholic Church",
+    "amenity": "place_of_worship",
+    "building": "church",
+    "denomination": "roman_catholic",
+    "fee": "no",
+    "heritage": "4",
+    "name": "St Audoen's",
+    "name:en": "St Audoen's",
+    "name:it": "Chiesa cattolica di Sant'Audoeno",
+    "name:pl": "Świętego Audeona",
+    "organ": "yes",
+    "ref:IE:niah": "50080537",
+    "religion": "christian",
+    "wikidata": "Q7592525",
+    "wikimedia_commons": "Category:St. Audoen's Church, High Street",
+    "wikipedia": "en:St Audoen's Church, Dublin (Roman Catholic)"
+  }
+},
+{
+  "type": "way",
+  "id": 44075420,
+  "bounds": {
+    "minlat": 53.3443595,
+    "minlon": -6.2573952,
+    "maxlat": 53.3444513,
+    "maxlon": -6.2572343
+  },
+  "geometry": [
+    { "lat": 53.3443655, "lon": -6.2573952 },
+    { "lat": 53.3443674, "lon": -6.2573950 },
+    { "lat": 53.3443828, "lon": -6.2573933 },
+    { "lat": 53.3443960, "lon": -6.2573919 },
+    { "lat": 53.3444079, "lon": -6.2573905 },
+    { "lat": 53.3444181, "lon": -6.2573894 },
+    { "lat": 53.3444344, "lon": -6.2573876 },
+    { "lat": 53.3444499, "lon": -6.2573859 },
+    { "lat": 53.3444513, "lon": -6.2573858 },
+    { "lat": 53.3444512, "lon": -6.2573829 },
+    { "lat": 53.3444501, "lon": -6.2573539 },
+    { "lat": 53.3444490, "lon": -6.2573266 },
+    { "lat": 53.3444476, "lon": -6.2572903 },
+    { "lat": 53.3444465, "lon": -6.2572626 },
+    { "lat": 53.3444455, "lon": -6.2572370 },
+    { "lat": 53.3444454, "lon": -6.2572343 },
+    { "lat": 53.3444436, "lon": -6.2572345 },
+    { "lat": 53.3444281, "lon": -6.2572362 },
+    { "lat": 53.3444155, "lon": -6.2572376 },
+    { "lat": 53.3444124, "lon": -6.2572379 },
+    { "lat": 53.3444009, "lon": -6.2572392 },
+    { "lat": 53.3443903, "lon": -6.2572404 },
+    { "lat": 53.3443766, "lon": -6.2572419 },
+    { "lat": 53.3443612, "lon": -6.2572436 },
+    { "lat": 53.3443595, "lon": -6.2572438 },
+    { "lat": 53.3443597, "lon": -6.2572470 },
+    { "lat": 53.3443607, "lon": -6.2572738 },
+    { "lat": 53.3443617, "lon": -6.2572998 },
+    { "lat": 53.3443633, "lon": -6.2573384 },
+    { "lat": 53.3443643, "lon": -6.2573650 },
+    { "lat": 53.3443654, "lon": -6.2573928 },
+    { "lat": 53.3443655, "lon": -6.2573952 }
+  ],
+  "tags": {
+    "bell_tower": "campanile",
+    "building": "yes",
+    "building:material": "stone",
+    "height": "30.5",
+    "height_ft": "100",
+    "heritage": "4",
+    "historic": "yes",
+    "man_made": "tower",
+    "name": "Campanile",
+    "name:en": "Campanile",
+    "name:ga": "An Campainíl",
+    "tower:construction": "freestanding",
+    "tower:type": "bell_tower",
+    "wikidata": "Q15207007",
+    "wikimedia_commons": "Category:Campanile, Trinity College, Dublin",
+    "wikipedia": "en:Campanile (Trinity College Dublin)"
+  }
+},
+{
+  "type": "way",
+  "id": 45602232,
+  "bounds": {
+    "minlat": 53.3458603,
+    "minlon": -6.2527919,
+    "maxlat": 53.3465390,
+    "maxlon": -6.2521536
+  },
+  "geometry": [
+    { "lat": 53.3465121, "lon": -6.2521536 },
+    { "lat": 53.3465390, "lon": -6.2527019 },
+    { "lat": 53.3458873, "lon": -6.2527919 },
+    { "lat": 53.3458603, "lon": -6.2522435 },
+    { "lat": 53.3465121, "lon": -6.2521536 }
+  ],
+  "tags": {
+    "building": "yes",
+    "building:levels": "4",
+    "name": "George's Quay House"
+  }
+},
+{
+  "type": "way",
+  "id": 48897785,
+  "bounds": {
+    "minlat": 53.3421461,
+    "minlon": -6.2388135,
+    "maxlat": 53.3423430,
+    "maxlon": -6.2386326
+  },
+  "geometry": [
+    { "lat": 53.3423430, "lon": -6.2387737 },
+    { "lat": 53.3421569, "lon": -6.2388135 },
+    { "lat": 53.3421461, "lon": -6.2386723 },
+    { "lat": 53.3423322, "lon": -6.2386326 },
+    { "lat": 53.3423430, "lon": -6.2387737 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:street": "Grand Canal Quay",
+    "architect": "Shay Cleary",
+    "building": "apartments",
+    "building:levels": "15",
+    "height": "52",
+    "mapillary": "949096802403066",
+    "name": "Alto Vetro"
+  }
+},
+{
+  "type": "way",
+  "id": 48898702,
+  "bounds": {
+    "minlat": 53.3427495,
+    "minlon": -6.2370479,
+    "maxlat": 53.3429624,
+    "maxlon": -6.2367191
+  },
+  "geometry": [
+    { "lat": 53.3427717, "lon": -6.2370479 },
+    { "lat": 53.3427627, "lon": -6.2369283 },
+    { "lat": 53.3427674, "lon": -6.2369273 },
+    { "lat": 53.3427633, "lon": -6.2368731 },
+    { "lat": 53.3427586, "lon": -6.2368742 },
+    { "lat": 53.3427495, "lon": -6.2367539 },
+    { "lat": 53.3428040, "lon": -6.2367423 },
+    { "lat": 53.3428053, "lon": -6.2367595 },
+    { "lat": 53.3428379, "lon": -6.2367526 },
+    { "lat": 53.3428370, "lon": -6.2367412 },
+    { "lat": 53.3429075, "lon": -6.2367263 },
+    { "lat": 53.3429413, "lon": -6.2367191 },
+    { "lat": 53.3429624, "lon": -6.2369980 },
+    { "lat": 53.3428832, "lon": -6.2370148 },
+    { "lat": 53.3428839, "lon": -6.2370241 },
+    { "lat": 53.3427717, "lon": -6.2370479 }
+  ],
+  "tags": {
+    "addr:housename": "The Millennium Tower",
+    "addr:street": "Charlotte Quay Dock",
+    "addr:street:name": "Ringsend Road",
+    "building": "apartments",
+    "building:levels": "13",
+    "height": "63",
+    "name": "The Millennium Tower"
+  }
+},
+{
+  "type": "way",
+  "id": 49793468,
+  "bounds": {
+    "minlat": 53.3461524,
+    "minlon": -6.2776539,
+    "maxlat": 53.3466324,
+    "maxlon": -6.2772353
+  },
+  "geometry": [
+    { "lat": 53.3462011, "lon": -6.2776539 },
+    { "lat": 53.3461950, "lon": -6.2776197 },
+    { "lat": 53.3461820, "lon": -6.2776265 },
+    { "lat": 53.3461524, "lon": -6.2774676 },
+    { "lat": 53.3461655, "lon": -6.2774608 },
+    { "lat": 53.3461604, "lon": -6.2774341 },
+    { "lat": 53.3462228, "lon": -6.2774017 },
+    { "lat": 53.3465223, "lon": -6.2772594 },
+    { "lat": 53.3465741, "lon": -6.2772353 },
+    { "lat": 53.3466125, "lon": -6.2774629 },
+    { "lat": 53.3466324, "lon": -6.2775769 },
+    { "lat": 53.3465807, "lon": -6.2776027 },
+    { "lat": 53.3465652, "lon": -6.2776108 },
+    { "lat": 53.3465583, "lon": -6.2775739 },
+    { "lat": 53.3465738, "lon": -6.2775658 },
+    { "lat": 53.3465604, "lon": -6.2774884 },
+    { "lat": 53.3463080, "lon": -6.2775988 },
+    { "lat": 53.3462637, "lon": -6.2776206 },
+    { "lat": 53.3462011, "lon": -6.2776539 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:street": "Arran Quay",
+    "amenity": "place_of_worship",
+    "building": "church",
+    "denomination": "roman_catholic",
+    "heritage": "4",
+    "name": "Saint Paul's Smithfield",
+    "religion": "christian"
+  }
+},
+{
+  "type": "way",
+  "id": 49921390,
+  "bounds": {
+    "minlat": 53.3429061,
+    "minlon": -6.2777909,
+    "maxlat": 53.3433703,
+    "maxlon": -6.2772191
+  },
+  "geometry": [
+    { "lat": 53.3433653, "lon": -6.2774609 },
+    { "lat": 53.3433462, "lon": -6.2775452 },
+    { "lat": 53.3433615, "lon": -6.2775634 },
+    { "lat": 53.3433703, "lon": -6.2776194 },
+    { "lat": 53.3433577, "lon": -6.2776706 },
+    { "lat": 53.3433307, "lon": -6.2777017 },
+    { "lat": 53.3433103, "lon": -6.2777011 },
+    { "lat": 53.3432913, "lon": -6.2777909 },
+    { "lat": 53.3429674, "lon": -6.2775988 },
+    { "lat": 53.3429543, "lon": -6.2775914 },
+    { "lat": 53.3429188, "lon": -6.2775715 },
+    { "lat": 53.3429115, "lon": -6.2775668 },
+    { "lat": 53.3429061, "lon": -6.2775633 },
+    { "lat": 53.3429112, "lon": -6.2775411 },
+    { "lat": 53.3429161, "lon": -6.2775442 },
+    { "lat": 53.3429307, "lon": -6.2774731 },
+    { "lat": 53.3429230, "lon": -6.2774685 },
+    { "lat": 53.3429268, "lon": -6.2774507 },
+    { "lat": 53.3429314, "lon": -6.2774535 },
+    { "lat": 53.3429577, "lon": -6.2773315 },
+    { "lat": 53.3429524, "lon": -6.2773273 },
+    { "lat": 53.3429565, "lon": -6.2773093 },
+    { "lat": 53.3429648, "lon": -6.2773146 },
+    { "lat": 53.3429777, "lon": -6.2772458 },
+    { "lat": 53.3429705, "lon": -6.2772418 },
+    { "lat": 53.3429750, "lon": -6.2772191 },
+    { "lat": 53.3429820, "lon": -6.2772230 },
+    { "lat": 53.3429885, "lon": -6.2772267 },
+    { "lat": 53.3430274, "lon": -6.2772481 },
+    { "lat": 53.3430419, "lon": -6.2772579 },
+    { "lat": 53.3433653, "lon": -6.2774609 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:housenumber": "94-96",
+    "addr:street": "Thomas Street",
+    "amenity": "place_of_worship",
+    "building": "church",
+    "denomination": "roman_catholic",
+    "heritage": "4",
+    "name": "St Augustine and St John",
+    "name:ko": "세인트 어거스틴 & 세인트 존 성당",
+    "phone": "+353 1 6770393",
+    "ref:dove": "15022",
+    "religion": "christian",
+    "website": "https://johnslane.ie/",
+    "wheelchair": "limited",
+    "wikidata": "Q617466",
+    "wikimedia_commons": "Category:John's Lane Church",
+    "wikipedia": "en:John's Lane Church"
+  }
+},
+{
+  "type": "way",
+  "id": 50234765,
+  "bounds": {
+    "minlat": 53.3478861,
+    "minlon": -6.2266643,
+    "maxlat": 53.3480868,
+    "maxlon": -6.2261927
+  },
+  "geometry": [
+    { "lat": 53.3479093, "lon": -6.2266643 },
+    { "lat": 53.3480868, "lon": -6.2266306 },
+    { "lat": 53.3480645, "lon": -6.2261927 },
+    { "lat": 53.3478861, "lon": -6.2262182 },
+    { "lat": 53.3479093, "lon": -6.2266643 }
+  ],
+  "tags": {
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 77047769,
+  "bounds": {
+    "minlat": 53.3447780,
+    "minlon": -6.2332017,
+    "maxlat": 53.3454960,
+    "maxlon": -6.2324751
+  },
+  "geometry": [
+    { "lat": 53.3454960, "lon": -6.2330448 },
+    { "lat": 53.3454550, "lon": -6.2324751 },
+    { "lat": 53.3447780, "lon": -6.2326006 },
+    { "lat": 53.3448177, "lon": -6.2332017 },
+    { "lat": 53.3454960, "lon": -6.2330448 }
+  ],
+  "tags": {
+    "building": "office",
+    "building:levels": "8"
+  }
+},
+{
+  "type": "way",
+  "id": 102694934,
+  "bounds": {
+    "minlat": 53.3437483,
+    "minlon": -6.2315165,
+    "maxlat": 53.3442641,
+    "maxlon": -6.2312237
+  },
+  "geometry": [
+    { "lat": 53.3442495, "lon": -6.2312237 },
+    { "lat": 53.3437483, "lon": -6.2313330 },
+    { "lat": 53.3437622, "lon": -6.2315165 },
+    { "lat": 53.3442641, "lon": -6.2314067 },
+    { "lat": 53.3442495, "lon": -6.2312237 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:housenumber": "10",
+    "addr:street": "Hanover Quay",
+    "building": "office",
+    "heritage": "4"
+  }
+},
+{
+  "type": "way",
+  "id": 102694949,
+  "bounds": {
+    "minlat": 53.3443179,
+    "minlon": -6.2313662,
+    "maxlat": 53.3443754,
+    "maxlon": -6.2311967
+  },
+  "geometry": [
+    { "lat": 53.3443179, "lon": -6.2312096 },
+    { "lat": 53.3443365, "lon": -6.2313662 },
+    { "lat": 53.3443754, "lon": -6.2313532 },
+    { "lat": 53.3443568, "lon": -6.2311967 },
+    { "lat": 53.3443179, "lon": -6.2312096 }
+  ],
+  "tags": {
+    "building": "service"
+  }
+},
+{
+  "type": "way",
+  "id": 102694961,
+  "bounds": {
+    "minlat": 53.3438956,
+    "minlon": -6.2332084,
+    "maxlat": 53.3443794,
+    "maxlon": -6.2329021
+  },
+  "geometry": [
+    { "lat": 53.3438956, "lon": -6.2330094 },
+    { "lat": 53.3439075, "lon": -6.2332084 },
+    { "lat": 53.3443794, "lon": -6.2330877 },
+    { "lat": 53.3443610, "lon": -6.2329021 },
+    { "lat": 53.3438956, "lon": -6.2330094 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:housenumber": "8",
+    "addr:postcode": "D02 DP23",
+    "addr:street": "Hanover Quay",
+    "building": "office",
+    "name": "Airbnb EMEA HQ"
+  }
+},
+{
+  "type": "way",
+  "id": 102694967,
+  "bounds": {
+    "minlat": 53.3437343,
+    "minlon": -6.2313330,
+    "maxlat": 53.3442495,
+    "maxlon": -6.2310429
+  },
+  "geometry": [
+    { "lat": 53.3442355, "lon": -6.2310429 },
+    { "lat": 53.3437343, "lon": -6.2311520 },
+    { "lat": 53.3437483, "lon": -6.2313330 },
+    { "lat": 53.3442495, "lon": -6.2312237 },
+    { "lat": 53.3442355, "lon": -6.2310429 }
+  ],
+  "tags": {
+    "building": "office",
+    "heritage": "4"
+  }
+},
+{
+  "type": "way",
+  "id": 102694974,
+  "bounds": {
+    "minlat": 53.3437622,
+    "minlon": -6.2317134,
+    "maxlat": 53.3442801,
+    "maxlon": -6.2314067
+  },
+  "geometry": [
+    { "lat": 53.3442641, "lon": -6.2314067 },
+    { "lat": 53.3437622, "lon": -6.2315165 },
+    { "lat": 53.3437767, "lon": -6.2317134 },
+    { "lat": 53.3442801, "lon": -6.2316025 },
+    { "lat": 53.3442641, "lon": -6.2314067 }
+  ],
+  "tags": {
+    "building": "office",
+    "heritage": "4"
+  }
+},
+{
+  "type": "way",
+  "id": 149068488,
+  "bounds": {
+    "minlat": 53.3419853,
+    "minlon": -6.3076959,
+    "maxlat": 53.3421368,
+    "maxlon": -6.3075726
+  },
+  "geometry": [
+    { "lat": 53.3420907, "lon": -6.3076890 },
+    { "lat": 53.3420921, "lon": -6.3076773 },
+    { "lat": 53.3421319, "lon": -6.3076902 },
+    { "lat": 53.3421368, "lon": -6.3076478 },
+    { "lat": 53.3421010, "lon": -6.3076361 },
+    { "lat": 53.3421047, "lon": -6.3076045 },
+    { "lat": 53.3420566, "lon": -6.3075885 },
+    { "lat": 53.3420069, "lon": -6.3075726 },
+    { "lat": 53.3419987, "lon": -6.3076427 },
+    { "lat": 53.3419951, "lon": -6.3076444 },
+    { "lat": 53.3419917, "lon": -6.3076475 },
+    { "lat": 53.3419890, "lon": -6.3076519 },
+    { "lat": 53.3419863, "lon": -6.3076595 },
+    { "lat": 53.3419853, "lon": -6.3076682 },
+    { "lat": 53.3419860, "lon": -6.3076769 },
+    { "lat": 53.3419880, "lon": -6.3076839 },
+    { "lat": 53.3419911, "lon": -6.3076897 },
+    { "lat": 53.3419987, "lon": -6.3076959 },
+    { "lat": 53.3420076, "lon": -6.3076933 },
+    { "lat": 53.3420113, "lon": -6.3076895 },
+    { "lat": 53.3420148, "lon": -6.3076827 },
+    { "lat": 53.3420169, "lon": -6.3076649 },
+    { "lat": 53.3420465, "lon": -6.3076745 },
+    { "lat": 53.3420907, "lon": -6.3076890 }
+  ],
+  "tags": {
+    "building": "yes",
+    "man_made": "tower",
+    "name": "Richmond Tower",
+    "tower:construction": "freestanding",
+    "tower:type": "defensive",
+    "wikidata": "Q7331015",
+    "wikimedia_commons": "Category:Richmond Tower, Kilmainham",
+    "wikipedia": "en:Richmond Tower (Kilmainham)"
+  }
+},
+{
+  "type": "way",
+  "id": 172085393,
+  "bounds": {
+    "minlat": 53.3459741,
+    "minlon": -6.2550295,
+    "maxlat": 53.3463313,
+    "maxlon": -6.2547089
+  },
+  "geometry": [
+    { "lat": 53.3463199, "lon": -6.2547089 },
+    { "lat": 53.3462128, "lon": -6.2547130 },
+    { "lat": 53.3460147, "lon": -6.2547256 },
+    { "lat": 53.3460158, "lon": -6.2548189 },
+    { "lat": 53.3459854, "lon": -6.2548217 },
+    { "lat": 53.3459763, "lon": -6.2549557 },
+    { "lat": 53.3459741, "lon": -6.2549883 },
+    { "lat": 53.3462093, "lon": -6.2550295 },
+    { "lat": 53.3463313, "lon": -6.2549751 },
+    { "lat": 53.3463199, "lon": -6.2547089 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:housenumber": "24-28",
+    "addr:street": "Tara Street",
+    "building": "office",
+    "building:levels": "7",
+    "building:levels:underground": "1",
+    "name": "The Irish Times",
+    "website": "https://www.irishtimes.com/"
+  }
+},
+{
+  "type": "way",
+  "id": 177562798,
+  "bounds": {
+    "minlat": 53.3463921,
+    "minlon": -6.2538939,
+    "maxlat": 53.3470371,
+    "maxlon": -6.2529251
+  },
+  "geometry": [
+    { "lat": 53.3463921, "lon": -6.2529683 },
+    { "lat": 53.3464036, "lon": -6.2531912 },
+    { "lat": 53.3465379, "lon": -6.2531720 },
+    { "lat": 53.3465597, "lon": -6.2531687 },
+    { "lat": 53.3465601, "lon": -6.2531780 },
+    { "lat": 53.3465615, "lon": -6.2532044 },
+    { "lat": 53.3465728, "lon": -6.2534284 },
+    { "lat": 53.3467054, "lon": -6.2534097 },
+    { "lat": 53.3467201, "lon": -6.2534077 },
+    { "lat": 53.3467218, "lon": -6.2534373 },
+    { "lat": 53.3467337, "lon": -6.2536636 },
+    { "lat": 53.3468722, "lon": -6.2536436 },
+    { "lat": 53.3468875, "lon": -6.2536419 },
+    { "lat": 53.3468896, "lon": -6.2536808 },
+    { "lat": 53.3469011, "lon": -6.2538939 },
+    { "lat": 53.3470371, "lon": -6.2538740 },
+    { "lat": 53.3470260, "lon": -6.2536603 },
+    { "lat": 53.3470239, "lon": -6.2536214 },
+    { "lat": 53.3470121, "lon": -6.2533943 },
+    { "lat": 53.3468754, "lon": -6.2534143 },
+    { "lat": 53.3468603, "lon": -6.2534164 },
+    { "lat": 53.3468593, "lon": -6.2533882 },
+    { "lat": 53.3468473, "lon": -6.2531524 },
+    { "lat": 53.3467086, "lon": -6.2531718 },
+    { "lat": 53.3466934, "lon": -6.2531739 },
+    { "lat": 53.3466927, "lon": -6.2531590 },
+    { "lat": 53.3466801, "lon": -6.2529251 },
+    { "lat": 53.3465478, "lon": -6.2529457 },
+    { "lat": 53.3465259, "lon": -6.2529489 },
+    { "lat": 53.3463921, "lon": -6.2529683 }
+  ],
+  "tags": {
+    "architect": "KMD Architecture",
+    "building": "office",
+    "building:levels": "13",
+    "height": "58.8",
+    "name": "George's Quay Plaza",
+    "start_date": "2002"
+  }
+},
+{
+  "type": "way",
+  "id": 227827214,
+  "bounds": {
+    "minlat": 53.3464064,
+    "minlon": -6.2546669,
+    "maxlat": 53.3467538,
+    "maxlon": -6.2541008
+  },
+  "geometry": [
+    { "lat": 53.3464064, "lon": -6.2543730 },
+    { "lat": 53.3464340, "lon": -6.2546669 },
+    { "lat": 53.3464690, "lon": -6.2546656 },
+    { "lat": 53.3465327, "lon": -6.2546605 },
+    { "lat": 53.3467538, "lon": -6.2546400 },
+    { "lat": 53.3467498, "lon": -6.2542168 },
+    { "lat": 53.3466105, "lon": -6.2541008 },
+    { "lat": 53.3464890, "lon": -6.2541258 },
+    { "lat": 53.3464998, "lon": -6.2543568 },
+    { "lat": 53.3464064, "lon": -6.2543730 }
+  ],
+  "tags": {
+    "building": "yes",
+    "building:levels": "6"
+  }
+},
+{
+  "type": "way",
+  "id": 227827215,
+  "bounds": {
+    "minlat": 53.3463377,
+    "minlon": -6.2549865,
+    "maxlat": 53.3467792,
+    "maxlon": -6.2546656
+  },
+  "geometry": [
+    { "lat": 53.3464039, "lon": -6.2549865 },
+    { "lat": 53.3467422, "lon": -6.2549767 },
+    { "lat": 53.3467792, "lon": -6.2549036 },
+    { "lat": 53.3467748, "lon": -6.2547398 },
+    { "lat": 53.3467659, "lon": -6.2547105 },
+    { "lat": 53.3464655, "lon": -6.2547364 },
+    { "lat": 53.3464690, "lon": -6.2546656 },
+    { "lat": 53.3464340, "lon": -6.2546669 },
+    { "lat": 53.3463678, "lon": -6.2546672 },
+    { "lat": 53.3463689, "lon": -6.2547114 },
+    { "lat": 53.3463377, "lon": -6.2547389 },
+    { "lat": 53.3463391, "lon": -6.2548863 },
+    { "lat": 53.3463630, "lon": -6.2548861 },
+    { "lat": 53.3463642, "lon": -6.2549314 },
+    { "lat": 53.3464039, "lon": -6.2549865 }
+  ],
+  "tags": {
+    "building": "office",
+    "building:levels": "5",
+    "building:levels:underground": "1",
+    "name": "Ashford House"
+  }
+},
+{
+  "type": "way",
+  "id": 227827216,
+  "bounds": {
+    "minlat": 53.3460003,
+    "minlon": -6.2546818,
+    "maxlat": 53.3464340,
+    "maxlon": -6.2541136
+  },
+  "geometry": [
+    { "lat": 53.3460136, "lon": -6.2546818 },
+    { "lat": 53.3463678, "lon": -6.2546672 },
+    { "lat": 53.3464340, "lon": -6.2546669 },
+    { "lat": 53.3464064, "lon": -6.2543730 },
+    { "lat": 53.3463939, "lon": -6.2541136 },
+    { "lat": 53.3460003, "lon": -6.2541629 },
+    { "lat": 53.3460136, "lon": -6.2546818 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:street": "Townsend Street",
+    "building": "apartments",
+    "building:flats": "1-70",
+    "building:levels": "6",
+    "name": "College Gate Apartments",
+    "wheelchair": "limited"
+  }
+},
+{
+  "type": "way",
+  "id": 227827840,
+  "bounds": {
+    "minlat": 53.3466318,
+    "minlon": -6.2531474,
+    "maxlat": 53.3473262,
+    "maxlon": -6.2520881
+  },
+  "geometry": [
+    { "lat": 53.3473262, "lon": -6.2530984 },
+    { "lat": 53.3473259, "lon": -6.2530914 },
+    { "lat": 53.3472933, "lon": -6.2524725 },
+    { "lat": 53.3472883, "lon": -6.2524732 },
+    { "lat": 53.3471641, "lon": -6.2524916 },
+    { "lat": 53.3471526, "lon": -6.2522717 },
+    { "lat": 53.3470574, "lon": -6.2522858 },
+    { "lat": 53.3470587, "lon": -6.2523112 },
+    { "lat": 53.3470122, "lon": -6.2523181 },
+    { "lat": 53.3470000, "lon": -6.2520881 },
+    { "lat": 53.3466318, "lon": -6.2521428 },
+    { "lat": 53.3466609, "lon": -6.2526920 },
+    { "lat": 53.3469200, "lon": -6.2526535 },
+    { "lat": 53.3469215, "lon": -6.2526825 },
+    { "lat": 53.3469035, "lon": -6.2527159 },
+    { "lat": 53.3469172, "lon": -6.2527365 },
+    { "lat": 53.3469274, "lon": -6.2527519 },
+    { "lat": 53.3469462, "lon": -6.2527171 },
+    { "lat": 53.3469719, "lon": -6.2527133 },
+    { "lat": 53.3469947, "lon": -6.2531474 },
+    { "lat": 53.3473262, "lon": -6.2530984 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:housename": "Blocks C & D",
+    "addr:housenumber": "1",
+    "addr:street": "George's Quay",
+    "building": "commercial",
+    "building:levels": "4",
+    "name": "1GQ"
+  }
+},
+{
+  "type": "way",
+  "id": 227827841,
+  "bounds": {
+    "minlat": 53.3471037,
+    "minlon": -6.2541739,
+    "maxlat": 53.3473768,
+    "maxlon": -6.2532842
+  },
+  "geometry": [
+    { "lat": 53.3473582, "lon": -6.2537880 },
+    { "lat": 53.3473715, "lon": -6.2537862 },
+    { "lat": 53.3473464, "lon": -6.2532904 },
+    { "lat": 53.3472752, "lon": -6.2533005 },
+    { "lat": 53.3472785, "lon": -6.2532842 },
+    { "lat": 53.3471037, "lon": -6.2533091 },
+    { "lat": 53.3471082, "lon": -6.2533978 },
+    { "lat": 53.3471278, "lon": -6.2533950 },
+    { "lat": 53.3471512, "lon": -6.2538564 },
+    { "lat": 53.3471548, "lon": -6.2539269 },
+    { "lat": 53.3471616, "lon": -6.2540616 },
+    { "lat": 53.3472421, "lon": -6.2540501 },
+    { "lat": 53.3472484, "lon": -6.2541739 },
+    { "lat": 53.3473768, "lon": -6.2541556 },
+    { "lat": 53.3473582, "lon": -6.2537880 }
+  ],
+  "tags": {
+    "building": "yes",
+    "building:levels": "4",
+    "layer": "1"
+  }
+},
+{
+  "type": "way",
+  "id": 227971869,
+  "bounds": {
+    "minlat": 53.3470972,
+    "minlon": -6.2558580,
+    "maxlat": 53.3474099,
+    "maxlon": -6.2553700
+  },
+  "geometry": [
+    { "lat": 53.3472937, "lon": -6.2558493 },
+    { "lat": 53.3471861, "lon": -6.2558580 },
+    { "lat": 53.3471788, "lon": -6.2556803 },
+    { "lat": 53.3471357, "lon": -6.2556853 },
+    { "lat": 53.3471170, "lon": -6.2556875 },
+    { "lat": 53.3471172, "lon": -6.2555985 },
+    { "lat": 53.3471035, "lon": -6.2556003 },
+    { "lat": 53.3470972, "lon": -6.2553918 },
+    { "lat": 53.3472002, "lon": -6.2553700 },
+    { "lat": 53.3472041, "lon": -6.2554485 },
+    { "lat": 53.3471817, "lon": -6.2554518 },
+    { "lat": 53.3471836, "lon": -6.2555666 },
+    { "lat": 53.3471930, "lon": -6.2555677 },
+    { "lat": 53.3471937, "lon": -6.2555975 },
+    { "lat": 53.3472471, "lon": -6.2555919 },
+    { "lat": 53.3472413, "lon": -6.2554609 },
+    { "lat": 53.3473952, "lon": -6.2554543 },
+    { "lat": 53.3474099, "lon": -6.2557470 },
+    { "lat": 53.3472918, "lon": -6.2557537 },
+    { "lat": 53.3472937, "lon": -6.2558493 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:housenumber": "2",
+    "addr:street": "George's Quay",
+    "building": "apartments",
+    "building:levels": "4",
+    "name": "Number 2 Georges Quay"
+  }
+},
+{
+  "type": "way",
+  "id": 228200969,
+  "bounds": {
+    "minlat": 53.3459325,
+    "minlon": -6.2539713,
+    "maxlat": 53.3460106,
+    "maxlon": -6.2537991
+  },
+  "geometry": [
+    { "lat": 53.3459389, "lon": -6.2539713 },
+    { "lat": 53.3460106, "lon": -6.2539634 },
+    { "lat": 53.3460042, "lon": -6.2537991 },
+    { "lat": 53.3459325, "lon": -6.2538069 },
+    { "lat": 53.3459389, "lon": -6.2539713 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:country": "IE",
+    "addr:housenumber": "24",
+    "addr:street": "Townsend Street",
+    "building": "apartments",
+    "building:levels": "4"
+  }
+},
+{
+  "type": "way",
+  "id": 228200970,
+  "bounds": {
+    "minlat": 53.3460673,
+    "minlon": -6.2539994,
+    "maxlat": 53.3461700,
+    "maxlon": -6.2538630
+  },
+  "geometry": [
+    { "lat": 53.3460720, "lon": -6.2539994 },
+    { "lat": 53.3461700, "lon": -6.2539893 },
+    { "lat": 53.3461653, "lon": -6.2538630 },
+    { "lat": 53.3460673, "lon": -6.2538730 },
+    { "lat": 53.3460720, "lon": -6.2539994 }
+  ],
+  "tags": {
+    "addr:housenumber": "22",
+    "addr:street": "Luke Street",
+    "building": "apartments"
+  }
+},
+{
+  "type": "way",
+  "id": 228200971,
+  "bounds": {
+    "minlat": 53.3459979,
+    "minlon": -6.2538057,
+    "maxlat": 53.3460844,
+    "maxlon": -6.2534504
+  },
+  "geometry": [
+    { "lat": 53.3460844, "lon": -6.2537977 },
+    { "lat": 53.3460708, "lon": -6.2534504 },
+    { "lat": 53.3459979, "lon": -6.2534584 },
+    { "lat": 53.3460115, "lon": -6.2538057 },
+    { "lat": 53.3460844, "lon": -6.2537977 }
+  ],
+  "tags": {
+    "addr:housenumber": "25-32",
+    "addr:street": "Townsend Street",
+    "building": "apartments",
+    "building:levels": "3"
+  }
+},
+{
+  "type": "way",
+  "id": 228211006,
+  "bounds": {
+    "minlat": 53.3459373,
+    "minlon": -6.2536554,
+    "maxlat": 53.3463772,
+    "maxlon": -6.2529928
+  },
+  "geometry": [
+    { "lat": 53.3462792, "lon": -6.2536554 },
+    { "lat": 53.3463772, "lon": -6.2534379 },
+    { "lat": 53.3460362, "lon": -6.2529928 },
+    { "lat": 53.3459890, "lon": -6.2530871 },
+    { "lat": 53.3459699, "lon": -6.2531283 },
+    { "lat": 53.3459373, "lon": -6.2531988 },
+    { "lat": 53.3459664, "lon": -6.2532411 },
+    { "lat": 53.3462792, "lon": -6.2536554 }
+  ],
+  "tags": {
+    "building": "train_station",
+    "building:levels": "2",
+    "roof:shape": "flat"
+  }
+},
+{
+  "type": "way",
+  "id": 228284414,
+  "bounds": {
+    "minlat": 53.3468708,
+    "minlon": -6.2556540,
+    "maxlat": 53.3470486,
+    "maxlon": -6.2554033
+  },
+  "geometry": [
+    { "lat": 53.3468726, "lon": -6.2556540 },
+    { "lat": 53.3468708, "lon": -6.2554033 },
+    { "lat": 53.3469510, "lon": -6.2554040 },
+    { "lat": 53.3469549, "lon": -6.2554659 },
+    { "lat": 53.3470461, "lon": -6.2554568 },
+    { "lat": 53.3470486, "lon": -6.2555413 },
+    { "lat": 53.3470274, "lon": -6.2555411 },
+    { "lat": 53.3470287, "lon": -6.2555932 },
+    { "lat": 53.3469638, "lon": -6.2556020 },
+    { "lat": 53.3469665, "lon": -6.2556433 },
+    { "lat": 53.3468726, "lon": -6.2556540 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:county": "Dublin",
+    "addr:housenumber": "8-9",
+    "addr:postcode": "D02 TK71",
+    "addr:street": "Poolbeg Street",
+    "amenity": "pub",
+    "brewery": "various;guinness",
+    "building": "retail",
+    "contact:twitter": "@Mulligans6",
+    "name": "Mulligan's",
+    "phone": "+353 1 6775582",
+    "wikidata": "Q6934236",
+    "wikimedia_commons": "Category:Mulligan's",
+    "wikipedia": "en:Mulligan's"
+  }
+},
+{
+  "type": "way",
+  "id": 228284415,
+  "bounds": {
+    "minlat": 53.3468458,
+    "minlon": -6.2549617,
+    "maxlat": 53.3471315,
+    "maxlon": -6.2545782
+  },
+  "geometry": [
+    { "lat": 53.3468631, "lon": -6.2549617 },
+    { "lat": 53.3471315, "lon": -6.2549150 },
+    { "lat": 53.3471143, "lon": -6.2546373 },
+    { "lat": 53.3469036, "lon": -6.2546741 },
+    { "lat": 53.3468989, "lon": -6.2545782 },
+    { "lat": 53.3468470, "lon": -6.2545802 },
+    { "lat": 53.3468458, "lon": -6.2546841 },
+    { "lat": 53.3468631, "lon": -6.2549617 }
+  ],
+  "tags": {
+    "building": "construction",
+    "check_date": "2026-03-15",
+    "operator": "Bennett"
+  }
+},
+{
+  "type": "way",
+  "id": 228284416,
+  "bounds": {
+    "minlat": 53.3468783,
+    "minlon": -6.2558916,
+    "maxlat": 53.3471861,
+    "maxlon": -6.2556803
+  },
+  "geometry": [
+    { "lat": 53.3468783, "lon": -6.2558112 },
+    { "lat": 53.3468796, "lon": -6.2558438 },
+    { "lat": 53.3468844, "lon": -6.2558730 },
+    { "lat": 53.3468971, "lon": -6.2558916 },
+    { "lat": 53.3469845, "lon": -6.2558815 },
+    { "lat": 53.3471861, "lon": -6.2558580 },
+    { "lat": 53.3471788, "lon": -6.2556803 },
+    { "lat": 53.3471357, "lon": -6.2556853 },
+    { "lat": 53.3471170, "lon": -6.2556875 },
+    { "lat": 53.3469966, "lon": -6.2557015 },
+    { "lat": 53.3469997, "lon": -6.2557753 },
+    { "lat": 53.3469707, "lon": -6.2557787 },
+    { "lat": 53.3469716, "lon": -6.2558004 },
+    { "lat": 53.3468783, "lon": -6.2558112 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:street": "Corn Exchange Place",
+    "building": "yes",
+    "name": "Exchange Court"
+  }
+},
+{
+  "type": "way",
+  "id": 228284417,
+  "bounds": {
+    "minlat": 53.3468362,
+    "minlon": -6.2545649,
+    "maxlat": 53.3473524,
+    "maxlon": -6.2540097
+  },
+  "geometry": [
+    { "lat": 53.3471288, "lon": -6.2545649 },
+    { "lat": 53.3471418, "lon": -6.2544968 },
+    { "lat": 53.3471494, "lon": -6.2544573 },
+    { "lat": 53.3472205, "lon": -6.2544901 },
+    { "lat": 53.3472953, "lon": -6.2545347 },
+    { "lat": 53.3473080, "lon": -6.2545423 },
+    { "lat": 53.3473524, "lon": -6.2542992 },
+    { "lat": 53.3471042, "lon": -6.2541319 },
+    { "lat": 53.3470210, "lon": -6.2540668 },
+    { "lat": 53.3469552, "lon": -6.2540150 },
+    { "lat": 53.3468822, "lon": -6.2540097 },
+    { "lat": 53.3468362, "lon": -6.2542421 },
+    { "lat": 53.3468466, "lon": -6.2544081 },
+    { "lat": 53.3471288, "lon": -6.2545649 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:street": "George's Quay",
+    "building": "train_station",
+    "name": "Tara Street",
+    "name:ga": "Sráid na Teamhrach",
+    "network": "InterCity;Dublin Commuter;DART",
+    "operator": "Irish Rail",
+    "platforms": "2",
+    "wheelchair": "yes",
+    "wikidata": "Q2004945",
+    "wikimedia_commons": "Category:Tara Street railway station",
+    "wikipedia": "en:Tara Street railway station"
+  }
+},
+{
+  "type": "way",
+  "id": 228284418,
+  "bounds": {
+    "minlat": 53.3468726,
+    "minlon": -6.2557372,
+    "maxlat": 53.3469696,
+    "maxlon": -6.2556433
+  },
+  "geometry": [
+    { "lat": 53.3468726, "lon": -6.2556540 },
+    { "lat": 53.3468762, "lon": -6.2557372 },
+    { "lat": 53.3469696, "lon": -6.2557266 },
+    { "lat": 53.3469665, "lon": -6.2556433 },
+    { "lat": 53.3468726, "lon": -6.2556540 }
+  ],
+  "tags": {
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 228284419,
+  "bounds": {
+    "minlat": 53.3468762,
+    "minlon": -6.2558112,
+    "maxlat": 53.3469716,
+    "maxlon": -6.2557266
+  },
+  "geometry": [
+    { "lat": 53.3468762, "lon": -6.2557372 },
+    { "lat": 53.3468783, "lon": -6.2558112 },
+    { "lat": 53.3469716, "lon": -6.2558004 },
+    { "lat": 53.3469707, "lon": -6.2557787 },
+    { "lat": 53.3469696, "lon": -6.2557266 },
+    { "lat": 53.3468762, "lon": -6.2557372 }
+  ],
+  "tags": {
+    "amenity": "restaurant",
+    "building": "yes",
+    "name": "The Vintage Kitchen"
+  }
+},
+{
+  "type": "way",
+  "id": 228284421,
+  "bounds": {
+    "minlat": 53.3470964,
+    "minlon": -6.2553444,
+    "maxlat": 53.3471517,
+    "maxlon": -6.2552052
+  },
+  "geometry": [
+    { "lat": 53.3471517, "lon": -6.2553357 },
+    { "lat": 53.3471431, "lon": -6.2552052 },
+    { "lat": 53.3470964, "lon": -6.2552139 },
+    { "lat": 53.3471039, "lon": -6.2553268 },
+    { "lat": 53.3471050, "lon": -6.2553444 },
+    { "lat": 53.3471517, "lon": -6.2553357 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:street": "Tara Street",
+    "building": "retail",
+    "building:levels": "2"
+  }
+},
+{
+  "type": "way",
+  "id": 228284422,
+  "bounds": {
+    "minlat": 53.3468698,
+    "minlon": -6.2554040,
+    "maxlat": 53.3471039,
+    "maxlon": -6.2552139
+  },
+  "geometry": [
+    { "lat": 53.3470964, "lon": -6.2552139 },
+    { "lat": 53.3468698, "lon": -6.2552433 },
+    { "lat": 53.3468708, "lon": -6.2554033 },
+    { "lat": 53.3469510, "lon": -6.2554040 },
+    { "lat": 53.3469660, "lon": -6.2554021 },
+    { "lat": 53.3469644, "lon": -6.2553542 },
+    { "lat": 53.3471039, "lon": -6.2553268 },
+    { "lat": 53.3470964, "lon": -6.2552139 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:street": "Tara Street",
+    "alt_name": "Griffith College - Tara Street Hub",
+    "building": "office",
+    "building:levels": "3",
+    "name": "Griffith College",
+    "roof:shape": "flat"
+  }
+},
+{
+  "type": "way",
+  "id": 228284426,
+  "bounds": {
+    "minlat": 53.3471431,
+    "minlon": -6.2553357,
+    "maxlat": 53.3471983,
+    "maxlon": -6.2551974
+  },
+  "geometry": [
+    { "lat": 53.3471431, "lon": -6.2552052 },
+    { "lat": 53.3471517, "lon": -6.2553357 },
+    { "lat": 53.3471983, "lon": -6.2553281 },
+    { "lat": 53.3471972, "lon": -6.2553012 },
+    { "lat": 53.3471860, "lon": -6.2553024 },
+    { "lat": 53.3471818, "lon": -6.2551974 },
+    { "lat": 53.3471431, "lon": -6.2552052 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:street": "Tara Street",
+    "building": "yes",
+    "building:levels": "2"
+  }
+},
+{
+  "type": "way",
+  "id": 228285211,
+  "bounds": {
+    "minlat": 53.3468703,
+    "minlon": -6.2564127,
+    "maxlat": 53.3473527,
+    "maxlon": -6.2560399
+  },
+  "geometry": [
+    { "lat": 53.3468869, "lon": -6.2563148 },
+    { "lat": 53.3468758, "lon": -6.2563055 },
+    { "lat": 53.3468719, "lon": -6.2562750 },
+    { "lat": 53.3468703, "lon": -6.2561129 },
+    { "lat": 53.3468719, "lon": -6.2560837 },
+    { "lat": 53.3468877, "lon": -6.2560611 },
+    { "lat": 53.3469670, "lon": -6.2560585 },
+    { "lat": 53.3470669, "lon": -6.2560452 },
+    { "lat": 53.3471835, "lon": -6.2560439 },
+    { "lat": 53.3472627, "lon": -6.2560399 },
+    { "lat": 53.3473119, "lon": -6.2560552 },
+    { "lat": 53.3473107, "lon": -6.2560665 },
+    { "lat": 53.3473527, "lon": -6.2560824 },
+    { "lat": 53.3473211, "lon": -6.2563311 },
+    { "lat": 53.3472410, "lon": -6.2563017 },
+    { "lat": 53.3472393, "lon": -6.2563146 },
+    { "lat": 53.3472018, "lon": -6.2563009 },
+    { "lat": 53.3471872, "lon": -6.2564127 },
+    { "lat": 53.3470875, "lon": -6.2563803 },
+    { "lat": 53.3468869, "lon": -6.2563148 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:housenumber": "14",
+    "addr:postcode": "D02 XK70",
+    "addr:street": "Burgh Quay",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 231793851,
+  "bounds": {
+    "minlat": 53.3543805,
+    "minlon": -6.2641813,
+    "maxlat": 53.3547514,
+    "maxlon": -6.2636428
+  },
+  "geometry": [
+    { "lat": 53.3547514, "lon": -6.2639620 },
+    { "lat": 53.3547218, "lon": -6.2639231 },
+    { "lat": 53.3546498, "lon": -6.2638413 },
+    { "lat": 53.3545889, "lon": -6.2637744 },
+    { "lat": 53.3545156, "lon": -6.2636921 },
+    { "lat": 53.3544724, "lon": -6.2636428 },
+    { "lat": 53.3544455, "lon": -6.2637130 },
+    { "lat": 53.3544097, "lon": -6.2638075 },
+    { "lat": 53.3544056, "lon": -6.2638161 },
+    { "lat": 53.3543922, "lon": -6.2638188 },
+    { "lat": 53.3543805, "lon": -6.2638464 },
+    { "lat": 53.3543842, "lon": -6.2638750 },
+    { "lat": 53.3544378, "lon": -6.2639319 },
+    { "lat": 53.3544423, "lon": -6.2639367 },
+    { "lat": 53.3544580, "lon": -6.2639534 },
+    { "lat": 53.3545163, "lon": -6.2640153 },
+    { "lat": 53.3546161, "lon": -6.2641228 },
+    { "lat": 53.3546392, "lon": -6.2641483 },
+    { "lat": 53.3546692, "lon": -6.2641813 },
+    { "lat": 53.3546772, "lon": -6.2641576 },
+    { "lat": 53.3547514, "lon": -6.2639620 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:street": "Parnell Square North",
+    "amenity": "place_of_worship",
+    "building": "church",
+    "denomination": "presbyterian",
+    "heritage": "4",
+    "name": "Abbey Church",
+    "religion": "christian",
+    "website": "https://www.abbeychurch.ie/"
+  }
+},
+{
+  "type": "way",
+  "id": 287695750,
+  "bounds": {
+    "minlat": 53.3445108,
+    "minlon": -6.2405966,
+    "maxlat": 53.3452505,
+    "maxlon": -6.2397819
+  },
+  "geometry": [
+    { "lat": 53.3451135, "lon": -6.2397819 },
+    { "lat": 53.3445108, "lon": -6.2399032 },
+    { "lat": 53.3445304, "lon": -6.2401349 },
+    { "lat": 53.3445735, "lon": -6.2401319 },
+    { "lat": 53.3445780, "lon": -6.2401644 },
+    { "lat": 53.3445941, "lon": -6.2402180 },
+    { "lat": 53.3446102, "lon": -6.2402566 },
+    { "lat": 53.3446214, "lon": -6.2402833 },
+    { "lat": 53.3445567, "lon": -6.2405400 },
+    { "lat": 53.3445636, "lon": -6.2405966 },
+    { "lat": 53.3452505, "lon": -6.2404445 },
+    { "lat": 53.3451135, "lon": -6.2397819 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:housenumber": "4",
+    "addr:postcode": "D02 X525",
+    "addr:street": "Grand Canal Square",
+    "check_date": "2026-08-27",
+    "development": "Riverside 3",
+    "landuse": "construction",
+    "name": "4 & 5 Grand Canal"
+  }
+},
+{
+  "type": "way",
+  "id": 386575292,
+  "bounds": {
+    "minlat": 53.3426053,
+    "minlon": -6.2465316,
+    "maxlat": 53.3426601,
+    "maxlon": -6.2464183
+  },
+  "geometry": [
+    { "lat": 53.3426601, "lon": -6.2464231 },
+    { "lat": 53.3426564, "lon": -6.2465316 },
+    { "lat": 53.3426311, "lon": -6.2465293 },
+    { "lat": 53.3426162, "lon": -6.2465277 },
+    { "lat": 53.3426053, "lon": -6.2465270 },
+    { "lat": 53.3426085, "lon": -6.2464183 },
+    { "lat": 53.3426341, "lon": -6.2464205 },
+    { "lat": 53.3426601, "lon": -6.2464231 }
+  ],
+  "tags": {
+    "building": "yes",
+    "man_made": "water_tower",
+    "operator": "Irish Rail"
+  }
+},
+{
+  "type": "way",
+  "id": 394742380,
+  "bounds": {
+    "minlat": 53.3418630,
+    "minlon": -6.2436573,
+    "maxlat": 53.3419358,
+    "maxlon": -6.2435511
+  },
+  "geometry": [
+    { "lat": 53.3419358, "lon": -6.2436141 },
+    { "lat": 53.3418805, "lon": -6.2435511 },
+    { "lat": 53.3418630, "lon": -6.2435942 },
+    { "lat": 53.3419183, "lon": -6.2436573 },
+    { "lat": 53.3419358, "lon": -6.2436141 }
+  ],
+  "tags": {
+    "man_made": "water_tower"
+  }
+},
+{
+  "type": "way",
+  "id": 403583747,
+  "bounds": {
+    "minlat": 53.3532590,
+    "minlon": -6.2471011,
+    "maxlat": 53.3533345,
+    "maxlon": -6.2469432
+  },
+  "geometry": [
+    { "lat": 53.3533345, "lon": -6.2470714 },
+    { "lat": 53.3532883, "lon": -6.2469432 },
+    { "lat": 53.3532590, "lon": -6.2469729 },
+    { "lat": 53.3533053, "lon": -6.2471011 },
+    { "lat": 53.3533345, "lon": -6.2470714 }
+  ],
+  "tags": {
+    "disused:railway": "water_tower",
+    "historic": "ruins",
+    "man_made": "water_tower",
+    "ref:IE:niah": "50010041"
+  }
+},
+{
+  "type": "way",
+  "id": 431678310,
+  "bounds": {
+    "minlat": 53.3311241,
+    "minlon": -6.2920516,
+    "maxlat": 53.3311704,
+    "maxlon": -6.2919734
+  },
+  "geometry": [
+    { "lat": 53.3311704, "lon": -6.2920230 },
+    { "lat": 53.3311528, "lon": -6.2919734 },
+    { "lat": 53.3311241, "lon": -6.2920020 },
+    { "lat": 53.3311417, "lon": -6.2920516 },
+    { "lat": 53.3311704, "lon": -6.2920230 }
+  ],
+  "tags": {
+    "building": "yes",
+    "building:levels": "6",
+    "man_made": "tower",
+    "tower:construction": "freestanding",
+    "tower:type": "hose"
+  }
+},
+{
+  "type": "way",
+  "id": 464439717,
+  "bounds": {
+    "minlat": 53.3437767,
+    "minlon": -6.2329122,
+    "maxlat": 53.3443571,
+    "maxlon": -6.2316025
+  },
+  "geometry": [
+    { "lat": 53.3442801, "lon": -6.2316025 },
+    { "lat": 53.3437767, "lon": -6.2317134 },
+    { "lat": 53.3438322, "lon": -6.2324269 },
+    { "lat": 53.3438700, "lon": -6.2329122 },
+    { "lat": 53.3440129, "lon": -6.2328805 },
+    { "lat": 53.3440091, "lon": -6.2328329 },
+    { "lat": 53.3442065, "lon": -6.2327890 },
+    { "lat": 53.3442114, "lon": -6.2328516 },
+    { "lat": 53.3443571, "lon": -6.2328192 },
+    { "lat": 53.3443225, "lon": -6.2323816 },
+    { "lat": 53.3440104, "lon": -6.2324509 },
+    { "lat": 53.3440037, "lon": -6.2323666 },
+    { "lat": 53.3439954, "lon": -6.2322608 },
+    { "lat": 53.3443273, "lon": -6.2321872 },
+    { "lat": 53.3442801, "lon": -6.2316025 }
+  ],
+  "tags": {
+    "building": "office",
+    "building:levels": "6",
+    "layer": "1",
+    "name": "The Reflector",
+    "roof:shape": "flat"
+  }
+},
+{
+  "type": "way",
+  "id": 471355779,
+  "bounds": {
+    "minlat": 53.3299455,
+    "minlon": -6.3357793,
+    "maxlat": 53.3299938,
+    "maxlon": -6.3356978
+  },
+  "geometry": [
+    { "lat": 53.3299938, "lon": -6.3357651 },
+    { "lat": 53.3299852, "lon": -6.3356978 },
+    { "lat": 53.3299455, "lon": -6.3357120 },
+    { "lat": 53.3299541, "lon": -6.3357793 },
+    { "lat": 53.3299938, "lon": -6.3357651 }
+  ],
+  "tags": {
+    "building": "yes",
+    "man_made": "tower",
+    "tower:construction": "freestanding",
+    "tower:type": "bell_tower"
+  }
+},
+{
+  "type": "way",
+  "id": 541484854,
+  "bounds": {
+    "minlat": 53.3575729,
+    "minlon": -6.2749318,
+    "maxlat": 53.3576281,
+    "maxlon": -6.2748372
+  },
+  "geometry": [
+    { "lat": 53.3576027, "lon": -6.2748372 },
+    { "lat": 53.3575916, "lon": -6.2748425 },
+    { "lat": 53.3575729, "lon": -6.2748887 },
+    { "lat": 53.3575731, "lon": -6.2748976 },
+    { "lat": 53.3576003, "lon": -6.2749318 },
+    { "lat": 53.3576099, "lon": -6.2749302 },
+    { "lat": 53.3576281, "lon": -6.2748823 },
+    { "lat": 53.3576276, "lon": -6.2748682 },
+    { "lat": 53.3576027, "lon": -6.2748372 }
+  ],
+  "tags": {
+    "building": "yes",
+    "man_made": "tower",
+    "tower:construction": "freestanding",
+    "tower:type": "hose"
+  }
+},
+{
+  "type": "way",
+  "id": 545001144,
+  "bounds": {
+    "minlat": 53.3469779,
+    "minlon": -6.2321045,
+    "maxlat": 53.3484288,
+    "maxlon": -6.2299758
+  },
+  "geometry": [
+    { "lat": 53.3484123, "lon": -6.2319488 },
+    { "lat": 53.3471153, "lon": -6.2321045 },
+    { "lat": 53.3470127, "lon": -6.2307763 },
+    { "lat": 53.3469779, "lon": -6.2301857 },
+    { "lat": 53.3482243, "lon": -6.2299758 },
+    { "lat": 53.3483755, "lon": -6.2309569 },
+    { "lat": 53.3484288, "lon": -6.2317733 },
+    { "lat": 53.3484277, "lon": -6.2318643 },
+    { "lat": 53.3484123, "lon": -6.2319488 }
+  ],
+  "tags": {
+    "landuse": "construction",
+    "name": "Project Waterfront",
+    "website": "https://ronangrouprealestate.com/projects/waterfront-south-central/"
+  }
+},
+{
+  "type": "way",
+  "id": 550194048,
+  "bounds": {
+    "minlat": 53.3564902,
+    "minlon": -6.2832798,
+    "maxlat": 53.3565385,
+    "maxlon": -6.2832075
+  },
+  "geometry": [
+    { "lat": 53.3565369, "lon": -6.2832477 },
+    { "lat": 53.3565385, "lon": -6.2832137 },
+    { "lat": 53.3564934, "lon": -6.2832075 },
+    { "lat": 53.3564902, "lon": -6.2832737 },
+    { "lat": 53.3565353, "lon": -6.2832798 },
+    { "lat": 53.3565369, "lon": -6.2832477 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "man_made": "tower"
+  }
+},
+{
+  "type": "way",
+  "id": 555777716,
+  "bounds": {
+    "minlat": 53.3663839,
+    "minlon": -6.3315220,
+    "maxlat": 53.3664879,
+    "maxlon": -6.3313487
+  },
+  "geometry": [
+    { "lat": 53.3664442, "lon": -6.3315220 },
+    { "lat": 53.3664607, "lon": -6.3315126 },
+    { "lat": 53.3664744, "lon": -6.3314946 },
+    { "lat": 53.3664838, "lon": -6.3314700 },
+    { "lat": 53.3664879, "lon": -6.3314416 },
+    { "lat": 53.3664862, "lon": -6.3314135 },
+    { "lat": 53.3664793, "lon": -6.3313877 },
+    { "lat": 53.3664678, "lon": -6.3313669 },
+    { "lat": 53.3664530, "lon": -6.3313535 },
+    { "lat": 53.3664363, "lon": -6.3313487 },
+    { "lat": 53.3664197, "lon": -6.3313530 },
+    { "lat": 53.3664047, "lon": -6.3313661 },
+    { "lat": 53.3663930, "lon": -6.3313865 },
+    { "lat": 53.3663858, "lon": -6.3314122 },
+    { "lat": 53.3663839, "lon": -6.3314403 },
+    { "lat": 53.3663877, "lon": -6.3314688 },
+    { "lat": 53.3663969, "lon": -6.3314936 },
+    { "lat": 53.3664104, "lon": -6.3315120 },
+    { "lat": 53.3664268, "lon": -6.3315218 },
+    { "lat": 53.3664442, "lon": -6.3315220 }
+  ],
+  "tags": {
+    "man_made": "water_tower"
+  }
+},
+{
+  "type": "way",
+  "id": 560212486,
+  "bounds": {
+    "minlat": 53.3600360,
+    "minlon": -6.2390034,
+    "maxlat": 53.3600811,
+    "maxlon": -6.2389276
+  },
+  "geometry": [
+    { "lat": 53.3600811, "lon": -6.2389749 },
+    { "lat": 53.3600638, "lon": -6.2389276 },
+    { "lat": 53.3600360, "lon": -6.2389562 },
+    { "lat": 53.3600533, "lon": -6.2390034 },
+    { "lat": 53.3600811, "lon": -6.2389749 }
+  ],
+  "tags": {
+    "building": "yes",
+    "man_made": "tower",
+    "tower:construction": "freestanding",
+    "tower:type": "hose"
+  }
+},
+{
+  "type": "way",
+  "id": 753585704,
+  "bounds": {
+    "minlat": 53.3444028,
+    "minlon": -6.2332618,
+    "maxlat": 53.3454087,
+    "maxlon": -6.2317407
+  },
+  "geometry": [
+    { "lat": 53.3444028, "lon": -6.2319382 },
+    { "lat": 53.3444996, "lon": -6.2332618 },
+    { "lat": 53.3446998, "lon": -6.2332207 },
+    { "lat": 53.3446194, "lon": -6.2321220 },
+    { "lat": 53.3446708, "lon": -6.2321115 },
+    { "lat": 53.3447027, "lon": -6.2321049 },
+    { "lat": 53.3447418, "lon": -6.2320969 },
+    { "lat": 53.3447471, "lon": -6.2320958 },
+    { "lat": 53.3447741, "lon": -6.2324656 },
+    { "lat": 53.3454087, "lon": -6.2323355 },
+    { "lat": 53.3453652, "lon": -6.2317407 },
+    { "lat": 53.3446861, "lon": -6.2318801 },
+    { "lat": 53.3444028, "lon": -6.2319382 }
+  ],
+  "tags": {
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 753585705,
+  "bounds": {
+    "minlat": 53.3446718,
+    "minlon": -6.2314988,
+    "maxlat": 53.3453400,
+    "maxlon": -6.2308674
+  },
+  "geometry": [
+    { "lat": 53.3453256, "lon": -6.2313708 },
+    { "lat": 53.3453078, "lon": -6.2311302 },
+    { "lat": 53.3453400, "lon": -6.2311235 },
+    { "lat": 53.3453210, "lon": -6.2308674 },
+    { "lat": 53.3451742, "lon": -6.2308978 },
+    { "lat": 53.3451796, "lon": -6.2309708 },
+    { "lat": 53.3450408, "lon": -6.2309993 },
+    { "lat": 53.3446718, "lon": -6.2310138 },
+    { "lat": 53.3447097, "lon": -6.2314988 },
+    { "lat": 53.3448511, "lon": -6.2314676 },
+    { "lat": 53.3451717, "lon": -6.2314023 },
+    { "lat": 53.3453256, "lon": -6.2313708 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "building:levels": "22",
+    "height": "79",
+    "name": "Capital Dock",
+    "start_date": "2018",
+    "wikidata": "Q60773680",
+    "wikipedia": "en:Capital Dock"
+  }
+},
+{
+  "type": "way",
+  "id": 756391815,
+  "bounds": {
+    "minlat": 53.3396384,
+    "minlon": -6.2721289,
+    "maxlat": 53.3397498,
+    "maxlon": -6.2719456
+  },
+  "geometry": [
+    { "lat": 53.3397498, "lon": -6.2721207 },
+    { "lat": 53.3397284, "lon": -6.2721218 },
+    { "lat": 53.3396786, "lon": -6.2721261 },
+    { "lat": 53.3396432, "lon": -6.2721289 },
+    { "lat": 53.3396422, "lon": -6.2720906 },
+    { "lat": 53.3396393, "lon": -6.2719864 },
+    { "lat": 53.3396384, "lon": -6.2719537 },
+    { "lat": 53.3396561, "lon": -6.2719524 },
+    { "lat": 53.3396647, "lon": -6.2719517 },
+    { "lat": 53.3397217, "lon": -6.2719470 },
+    { "lat": 53.3397450, "lon": -6.2719456 },
+    { "lat": 53.3397456, "lon": -6.2719731 },
+    { "lat": 53.3397492, "lon": -6.2720841 },
+    { "lat": 53.3397498, "lon": -6.2721207 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "40",
+    "man_made": "tower",
+    "mapillary": "1932682054173214",
+    "name": "Minot's Tower",
+    "panoramax": "91ea56c7-bc12-4085-b384-be29d1114907",
+    "ref:dove": "12646",
+    "tower:construction": "freestanding",
+    "tower:material": "stone",
+    "tower:type": "bell_tower"
+  }
+},
+{
+  "type": "way",
+  "id": 899822368,
+  "bounds": {
+    "minlat": 53.3359729,
+    "minlon": -6.3340592,
+    "maxlat": 53.3360225,
+    "maxlon": -6.3339223
+  },
+  "geometry": [
+    { "lat": 53.3360225, "lon": -6.3340456 },
+    { "lat": 53.3360021, "lon": -6.3339223 },
+    { "lat": 53.3359729, "lon": -6.3339358 },
+    { "lat": 53.3359932, "lon": -6.3340592 },
+    { "lat": 53.3360225, "lon": -6.3340456 }
+  ],
+  "tags": {
+    "man_made": "water_tower"
+  }
+},
+{
+  "type": "way",
+  "id": 928261032,
+  "bounds": {
+    "minlat": 53.3443481,
+    "minlon": -6.2309842,
+    "maxlat": 53.3448632,
+    "maxlon": -6.2306583
+  },
+  "geometry": [
+    { "lat": 53.3448632, "lon": -6.2308765 },
+    { "lat": 53.3443649, "lon": -6.2309842 },
+    { "lat": 53.3443481, "lon": -6.2307658 },
+    { "lat": 53.3448464, "lon": -6.2306583 },
+    { "lat": 53.3448632, "lon": -6.2308765 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:country": "IE",
+    "addr:county": "Dublin",
+    "addr:housenumber": "4",
+    "addr:postcode": "D02 K021",
+    "addr:street": "Capital Dock",
+    "amenity": "pub",
+    "building": "retail",
+    "building:levels": "3",
+    "contact:facebook": "https://www.facebook.com/brewdogoutpostdublin",
+    "contact:instagram": "@BrewDogopdublin",
+    "contact:twitter": "@BrewDogDublinOP",
+    "cuisine": "burger;pizza;wings",
+    "email": "outpostdublin@brewdog.com",
+    "food": "yes",
+    "name": "Brewdog Outpost",
+    "opening_hours": "Mo-Su 11:30-23:30",
+    "phone": "+35319203350",
+    "website": "https://www.brewdog.com/uk/bars/global/outpostdublin"
+  }
+},
+{
+  "type": "way",
+  "id": 946426430,
+  "bounds": {
+    "minlat": 53.3471359,
+    "minlon": -6.2277252,
+    "maxlat": 53.3481553,
+    "maxlon": -6.2272635
+  },
+  "geometry": [
+    { "lat": 53.3471539, "lon": -6.2277252 },
+    { "lat": 53.3471359, "lon": -6.2274444 },
+    { "lat": 53.3478005, "lon": -6.2273243 },
+    { "lat": 53.3481372, "lon": -6.2272635 },
+    { "lat": 53.3481553, "lon": -6.2275443 },
+    { "lat": 53.3478186, "lon": -6.2276051 },
+    { "lat": 53.3471539, "lon": -6.2277252 }
+  ],
+  "tags": {
+    "building": "commercial",
+    "building:levels": "17",
+    "height": "73",
+    "name": "Exo Building"
+  }
+},
+{
+  "type": "way",
+  "id": 1106137949,
+  "bounds": {
+    "minlat": 53.3471551,
+    "minlon": -6.2334548,
+    "maxlat": 53.3472506,
+    "maxlon": -6.2330281
+  },
+  "geometry": [
+    { "lat": 53.3472506, "lon": -6.2334548 },
+    { "lat": 53.3471799, "lon": -6.2334459 },
+    { "lat": 53.3471551, "lon": -6.2330346 },
+    { "lat": 53.3471920, "lon": -6.2330284 },
+    { "lat": 53.3471935, "lon": -6.2330281 },
+    { "lat": 53.3472274, "lon": -6.2330677 },
+    { "lat": 53.3472506, "lon": -6.2334548 }
+  ],
+  "tags": {
+    "building": "construction",
+    "check_date": "2024-08-26"
+  }
+},
+{
+  "type": "way",
+  "id": 1107239903,
+  "bounds": {
+    "minlat": 53.3482443,
+    "minlon": -6.2276633,
+    "maxlat": 53.3483804,
+    "maxlon": -6.2273134
+  },
+  "geometry": [
+    { "lat": 53.3483804, "lon": -6.2276417 },
+    { "lat": 53.3482666, "lon": -6.2276633 },
+    { "lat": 53.3482443, "lon": -6.2273350 },
+    { "lat": 53.3483582, "lon": -6.2273134 },
+    { "lat": 53.3483804, "lon": -6.2276417 }
+  ],
+  "tags": {
+    "building": "retail"
+  }
+},
+{
+  "type": "way",
+  "id": 1113176518,
+  "bounds": {
+    "minlat": 53.3514543,
+    "minlon": -6.2331814,
+    "maxlat": 53.3529141,
+    "maxlon": -6.2298188
+  },
+  "geometry": [
+    { "lat": 53.3514596, "lon": -6.2302561 },
+    { "lat": 53.3514543, "lon": -6.2305921 },
+    { "lat": 53.3515056, "lon": -6.2305930 },
+    { "lat": 53.3515322, "lon": -6.2319473 },
+    { "lat": 53.3514848, "lon": -6.2319496 },
+    { "lat": 53.3514888, "lon": -6.2325592 },
+    { "lat": 53.3515176, "lon": -6.2328220 },
+    { "lat": 53.3515528, "lon": -6.2328462 },
+    { "lat": 53.3516249, "lon": -6.2331814 },
+    { "lat": 53.3520851, "lon": -6.2326303 },
+    { "lat": 53.3523934, "lon": -6.2322750 },
+    { "lat": 53.3523869, "lon": -6.2321712 },
+    { "lat": 53.3524125, "lon": -6.2321335 },
+    { "lat": 53.3524375, "lon": -6.2320967 },
+    { "lat": 53.3524691, "lon": -6.2321378 },
+    { "lat": 53.3524932, "lon": -6.2321489 },
+    { "lat": 53.3527363, "lon": -6.2318419 },
+    { "lat": 53.3527540, "lon": -6.2318321 },
+    { "lat": 53.3529141, "lon": -6.2316308 },
+    { "lat": 53.3528452, "lon": -6.2314756 },
+    { "lat": 53.3528220, "lon": -6.2314232 },
+    { "lat": 53.3528104, "lon": -6.2313973 },
+    { "lat": 53.3527874, "lon": -6.2312410 },
+    { "lat": 53.3525503, "lon": -6.2307057 },
+    { "lat": 53.3525232, "lon": -6.2307393 },
+    { "lat": 53.3524276, "lon": -6.2305236 },
+    { "lat": 53.3524574, "lon": -6.2304866 },
+    { "lat": 53.3524059, "lon": -6.2303704 },
+    { "lat": 53.3523668, "lon": -6.2304190 },
+    { "lat": 53.3521727, "lon": -6.2299810 },
+    { "lat": 53.3521388, "lon": -6.2300232 },
+    { "lat": 53.3520482, "lon": -6.2298188 },
+    { "lat": 53.3519179, "lon": -6.2299524 },
+    { "lat": 53.3518055, "lon": -6.2302431 },
+    { "lat": 53.3514596, "lon": -6.2302561 }
+  ],
+  "tags": {
+    "landuse": "construction"
+  }
+},
+{
+  "type": "way",
+  "id": 1126167442,
+  "bounds": {
+    "minlat": 53.3500697,
+    "minlon": -6.2347652,
+    "maxlat": 53.3512086,
+    "maxlon": -6.2317999
+  },
+  "geometry": [
+    { "lat": 53.3500697, "lon": -6.2317999 },
+    { "lat": 53.3502783, "lon": -6.2347330 },
+    { "lat": 53.3503616, "lon": -6.2347652 },
+    { "lat": 53.3509188, "lon": -6.2337835 },
+    { "lat": 53.3511109, "lon": -6.2335046 },
+    { "lat": 53.3510757, "lon": -6.2330647 },
+    { "lat": 53.3509796, "lon": -6.2325873 },
+    { "lat": 53.3512086, "lon": -6.2324465 },
+    { "lat": 53.3511237, "lon": -6.2322453 },
+    { "lat": 53.3500697, "lon": -6.2317999 }
+  ],
+  "tags": {
+    "landuse": "construction"
+  }
+},
+{
+  "type": "way",
+  "id": 1167524474,
+  "bounds": {
+    "minlat": 53.3471359,
+    "minlon": -6.2277252,
+    "maxlat": 53.3478186,
+    "maxlon": -6.2273243
+  },
+  "geometry": [
+    { "lat": 53.3478186, "lon": -6.2276051 },
+    { "lat": 53.3478005, "lon": -6.2273243 },
+    { "lat": 53.3471359, "lon": -6.2274444 },
+    { "lat": 53.3471539, "lon": -6.2277252 },
+    { "lat": 53.3478186, "lon": -6.2276051 }
+  ],
+  "tags": {
+    "building:levels": "8",
+    "building:part": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1167524475,
+  "bounds": {
+    "minlat": 53.3478005,
+    "minlon": -6.2276051,
+    "maxlat": 53.3481553,
+    "maxlon": -6.2272635
+  },
+  "geometry": [
+    { "lat": 53.3478005, "lon": -6.2273243 },
+    { "lat": 53.3478186, "lon": -6.2276051 },
+    { "lat": 53.3481553, "lon": -6.2275443 },
+    { "lat": 53.3481372, "lon": -6.2272635 },
+    { "lat": 53.3478005, "lon": -6.2273243 }
+  ],
+  "tags": {
+    "building:levels": "17",
+    "building:part": "yes",
+    "height": "73"
+  }
+},
+{
+  "type": "way",
+  "id": 1218589255,
+  "bounds": {
+    "minlat": 53.3459685,
+    "minlon": -6.2569774,
+    "maxlat": 53.3465469,
+    "maxlon": -6.2552630
+  },
+  "geometry": [
+    { "lat": 53.3460603, "lon": -6.2568801 },
+    { "lat": 53.3464071, "lon": -6.2569774 },
+    { "lat": 53.3464069, "lon": -6.2565328 },
+    { "lat": 53.3463720, "lon": -6.2564741 },
+    { "lat": 53.3463696, "lon": -6.2558138 },
+    { "lat": 53.3463562, "lon": -6.2558142 },
+    { "lat": 53.3463568, "lon": -6.2557618 },
+    { "lat": 53.3464507, "lon": -6.2556796 },
+    { "lat": 53.3464582, "lon": -6.2556065 },
+    { "lat": 53.3465461, "lon": -6.2556191 },
+    { "lat": 53.3465461, "lon": -6.2554998 },
+    { "lat": 53.3465469, "lon": -6.2552725 },
+    { "lat": 53.3459685, "lon": -6.2552630 },
+    { "lat": 53.3459744, "lon": -6.2557484 },
+    { "lat": 53.3460596, "lon": -6.2558956 },
+    { "lat": 53.3460581, "lon": -6.2563888 },
+    { "lat": 53.3461206, "lon": -6.2564804 },
+    { "lat": 53.3461364, "lon": -6.2565036 },
+    { "lat": 53.3460611, "lon": -6.2566057 },
+    { "lat": 53.3460603, "lon": -6.2568801 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:street": "Tara Street",
+    "architect": "Henry J Lyons",
+    "building": "commercial",
+    "building:levels": "11",
+    "building:levels:underground": "2",
+    "height": "43",
+    "name": "College Square",
+    "smoking": "outside"
+  }
+},
+{
+  "type": "way",
+  "id": 1262961092,
+  "bounds": {
+    "minlat": 53.3439244,
+    "minlon": -6.2310136,
+    "maxlat": 53.3440893,
+    "maxlon": -6.2308728
+  },
+  "geometry": [
+    { "lat": 53.3440893, "lon": -6.2310136 },
+    { "lat": 53.3440805, "lon": -6.2308808 },
+    { "lat": 53.3439748, "lon": -6.2308728 },
+    { "lat": 53.3439244, "lon": -6.2309170 },
+    { "lat": 53.3439444, "lon": -6.2310082 },
+    { "lat": 53.3440893, "lon": -6.2310136 }
+  ],
+  "tags": {
+    "building": "yes",
+    "heritage": "4"
+  }
+},
+{
+  "type": "way",
+  "id": 1271279149,
+  "bounds": {
+    "minlat": 53.3451742,
+    "minlon": -6.2311539,
+    "maxlat": 53.3453400,
+    "maxlon": -6.2308674
+  },
+  "geometry": [
+    { "lat": 53.3453400, "lon": -6.2311235 },
+    { "lat": 53.3453078, "lon": -6.2311302 },
+    { "lat": 53.3451931, "lon": -6.2311539 },
+    { "lat": 53.3451877, "lon": -6.2310804 },
+    { "lat": 53.3451796, "lon": -6.2309708 },
+    { "lat": 53.3451742, "lon": -6.2308978 },
+    { "lat": 53.3453210, "lon": -6.2308674 },
+    { "lat": 53.3453400, "lon": -6.2311235 }
+  ],
+  "tags": {
+    "building:levels": "22",
+    "building:part": "yes",
+    "height": "79"
+  }
+},
+{
+  "type": "way",
+  "id": 1271279150,
+  "bounds": {
+    "minlat": 53.3451542,
+    "minlon": -6.2314023,
+    "maxlat": 53.3453256,
+    "maxlon": -6.2311302
+  },
+  "geometry": [
+    { "lat": 53.3451931, "lon": -6.2311539 },
+    { "lat": 53.3451542, "lon": -6.2311620 },
+    { "lat": 53.3451633, "lon": -6.2312869 },
+    { "lat": 53.3451717, "lon": -6.2314023 },
+    { "lat": 53.3453256, "lon": -6.2313708 },
+    { "lat": 53.3453078, "lon": -6.2311302 },
+    { "lat": 53.3451931, "lon": -6.2311539 }
+  ],
+  "tags": {
+    "building:levels": "19",
+    "building:part": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1271279151,
+  "bounds": {
+    "minlat": 53.3446718,
+    "minlon": -6.2314988,
+    "maxlat": 53.3450544,
+    "maxlon": -6.2309993
+  },
+  "geometry": [
+    { "lat": 53.3450544, "lon": -6.2311861 },
+    { "lat": 53.3449384, "lon": -6.2312096 },
+    { "lat": 53.3448339, "lon": -6.2312309 },
+    { "lat": 53.3448511, "lon": -6.2314676 },
+    { "lat": 53.3447097, "lon": -6.2314988 },
+    { "lat": 53.3446718, "lon": -6.2310138 },
+    { "lat": 53.3450408, "lon": -6.2309993 },
+    { "lat": 53.3450488, "lon": -6.2311090 },
+    { "lat": 53.3450544, "lon": -6.2311861 }
+  ],
+  "tags": {
+    "building:levels": "10",
+    "building:part": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1271279152,
+  "bounds": {
+    "minlat": 53.3449384,
+    "minlon": -6.2313310,
+    "maxlat": 53.3451931,
+    "maxlon": -6.2310804
+  },
+  "geometry": [
+    { "lat": 53.3451633, "lon": -6.2312869 },
+    { "lat": 53.3449472, "lon": -6.2313310 },
+    { "lat": 53.3449384, "lon": -6.2312096 },
+    { "lat": 53.3450544, "lon": -6.2311861 },
+    { "lat": 53.3450488, "lon": -6.2311090 },
+    { "lat": 53.3451877, "lon": -6.2310804 },
+    { "lat": 53.3451931, "lon": -6.2311539 },
+    { "lat": 53.3451542, "lon": -6.2311620 },
+    { "lat": 53.3451633, "lon": -6.2312869 }
+  ],
+  "tags": {
+    "building:levels": "9",
+    "building:part": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1271279153,
+  "bounds": {
+    "minlat": 53.3448339,
+    "minlon": -6.2314676,
+    "maxlat": 53.3451717,
+    "maxlon": -6.2312096
+  },
+  "geometry": [
+    { "lat": 53.3449384, "lon": -6.2312096 },
+    { "lat": 53.3448339, "lon": -6.2312309 },
+    { "lat": 53.3448511, "lon": -6.2314676 },
+    { "lat": 53.3451717, "lon": -6.2314023 },
+    { "lat": 53.3451633, "lon": -6.2312869 },
+    { "lat": 53.3449472, "lon": -6.2313310 },
+    { "lat": 53.3449384, "lon": -6.2312096 }
+  ],
+  "tags": {
+    "building:levels": "2",
+    "building:part": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1271279154,
+  "bounds": {
+    "minlat": 53.3450408,
+    "minlon": -6.2311090,
+    "maxlat": 53.3451877,
+    "maxlon": -6.2309708
+  },
+  "geometry": [
+    { "lat": 53.3451877, "lon": -6.2310804 },
+    { "lat": 53.3450488, "lon": -6.2311090 },
+    { "lat": 53.3450408, "lon": -6.2309993 },
+    { "lat": 53.3451796, "lon": -6.2309708 },
+    { "lat": 53.3451877, "lon": -6.2310804 }
+  ],
+  "tags": {
+    "building:levels": "2",
+    "building:part": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1285971322,
+  "bounds": {
+    "minlat": 53.3572664,
+    "minlon": -6.2629806,
+    "maxlat": 53.3573428,
+    "maxlon": -6.2628542
+  },
+  "geometry": [
+    { "lat": 53.3573128, "lon": -6.2628542 },
+    { "lat": 53.3572664, "lon": -6.2629077 },
+    { "lat": 53.3572964, "lon": -6.2629806 },
+    { "lat": 53.3573428, "lon": -6.2629271 },
+    { "lat": 53.3573128, "lon": -6.2628542 }
+  ],
+  "tags": {
+    "building:part": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1304451843,
+  "bounds": {
+    "minlat": 53.3544593,
+    "minlon": -6.2637383,
+    "maxlat": 53.3545027,
+    "maxlon": -6.2636651
+  },
+  "geometry": [
+    { "lat": 53.3545027, "lon": -6.2636963 },
+    { "lat": 53.3545007, "lon": -6.2636853 },
+    { "lat": 53.3544967, "lon": -6.2636759 },
+    { "lat": 53.3544912, "lon": -6.2636690 },
+    { "lat": 53.3544847, "lon": -6.2636652 },
+    { "lat": 53.3544778, "lon": -6.2636651 },
+    { "lat": 53.3544712, "lon": -6.2636685 },
+    { "lat": 53.3544651, "lon": -6.2636732 },
+    { "lat": 53.3544615, "lon": -6.2636845 },
+    { "lat": 53.3544593, "lon": -6.2636954 },
+    { "lat": 53.3544594, "lon": -6.2637082 },
+    { "lat": 53.3544620, "lon": -6.2637201 },
+    { "lat": 53.3544670, "lon": -6.2637298 },
+    { "lat": 53.3544736, "lon": -6.2637361 },
+    { "lat": 53.3544811, "lon": -6.2637383 },
+    { "lat": 53.3544885, "lon": -6.2637360 },
+    { "lat": 53.3544951, "lon": -6.2637296 },
+    { "lat": 53.3545000, "lon": -6.2637199 },
+    { "lat": 53.3545026, "lon": -6.2637079 },
+    { "lat": 53.3545027, "lon": -6.2636963 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "40",
+    "roof:height": "15",
+    "roof:shape": "pyramidal"
+  }
+},
+{
+  "type": "way",
+  "id": 1310403809,
+  "bounds": {
+    "minlat": 53.3429307,
+    "minlon": -6.2775066,
+    "maxlat": 53.3430165,
+    "maxlon": -6.2773146
+  },
+  "geometry": [
+    { "lat": 53.3430165, "lon": -6.2773450 },
+    { "lat": 53.3429910, "lon": -6.2773304 },
+    { "lat": 53.3429648, "lon": -6.2773146 },
+    { "lat": 53.3429605, "lon": -6.2773332 },
+    { "lat": 53.3429344, "lon": -6.2774555 },
+    { "lat": 53.3429307, "lon": -6.2774731 },
+    { "lat": 53.3429567, "lon": -6.2774887 },
+    { "lat": 53.3429825, "lon": -6.2775066 },
+    { "lat": 53.3429998, "lon": -6.2774221 },
+    { "lat": 53.3430165, "lon": -6.2773450 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "30",
+    "roof:height": "10",
+    "roof:shape": "pyramidal"
+  }
+},
+{
+  "type": "way",
+  "id": 1337730045,
+  "bounds": {
+    "minlat": 53.3461715,
+    "minlon": -6.2539331,
+    "maxlat": 53.3463544,
+    "maxlon": -6.2537643
+  },
+  "geometry": [
+    { "lat": 53.3461715, "lon": -6.2537872 },
+    { "lat": 53.3461783, "lon": -6.2539331 },
+    { "lat": 53.3463544, "lon": -6.2539101 },
+    { "lat": 53.3463477, "lon": -6.2537643 },
+    { "lat": 53.3461715, "lon": -6.2537872 }
+  ],
+  "tags": {
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1409815617,
+  "bounds": {
+    "minlat": 53.3426321,
+    "minlon": -6.2681540,
+    "maxlat": 53.3427686,
+    "maxlon": -6.2679249
+  },
+  "geometry": [
+    { "lat": 53.3427642, "lon": -6.2679983 },
+    { "lat": 53.3427686, "lon": -6.2680341 },
+    { "lat": 53.3427662, "lon": -6.2680703 },
+    { "lat": 53.3427570, "lon": -6.2681034 },
+    { "lat": 53.3427422, "lon": -6.2681301 },
+    { "lat": 53.3427230, "lon": -6.2681475 },
+    { "lat": 53.3427016, "lon": -6.2681540 },
+    { "lat": 53.3426884, "lon": -6.2681523 },
+    { "lat": 53.3426676, "lon": -6.2681402 },
+    { "lat": 53.3426504, "lon": -6.2681180 },
+    { "lat": 53.3426381, "lon": -6.2680875 },
+    { "lat": 53.3426321, "lon": -6.2680510 },
+    { "lat": 53.3426334, "lon": -6.2680142 },
+    { "lat": 53.3426415, "lon": -6.2679803 },
+    { "lat": 53.3426555, "lon": -6.2679524 },
+    { "lat": 53.3426741, "lon": -6.2679333 },
+    { "lat": 53.3426953, "lon": -6.2679249 },
+    { "lat": 53.3427171, "lon": -6.2679277 },
+    { "lat": 53.3427377, "lon": -6.2679390 },
+    { "lat": 53.3427533, "lon": -6.2679668 },
+    { "lat": 53.3427642, "lon": -6.2679983 }
+  ],
+  "tags": {
+    "building:part": "tower",
+    "height": "15",
+    "man_made": "tower",
+    "name": "Bermingham Tower",
+    "tower:construction": "freestanding",
+    "tower:type": "defensive",
+    "year_built": "1777"
+  }
+},
+{
+  "type": "way",
+  "id": 1429615210,
+  "bounds": {
+    "minlat": 53.3489562,
+    "minlon": -6.2217097,
+    "maxlat": 53.3494856,
+    "maxlon": -6.2201719
+  },
+  "geometry": [
+    { "lat": 53.3494739, "lon": -6.2206064 },
+    { "lat": 53.3489562, "lon": -6.2201719 },
+    { "lat": 53.3490256, "lon": -6.2217079 },
+    { "lat": 53.3492764, "lon": -6.2217097 },
+    { "lat": 53.3494856, "lon": -6.2212520 },
+    { "lat": 53.3494739, "lon": -6.2206064 }
+  ],
+  "tags": {
+    "construction": "port",
+    "landuse": "construction"
+  }
+},
+{
+  "type": "way",
+  "id": 1484578508,
+  "bounds": {
+    "minlat": 53.3544097,
+    "minlon": -6.2638688,
+    "maxlat": 53.3545106,
+    "maxlon": -6.2637130
+  },
+  "geometry": [
+    { "lat": 53.3544669, "lon": -6.2638688 },
+    { "lat": 53.3544097, "lon": -6.2638075 },
+    { "lat": 53.3544455, "lon": -6.2637130 },
+    { "lat": 53.3544889, "lon": -6.2637588 },
+    { "lat": 53.3545005, "lon": -6.2637718 },
+    { "lat": 53.3545106, "lon": -6.2638090 },
+    { "lat": 53.3544910, "lon": -6.2638618 },
+    { "lat": 53.3544669, "lon": -6.2638688 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "20",
+    "roof:colour": "darkgray",
+    "roof:height": "7",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1484578509,
+  "bounds": {
+    "minlat": 53.3544910,
+    "minlon": -6.2641252,
+    "maxlat": 53.3547209,
+    "maxlon": -6.2638090
+  },
+  "geometry": [
+    { "lat": 53.3544910, "lon": -6.2638618 },
+    { "lat": 53.3544971, "lon": -6.2638803 },
+    { "lat": 53.3545471, "lon": -6.2639370 },
+    { "lat": 53.3545609, "lon": -6.2639357 },
+    { "lat": 53.3545802, "lon": -6.2640249 },
+    { "lat": 53.3546302, "lon": -6.2640096 },
+    { "lat": 53.3546549, "lon": -6.2641035 },
+    { "lat": 53.3546606, "lon": -6.2641252 },
+    { "lat": 53.3547209, "lon": -6.2639643 },
+    { "lat": 53.3547060, "lon": -6.2639646 },
+    { "lat": 53.3546464, "lon": -6.2639658 },
+    { "lat": 53.3546330, "lon": -6.2638844 },
+    { "lat": 53.3545797, "lon": -6.2638831 },
+    { "lat": 53.3545612, "lon": -6.2638437 },
+    { "lat": 53.3545345, "lon": -6.2638137 },
+    { "lat": 53.3545106, "lon": -6.2638090 },
+    { "lat": 53.3544910, "lon": -6.2638618 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "20",
+    "roof:colour": "darkgray",
+    "roof:height": "10",
+    "roof:orientation": "along",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1484578510,
+  "bounds": {
+    "minlat": 53.3545633,
+    "minlon": -6.2641483,
+    "maxlat": 53.3546549,
+    "maxlon": -6.2640096
+  },
+  "geometry": [
+    { "lat": 53.3546549, "lon": -6.2641035 },
+    { "lat": 53.3546392, "lon": -6.2641483 },
+    { "lat": 53.3546161, "lon": -6.2641228 },
+    { "lat": 53.3545633, "lon": -6.2640669 },
+    { "lat": 53.3545802, "lon": -6.2640249 },
+    { "lat": 53.3546302, "lon": -6.2640096 },
+    { "lat": 53.3546549, "lon": -6.2641035 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "20",
+    "roof:colour": "darkgray",
+    "roof:height": "10",
+    "roof:orientation": "across",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1484578511,
+  "bounds": {
+    "minlat": 53.3546330,
+    "minlon": -6.2639658,
+    "maxlat": 53.3547218,
+    "maxlon": -6.2638413
+  },
+  "geometry": [
+    { "lat": 53.3546498, "lon": -6.2638413 },
+    { "lat": 53.3546330, "lon": -6.2638844 },
+    { "lat": 53.3546464, "lon": -6.2639658 },
+    { "lat": 53.3547060, "lon": -6.2639646 },
+    { "lat": 53.3547218, "lon": -6.2639231 },
+    { "lat": 53.3546498, "lon": -6.2638413 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "20",
+    "roof:colour": "darkgray",
+    "roof:height": "10",
+    "roof:orientation": "across",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1484578512,
+  "bounds": {
+    "minlat": 53.3544423,
+    "minlon": -6.2639534,
+    "maxlat": 53.3544910,
+    "maxlon": -6.2638618
+  },
+  "geometry": [
+    { "lat": 53.3544910, "lon": -6.2638618 },
+    { "lat": 53.3544669, "lon": -6.2638688 },
+    { "lat": 53.3544423, "lon": -6.2639367 },
+    { "lat": 53.3544580, "lon": -6.2639534 },
+    { "lat": 53.3544910, "lon": -6.2638618 }
+  ],
+  "tags": {
+    "building:part": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1484578513,
+  "bounds": {
+    "minlat": 53.3545163,
+    "minlon": -6.2640669,
+    "maxlat": 53.3545802,
+    "maxlon": -6.2639357
+  },
+  "geometry": [
+    { "lat": 53.3545633, "lon": -6.2640669 },
+    { "lat": 53.3545163, "lon": -6.2640153 },
+    { "lat": 53.3545471, "lon": -6.2639370 },
+    { "lat": 53.3545609, "lon": -6.2639357 },
+    { "lat": 53.3545802, "lon": -6.2640249 },
+    { "lat": 53.3545633, "lon": -6.2640669 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "20",
+    "roof:colour": "darkgray",
+    "roof:height": "10",
+    "roof:orientation": "along",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1484578514,
+  "bounds": {
+    "minlat": 53.3545612,
+    "minlon": -6.2638844,
+    "maxlat": 53.3546498,
+    "maxlon": -6.2637744
+  },
+  "geometry": [
+    { "lat": 53.3545612, "lon": -6.2638437 },
+    { "lat": 53.3545797, "lon": -6.2638831 },
+    { "lat": 53.3546330, "lon": -6.2638844 },
+    { "lat": 53.3546498, "lon": -6.2638413 },
+    { "lat": 53.3545889, "lon": -6.2637744 },
+    { "lat": 53.3545612, "lon": -6.2638437 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "20",
+    "roof:colour": "darkgray",
+    "roof:height": "10",
+    "roof:orientation": "across",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1484578515,
+  "bounds": {
+    "minlat": 53.3544580,
+    "minlon": -6.2640153,
+    "maxlat": 53.3545471,
+    "maxlon": -6.2638618
+  },
+  "geometry": [
+    { "lat": 53.3545163, "lon": -6.2640153 },
+    { "lat": 53.3544580, "lon": -6.2639534 },
+    { "lat": 53.3544910, "lon": -6.2638618 },
+    { "lat": 53.3544971, "lon": -6.2638803 },
+    { "lat": 53.3545471, "lon": -6.2639370 },
+    { "lat": 53.3545163, "lon": -6.2640153 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "20",
+    "roof:colour": "darkgray",
+    "roof:height": "10",
+    "roof:orientation": "across",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1484578517,
+  "bounds": {
+    "minlat": 53.3544889,
+    "minlon": -6.2638437,
+    "maxlat": 53.3545889,
+    "maxlon": -6.2636921
+  },
+  "geometry": [
+    { "lat": 53.3545889, "lon": -6.2637744 },
+    { "lat": 53.3545156, "lon": -6.2636921 },
+    { "lat": 53.3544889, "lon": -6.2637588 },
+    { "lat": 53.3545005, "lon": -6.2637718 },
+    { "lat": 53.3545106, "lon": -6.2638090 },
+    { "lat": 53.3545345, "lon": -6.2638137 },
+    { "lat": 53.3545612, "lon": -6.2638437 },
+    { "lat": 53.3545889, "lon": -6.2637744 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "20",
+    "roof:colour": "darkgray",
+    "roof:height": "10",
+    "roof:orientation": "across",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1484578518,
+  "bounds": {
+    "minlat": 53.3544455,
+    "minlon": -6.2637588,
+    "maxlat": 53.3545156,
+    "maxlon": -6.2636428
+  },
+  "geometry": [
+    { "lat": 53.3544455, "lon": -6.2637130 },
+    { "lat": 53.3544724, "lon": -6.2636428 },
+    { "lat": 53.3545156, "lon": -6.2636921 },
+    { "lat": 53.3544889, "lon": -6.2637588 },
+    { "lat": 53.3544455, "lon": -6.2637130 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "25"
+  }
+},
+{
+  "type": "way",
+  "id": 1484578519,
+  "bounds": {
+    "minlat": 53.3543805,
+    "minlon": -6.2639367,
+    "maxlat": 53.3544669,
+    "maxlon": -6.2638075
+  },
+  "geometry": [
+    { "lat": 53.3544669, "lon": -6.2638688 },
+    { "lat": 53.3544097, "lon": -6.2638075 },
+    { "lat": 53.3544056, "lon": -6.2638161 },
+    { "lat": 53.3543922, "lon": -6.2638188 },
+    { "lat": 53.3543805, "lon": -6.2638464 },
+    { "lat": 53.3543842, "lon": -6.2638750 },
+    { "lat": 53.3544378, "lon": -6.2639319 },
+    { "lat": 53.3544423, "lon": -6.2639367 },
+    { "lat": 53.3544669, "lon": -6.2638688 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "13"
+  }
+},
+{
+  "type": "way",
+  "id": 1488401186,
+  "bounds": {
+    "minlat": 53.3469071,
+    "minlon": -6.2538680,
+    "maxlat": 53.3470194,
+    "maxlon": -6.2536772
+  },
+  "geometry": [
+    { "lat": 53.3470194, "lon": -6.2538518 },
+    { "lat": 53.3469168, "lon": -6.2538680 },
+    { "lat": 53.3469071, "lon": -6.2536933 },
+    { "lat": 53.3470096, "lon": -6.2536772 },
+    { "lat": 53.3470194, "lon": -6.2538518 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "38",
+    "min_height": "31",
+    "roof:height": "5",
+    "roof:shape": "pyramidal"
+  }
+},
+{
+  "type": "way",
+  "id": 1488401187,
+  "bounds": {
+    "minlat": 53.3468928,
+    "minlon": -6.2536098,
+    "maxlat": 53.3470052,
+    "maxlon": -6.2534191
+  },
+  "geometry": [
+    { "lat": 53.3470052, "lon": -6.2535937 },
+    { "lat": 53.3469026, "lon": -6.2536098 },
+    { "lat": 53.3468928, "lon": -6.2534352 },
+    { "lat": 53.3469954, "lon": -6.2534191 },
+    { "lat": 53.3470052, "lon": -6.2535937 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "45",
+    "min_height": "38",
+    "roof:height": "5",
+    "roof:shape": "pyramidal"
+  }
+},
+{
+  "type": "way",
+  "id": 1488401188,
+  "bounds": {
+    "minlat": 53.3467397,
+    "minlon": -6.2536317,
+    "maxlat": 53.3468521,
+    "maxlon": -6.2534410
+  },
+  "geometry": [
+    { "lat": 53.3468521, "lon": -6.2536156 },
+    { "lat": 53.3467495, "lon": -6.2536317 },
+    { "lat": 53.3467397, "lon": -6.2534571 },
+    { "lat": 53.3468423, "lon": -6.2534410 },
+    { "lat": 53.3468521, "lon": -6.2536156 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "52",
+    "min_height": "45",
+    "roof:height": "5",
+    "roof:shape": "pyramidal"
+  }
+},
+{
+  "type": "way",
+  "id": 1488401189,
+  "bounds": {
+    "minlat": 53.3467267,
+    "minlon": -6.2533740,
+    "maxlat": 53.3468391,
+    "maxlon": -6.2531833
+  },
+  "geometry": [
+    { "lat": 53.3468391, "lon": -6.2533579 },
+    { "lat": 53.3467365, "lon": -6.2533740 },
+    { "lat": 53.3467267, "lon": -6.2531994 },
+    { "lat": 53.3468293, "lon": -6.2531833 },
+    { "lat": 53.3468391, "lon": -6.2533579 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "59",
+    "min_height": "52",
+    "roof:height": "5",
+    "roof:shape": "pyramidal"
+  }
+},
+{
+  "type": "way",
+  "id": 1488401190,
+  "bounds": {
+    "minlat": 53.3465729,
+    "minlon": -6.2533997,
+    "maxlat": 53.3466852,
+    "maxlon": -6.2532089
+  },
+  "geometry": [
+    { "lat": 53.3466852, "lon": -6.2533835 },
+    { "lat": 53.3465826, "lon": -6.2533997 },
+    { "lat": 53.3465729, "lon": -6.2532251 },
+    { "lat": 53.3466754, "lon": -6.2532089 },
+    { "lat": 53.3466852, "lon": -6.2533835 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "52",
+    "min_height": "45",
+    "roof:height": "5",
+    "roof:shape": "pyramidal"
+  }
+},
+{
+  "type": "way",
+  "id": 1488401191,
+  "bounds": {
+    "minlat": 53.3465619,
+    "minlon": -6.2531467,
+    "maxlat": 53.3466743,
+    "maxlon": -6.2529560
+  },
+  "geometry": [
+    { "lat": 53.3466743, "lon": -6.2531306 },
+    { "lat": 53.3465717, "lon": -6.2531467 },
+    { "lat": 53.3465619, "lon": -6.2529721 },
+    { "lat": 53.3466645, "lon": -6.2529560 },
+    { "lat": 53.3466743, "lon": -6.2531306 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "45",
+    "min_height": "38",
+    "roof:height": "5",
+    "roof:shape": "pyramidal"
+  }
+},
+{
+  "type": "way",
+  "id": 1488401192,
+  "bounds": {
+    "minlat": 53.3464082,
+    "minlon": -6.2531721,
+    "maxlat": 53.3465206,
+    "maxlon": -6.2529814
+  },
+  "geometry": [
+    { "lat": 53.3465206, "lon": -6.2531560 },
+    { "lat": 53.3464180, "lon": -6.2531721 },
+    { "lat": 53.3464082, "lon": -6.2529975 },
+    { "lat": 53.3465108, "lon": -6.2529814 },
+    { "lat": 53.3465206, "lon": -6.2531560 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "38",
+    "min_height": "31",
+    "roof:height": "5",
+    "roof:shape": "pyramidal"
+  }
+},
+{
+  "type": "way",
+  "id": 1488401193,
+  "bounds": {
+    "minlat": 53.3467086,
+    "minlon": -6.2534077,
+    "maxlat": 53.3468593,
+    "maxlon": -6.2531524
+  },
+  "geometry": [
+    { "lat": 53.3468593, "lon": -6.2533882 },
+    { "lat": 53.3467201, "lon": -6.2534077 },
+    { "lat": 53.3467086, "lon": -6.2531718 },
+    { "lat": 53.3468473, "lon": -6.2531524 },
+    { "lat": 53.3468593, "lon": -6.2533882 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "52"
+  }
+},
+{
+  "type": "way",
+  "id": 1488401194,
+  "bounds": {
+    "minlat": 53.3463921,
+    "minlon": -6.2531912,
+    "maxlat": 53.3465379,
+    "maxlon": -6.2529489
+  },
+  "geometry": [
+    { "lat": 53.3464036, "lon": -6.2531912 },
+    { "lat": 53.3465379, "lon": -6.2531720 },
+    { "lat": 53.3465259, "lon": -6.2529489 },
+    { "lat": 53.3463921, "lon": -6.2529683 },
+    { "lat": 53.3464036, "lon": -6.2531912 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "31"
+  }
+},
+{
+  "type": "way",
+  "id": 1488401195,
+  "bounds": {
+    "minlat": 53.3465478,
+    "minlon": -6.2531780,
+    "maxlat": 53.3466927,
+    "maxlon": -6.2529251
+  },
+  "geometry": [
+    { "lat": 53.3466927, "lon": -6.2531590 },
+    { "lat": 53.3465601, "lon": -6.2531780 },
+    { "lat": 53.3465597, "lon": -6.2531687 },
+    { "lat": 53.3465478, "lon": -6.2529457 },
+    { "lat": 53.3466801, "lon": -6.2529251 },
+    { "lat": 53.3466927, "lon": -6.2531590 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "38"
+  }
+},
+{
+  "type": "way",
+  "id": 1488401196,
+  "bounds": {
+    "minlat": 53.3465615,
+    "minlon": -6.2534284,
+    "maxlat": 53.3467054,
+    "maxlon": -6.2531854
+  },
+  "geometry": [
+    { "lat": 53.3467054, "lon": -6.2534097 },
+    { "lat": 53.3465728, "lon": -6.2534284 },
+    { "lat": 53.3465615, "lon": -6.2532044 },
+    { "lat": 53.3466940, "lon": -6.2531854 },
+    { "lat": 53.3467054, "lon": -6.2534097 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "45"
+  }
+},
+{
+  "type": "way",
+  "id": 1488401197,
+  "bounds": {
+    "minlat": 53.3467218,
+    "minlon": -6.2536636,
+    "maxlat": 53.3468722,
+    "maxlon": -6.2534164
+  },
+  "geometry": [
+    { "lat": 53.3468722, "lon": -6.2536436 },
+    { "lat": 53.3467337, "lon": -6.2536636 },
+    { "lat": 53.3467218, "lon": -6.2534373 },
+    { "lat": 53.3468603, "lon": -6.2534164 },
+    { "lat": 53.3468722, "lon": -6.2536436 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "45"
+  }
+},
+{
+  "type": "way",
+  "id": 1488401198,
+  "bounds": {
+    "minlat": 53.3468896,
+    "minlon": -6.2538939,
+    "maxlat": 53.3470371,
+    "maxlon": -6.2536603
+  },
+  "geometry": [
+    { "lat": 53.3470371, "lon": -6.2538740 },
+    { "lat": 53.3469011, "lon": -6.2538939 },
+    { "lat": 53.3468896, "lon": -6.2536808 },
+    { "lat": 53.3470260, "lon": -6.2536603 },
+    { "lat": 53.3470371, "lon": -6.2538740 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "31"
+  }
+},
+{
+  "type": "way",
+  "id": 1488401199,
+  "bounds": {
+    "minlat": 53.3468754,
+    "minlon": -6.2536419,
+    "maxlat": 53.3470239,
+    "maxlon": -6.2533943
+  },
+  "geometry": [
+    { "lat": 53.3470239, "lon": -6.2536214 },
+    { "lat": 53.3468875, "lon": -6.2536419 },
+    { "lat": 53.3468754, "lon": -6.2534143 },
+    { "lat": 53.3470121, "lon": -6.2533943 },
+    { "lat": 53.3470239, "lon": -6.2536214 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "38"
+  }
+},
+{
+  "type": "way",
+  "id": 1488401200,
+  "bounds": {
+    "minlat": 53.3465601,
+    "minlon": -6.2532044,
+    "maxlat": 53.3466940,
+    "maxlon": -6.2531590
+  },
+  "geometry": [
+    { "lat": 53.3465601, "lon": -6.2531780 },
+    { "lat": 53.3465615, "lon": -6.2532044 },
+    { "lat": 53.3466940, "lon": -6.2531854 },
+    { "lat": 53.3466934, "lon": -6.2531739 },
+    { "lat": 53.3466927, "lon": -6.2531590 },
+    { "lat": 53.3465601, "lon": -6.2531780 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "38",
+    "roof:shape": "flat"
+  }
+},
+{
+  "type": "way",
+  "id": 1488401201,
+  "bounds": {
+    "minlat": 53.3466934,
+    "minlon": -6.2534097,
+    "maxlat": 53.3467201,
+    "maxlon": -6.2531718
+  },
+  "geometry": [
+    { "lat": 53.3467201, "lon": -6.2534077 },
+    { "lat": 53.3467054, "lon": -6.2534097 },
+    { "lat": 53.3466940, "lon": -6.2531854 },
+    { "lat": 53.3466934, "lon": -6.2531739 },
+    { "lat": 53.3467086, "lon": -6.2531718 },
+    { "lat": 53.3467201, "lon": -6.2534077 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "45",
+    "roof:shape": "flat"
+  }
+},
+{
+  "type": "way",
+  "id": 1488401202,
+  "bounds": {
+    "minlat": 53.3467201,
+    "minlon": -6.2534373,
+    "maxlat": 53.3468603,
+    "maxlon": -6.2533882
+  },
+  "geometry": [
+    { "lat": 53.3467201, "lon": -6.2534077 },
+    { "lat": 53.3467218, "lon": -6.2534373 },
+    { "lat": 53.3468603, "lon": -6.2534164 },
+    { "lat": 53.3468593, "lon": -6.2533882 },
+    { "lat": 53.3467201, "lon": -6.2534077 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "45",
+    "roof:shape": "flat"
+  }
+},
+{
+  "type": "way",
+  "id": 1488401203,
+  "bounds": {
+    "minlat": 53.3468603,
+    "minlon": -6.2536436,
+    "maxlat": 53.3468875,
+    "maxlon": -6.2534143
+  },
+  "geometry": [
+    { "lat": 53.3468875, "lon": -6.2536419 },
+    { "lat": 53.3468722, "lon": -6.2536436 },
+    { "lat": 53.3468603, "lon": -6.2534164 },
+    { "lat": 53.3468754, "lon": -6.2534143 },
+    { "lat": 53.3468875, "lon": -6.2536419 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "38",
+    "roof:shape": "flat"
+  }
+},
+{
+  "type": "way",
+  "id": 1488401204,
+  "bounds": {
+    "minlat": 53.3468875,
+    "minlon": -6.2536808,
+    "maxlat": 53.3470260,
+    "maxlon": -6.2536214
+  },
+  "geometry": [
+    { "lat": 53.3468875, "lon": -6.2536419 },
+    { "lat": 53.3468896, "lon": -6.2536808 },
+    { "lat": 53.3470260, "lon": -6.2536603 },
+    { "lat": 53.3470239, "lon": -6.2536214 },
+    { "lat": 53.3468875, "lon": -6.2536419 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "31",
+    "roof:shape": "flat"
+  }
+},
+{
+  "type": "way",
+  "id": 1488401205,
+  "bounds": {
+    "minlat": 53.3465259,
+    "minlon": -6.2531720,
+    "maxlat": 53.3465597,
+    "maxlon": -6.2529457
+  },
+  "geometry": [
+    { "lat": 53.3465597, "lon": -6.2531687 },
+    { "lat": 53.3465379, "lon": -6.2531720 },
+    { "lat": 53.3465259, "lon": -6.2529489 },
+    { "lat": 53.3465478, "lon": -6.2529457 },
+    { "lat": 53.3465597, "lon": -6.2531687 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "31",
+    "roof:shape": "flat"
+  }
+},
+{
+  "type": "way",
+  "id": 1488412997,
+  "bounds": {
+    "minlat": 53.3484293,
+    "minlon": -6.2554104,
+    "maxlat": 53.3485009,
+    "maxlon": -6.2552931
+  },
+  "geometry": [
+    { "lat": 53.3484876, "lon": -6.2554104 },
+    { "lat": 53.3484293, "lon": -6.2553874 },
+    { "lat": 53.3484425, "lon": -6.2552931 },
+    { "lat": 53.3485009, "lon": -6.2553160 },
+    { "lat": 53.3484876, "lon": -6.2554104 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "59.4",
+    "min_height": "57.4",
+    "roof:colour": "#99ff99",
+    "roof:shape": "flat"
+  }
+},
+{
+  "type": "way",
+  "id": 1488412998,
+  "bounds": {
+    "minlat": 53.3483313,
+    "minlon": -6.2558832,
+    "maxlat": 53.3484532,
+    "maxlon": -6.2555223
+  },
+  "geometry": [
+    { "lat": 53.3483313, "lon": -6.2558526 },
+    { "lat": 53.3483324, "lon": -6.2558450 },
+    { "lat": 53.3483364, "lon": -6.2558194 },
+    { "lat": 53.3483429, "lon": -6.2557768 },
+    { "lat": 53.3483500, "lon": -6.2557315 },
+    { "lat": 53.3483569, "lon": -6.2556870 },
+    { "lat": 53.3483639, "lon": -6.2556412 },
+    { "lat": 53.3483705, "lon": -6.2555985 },
+    { "lat": 53.3483771, "lon": -6.2555565 },
+    { "lat": 53.3483789, "lon": -6.2555419 },
+    { "lat": 53.3483819, "lon": -6.2555223 },
+    { "lat": 53.3484015, "lon": -6.2555307 },
+    { "lat": 53.3484532, "lon": -6.2555529 },
+    { "lat": 53.3484502, "lon": -6.2555724 },
+    { "lat": 53.3484464, "lon": -6.2555969 },
+    { "lat": 53.3484430, "lon": -6.2556193 },
+    { "lat": 53.3484398, "lon": -6.2556404 },
+    { "lat": 53.3484362, "lon": -6.2556641 },
+    { "lat": 53.3484333, "lon": -6.2556830 },
+    { "lat": 53.3484296, "lon": -6.2557072 },
+    { "lat": 53.3484266, "lon": -6.2557263 },
+    { "lat": 53.3484227, "lon": -6.2557517 },
+    { "lat": 53.3484199, "lon": -6.2557704 },
+    { "lat": 53.3484158, "lon": -6.2557970 },
+    { "lat": 53.3484133, "lon": -6.2558134 },
+    { "lat": 53.3484090, "lon": -6.2558415 },
+    { "lat": 53.3484063, "lon": -6.2558589 },
+    { "lat": 53.3484026, "lon": -6.2558832 },
+    { "lat": 53.3483313, "lon": -6.2558526 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "10",
+    "roof:colour": "#99ff99"
+  }
+},
+{
+  "type": "way",
+  "id": 1488412999,
+  "bounds": {
+    "minlat": 53.3483999,
+    "minlon": -6.2559141,
+    "maxlat": 53.3484932,
+    "maxlon": -6.2555529
+  },
+  "geometry": [
+    { "lat": 53.3484400, "lon": -6.2559141 },
+    { "lat": 53.3483999, "lon": -6.2558966 },
+    { "lat": 53.3484026, "lon": -6.2558832 },
+    { "lat": 53.3484063, "lon": -6.2558589 },
+    { "lat": 53.3484090, "lon": -6.2558415 },
+    { "lat": 53.3484133, "lon": -6.2558134 },
+    { "lat": 53.3484158, "lon": -6.2557970 },
+    { "lat": 53.3484199, "lon": -6.2557704 },
+    { "lat": 53.3484227, "lon": -6.2557517 },
+    { "lat": 53.3484266, "lon": -6.2557263 },
+    { "lat": 53.3484296, "lon": -6.2557072 },
+    { "lat": 53.3484333, "lon": -6.2556830 },
+    { "lat": 53.3484362, "lon": -6.2556641 },
+    { "lat": 53.3484398, "lon": -6.2556404 },
+    { "lat": 53.3484430, "lon": -6.2556193 },
+    { "lat": 53.3484464, "lon": -6.2555969 },
+    { "lat": 53.3484502, "lon": -6.2555724 },
+    { "lat": 53.3484532, "lon": -6.2555529 },
+    { "lat": 53.3484932, "lon": -6.2555695 },
+    { "lat": 53.3484904, "lon": -6.2555879 },
+    { "lat": 53.3484867, "lon": -6.2556119 },
+    { "lat": 53.3484833, "lon": -6.2556336 },
+    { "lat": 53.3484796, "lon": -6.2556580 },
+    { "lat": 53.3484768, "lon": -6.2556757 },
+    { "lat": 53.3484731, "lon": -6.2556999 },
+    { "lat": 53.3484701, "lon": -6.2557194 },
+    { "lat": 53.3484664, "lon": -6.2557433 },
+    { "lat": 53.3484627, "lon": -6.2557675 },
+    { "lat": 53.3484589, "lon": -6.2557922 },
+    { "lat": 53.3484560, "lon": -6.2558111 },
+    { "lat": 53.3484513, "lon": -6.2558412 },
+    { "lat": 53.3484489, "lon": -6.2558572 },
+    { "lat": 53.3484456, "lon": -6.2558781 },
+    { "lat": 53.3484426, "lon": -6.2558980 },
+    { "lat": 53.3484400, "lon": -6.2559141 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "11",
+    "roof:colour": "#99ff99"
+  }
+},
+{
+  "type": "way",
+  "id": 1488413000,
+  "bounds": {
+    "minlat": 53.3484426,
+    "minlon": -6.2559281,
+    "maxlat": 53.3485628,
+    "maxlon": -6.2555695
+  },
+  "geometry": [
+    { "lat": 53.3485121, "lon": -6.2559281 },
+    { "lat": 53.3484426, "lon": -6.2558980 },
+    { "lat": 53.3484456, "lon": -6.2558781 },
+    { "lat": 53.3484489, "lon": -6.2558572 },
+    { "lat": 53.3484513, "lon": -6.2558412 },
+    { "lat": 53.3484560, "lon": -6.2558111 },
+    { "lat": 53.3484589, "lon": -6.2557922 },
+    { "lat": 53.3484627, "lon": -6.2557675 },
+    { "lat": 53.3484664, "lon": -6.2557433 },
+    { "lat": 53.3484701, "lon": -6.2557194 },
+    { "lat": 53.3484731, "lon": -6.2556999 },
+    { "lat": 53.3484768, "lon": -6.2556757 },
+    { "lat": 53.3484796, "lon": -6.2556580 },
+    { "lat": 53.3484833, "lon": -6.2556336 },
+    { "lat": 53.3484867, "lon": -6.2556119 },
+    { "lat": 53.3484904, "lon": -6.2555879 },
+    { "lat": 53.3484932, "lon": -6.2555695 },
+    { "lat": 53.3485628, "lon": -6.2555995 },
+    { "lat": 53.3485579, "lon": -6.2556310 },
+    { "lat": 53.3485511, "lon": -6.2556753 },
+    { "lat": 53.3485446, "lon": -6.2557174 },
+    { "lat": 53.3485376, "lon": -6.2557630 },
+    { "lat": 53.3485306, "lon": -6.2558081 },
+    { "lat": 53.3485233, "lon": -6.2558559 },
+    { "lat": 53.3485169, "lon": -6.2558973 },
+    { "lat": 53.3485121, "lon": -6.2559281 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "10",
+    "roof:colour": "#99ff99"
+  }
+},
+{
+  "type": "way",
+  "id": 1488413001,
+  "bounds": {
+    "minlat": 53.3484076,
+    "minlon": -6.2554426,
+    "maxlat": 53.3485199,
+    "maxlon": -6.2552565
+  },
+  "geometry": [
+    { "lat": 53.3484971, "lon": -6.2554426 },
+    { "lat": 53.3485023, "lon": -6.2554055 },
+    { "lat": 53.3485102, "lon": -6.2553564 },
+    { "lat": 53.3485181, "lon": -6.2553045 },
+    { "lat": 53.3485199, "lon": -6.2552952 },
+    { "lat": 53.3485054, "lon": -6.2552889 },
+    { "lat": 53.3484751, "lon": -6.2552758 },
+    { "lat": 53.3484454, "lon": -6.2552630 },
+    { "lat": 53.3484304, "lon": -6.2552565 },
+    { "lat": 53.3484285, "lon": -6.2552680 },
+    { "lat": 53.3484207, "lon": -6.2553166 },
+    { "lat": 53.3484131, "lon": -6.2553670 },
+    { "lat": 53.3484076, "lon": -6.2554039 },
+    { "lat": 53.3484234, "lon": -6.2554106 },
+    { "lat": 53.3484528, "lon": -6.2554231 },
+    { "lat": 53.3484830, "lon": -6.2554363 },
+    { "lat": 53.3484971, "lon": -6.2554426 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "57.4",
+    "roof:colour": "#99ff99",
+    "roof:shape": "flat"
+  }
+},
+{
+  "type": "way",
+  "id": 1488413002,
+  "bounds": {
+    "minlat": 53.3484455,
+    "minlon": -6.2554836,
+    "maxlat": 53.3484830,
+    "maxlon": -6.2554231
+  },
+  "geometry": [
+    { "lat": 53.3484757, "lon": -6.2554836 },
+    { "lat": 53.3484830, "lon": -6.2554363 },
+    { "lat": 53.3484528, "lon": -6.2554231 },
+    { "lat": 53.3484455, "lon": -6.2554699 },
+    { "lat": 53.3484757, "lon": -6.2554836 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "57",
+    "min_height": "56",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:orientation": "across",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488413003,
+  "bounds": {
+    "minlat": 53.3484166,
+    "minlon": -6.2554699,
+    "maxlat": 53.3484528,
+    "maxlon": -6.2554106
+  },
+  "geometry": [
+    { "lat": 53.3484455, "lon": -6.2554699 },
+    { "lat": 53.3484166, "lon": -6.2554569 },
+    { "lat": 53.3484234, "lon": -6.2554106 },
+    { "lat": 53.3484528, "lon": -6.2554231 },
+    { "lat": 53.3484455, "lon": -6.2554699 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "57",
+    "min_height": "56",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:orientation": "across",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488413004,
+  "bounds": {
+    "minlat": 53.3483680,
+    "minlon": -6.2554569,
+    "maxlat": 53.3484234,
+    "maxlon": -6.2554039
+  },
+  "geometry": [
+    { "lat": 53.3484166, "lon": -6.2554569 },
+    { "lat": 53.3484134, "lon": -6.2554555 },
+    { "lat": 53.3483680, "lon": -6.2554351 },
+    { "lat": 53.3483904, "lon": -6.2554175 },
+    { "lat": 53.3484076, "lon": -6.2554039 },
+    { "lat": 53.3484234, "lon": -6.2554106 },
+    { "lat": 53.3484166, "lon": -6.2554569 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "57",
+    "min_height": "56",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:orientation": "across",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488413005,
+  "bounds": {
+    "minlat": 53.3483680,
+    "minlon": -6.2554351,
+    "maxlat": 53.3484131,
+    "maxlon": -6.2553533
+  },
+  "geometry": [
+    { "lat": 53.3484076, "lon": -6.2554039 },
+    { "lat": 53.3484131, "lon": -6.2553670 },
+    { "lat": 53.3483812, "lon": -6.2553533 },
+    { "lat": 53.3483680, "lon": -6.2554351 },
+    { "lat": 53.3483904, "lon": -6.2554175 },
+    { "lat": 53.3484076, "lon": -6.2554039 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "57",
+    "min_height": "56",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:orientation": "across",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488413006,
+  "bounds": {
+    "minlat": 53.3483812,
+    "minlon": -6.2553670,
+    "maxlat": 53.3484207,
+    "maxlon": -6.2553031
+  },
+  "geometry": [
+    { "lat": 53.3483812, "lon": -6.2553533 },
+    { "lat": 53.3483892, "lon": -6.2553031 },
+    { "lat": 53.3484207, "lon": -6.2553166 },
+    { "lat": 53.3484131, "lon": -6.2553670 },
+    { "lat": 53.3483812, "lon": -6.2553533 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "57",
+    "min_height": "56",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:orientation": "along",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488413007,
+  "bounds": {
+    "minlat": 53.3483892,
+    "minlon": -6.2553166,
+    "maxlat": 53.3484285,
+    "maxlon": -6.2552543
+  },
+  "geometry": [
+    { "lat": 53.3483892, "lon": -6.2553031 },
+    { "lat": 53.3483971, "lon": -6.2552543 },
+    { "lat": 53.3484285, "lon": -6.2552680 },
+    { "lat": 53.3484207, "lon": -6.2553166 },
+    { "lat": 53.3483892, "lon": -6.2553031 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "57",
+    "min_height": "56",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488413008,
+  "bounds": {
+    "minlat": 53.3483971,
+    "minlon": -6.2552680,
+    "maxlat": 53.3484304,
+    "maxlon": -6.2551865
+  },
+  "geometry": [
+    { "lat": 53.3483971, "lon": -6.2552543 },
+    { "lat": 53.3484079, "lon": -6.2551865 },
+    { "lat": 53.3484304, "lon": -6.2552565 },
+    { "lat": 53.3484285, "lon": -6.2552680 },
+    { "lat": 53.3483971, "lon": -6.2552543 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "57",
+    "min_height": "56",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488413009,
+  "bounds": {
+    "minlat": 53.3484079,
+    "minlon": -6.2552630,
+    "maxlat": 53.3484538,
+    "maxlon": -6.2551865
+  },
+  "geometry": [
+    { "lat": 53.3484304, "lon": -6.2552565 },
+    { "lat": 53.3484454, "lon": -6.2552630 },
+    { "lat": 53.3484538, "lon": -6.2552072 },
+    { "lat": 53.3484416, "lon": -6.2552017 },
+    { "lat": 53.3484079, "lon": -6.2551865 },
+    { "lat": 53.3484304, "lon": -6.2552565 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "57",
+    "min_height": "56",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:orientation": "across",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488413010,
+  "bounds": {
+    "minlat": 53.3484454,
+    "minlon": -6.2552758,
+    "maxlat": 53.3484836,
+    "maxlon": -6.2552072
+  },
+  "geometry": [
+    { "lat": 53.3484454, "lon": -6.2552630 },
+    { "lat": 53.3484538, "lon": -6.2552072 },
+    { "lat": 53.3484836, "lon": -6.2552206 },
+    { "lat": 53.3484751, "lon": -6.2552758 },
+    { "lat": 53.3484454, "lon": -6.2552630 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "57",
+    "min_height": "56",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488413011,
+  "bounds": {
+    "minlat": 53.3484751,
+    "minlon": -6.2552889,
+    "maxlat": 53.3485141,
+    "maxlon": -6.2552206
+  },
+  "geometry": [
+    { "lat": 53.3484751, "lon": -6.2552758 },
+    { "lat": 53.3484836, "lon": -6.2552206 },
+    { "lat": 53.3485141, "lon": -6.2552344 },
+    { "lat": 53.3485054, "lon": -6.2552889 },
+    { "lat": 53.3484751, "lon": -6.2552758 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "57",
+    "min_height": "56",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488413012,
+  "bounds": {
+    "minlat": 53.3485054,
+    "minlon": -6.2552952,
+    "maxlat": 53.3485551,
+    "maxlon": -6.2552344
+  },
+  "geometry": [
+    { "lat": 53.3485054, "lon": -6.2552889 },
+    { "lat": 53.3485199, "lon": -6.2552952 },
+    { "lat": 53.3485551, "lon": -6.2552528 },
+    { "lat": 53.3485141, "lon": -6.2552344 },
+    { "lat": 53.3485054, "lon": -6.2552889 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "57",
+    "min_height": "56",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488413013,
+  "bounds": {
+    "minlat": 53.3485181,
+    "minlon": -6.2553155,
+    "maxlat": 53.3485551,
+    "maxlon": -6.2552528
+  },
+  "geometry": [
+    { "lat": 53.3485199, "lon": -6.2552952 },
+    { "lat": 53.3485181, "lon": -6.2553045 },
+    { "lat": 53.3485450, "lon": -6.2553155 },
+    { "lat": 53.3485551, "lon": -6.2552528 },
+    { "lat": 53.3485199, "lon": -6.2552952 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "57",
+    "min_height": "56",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488413014,
+  "bounds": {
+    "minlat": 53.3485102,
+    "minlon": -6.2553683,
+    "maxlat": 53.3485450,
+    "maxlon": -6.2553045
+  },
+  "geometry": [
+    { "lat": 53.3485181, "lon": -6.2553045 },
+    { "lat": 53.3485102, "lon": -6.2553564 },
+    { "lat": 53.3485366, "lon": -6.2553683 },
+    { "lat": 53.3485450, "lon": -6.2553155 },
+    { "lat": 53.3485181, "lon": -6.2553045 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "57",
+    "min_height": "56",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:orientation": "across",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488413015,
+  "bounds": {
+    "minlat": 53.3485023,
+    "minlon": -6.2554174,
+    "maxlat": 53.3485366,
+    "maxlon": -6.2553564
+  },
+  "geometry": [
+    { "lat": 53.3485102, "lon": -6.2553564 },
+    { "lat": 53.3485023, "lon": -6.2554055 },
+    { "lat": 53.3485287, "lon": -6.2554174 },
+    { "lat": 53.3485366, "lon": -6.2553683 },
+    { "lat": 53.3485102, "lon": -6.2553564 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "57",
+    "min_height": "56",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:orientation": "across",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488413016,
+  "bounds": {
+    "minlat": 53.3484971,
+    "minlon": -6.2555013,
+    "maxlat": 53.3485287,
+    "maxlon": -6.2554055
+  },
+  "geometry": [
+    { "lat": 53.3485023, "lon": -6.2554055 },
+    { "lat": 53.3484971, "lon": -6.2554426 },
+    { "lat": 53.3485152, "lon": -6.2555013 },
+    { "lat": 53.3485287, "lon": -6.2554174 },
+    { "lat": 53.3485023, "lon": -6.2554055 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "57",
+    "min_height": "56",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:orientation": "across",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488413017,
+  "bounds": {
+    "minlat": 53.3484757,
+    "minlon": -6.2555013,
+    "maxlat": 53.3485152,
+    "maxlon": -6.2554363
+  },
+  "geometry": [
+    { "lat": 53.3485152, "lon": -6.2555013 },
+    { "lat": 53.3484757, "lon": -6.2554836 },
+    { "lat": 53.3484830, "lon": -6.2554363 },
+    { "lat": 53.3484971, "lon": -6.2554426 },
+    { "lat": 53.3485152, "lon": -6.2555013 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "57",
+    "min_height": "56",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:orientation": "across",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488416498,
+  "bounds": {
+    "minlat": 53.3483680,
+    "minlon": -6.2555013,
+    "maxlat": 53.3485551,
+    "maxlon": -6.2551865
+  },
+  "geometry": [
+    { "lat": 53.3485152, "lon": -6.2555013 },
+    { "lat": 53.3484757, "lon": -6.2554836 },
+    { "lat": 53.3484455, "lon": -6.2554699 },
+    { "lat": 53.3484166, "lon": -6.2554569 },
+    { "lat": 53.3484134, "lon": -6.2554555 },
+    { "lat": 53.3483680, "lon": -6.2554351 },
+    { "lat": 53.3483812, "lon": -6.2553533 },
+    { "lat": 53.3483892, "lon": -6.2553031 },
+    { "lat": 53.3483971, "lon": -6.2552543 },
+    { "lat": 53.3484079, "lon": -6.2551865 },
+    { "lat": 53.3484416, "lon": -6.2552017 },
+    { "lat": 53.3484538, "lon": -6.2552072 },
+    { "lat": 53.3484836, "lon": -6.2552206 },
+    { "lat": 53.3485141, "lon": -6.2552344 },
+    { "lat": 53.3485551, "lon": -6.2552528 },
+    { "lat": 53.3485450, "lon": -6.2553155 },
+    { "lat": 53.3485366, "lon": -6.2553683 },
+    { "lat": 53.3485287, "lon": -6.2554174 },
+    { "lat": 53.3485152, "lon": -6.2555013 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "56",
+    "roof:shape": "flat"
+  }
+},
+{
+  "type": "way",
+  "id": 1488418432,
+  "bounds": {
+    "minlat": 53.3483364,
+    "minlon": -6.2558415,
+    "maxlat": 53.3484133,
+    "maxlon": -6.2557768
+  },
+  "geometry": [
+    { "lat": 53.3484090, "lon": -6.2558415 },
+    { "lat": 53.3483364, "lon": -6.2558194 },
+    { "lat": 53.3483429, "lon": -6.2557768 },
+    { "lat": 53.3484133, "lon": -6.2558134 },
+    { "lat": 53.3484090, "lon": -6.2558415 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "11",
+    "min_height": "10",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488418433,
+  "bounds": {
+    "minlat": 53.3483429,
+    "minlon": -6.2557970,
+    "maxlat": 53.3484199,
+    "maxlon": -6.2557315
+  },
+  "geometry": [
+    { "lat": 53.3483429, "lon": -6.2557768 },
+    { "lat": 53.3484158, "lon": -6.2557970 },
+    { "lat": 53.3484199, "lon": -6.2557704 },
+    { "lat": 53.3483500, "lon": -6.2557315 },
+    { "lat": 53.3483429, "lon": -6.2557768 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "11",
+    "min_height": "10",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488418434,
+  "bounds": {
+    "minlat": 53.3483569,
+    "minlon": -6.2557072,
+    "maxlat": 53.3484333,
+    "maxlon": -6.2556412
+  },
+  "geometry": [
+    { "lat": 53.3483569, "lon": -6.2556870 },
+    { "lat": 53.3484296, "lon": -6.2557072 },
+    { "lat": 53.3484333, "lon": -6.2556830 },
+    { "lat": 53.3483639, "lon": -6.2556412 },
+    { "lat": 53.3483569, "lon": -6.2556870 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "11",
+    "min_height": "10",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488418435,
+  "bounds": {
+    "minlat": 53.3483500,
+    "minlon": -6.2557517,
+    "maxlat": 53.3484266,
+    "maxlon": -6.2556870
+  },
+  "geometry": [
+    { "lat": 53.3483500, "lon": -6.2557315 },
+    { "lat": 53.3484227, "lon": -6.2557517 },
+    { "lat": 53.3484266, "lon": -6.2557263 },
+    { "lat": 53.3483569, "lon": -6.2556870 },
+    { "lat": 53.3483500, "lon": -6.2557315 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "11",
+    "min_height": "10",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488418436,
+  "bounds": {
+    "minlat": 53.3483639,
+    "minlon": -6.2556641,
+    "maxlat": 53.3484398,
+    "maxlon": -6.2555985
+  },
+  "geometry": [
+    { "lat": 53.3483639, "lon": -6.2556412 },
+    { "lat": 53.3484362, "lon": -6.2556641 },
+    { "lat": 53.3484398, "lon": -6.2556404 },
+    { "lat": 53.3483705, "lon": -6.2555985 },
+    { "lat": 53.3483639, "lon": -6.2556412 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "11",
+    "min_height": "10",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488418437,
+  "bounds": {
+    "minlat": 53.3483705,
+    "minlon": -6.2556193,
+    "maxlat": 53.3484464,
+    "maxlon": -6.2555565
+  },
+  "geometry": [
+    { "lat": 53.3483705, "lon": -6.2555985 },
+    { "lat": 53.3484430, "lon": -6.2556193 },
+    { "lat": 53.3484464, "lon": -6.2555969 },
+    { "lat": 53.3483771, "lon": -6.2555565 },
+    { "lat": 53.3483705, "lon": -6.2555985 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "11",
+    "min_height": "10",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488418438,
+  "bounds": {
+    "minlat": 53.3483313,
+    "minlon": -6.2558832,
+    "maxlat": 53.3484063,
+    "maxlon": -6.2558194
+  },
+  "geometry": [
+    { "lat": 53.3483364, "lon": -6.2558194 },
+    { "lat": 53.3484063, "lon": -6.2558589 },
+    { "lat": 53.3484026, "lon": -6.2558832 },
+    { "lat": 53.3483313, "lon": -6.2558526 },
+    { "lat": 53.3483324, "lon": -6.2558450 },
+    { "lat": 53.3483364, "lon": -6.2558194 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "11",
+    "min_height": "10",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488418439,
+  "bounds": {
+    "minlat": 53.3483771,
+    "minlon": -6.2555724,
+    "maxlat": 53.3484532,
+    "maxlon": -6.2555223
+  },
+  "geometry": [
+    { "lat": 53.3483771, "lon": -6.2555565 },
+    { "lat": 53.3484502, "lon": -6.2555724 },
+    { "lat": 53.3484532, "lon": -6.2555529 },
+    { "lat": 53.3484336, "lon": -6.2555438 },
+    { "lat": 53.3483819, "lon": -6.2555223 },
+    { "lat": 53.3483793, "lon": -6.2555421 },
+    { "lat": 53.3483771, "lon": -6.2555565 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "11",
+    "min_height": "10",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488418440,
+  "bounds": {
+    "minlat": 53.3484426,
+    "minlon": -6.2559281,
+    "maxlat": 53.3485169,
+    "maxlon": -6.2558781
+  },
+  "geometry": [
+    { "lat": 53.3485169, "lon": -6.2558973 },
+    { "lat": 53.3485121, "lon": -6.2559281 },
+    { "lat": 53.3484426, "lon": -6.2558980 },
+    { "lat": 53.3484456, "lon": -6.2558781 },
+    { "lat": 53.3485169, "lon": -6.2558973 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "11",
+    "min_height": "10",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488418441,
+  "bounds": {
+    "minlat": 53.3484489,
+    "minlon": -6.2558973,
+    "maxlat": 53.3485233,
+    "maxlon": -6.2558412
+  },
+  "geometry": [
+    { "lat": 53.3485169, "lon": -6.2558973 },
+    { "lat": 53.3484489, "lon": -6.2558572 },
+    { "lat": 53.3484513, "lon": -6.2558412 },
+    { "lat": 53.3485233, "lon": -6.2558559 },
+    { "lat": 53.3485169, "lon": -6.2558973 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "11",
+    "min_height": "10",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488418442,
+  "bounds": {
+    "minlat": 53.3484560,
+    "minlon": -6.2558559,
+    "maxlat": 53.3485306,
+    "maxlon": -6.2557922
+  },
+  "geometry": [
+    { "lat": 53.3485233, "lon": -6.2558559 },
+    { "lat": 53.3484560, "lon": -6.2558111 },
+    { "lat": 53.3484589, "lon": -6.2557922 },
+    { "lat": 53.3485306, "lon": -6.2558081 },
+    { "lat": 53.3485233, "lon": -6.2558559 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "11",
+    "min_height": "10",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488418443,
+  "bounds": {
+    "minlat": 53.3484627,
+    "minlon": -6.2558081,
+    "maxlat": 53.3485376,
+    "maxlon": -6.2557433
+  },
+  "geometry": [
+    { "lat": 53.3485306, "lon": -6.2558081 },
+    { "lat": 53.3484627, "lon": -6.2557675 },
+    { "lat": 53.3484664, "lon": -6.2557433 },
+    { "lat": 53.3485376, "lon": -6.2557630 },
+    { "lat": 53.3485306, "lon": -6.2558081 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "11",
+    "min_height": "10",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488418444,
+  "bounds": {
+    "minlat": 53.3484701,
+    "minlon": -6.2557630,
+    "maxlat": 53.3485446,
+    "maxlon": -6.2556999
+  },
+  "geometry": [
+    { "lat": 53.3485376, "lon": -6.2557630 },
+    { "lat": 53.3484701, "lon": -6.2557194 },
+    { "lat": 53.3484731, "lon": -6.2556999 },
+    { "lat": 53.3485446, "lon": -6.2557174 },
+    { "lat": 53.3485376, "lon": -6.2557630 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "11",
+    "min_height": "10",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488418445,
+  "bounds": {
+    "minlat": 53.3484768,
+    "minlon": -6.2557174,
+    "maxlat": 53.3485511,
+    "maxlon": -6.2556580
+  },
+  "geometry": [
+    { "lat": 53.3485446, "lon": -6.2557174 },
+    { "lat": 53.3484768, "lon": -6.2556757 },
+    { "lat": 53.3484796, "lon": -6.2556580 },
+    { "lat": 53.3485511, "lon": -6.2556753 },
+    { "lat": 53.3485446, "lon": -6.2557174 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "11",
+    "min_height": "10",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488418446,
+  "bounds": {
+    "minlat": 53.3484833,
+    "minlon": -6.2556753,
+    "maxlat": 53.3485579,
+    "maxlon": -6.2556119
+  },
+  "geometry": [
+    { "lat": 53.3485511, "lon": -6.2556753 },
+    { "lat": 53.3484833, "lon": -6.2556336 },
+    { "lat": 53.3484867, "lon": -6.2556119 },
+    { "lat": 53.3485579, "lon": -6.2556310 },
+    { "lat": 53.3485511, "lon": -6.2556753 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "11",
+    "min_height": "10",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488418447,
+  "bounds": {
+    "minlat": 53.3484904,
+    "minlon": -6.2556310,
+    "maxlat": 53.3485628,
+    "maxlon": -6.2555695
+  },
+  "geometry": [
+    { "lat": 53.3485579, "lon": -6.2556310 },
+    { "lat": 53.3484904, "lon": -6.2555879 },
+    { "lat": 53.3484932, "lon": -6.2555695 },
+    { "lat": 53.3485628, "lon": -6.2555995 },
+    { "lat": 53.3485579, "lon": -6.2556310 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "11",
+    "min_height": "10",
+    "roof:colour": "#99ff99",
+    "roof:height": "1",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1488418913,
+  "bounds": {
+    "minlat": 53.3483057,
+    "minlon": -6.2558450,
+    "maxlat": 53.3483793,
+    "maxlon": -6.2555305
+  },
+  "geometry": [
+    { "lat": 53.3483324, "lon": -6.2558450 },
+    { "lat": 53.3483057, "lon": -6.2558334 },
+    { "lat": 53.3483526, "lon": -6.2555305 },
+    { "lat": 53.3483793, "lon": -6.2555421 },
+    { "lat": 53.3483771, "lon": -6.2555565 },
+    { "lat": 53.3483705, "lon": -6.2555985 },
+    { "lat": 53.3483639, "lon": -6.2556412 },
+    { "lat": 53.3483569, "lon": -6.2556870 },
+    { "lat": 53.3483500, "lon": -6.2557315 },
+    { "lat": 53.3483429, "lon": -6.2557768 },
+    { "lat": 53.3483364, "lon": -6.2558194 },
+    { "lat": 53.3483324, "lon": -6.2558450 }
+  ],
+  "tags": {
+    "building:colour": "white",
+    "building:part": "yes",
+    "height": "6",
+    "roof:shape": "flat"
+  }
+},
+{
+  "type": "way",
+  "id": 1494099246,
+  "bounds": {
+    "minlat": 53.3485574,
+    "minlon": -6.2564576,
+    "maxlat": 53.3487604,
+    "maxlon": -6.2563265
+  },
+  "geometry": [
+    { "lat": 53.3487604, "lon": -6.2564245 },
+    { "lat": 53.3487542, "lon": -6.2564576 },
+    { "lat": 53.3487233, "lon": -6.2564419 },
+    { "lat": 53.3485574, "lon": -6.2563579 },
+    { "lat": 53.3485630, "lon": -6.2563265 },
+    { "lat": 53.3487604, "lon": -6.2564245 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "4",
+    "roof:direction": "253",
+    "roof:height": "2",
+    "roof:shape": "skillion"
+  }
+},
+{
+  "type": "way",
+  "id": 1494099247,
+  "bounds": {
+    "minlat": 53.3485630,
+    "minlon": -6.2564245,
+    "maxlat": 53.3487860,
+    "maxlon": -6.2561821
+  },
+  "geometry": [
+    { "lat": 53.3485630, "lon": -6.2563265 },
+    { "lat": 53.3485885, "lon": -6.2561821 },
+    { "lat": 53.3487860, "lon": -6.2562801 },
+    { "lat": 53.3487650, "lon": -6.2563985 },
+    { "lat": 53.3487604, "lon": -6.2564245 },
+    { "lat": 53.3485630, "lon": -6.2563265 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "10",
+    "heritage": "4",
+    "roof:height": "5",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1494099248,
+  "bounds": {
+    "minlat": 53.3485885,
+    "minlon": -6.2562801,
+    "maxlat": 53.3487926,
+    "maxlon": -6.2561452
+  },
+  "geometry": [
+    { "lat": 53.3487860, "lon": -6.2562801 },
+    { "lat": 53.3487883, "lon": -6.2562688 },
+    { "lat": 53.3487926, "lon": -6.2562448 },
+    { "lat": 53.3487879, "lon": -6.2562425 },
+    { "lat": 53.3487633, "lon": -6.2562302 },
+    { "lat": 53.3485958, "lon": -6.2561452 },
+    { "lat": 53.3485885, "lon": -6.2561821 },
+    { "lat": 53.3487860, "lon": -6.2562801 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "4",
+    "roof:direction": "73",
+    "roof:height": "2",
+    "roof:shape": "skillion"
+  }
+},
+{
+  "type": "way",
+  "id": 1494456331,
+  "bounds": {
+    "minlat": 53.3484763,
+    "minlon": -6.2566589,
+    "maxlat": 53.3487969,
+    "maxlon": -6.2563085
+  },
+  "geometry": [
+    { "lat": 53.3487969, "lon": -6.2564757 },
+    { "lat": 53.3487645, "lon": -6.2566589 },
+    { "lat": 53.3486369, "lon": -6.2566023 },
+    { "lat": 53.3484763, "lon": -6.2565580 },
+    { "lat": 53.3485161, "lon": -6.2563085 },
+    { "lat": 53.3485574, "lon": -6.2563579 },
+    { "lat": 53.3486507, "lon": -6.2564411 },
+    { "lat": 53.3487194, "lon": -6.2564620 },
+    { "lat": 53.3487514, "lon": -6.2564693 },
+    { "lat": 53.3487969, "lon": -6.2564757 }
+  ],
+  "tags": {
+    "building:levels": "7",
+    "building:material": "glass",
+    "building:part": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1494456333,
+  "bounds": {
+    "minlat": 53.3485161,
+    "minlon": -6.2563579,
+    "maxlat": 53.3486042,
+    "maxlon": -6.2560714
+  },
+  "geometry": [
+    { "lat": 53.3485161, "lon": -6.2563085 },
+    { "lat": 53.3485574, "lon": -6.2563579 },
+    { "lat": 53.3485630, "lon": -6.2563265 },
+    { "lat": 53.3485885, "lon": -6.2561821 },
+    { "lat": 53.3485958, "lon": -6.2561452 },
+    { "lat": 53.3486042, "lon": -6.2561022 },
+    { "lat": 53.3485539, "lon": -6.2560714 },
+    { "lat": 53.3485161, "lon": -6.2563085 }
+  ],
+  "tags": {
+    "building:part": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1494457207,
+  "bounds": {
+    "minlat": 53.3488111,
+    "minlon": -6.2562162,
+    "maxlat": 53.3489320,
+    "maxlon": -6.2557090
+  },
+  "geometry": [
+    { "lat": 53.3488448, "lon": -6.2562162 },
+    { "lat": 53.3488111, "lon": -6.2562005 },
+    { "lat": 53.3488474, "lon": -6.2559858 },
+    { "lat": 53.3488632, "lon": -6.2558952 },
+    { "lat": 53.3488949, "lon": -6.2557090 },
+    { "lat": 53.3489320, "lon": -6.2557259 },
+    { "lat": 53.3489233, "lon": -6.2557776 },
+    { "lat": 53.3489164, "lon": -6.2558149 },
+    { "lat": 53.3488987, "lon": -6.2559126 },
+    { "lat": 53.3488829, "lon": -6.2560032 },
+    { "lat": 53.3488555, "lon": -6.2561568 },
+    { "lat": 53.3488500, "lon": -6.2561869 },
+    { "lat": 53.3488487, "lon": -6.2561940 },
+    { "lat": 53.3488448, "lon": -6.2562162 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "12",
+    "min_height": "9"
+  }
+},
+{
+  "type": "way",
+  "id": 1494457208,
+  "bounds": {
+    "minlat": 53.3485446,
+    "minlon": -6.2562162,
+    "maxlat": 53.3489320,
+    "maxlon": -6.2555860
+  },
+  "geometry": [
+    { "lat": 53.3488448, "lon": -6.2562162 },
+    { "lat": 53.3488111, "lon": -6.2562005 },
+    { "lat": 53.3487966, "lon": -6.2561937 },
+    { "lat": 53.3487719, "lon": -6.2561814 },
+    { "lat": 53.3486042, "lon": -6.2561022 },
+    { "lat": 53.3485539, "lon": -6.2560714 },
+    { "lat": 53.3485446, "lon": -6.2560662 },
+    { "lat": 53.3486253, "lon": -6.2555860 },
+    { "lat": 53.3488949, "lon": -6.2557090 },
+    { "lat": 53.3489320, "lon": -6.2557259 },
+    { "lat": 53.3489233, "lon": -6.2557776 },
+    { "lat": 53.3489164, "lon": -6.2558149 },
+    { "lat": 53.3488987, "lon": -6.2559126 },
+    { "lat": 53.3488829, "lon": -6.2560032 },
+    { "lat": 53.3488555, "lon": -6.2561568 },
+    { "lat": 53.3488500, "lon": -6.2561869 },
+    { "lat": 53.3488486, "lon": -6.2561941 },
+    { "lat": 53.3488448, "lon": -6.2562162 }
+  ],
+  "tags": {
+    "building:material": "brick",
+    "building:part": "yes",
+    "height": "9"
+  }
+},
+{
+  "type": "way",
+  "id": 1494457209,
+  "bounds": {
+    "minlat": 53.3488474,
+    "minlon": -6.2560032,
+    "maxlat": 53.3488987,
+    "maxlon": -6.2558952
+  },
+  "geometry": [
+    { "lat": 53.3488829, "lon": -6.2560032 },
+    { "lat": 53.3488474, "lon": -6.2559858 },
+    { "lat": 53.3488632, "lon": -6.2558952 },
+    { "lat": 53.3488987, "lon": -6.2559126 },
+    { "lat": 53.3488829, "lon": -6.2560032 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "14",
+    "min_height": "12",
+    "roof:orientation": "across",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1494457210,
+  "bounds": {
+    "minlat": 53.3488487,
+    "minlon": -6.2561966,
+    "maxlat": 53.3488606,
+    "maxlon": -6.2561568
+  },
+  "geometry": [
+    { "lat": 53.3488555, "lon": -6.2561568 },
+    { "lat": 53.3488606, "lon": -6.2561594 },
+    { "lat": 53.3488569, "lon": -6.2561796 },
+    { "lat": 53.3488538, "lon": -6.2561966 },
+    { "lat": 53.3488487, "lon": -6.2561940 },
+    { "lat": 53.3488500, "lon": -6.2561869 },
+    { "lat": 53.3488555, "lon": -6.2561568 }
+  ],
+  "tags": {
+    "building:material": "stone",
+    "building:part": "yes",
+    "height": "3",
+    "roof:shape": "flat"
+  }
+},
+{
+  "type": "way",
+  "id": 1494457211,
+  "bounds": {
+    "minlat": 53.3489164,
+    "minlon": -6.2558176,
+    "maxlat": 53.3489284,
+    "maxlon": -6.2557776
+  },
+  "geometry": [
+    { "lat": 53.3489233, "lon": -6.2557776 },
+    { "lat": 53.3489284, "lon": -6.2557802 },
+    { "lat": 53.3489248, "lon": -6.2557993 },
+    { "lat": 53.3489214, "lon": -6.2558176 },
+    { "lat": 53.3489164, "lon": -6.2558149 },
+    { "lat": 53.3489233, "lon": -6.2557776 }
+  ],
+  "tags": {
+    "building:material": "stone",
+    "building:part": "yes",
+    "height": "3",
+    "roof:shape": "flat"
+  }
+},
+{
+  "type": "way",
+  "id": 1494460007,
+  "bounds": {
+    "minlat": 53.3489774,
+    "minlon": -6.2567064,
+    "maxlat": 53.3492280,
+    "maxlon": -6.2563468
+  },
+  "geometry": [
+    { "lat": 53.3489774, "lon": -6.2566147 },
+    { "lat": 53.3489913, "lon": -6.2565269 },
+    { "lat": 53.3489961, "lon": -6.2565292 },
+    { "lat": 53.3490130, "lon": -6.2564307 },
+    { "lat": 53.3490090, "lon": -6.2564287 },
+    { "lat": 53.3490228, "lon": -6.2563468 },
+    { "lat": 53.3490452, "lon": -6.2563568 },
+    { "lat": 53.3490835, "lon": -6.2563739 },
+    { "lat": 53.3490887, "lon": -6.2563763 },
+    { "lat": 53.3491014, "lon": -6.2563818 },
+    { "lat": 53.3492280, "lon": -6.2564376 },
+    { "lat": 53.3491858, "lon": -6.2567064 },
+    { "lat": 53.3490577, "lon": -6.2566500 },
+    { "lat": 53.3490381, "lon": -6.2566414 },
+    { "lat": 53.3489963, "lon": -6.2566230 },
+    { "lat": 53.3489774, "lon": -6.2566147 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "heritage": "4"
+  }
+},
+{
+  "type": "way",
+  "id": 1494460008,
+  "bounds": {
+    "minlat": 53.3489889,
+    "minlon": -6.2565292,
+    "maxlat": 53.3490130,
+    "maxlon": -6.2564272
+  },
+  "geometry": [
+    { "lat": 53.3489961, "lon": -6.2565292 },
+    { "lat": 53.3489913, "lon": -6.2565269 },
+    { "lat": 53.3489889, "lon": -6.2565257 },
+    { "lat": 53.3489976, "lon": -6.2564753 },
+    { "lat": 53.3490059, "lon": -6.2564272 },
+    { "lat": 53.3490090, "lon": -6.2564287 },
+    { "lat": 53.3490130, "lon": -6.2564307 },
+    { "lat": 53.3489961, "lon": -6.2565292 }
+  ],
+  "tags": {
+    "building:part": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1494460009,
+  "bounds": {
+    "minlat": 53.3489944,
+    "minlon": -6.2565014,
+    "maxlat": 53.3490009,
+    "maxlon": -6.2564904
+  },
+  "geometry": [
+    { "lat": 53.3489975, "lon": -6.2564904 },
+    { "lat": 53.3489985, "lon": -6.2564906 },
+    { "lat": 53.3489995, "lon": -6.2564914 },
+    { "lat": 53.3490002, "lon": -6.2564926 },
+    { "lat": 53.3490007, "lon": -6.2564941 },
+    { "lat": 53.3490009, "lon": -6.2564958 },
+    { "lat": 53.3490008, "lon": -6.2564975 },
+    { "lat": 53.3490002, "lon": -6.2564992 },
+    { "lat": 53.3489994, "lon": -6.2565005 },
+    { "lat": 53.3489984, "lon": -6.2565012 },
+    { "lat": 53.3489973, "lon": -6.2565014 },
+    { "lat": 53.3489962, "lon": -6.2565009 },
+    { "lat": 53.3489953, "lon": -6.2564998 },
+    { "lat": 53.3489947, "lon": -6.2564983 },
+    { "lat": 53.3489944, "lon": -6.2564965 },
+    { "lat": 53.3489944, "lon": -6.2564946 },
+    { "lat": 53.3489949, "lon": -6.2564929 },
+    { "lat": 53.3489956, "lon": -6.2564916 },
+    { "lat": 53.3489965, "lon": -6.2564908 },
+    { "lat": 53.3489975, "lon": -6.2564904 }
+  ],
+  "tags": {
+    "building:part": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1494460010,
+  "bounds": {
+    "minlat": 53.3490004,
+    "minlon": -6.2564669,
+    "maxlat": 53.3490070,
+    "maxlon": -6.2564560
+  },
+  "geometry": [
+    { "lat": 53.3490036, "lon": -6.2564560 },
+    { "lat": 53.3490046, "lon": -6.2564562 },
+    { "lat": 53.3490056, "lon": -6.2564569 },
+    { "lat": 53.3490063, "lon": -6.2564581 },
+    { "lat": 53.3490068, "lon": -6.2564597 },
+    { "lat": 53.3490070, "lon": -6.2564614 },
+    { "lat": 53.3490068, "lon": -6.2564631 },
+    { "lat": 53.3490063, "lon": -6.2564648 },
+    { "lat": 53.3490055, "lon": -6.2564660 },
+    { "lat": 53.3490045, "lon": -6.2564668 },
+    { "lat": 53.3490034, "lon": -6.2564669 },
+    { "lat": 53.3490023, "lon": -6.2564664 },
+    { "lat": 53.3490014, "lon": -6.2564654 },
+    { "lat": 53.3490008, "lon": -6.2564638 },
+    { "lat": 53.3490004, "lon": -6.2564620 },
+    { "lat": 53.3490005, "lon": -6.2564602 },
+    { "lat": 53.3490010, "lon": -6.2564585 },
+    { "lat": 53.3490017, "lon": -6.2564572 },
+    { "lat": 53.3490026, "lon": -6.2564563 },
+    { "lat": 53.3490036, "lon": -6.2564560 }
+  ],
+  "tags": {
+    "building:part": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1494460011,
+  "bounds": {
+    "minlat": 53.3490266,
+    "minlon": -6.2566500,
+    "maxlat": 53.3491014,
+    "maxlon": -6.2563739
+  },
+  "geometry": [
+    { "lat": 53.3490577, "lon": -6.2566500 },
+    { "lat": 53.3491014, "lon": -6.2563818 },
+    { "lat": 53.3490887, "lon": -6.2563763 },
+    { "lat": 53.3490835, "lon": -6.2563739 },
+    { "lat": 53.3490578, "lon": -6.2564027 },
+    { "lat": 53.3490266, "lon": -6.2565846 },
+    { "lat": 53.3490381, "lon": -6.2566414 },
+    { "lat": 53.3490577, "lon": -6.2566500 }
+  ],
+  "tags": {
+    "building:part": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1494460012,
+  "bounds": {
+    "minlat": 53.3489774,
+    "minlon": -6.2566230,
+    "maxlat": 53.3490578,
+    "maxlon": -6.2563468
+  },
+  "geometry": [
+    { "lat": 53.3490266, "lon": -6.2565846 },
+    { "lat": 53.3489963, "lon": -6.2566230 },
+    { "lat": 53.3489774, "lon": -6.2566147 },
+    { "lat": 53.3489913, "lon": -6.2565269 },
+    { "lat": 53.3490090, "lon": -6.2564287 },
+    { "lat": 53.3490228, "lon": -6.2563468 },
+    { "lat": 53.3490452, "lon": -6.2563568 },
+    { "lat": 53.3490578, "lon": -6.2564027 },
+    { "lat": 53.3490266, "lon": -6.2565846 }
+  ],
+  "tags": {
+    "building:part": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1494460013,
+  "bounds": {
+    "minlat": 53.3489963,
+    "minlon": -6.2566414,
+    "maxlat": 53.3490381,
+    "maxlon": -6.2565846
+  },
+  "geometry": [
+    { "lat": 53.3490381, "lon": -6.2566414 },
+    { "lat": 53.3489963, "lon": -6.2566230 },
+    { "lat": 53.3490266, "lon": -6.2565846 },
+    { "lat": 53.3490381, "lon": -6.2566414 }
+  ],
+  "tags": {
+    "building:part": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1494460014,
+  "bounds": {
+    "minlat": 53.3490452,
+    "minlon": -6.2564027,
+    "maxlat": 53.3490835,
+    "maxlon": -6.2563568
+  },
+  "geometry": [
+    { "lat": 53.3490578, "lon": -6.2564027 },
+    { "lat": 53.3490452, "lon": -6.2563568 },
+    { "lat": 53.3490835, "lon": -6.2563739 },
+    { "lat": 53.3490578, "lon": -6.2564027 }
+  ],
+  "tags": {
+    "building:part": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1503597535,
+  "bounds": {
+    "minlat": 53.3543856,
+    "minlon": -6.2638929,
+    "maxlat": 53.3544348,
+    "maxlon": -6.2638249
+  },
+  "geometry": [
+    { "lat": 53.3544069, "lon": -6.2638249 },
+    { "lat": 53.3544310, "lon": -6.2638507 },
+    { "lat": 53.3544348, "lon": -6.2638730 },
+    { "lat": 53.3544266, "lon": -6.2638910 },
+    { "lat": 53.3544160, "lon": -6.2638929 },
+    { "lat": 53.3543906, "lon": -6.2638662 },
+    { "lat": 53.3543856, "lon": -6.2638457 },
+    { "lat": 53.3543946, "lon": -6.2638257 },
+    { "lat": 53.3544069, "lon": -6.2638249 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "25",
+    "roof:height": "5",
+    "roof:shape": "pyramidal"
+  }
+},
+{
+  "type": "way",
+  "id": 1503600170,
+  "bounds": {
+    "minlat": 53.3541157,
+    "minlon": -6.2649004,
+    "maxlat": 53.3543482,
+    "maxlon": -6.2645344
+  },
+  "geometry": [
+    { "lat": 53.3541157, "lon": -6.2647680 },
+    { "lat": 53.3541413, "lon": -6.2646982 },
+    { "lat": 53.3541454, "lon": -6.2646870 },
+    { "lat": 53.3541710, "lon": -6.2646183 },
+    { "lat": 53.3542025, "lon": -6.2645344 },
+    { "lat": 53.3542096, "lon": -6.2645416 },
+    { "lat": 53.3542458, "lon": -6.2645785 },
+    { "lat": 53.3542615, "lon": -6.2645952 },
+    { "lat": 53.3543136, "lon": -6.2646506 },
+    { "lat": 53.3543482, "lon": -6.2646866 },
+    { "lat": 53.3542686, "lon": -6.2649004 },
+    { "lat": 53.3542167, "lon": -6.2648462 },
+    { "lat": 53.3542093, "lon": -6.2648659 },
+    { "lat": 53.3541744, "lon": -6.2648285 },
+    { "lat": 53.3541242, "lon": -6.2647751 },
+    { "lat": 53.3541157, "lon": -6.2647680 }
+  ],
+  "tags": {
+    "building:levels": "3",
+    "building:material": "stone",
+    "building:part": "yes",
+    "heritage": "4"
+  }
+},
+{
+  "type": "way",
+  "id": 1503600173,
+  "bounds": {
+    "minlat": 53.3541358,
+    "minlon": -6.2646870,
+    "maxlat": 53.3541710,
+    "maxlon": -6.2646081
+  },
+  "geometry": [
+    { "lat": 53.3541616, "lon": -6.2646081 },
+    { "lat": 53.3541710, "lon": -6.2646183 },
+    { "lat": 53.3541454, "lon": -6.2646870 },
+    { "lat": 53.3541358, "lon": -6.2646769 },
+    { "lat": 53.3541616, "lon": -6.2646081 }
+  ],
+  "tags": {
+    "building:part": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1503600174,
+  "bounds": {
+    "minlat": 53.3541376,
+    "minlon": -6.2646802,
+    "maxlat": 53.3541438,
+    "maxlon": -6.2646698
+  },
+  "geometry": [
+    { "lat": 53.3541391, "lon": -6.2646705 },
+    { "lat": 53.3541401, "lon": -6.2646699 },
+    { "lat": 53.3541411, "lon": -6.2646698 },
+    { "lat": 53.3541421, "lon": -6.2646704 },
+    { "lat": 53.3541429, "lon": -6.2646715 },
+    { "lat": 53.3541435, "lon": -6.2646729 },
+    { "lat": 53.3541438, "lon": -6.2646746 },
+    { "lat": 53.3541436, "lon": -6.2646764 },
+    { "lat": 53.3541432, "lon": -6.2646779 },
+    { "lat": 53.3541425, "lon": -6.2646791 },
+    { "lat": 53.3541417, "lon": -6.2646799 },
+    { "lat": 53.3541407, "lon": -6.2646802 },
+    { "lat": 53.3541397, "lon": -6.2646799 },
+    { "lat": 53.3541388, "lon": -6.2646791 },
+    { "lat": 53.3541381, "lon": -6.2646779 },
+    { "lat": 53.3541377, "lon": -6.2646764 },
+    { "lat": 53.3541376, "lon": -6.2646747 },
+    { "lat": 53.3541378, "lon": -6.2646731 },
+    { "lat": 53.3541383, "lon": -6.2646716 },
+    { "lat": 53.3541391, "lon": -6.2646705 }
+  ],
+  "tags": {
+    "building:part": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1503600175,
+  "bounds": {
+    "minlat": 53.3541410,
+    "minlon": -6.2646704,
+    "maxlat": 53.3541471,
+    "maxlon": -6.2646600
+  },
+  "geometry": [
+    { "lat": 53.3541425, "lon": -6.2646607 },
+    { "lat": 53.3541435, "lon": -6.2646601 },
+    { "lat": 53.3541445, "lon": -6.2646600 },
+    { "lat": 53.3541455, "lon": -6.2646606 },
+    { "lat": 53.3541463, "lon": -6.2646617 },
+    { "lat": 53.3541469, "lon": -6.2646631 },
+    { "lat": 53.3541471, "lon": -6.2646648 },
+    { "lat": 53.3541470, "lon": -6.2646666 },
+    { "lat": 53.3541466, "lon": -6.2646681 },
+    { "lat": 53.3541459, "lon": -6.2646693 },
+    { "lat": 53.3541450, "lon": -6.2646701 },
+    { "lat": 53.3541441, "lon": -6.2646704 },
+    { "lat": 53.3541431, "lon": -6.2646701 },
+    { "lat": 53.3541422, "lon": -6.2646693 },
+    { "lat": 53.3541415, "lon": -6.2646681 },
+    { "lat": 53.3541411, "lon": -6.2646666 },
+    { "lat": 53.3541410, "lon": -6.2646649 },
+    { "lat": 53.3541412, "lon": -6.2646633 },
+    { "lat": 53.3541417, "lon": -6.2646618 },
+    { "lat": 53.3541425, "lon": -6.2646607 }
+  ],
+  "tags": {
+    "building:part": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1503600176,
+  "bounds": {
+    "minlat": 53.3541596,
+    "minlon": -6.2646214,
+    "maxlat": 53.3541658,
+    "maxlon": -6.2646111
+  },
+  "geometry": [
+    { "lat": 53.3541612, "lon": -6.2646117 },
+    { "lat": 53.3541622, "lon": -6.2646111 },
+    { "lat": 53.3541632, "lon": -6.2646111 },
+    { "lat": 53.3541642, "lon": -6.2646116 },
+    { "lat": 53.3541650, "lon": -6.2646127 },
+    { "lat": 53.3541656, "lon": -6.2646142 },
+    { "lat": 53.3541658, "lon": -6.2646159 },
+    { "lat": 53.3541657, "lon": -6.2646176 },
+    { "lat": 53.3541653, "lon": -6.2646191 },
+    { "lat": 53.3541646, "lon": -6.2646204 },
+    { "lat": 53.3541637, "lon": -6.2646211 },
+    { "lat": 53.3541627, "lon": -6.2646214 },
+    { "lat": 53.3541618, "lon": -6.2646212 },
+    { "lat": 53.3541609, "lon": -6.2646204 },
+    { "lat": 53.3541602, "lon": -6.2646192 },
+    { "lat": 53.3541598, "lon": -6.2646177 },
+    { "lat": 53.3541596, "lon": -6.2646160 },
+    { "lat": 53.3541598, "lon": -6.2646144 },
+    { "lat": 53.3541604, "lon": -6.2646129 },
+    { "lat": 53.3541612, "lon": -6.2646117 }
+  ],
+  "tags": {
+    "building:part": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1503600177,
+  "bounds": {
+    "minlat": 53.3541563,
+    "minlon": -6.2646312,
+    "maxlat": 53.3541624,
+    "maxlon": -6.2646209
+  },
+  "geometry": [
+    { "lat": 53.3541578, "lon": -6.2646215 },
+    { "lat": 53.3541588, "lon": -6.2646209 },
+    { "lat": 53.3541598, "lon": -6.2646209 },
+    { "lat": 53.3541608, "lon": -6.2646215 },
+    { "lat": 53.3541616, "lon": -6.2646225 },
+    { "lat": 53.3541622, "lon": -6.2646240 },
+    { "lat": 53.3541624, "lon": -6.2646257 },
+    { "lat": 53.3541623, "lon": -6.2646274 },
+    { "lat": 53.3541619, "lon": -6.2646290 },
+    { "lat": 53.3541612, "lon": -6.2646302 },
+    { "lat": 53.3541603, "lon": -6.2646310 },
+    { "lat": 53.3541594, "lon": -6.2646312 },
+    { "lat": 53.3541584, "lon": -6.2646310 },
+    { "lat": 53.3541575, "lon": -6.2646302 },
+    { "lat": 53.3541568, "lon": -6.2646290 },
+    { "lat": 53.3541564, "lon": -6.2646275 },
+    { "lat": 53.3541563, "lon": -6.2646258 },
+    { "lat": 53.3541565, "lon": -6.2646242 },
+    { "lat": 53.3541570, "lon": -6.2646227 },
+    { "lat": 53.3541578, "lon": -6.2646215 }
+  ],
+  "tags": {
+    "building:part": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1503600178,
+  "bounds": {
+    "minlat": 53.3540921,
+    "minlon": -6.2649133,
+    "maxlat": 53.3541744,
+    "maxlon": -6.2647751
+  },
+  "geometry": [
+    { "lat": 53.3540921, "lon": -6.2648599 },
+    { "lat": 53.3541242, "lon": -6.2647751 },
+    { "lat": 53.3541744, "lon": -6.2648285 },
+    { "lat": 53.3541423, "lon": -6.2649133 },
+    { "lat": 53.3540921, "lon": -6.2648599 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "heritage": "4"
+  }
+},
+{
+  "type": "way",
+  "id": 1503600179,
+  "bounds": {
+    "minlat": 53.3542096,
+    "minlon": -6.2645785,
+    "maxlat": 53.3542737,
+    "maxlon": -6.2644659
+  },
+  "geometry": [
+    { "lat": 53.3542378, "lon": -6.2644659 },
+    { "lat": 53.3542737, "lon": -6.2645050 },
+    { "lat": 53.3542458, "lon": -6.2645785 },
+    { "lat": 53.3542096, "lon": -6.2645416 },
+    { "lat": 53.3542378, "lon": -6.2644659 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "heritage": "4"
+  }
+},
+{
+  "type": "way",
+  "id": 1503600180,
+  "bounds": {
+    "minlat": 53.3542458,
+    "minlon": -6.2646506,
+    "maxlat": 53.3543416,
+    "maxlon": -6.2645050
+  },
+  "geometry": [
+    { "lat": 53.3542737, "lon": -6.2645050 },
+    { "lat": 53.3543032, "lon": -6.2645372 },
+    { "lat": 53.3543209, "lon": -6.2645548 },
+    { "lat": 53.3543416, "lon": -6.2645767 },
+    { "lat": 53.3543136, "lon": -6.2646506 },
+    { "lat": 53.3542615, "lon": -6.2645952 },
+    { "lat": 53.3542458, "lon": -6.2645785 },
+    { "lat": 53.3542737, "lon": -6.2645050 }
+  ],
+  "tags": {
+    "building:part": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 1512294743,
+  "bounds": {
+    "minlat": 53.3543193,
+    "minlon": -6.2641003,
+    "maxlat": 53.3544378,
+    "maxlon": -6.2638750
+  },
+  "geometry": [
+    { "lat": 53.3543193, "lon": -6.2640421 },
+    { "lat": 53.3543842, "lon": -6.2638750 },
+    { "lat": 53.3544378, "lon": -6.2639319 },
+    { "lat": 53.3543728, "lon": -6.2641003 },
+    { "lat": 53.3543193, "lon": -6.2640421 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "roof:colour": "darkgray",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1512294744,
+  "bounds": {
+    "minlat": 53.3541157,
+    "minlon": -6.2648285,
+    "maxlat": 53.3542615,
+    "maxlon": -6.2645344
+  },
+  "geometry": [
+    { "lat": 53.3542025, "lon": -6.2645344 },
+    { "lat": 53.3542096, "lon": -6.2645416 },
+    { "lat": 53.3542458, "lon": -6.2645785 },
+    { "lat": 53.3542615, "lon": -6.2645952 },
+    { "lat": 53.3541744, "lon": -6.2648285 },
+    { "lat": 53.3541242, "lon": -6.2647751 },
+    { "lat": 53.3541157, "lon": -6.2647680 },
+    { "lat": 53.3541413, "lon": -6.2646982 },
+    { "lat": 53.3541454, "lon": -6.2646870 },
+    { "lat": 53.3541710, "lon": -6.2646183 },
+    { "lat": 53.3542025, "lon": -6.2645344 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "roof:colour": "darkgray",
+    "roof:shape": "gabled"
+  }
+},
+{
+  "type": "way",
+  "id": 1520687662,
+  "bounds": {
+    "minlat": 53.3449954,
+    "minlon": -6.2307770,
+    "maxlat": 53.3450503,
+    "maxlon": -6.2306799
+  },
+  "geometry": [
+    { "lat": 53.3450503, "lon": -6.2306952 },
+    { "lat": 53.3450054, "lon": -6.2306799 },
+    { "lat": 53.3449954, "lon": -6.2307616 },
+    { "lat": 53.3450404, "lon": -6.2307770 },
+    { "lat": 53.3450503, "lon": -6.2306952 }
+  ],
+  "tags": {
+    "building": "roof",
+    "layer": "1",
+    "roof:colour": "beige",
+    "roof:material": "canvas"
+  }
+},
+{
+  "type": "way",
+  "id": 1520687663,
+  "bounds": {
+    "minlat": 53.3450740,
+    "minlon": -6.2307620,
+    "maxlat": 53.3451416,
+    "maxlon": -6.2306560
+  },
+  "geometry": [
+    { "lat": 53.3451416, "lon": -6.2307148 },
+    { "lat": 53.3451114, "lon": -6.2306560 },
+    { "lat": 53.3450740, "lon": -6.2307146 },
+    { "lat": 53.3451031, "lon": -6.2307620 },
+    { "lat": 53.3451416, "lon": -6.2307148 }
+  ],
+  "tags": {
+    "building": "roof",
+    "layer": "1",
+    "roof:colour": "beige",
+    "roof:material": "canvas"
+  }
+},
+{
+  "type": "way",
+  "id": 1524546639,
+  "bounds": {
+    "minlat": 53.3429230,
+    "minlon": -6.2774731,
+    "maxlat": 53.3429344,
+    "maxlon": -6.2774507
+  },
+  "geometry": [
+    { "lat": 53.3429307, "lon": -6.2774731 },
+    { "lat": 53.3429230, "lon": -6.2774685 },
+    { "lat": 53.3429268, "lon": -6.2774507 },
+    { "lat": 53.3429314, "lon": -6.2774535 },
+    { "lat": 53.3429344, "lon": -6.2774555 },
+    { "lat": 53.3429307, "lon": -6.2774731 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "12",
+    "roof:direction": "160",
+    "roof:shape": "skillion"
+  }
+},
+{
+  "type": "way",
+  "id": 1524546640,
+  "bounds": {
+    "minlat": 53.3429524,
+    "minlon": -6.2773332,
+    "maxlat": 53.3429648,
+    "maxlon": -6.2773093
+  },
+  "geometry": [
+    { "lat": 53.3429605, "lon": -6.2773332 },
+    { "lat": 53.3429577, "lon": -6.2773315 },
+    { "lat": 53.3429524, "lon": -6.2773273 },
+    { "lat": 53.3429565, "lon": -6.2773093 },
+    { "lat": 53.3429648, "lon": -6.2773146 },
+    { "lat": 53.3429605, "lon": -6.2773332 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "12",
+    "roof:direction": "160",
+    "roof:shape": "skillion"
+  }
+},
+{
+  "type": "way",
+  "id": 1524546641,
+  "bounds": {
+    "minlat": 53.3429705,
+    "minlon": -6.2772494,
+    "maxlat": 53.3429885,
+    "maxlon": -6.2772191
+  },
+  "geometry": [
+    { "lat": 53.3429777, "lon": -6.2772458 },
+    { "lat": 53.3429705, "lon": -6.2772418 },
+    { "lat": 53.3429750, "lon": -6.2772191 },
+    { "lat": 53.3429820, "lon": -6.2772230 },
+    { "lat": 53.3429885, "lon": -6.2772267 },
+    { "lat": 53.3429839, "lon": -6.2772494 },
+    { "lat": 53.3429777, "lon": -6.2772458 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "11",
+    "roof:shape": "pyramidal"
+  }
+},
+{
+  "type": "way",
+  "id": 1524546642,
+  "bounds": {
+    "minlat": 53.3429061,
+    "minlon": -6.2775715,
+    "maxlat": 53.3429239,
+    "maxlon": -6.2775411
+  },
+  "geometry": [
+    { "lat": 53.3429112, "lon": -6.2775411 },
+    { "lat": 53.3429161, "lon": -6.2775442 },
+    { "lat": 53.3429239, "lon": -6.2775493 },
+    { "lat": 53.3429188, "lon": -6.2775715 },
+    { "lat": 53.3429115, "lon": -6.2775668 },
+    { "lat": 53.3429061, "lon": -6.2775633 },
+    { "lat": 53.3429112, "lon": -6.2775411 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "11",
+    "roof:shape": "pyramidal"
+  }
+},
+{
+  "type": "way",
+  "id": 1524546643,
+  "bounds": {
+    "minlat": 53.3429188,
+    "minlon": -6.2775914,
+    "maxlat": 53.3429593,
+    "maxlon": -6.2775344
+  },
+  "geometry": [
+    { "lat": 53.3429239, "lon": -6.2775493 },
+    { "lat": 53.3429474, "lon": -6.2775344 },
+    { "lat": 53.3429593, "lon": -6.2775685 },
+    { "lat": 53.3429543, "lon": -6.2775914 },
+    { "lat": 53.3429188, "lon": -6.2775715 },
+    { "lat": 53.3429239, "lon": -6.2775493 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "12",
+    "roof:colour": "aquamarine",
+    "roof:direction": "250",
+    "roof:shape": "skillion"
+  }
+},
+{
+  "type": "way",
+  "id": 1524546644,
+  "bounds": {
+    "minlat": 53.3429161,
+    "minlon": -6.2775493,
+    "maxlat": 53.3429567,
+    "maxlon": -6.2774731
+  },
+  "geometry": [
+    { "lat": 53.3429239, "lon": -6.2775493 },
+    { "lat": 53.3429161, "lon": -6.2775442 },
+    { "lat": 53.3429307, "lon": -6.2774731 },
+    { "lat": 53.3429567, "lon": -6.2774887 },
+    { "lat": 53.3429474, "lon": -6.2775344 },
+    { "lat": 53.3429239, "lon": -6.2775493 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "12",
+    "roof:colour": "aquamarine",
+    "roof:direction": "160",
+    "roof:shape": "skillion"
+  }
+},
+{
+  "type": "way",
+  "id": 1524546645,
+  "bounds": {
+    "minlat": 53.3429543,
+    "minlon": -6.2775988,
+    "maxlat": 53.3429722,
+    "maxlon": -6.2775685
+  },
+  "geometry": [
+    { "lat": 53.3429543, "lon": -6.2775914 },
+    { "lat": 53.3429674, "lon": -6.2775988 },
+    { "lat": 53.3429722, "lon": -6.2775761 },
+    { "lat": 53.3429683, "lon": -6.2775738 },
+    { "lat": 53.3429593, "lon": -6.2775685 },
+    { "lat": 53.3429543, "lon": -6.2775914 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "11",
+    "roof:shape": "pyramidal"
+  }
+},
+{
+  "type": "way",
+  "id": 1524546646,
+  "bounds": {
+    "minlat": 53.3429474,
+    "minlon": -6.2775738,
+    "maxlat": 53.3429825,
+    "maxlon": -6.2774887
+  },
+  "geometry": [
+    { "lat": 53.3429683, "lon": -6.2775738 },
+    { "lat": 53.3429593, "lon": -6.2775685 },
+    { "lat": 53.3429474, "lon": -6.2775344 },
+    { "lat": 53.3429567, "lon": -6.2774887 },
+    { "lat": 53.3429825, "lon": -6.2775066 },
+    { "lat": 53.3429683, "lon": -6.2775738 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "12",
+    "roof:colour": "aquamarine",
+    "roof:direction": "340",
+    "roof:shape": "skillion"
+  }
+},
+{
+  "type": "way",
+  "id": 1524546647,
+  "bounds": {
+    "minlat": 53.3429648,
+    "minlon": -6.2773304,
+    "maxlat": 53.3429992,
+    "maxlon": -6.2772458
+  },
+  "geometry": [
+    { "lat": 53.3429777, "lon": -6.2772458 },
+    { "lat": 53.3429648, "lon": -6.2773146 },
+    { "lat": 53.3429910, "lon": -6.2773304 },
+    { "lat": 53.3429992, "lon": -6.2772926 },
+    { "lat": 53.3429839, "lon": -6.2772494 },
+    { "lat": 53.3429777, "lon": -6.2772458 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "12",
+    "roof:colour": "aquamarine",
+    "roof:direction": "160",
+    "roof:shape": "skillion"
+  }
+},
+{
+  "type": "way",
+  "id": 1524546648,
+  "bounds": {
+    "minlat": 53.3429839,
+    "minlon": -6.2772926,
+    "maxlat": 53.3430274,
+    "maxlon": -6.2772267
+  },
+  "geometry": [
+    { "lat": 53.3429992, "lon": -6.2772926 },
+    { "lat": 53.3429839, "lon": -6.2772494 },
+    { "lat": 53.3429885, "lon": -6.2772267 },
+    { "lat": 53.3430274, "lon": -6.2772481 },
+    { "lat": 53.3430217, "lon": -6.2772723 },
+    { "lat": 53.3429992, "lon": -6.2772926 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "12",
+    "roof:colour": "aquamarine",
+    "roof:direction": "70",
+    "roof:shape": "skillion"
+  }
+},
+{
+  "type": "way",
+  "id": 1524546649,
+  "bounds": {
+    "minlat": 53.3430217,
+    "minlon": -6.2772827,
+    "maxlat": 53.3430419,
+    "maxlon": -6.2772481
+  },
+  "geometry": [
+    { "lat": 53.3430217, "lon": -6.2772723 },
+    { "lat": 53.3430312, "lon": -6.2772794 },
+    { "lat": 53.3430363, "lon": -6.2772827 },
+    { "lat": 53.3430419, "lon": -6.2772579 },
+    { "lat": 53.3430274, "lon": -6.2772481 },
+    { "lat": 53.3430217, "lon": -6.2772723 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "11",
+    "roof:shape": "pyramidal"
+  }
+},
+{
+  "type": "way",
+  "id": 1524546650,
+  "bounds": {
+    "minlat": 53.3429910,
+    "minlon": -6.2773450,
+    "maxlat": 53.3430312,
+    "maxlon": -6.2772723
+  },
+  "geometry": [
+    { "lat": 53.3430312, "lon": -6.2772794 },
+    { "lat": 53.3430165, "lon": -6.2773450 },
+    { "lat": 53.3429910, "lon": -6.2773304 },
+    { "lat": 53.3429992, "lon": -6.2772926 },
+    { "lat": 53.3430217, "lon": -6.2772723 },
+    { "lat": 53.3430312, "lon": -6.2772794 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "12",
+    "roof:colour": "aquamarine",
+    "roof:direction": "340",
+    "roof:shape": "skillion"
+  }
+},
+{
+  "type": "way",
+  "id": 1524546651,
+  "bounds": {
+    "minlat": 53.3429825,
+    "minlon": -6.2776959,
+    "maxlat": 53.3433188,
+    "maxlon": -6.2774221
+  },
+  "geometry": [
+    { "lat": 53.3433015, "lon": -6.2776959 },
+    { "lat": 53.3433188, "lon": -6.2776160 },
+    { "lat": 53.3429998, "lon": -6.2774221 },
+    { "lat": 53.3429825, "lon": -6.2775066 },
+    { "lat": 53.3433015, "lon": -6.2776959 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "15",
+    "roof:colour": "aquamarine",
+    "roof:direction": "250",
+    "roof:height": "5",
+    "roof:shape": "skillion"
+  }
+},
+{
+  "type": "way",
+  "id": 1524546652,
+  "bounds": {
+    "minlat": 53.3429998,
+    "minlon": -6.2776160,
+    "maxlat": 53.3433356,
+    "maxlon": -6.2773450
+  },
+  "geometry": [
+    { "lat": 53.3433188, "lon": -6.2776160 },
+    { "lat": 53.3433356, "lon": -6.2775387 },
+    { "lat": 53.3430165, "lon": -6.2773450 },
+    { "lat": 53.3429998, "lon": -6.2774221 },
+    { "lat": 53.3433188, "lon": -6.2776160 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "15",
+    "roof:colour": "aquamarine",
+    "roof:direction": "70",
+    "roof:height": "5",
+    "roof:shape": "skillion"
+  }
+},
+{
+  "type": "way",
+  "id": 1524546653,
+  "bounds": {
+    "minlat": 53.3433015,
+    "minlon": -6.2777017,
+    "maxlat": 53.3433307,
+    "maxlon": -6.2776160
+  },
+  "geometry": [
+    { "lat": 53.3433015, "lon": -6.2776959 },
+    { "lat": 53.3433103, "lon": -6.2777011 },
+    { "lat": 53.3433307, "lon": -6.2777017 },
+    { "lat": 53.3433188, "lon": -6.2776160 },
+    { "lat": 53.3433015, "lon": -6.2776959 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "15",
+    "roof:colour": "aquamarine",
+    "roof:direction": "265",
+    "roof:height": "5",
+    "roof:shape": "skillion"
+  }
+},
+{
+  "type": "way",
+  "id": 1524546654,
+  "bounds": {
+    "minlat": 53.3433188,
+    "minlon": -6.2777017,
+    "maxlat": 53.3433577,
+    "maxlon": -6.2776160
+  },
+  "geometry": [
+    { "lat": 53.3433307, "lon": -6.2777017 },
+    { "lat": 53.3433577, "lon": -6.2776706 },
+    { "lat": 53.3433188, "lon": -6.2776160 },
+    { "lat": 53.3433307, "lon": -6.2777017 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "15",
+    "roof:colour": "aquamarine",
+    "roof:direction": "302",
+    "roof:height": "5",
+    "roof:shape": "skillion"
+  }
+},
+{
+  "type": "way",
+  "id": 1524546655,
+  "bounds": {
+    "minlat": 53.3433188,
+    "minlon": -6.2776706,
+    "maxlat": 53.3433703,
+    "maxlon": -6.2776160
+  },
+  "geometry": [
+    { "lat": 53.3433577, "lon": -6.2776706 },
+    { "lat": 53.3433703, "lon": -6.2776194 },
+    { "lat": 53.3433188, "lon": -6.2776160 },
+    { "lat": 53.3433577, "lon": -6.2776706 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "15",
+    "roof:colour": "aquamarine",
+    "roof:direction": "340",
+    "roof:height": "5",
+    "roof:shape": "skillion"
+  }
+},
+{
+  "type": "way",
+  "id": 1524546656,
+  "bounds": {
+    "minlat": 53.3433188,
+    "minlon": -6.2776194,
+    "maxlat": 53.3433703,
+    "maxlon": -6.2775634
+  },
+  "geometry": [
+    { "lat": 53.3433703, "lon": -6.2776194 },
+    { "lat": 53.3433615, "lon": -6.2775634 },
+    { "lat": 53.3433188, "lon": -6.2776160 },
+    { "lat": 53.3433703, "lon": -6.2776194 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "15",
+    "roof:colour": "aquamarine",
+    "roof:direction": "15",
+    "roof:height": "5",
+    "roof:shape": "skillion"
+  }
+},
+{
+  "type": "way",
+  "id": 1524546657,
+  "bounds": {
+    "minlat": 53.3433188,
+    "minlon": -6.2776160,
+    "maxlat": 53.3433615,
+    "maxlon": -6.2775387
+  },
+  "geometry": [
+    { "lat": 53.3433615, "lon": -6.2775634 },
+    { "lat": 53.3433462, "lon": -6.2775452 },
+    { "lat": 53.3433356, "lon": -6.2775387 },
+    { "lat": 53.3433188, "lon": -6.2776160 },
+    { "lat": 53.3433615, "lon": -6.2775634 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "15",
+    "roof:colour": "aquamarine",
+    "roof:direction": "61",
+    "roof:height": "5",
+    "roof:shape": "skillion"
+  }
+},
+{
+  "type": "way",
+  "id": 1524546658,
+  "bounds": {
+    "minlat": 53.3429314,
+    "minlon": -6.2774577,
+    "maxlat": 53.3429647,
+    "maxlon": -6.2773315
+  },
+  "geometry": [
+    { "lat": 53.3429344, "lon": -6.2774555 },
+    { "lat": 53.3429314, "lon": -6.2774535 },
+    { "lat": 53.3429577, "lon": -6.2773315 },
+    { "lat": 53.3429605, "lon": -6.2773332 },
+    { "lat": 53.3429647, "lon": -6.2773357 },
+    { "lat": 53.3429384, "lon": -6.2774577 },
+    { "lat": 53.3429344, "lon": -6.2774555 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "15",
+    "min_height": "11",
+    "roof:shape": "pyramidal"
+  }
+},
+{
+  "type": "way",
+  "id": 1524770053,
+  "bounds": {
+    "minlat": 53.3430165,
+    "minlon": -6.2775452,
+    "maxlat": 53.3433653,
+    "maxlon": -6.2772579
+  },
+  "geometry": [
+    { "lat": 53.3433462, "lon": -6.2775452 },
+    { "lat": 53.3433653, "lon": -6.2774609 },
+    { "lat": 53.3430419, "lon": -6.2772579 },
+    { "lat": 53.3430363, "lon": -6.2772827 },
+    { "lat": 53.3430312, "lon": -6.2772794 },
+    { "lat": 53.3430165, "lon": -6.2773450 },
+    { "lat": 53.3433356, "lon": -6.2775387 },
+    { "lat": 53.3433462, "lon": -6.2775452 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "10",
+    "roof:colour": "aquamarine",
+    "roof:direction": "70",
+    "roof:height": "5",
+    "roof:shape": "skillion"
+  }
+},
+{
+  "type": "way",
+  "id": 1524770054,
+  "bounds": {
+    "minlat": 53.3429674,
+    "minlon": -6.2777909,
+    "maxlat": 53.3433103,
+    "maxlon": -6.2775066
+  },
+  "geometry": [
+    { "lat": 53.3429825, "lon": -6.2775066 },
+    { "lat": 53.3429683, "lon": -6.2775738 },
+    { "lat": 53.3429722, "lon": -6.2775761 },
+    { "lat": 53.3429674, "lon": -6.2775988 },
+    { "lat": 53.3432913, "lon": -6.2777909 },
+    { "lat": 53.3433103, "lon": -6.2777011 },
+    { "lat": 53.3433015, "lon": -6.2776959 },
+    { "lat": 53.3429825, "lon": -6.2775066 }
+  ],
+  "tags": {
+    "building:part": "yes",
+    "height": "10",
+    "roof:colour": "aquamarine",
+    "roof:direction": "250",
+    "roof:height": "5",
+    "roof:shape": "skillion"
+  }
+},
+{
+  "type": "way",
+  "id": 1527332563,
+  "bounds": {
+    "minlat": 53.3522011,
+    "minlon": -6.2227687,
+    "maxlat": 53.3531600,
+    "maxlon": -6.2171629
+  },
+  "geometry": [
+    { "lat": 53.3522011, "lon": -6.2179086 },
+    { "lat": 53.3522235, "lon": -6.2174821 },
+    { "lat": 53.3522411, "lon": -6.2173695 },
+    { "lat": 53.3522955, "lon": -6.2172863 },
+    { "lat": 53.3523852, "lon": -6.2172461 },
+    { "lat": 53.3527422, "lon": -6.2171629 },
+    { "lat": 53.3528014, "lon": -6.2172353 },
+    { "lat": 53.3528335, "lon": -6.2174338 },
+    { "lat": 53.3530320, "lon": -6.2174633 },
+    { "lat": 53.3531600, "lon": -6.2197138 },
+    { "lat": 53.3529079, "lon": -6.2197507 },
+    { "lat": 53.3527928, "lon": -6.2198601 },
+    { "lat": 53.3529247, "lon": -6.2226427 },
+    { "lat": 53.3528735, "lon": -6.2227178 },
+    { "lat": 53.3526109, "lon": -6.2227366 },
+    { "lat": 53.3525389, "lon": -6.2227687 },
+    { "lat": 53.3524845, "lon": -6.2227500 },
+    { "lat": 53.3524364, "lon": -6.2226588 },
+    { "lat": 53.3523099, "lon": -6.2211326 },
+    { "lat": 53.3522379, "lon": -6.2194938 },
+    { "lat": 53.3522011, "lon": -6.2179086 }
+  ],
+  "tags": {
+    "landuse": "construction"
+  }
+},
+{
+  "type": "way",
+  "id": 1527347499,
+  "bounds": {
+    "minlat": 53.3486863,
+    "minlon": -6.2202917,
+    "maxlat": 53.3498096,
+    "maxlon": -6.2150361
+  },
+  "geometry": [
+    { "lat": 53.3491648, "lon": -6.2202487 },
+    { "lat": 53.3496904, "lon": -6.2202006 },
+    { "lat": 53.3496572, "lon": -6.2195014 },
+    { "lat": 53.3495733, "lon": -6.2195051 },
+    { "lat": 53.3494519, "lon": -6.2166935 },
+    { "lat": 53.3498096, "lon": -6.2166417 },
+    { "lat": 53.3497654, "lon": -6.2159647 },
+    { "lat": 53.3494717, "lon": -6.2159721 },
+    { "lat": 53.3494342, "lon": -6.2151249 },
+    { "lat": 53.3493149, "lon": -6.2150361 },
+    { "lat": 53.3490720, "lon": -6.2151878 },
+    { "lat": 53.3490477, "lon": -6.2166306 },
+    { "lat": 53.3486863, "lon": -6.2165125 },
+    { "lat": 53.3488569, "lon": -6.2202917 },
+    { "lat": 53.3491648, "lon": -6.2202487 }
+  ],
+  "tags": {
+    "landuse": "construction"
+  }
+},
+{
+  "type": "way",
+  "id": 1534687394,
+  "bounds": {
+    "minlat": 53.3454608,
+    "minlon": -6.2550461,
+    "maxlat": 53.3455122,
+    "maxlon": -6.2549574
+  },
+  "geometry": [
+    { "lat": 53.3455121, "lon": -6.2550461 },
+    { "lat": 53.3454871, "lon": -6.2550460 },
+    { "lat": 53.3454608, "lon": -6.2550460 },
+    { "lat": 53.3454608, "lon": -6.2550348 },
+    { "lat": 53.3454609, "lon": -6.2549575 },
+    { "lat": 53.3454727, "lon": -6.2549574 },
+    { "lat": 53.3455122, "lon": -6.2549576 },
+    { "lat": 53.3455121, "lon": -6.2550266 },
+    { "lat": 53.3455121, "lon": -6.2550461 }
+  ],
+  "tags": {
+    "area": "yes",
+    "height": "40",
+    "man_made": "tower",
+    "material": "brick",
+    "tower:construction": "freestanding",
+    "tower:type": "hose",
+    "year_of_construction": "1906"
+  }
+},
+{
+  "type": "way",
+  "id": 1536347599,
+  "bounds": {
+    "minlat": 53.3465461,
+    "minlon": -6.2556447,
+    "maxlat": 53.3467452,
+    "maxlon": -6.2552502
+  },
+  "geometry": [
+    { "lat": 53.3465461, "lon": -6.2556191 },
+    { "lat": 53.3467452, "lon": -6.2556447 },
+    { "lat": 53.3467426, "lon": -6.2552502 },
+    { "lat": 53.3465469, "lon": -6.2552725 },
+    { "lat": 53.3465461, "lon": -6.2554998 },
+    { "lat": 53.3465461, "lon": -6.2556191 }
+  ],
+  "tags": {
+    "architect": "Henry J Lyons",
+    "building": "residential",
+    "building:levels": "22",
+    "building:levels:underground": "2",
+    "building:material": "steel",
+    "height": "83",
+    "image": "https://commons.wikimedia.org/wiki/File:College_Square_topped_out_as_of_September_2025.jpg",
+    "roof:colour": "black"
+  }
+},
+{
+  "type": "way",
+  "id": 1545048393,
+  "bounds": {
+    "minlat": 53.3488026,
+    "minlon": -6.3156857,
+    "maxlat": 53.3488504,
+    "maxlon": -6.3156184
+  },
+  "geometry": [
+    { "lat": 53.3488504, "lon": -6.3156845 },
+    { "lat": 53.3488498, "lon": -6.3156184 },
+    { "lat": 53.3488026, "lon": -6.3156196 },
+    { "lat": 53.3488032, "lon": -6.3156857 },
+    { "lat": 53.3488504, "lon": -6.3156845 }
+  ],
+  "tags": {
+    "building": "yes",
+    "building:levels": "2",
+    "man_made": "tower",
+    "material": "concrete",
+    "roof:colour": "grey",
+    "roof:shape": "flat",
+    "tower:construction": "freestanding",
+    "tower:type": "defensive",
+    "year_of_construction": "C20"
+  }
+},
+{
+  "type": "way",
+  "id": 1557487461,
+  "bounds": {
+    "minlat": 53.3470817,
+    "minlon": -6.2321085,
+    "maxlat": 53.3477465,
+    "maxlon": -6.2311121
+  },
+  "geometry": [
+    { "lat": 53.3470817, "lon": -6.2312348 },
+    { "lat": 53.3476830, "lon": -6.2311121 },
+    { "lat": 53.3477465, "lon": -6.2319857 },
+    { "lat": 53.3471452, "lon": -6.2321085 },
+    { "lat": 53.3470817, "lon": -6.2312348 }
+  ],
+  "tags": {
+    "building": "construction"
+  }
+}
+
+  ]
+}
