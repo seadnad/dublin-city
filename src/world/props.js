@@ -65,12 +65,47 @@ function heritageGeometry() {
 export function buildLamps(scene) {
   const spots = lampSpots();
   const modern = spots.filter((s) => !s.heritage && !s.wall), heritage = spots.filter((s) => s.heritage && !s.wall), walls = spots.filter((s) => s.wall);
-  const poleMat = addReflections(new THREE.MeshStandardMaterial({ color: 0x7a8086, roughness: 0.45, metalness: 0.9 }), 0.7); // galvanised steel
-  const ironMat = addReflections(new THREE.MeshStandardMaterial({ color: 0x1f2723, roughness: 0.4, metalness: 0 }), 0.6); // painted cast iron
-  const headMat = new THREE.MeshStandardMaterial({ color: 0xf4efe0, emissive: 0xffc98a, emissiveIntensity: 0 });
-  // opaque: at 0.85 opacity the blend was invisible but cost sorting and fill on every lantern
-  const lanternMat = new THREE.MeshStandardMaterial({ color: 0xf2e8d4, emissive: 0xffc070, emissiveIntensity: 0, side: THREE.DoubleSide });
-  const make = (geo, mat, list, shadow = false) => chunkedInstances(geo, mat, list, { shadow });
+  // Each lamp kind is one mesh with one material (a draw call per map block, not three): the metal and the glowing
+  // head / lantern glass are told apart per vertex. Vertex colours carry the paint, and a two-texel lookup (the uv
+  // points at texel 0 for metal, texel 1 for glass) carries roughness, metalness and the emissive mask.
+  //   modern:   galvanised steel pole and arm (0x7a8086, rough 0.45, metal 0.9) + head (0xf4efe0, rough 1)
+  //   heritage: painted cast iron (0x1f2723, rough 0.4, metal 0) + lantern glass (0xf2e8d4, rough 1, both sides)
+  const kitTex = (metal) => {
+    const rm = new THREE.DataTexture(new Float32Array([0, metal[0], metal[1], 1, 0, 1, 0, 1]), 2, 1, THREE.RGBAFormat, THREE.FloatType);
+    const glow = new THREE.DataTexture(new Uint8Array([0, 0, 0, 255, 255, 255, 255, 255]), 2, 1);
+    for (const t of [rm, glow]) { t.magFilter = t.minFilter = THREE.NearestFilter; t.needsUpdate = true; }
+    return { rm, glow };
+  };
+  const kitMat = (metal, emissive, reflect) => {
+    const t = kitTex(metal);
+    const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 1, roughnessMap: t.rm, metalnessMap: t.rm, emissiveMap: t.glow, emissive, emissiveIntensity: 0 });
+    // reflections as before: the metal gets the boosted level, the glass (roughness 1) keeps the plain one
+    return addReflections(m, reflect, 'step(roughnessFactor, 0.95)');
+  };
+  // parts: [[geometry, glass?, colour, twoSided?]] -> one non-indexed geometry with colour and uv per part
+  const kit = (parts) => mergeGeometries(parts.map(([g, glass, hex, twoSided]) => {
+    let geo = g.index ? g.toNonIndexed() : g.clone();
+    if (twoSided) {
+      // the inside faces as well (was side: DoubleSide): the same triangles wound the other way, normals flipped
+      const back = geo.clone(), p = back.attributes.position, n = back.attributes.normal;
+      for (let i = 0; i < p.count; i += 3) for (const a of [p, n]) {
+        const x = a.getX(i + 1), y = a.getY(i + 1), z = a.getZ(i + 1);
+        a.setXYZ(i + 1, a.getX(i + 2), a.getY(i + 2), a.getZ(i + 2)); a.setXYZ(i + 2, x, y, z);
+      }
+      for (let i = 0; i < n.count; i++) n.setXYZ(i, -n.getX(i), -n.getY(i), -n.getZ(i));
+      geo = mergeGeometries([geo, back]);
+    }
+    const c = new THREE.Color(hex), col = new Float32Array(geo.attributes.position.count * 3), uv = new Float32Array(geo.attributes.position.count * 2);
+    for (let i = 0; i < col.length / 3; i++) { col.set([c.r, c.g, c.b], i * 3); uv.set([glass ? 0.75 : 0.25, 0.5], i * 2); }
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+    for (const k of Object.keys(geo.attributes)) if (!['position', 'normal', 'uv', 'color'].includes(k)) geo.deleteAttribute(k);
+    return geo;
+  }));
+  const modernMat = kitMat([0.45, 0.9], 0xffc98a, 0.7);
+  const heritageMat = kitMat([0.4, 0], 0xffc070, 0.6);
+  // Low / Battery saver: lamps don't cast the sun shadow (as with the rest of the street furniture there)
+  const make = (geo, mat, list, shadow = false) => chunkedInstances(geo, mat, list, { shadow: shadow && !LITE });
   const pole = new THREE.CylinderGeometry(0.07, 0.13, 7.6, 8).translate(0, 3.8, 0);
   const arm = new THREE.BoxGeometry(0.09, 0.09, 1.7).translate(0, 7.5, 0.8);
   const head = new THREE.BoxGeometry(0.34, 0.12, 0.72).translate(0, 7.42, 1.55);
@@ -93,10 +128,12 @@ export function buildLamps(scene) {
   })();
   // at the wall, facing into the street (instances rotate local +z to s.rot)
   const wallItems = walls.map((s) => ({ x: s.x, z: s.z, rot: s.rot }));
+  const STEEL = 0x7a8086, HEAD = 0xf4efe0, IRON = 0x1f2723, GLASS = 0xf2e8d4;
+  // (the lanterns are opaque: at 0.85 opacity the blend was invisible but cost sorting and fill on every lantern)
   const meshes = {
-    poles: make(pole, poleMat, modern, true), arms: make(arm, poleMat, modern), heads: make(head, headMat, modern),
-    frames: make(H.frame, ironMat, heritage, true), lanterns: make(H.glass, lanternMat, heritage),
-    wallFrames: make(W.frame, ironMat, wallItems), wallLanterns: make(W.glass, lanternMat, wallItems),
+    modern: make(kit([[pole, false, STEEL], [arm, false, STEEL], [head, true, HEAD]]), modernMat, modern, true),
+    heritage: make(kit([[H.frame, false, IRON], [H.glass, true, GLASS, true]]), heritageMat, heritage, true),
+    wall: make(kit([[W.frame, false, IRON], [W.glass, true, GLASS, true]]), heritageMat, wallItems),
   };
   // soft light pools on the ground under each lamp (additive, only visible at night)
   const poolTex = (() => {
@@ -147,8 +184,8 @@ export function buildLamps(scene) {
     setWet(w) { wet = w; streak.value = w; poolMat.opacity = level * (0.12 + 0.75 * w); pools.visible = poolMat.opacity > 0.001; },
     setLevel(v) {
       level = v;
-      headMat.emissiveIntensity = v * 3;
-      lanternMat.emissiveIntensity = 0.05 + v * 3.2;
+      modernMat.emissiveIntensity = v * 3;
+      heritageMat.emissiveIntensity = 0.05 + v * 3.2;
       poolMat.opacity = v * (0.12 + 0.75 * wet);
       // hidden by day: a few hundred 12 m blended quads at zero opacity still cost full fill rate
       pools.visible = poolMat.opacity > 0.001;
@@ -158,11 +195,16 @@ export function buildLamps(scene) {
       if (t > 0) return;
       t = 0.25;
       if (level <= 0) { for (const l of lights) l.intensity = 0; return; }
-      const near = spots
-        .map((s) => ({ s, d: (s.hx - focus.x) ** 2 + (s.hz - focus.z) ** 2 }))
-        .sort((a, b) => a.d - b.d)
-        .slice(0, N);
-      near.forEach(({ s }, i) => { lights[i].position.set(s.hx, s.hy - 0.4, s.hz); lights[i].intensity = 34 * level; });
+      // the N nearest lamps: one pass keeping a short sorted list (no per-lamp allocation or full sort)
+      const best = [], bd = [];
+      for (const s of spots) {
+        const d = (s.hx - focus.x) ** 2 + (s.hz - focus.z) ** 2;
+        if (best.length === N && d >= bd[N - 1]) continue;
+        let i = Math.min(best.length, N - 1);
+        while (i > 0 && bd[i - 1] > d) { best[i] = best[i - 1]; bd[i] = bd[i - 1]; i--; }
+        best[i] = s; bd[i] = d;
+      }
+      best.forEach((s, i) => { lights[i].position.set(s.hx, s.hy - 0.4, s.hz); lights[i].intensity = 34 * level; });
     },
   };
 }

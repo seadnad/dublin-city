@@ -67,17 +67,30 @@ export function createSignals(scene) {
     new THREE.BoxGeometry(0.34, 0.95, 0.24).translate(0, 3.05, 0.05),
     new THREE.BoxGeometry(0.5, 1.1, 0.03).translate(0, 3.05, -0.08), // backboard
   ]);
-  const lensGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.04, 12).rotateX(Math.PI / 2);
+  // lens: rim and front face (the back face sits inside the signal head and was never seen)
+  const lensGeo = mergeGeometries([new THREE.CylinderGeometry(0.1, 0.1, 0.04, 12, 1, true).rotateX(Math.PI / 2), new THREE.CircleGeometry(0.1, 12).translate(0, 0, 0.02)]);
   scene.add(instanced(poleGeo, black, poles), instanced(headGeo, black, heads));
-  const lenses = new THREE.InstancedMesh(lensGeo, new THREE.MeshBasicMaterial({ color: 0xffffff }), heads.length * 3);
-  heads.forEach((h, i) => {
-    for (let k = 0; k < 3; k++) {
-      const y = 3.35 - k * 0.3;
-      lenses.setMatrixAt(i * 3 + k, compose(h.x + Math.sin(h.rot) * 0.18, y, h.z + Math.cos(h.rot) * 0.18, h.rot));
-      lenses.setColorAt(i * 3 + k, new THREE.Color(0x111111));
-    }
-  });
-  scene.add(lenses);
+  // lenses: one instanced mesh per map block (culled with the block) rather than one for the whole city
+  const lensMat = new THREE.MeshBasicMaterial({ color: 0xffffff }), blocks = new Map();
+  for (const h of heads) {
+    const k = `${Math.floor(h.x / 500)},${Math.floor(h.z / 500)}`;
+    if (!blocks.has(k)) blocks.set(k, []);
+    blocks.get(k).push(h);
+  }
+  for (const list of blocks.values()) {
+    const lenses = new THREE.InstancedMesh(lensGeo, lensMat, list.length * 3);
+    list.forEach((h, i) => {
+      h.lenses = lenses; h.at = i * 3;
+      for (let k = 0; k < 3; k++) {
+        const y = 3.35 - k * 0.3;
+        lenses.setMatrixAt(i * 3 + k, compose(h.x + Math.sin(h.rot) * 0.18, y, h.z + Math.cos(h.rot) * 0.18, h.rot));
+        lenses.setColorAt(i * 3 + k, new THREE.Color(0x111111));
+      }
+    });
+    lenses.computeBoundingSphere();
+    lenses.matrixAutoUpdate = false;
+    scene.add(lenses);
+  }
   const ON = [new THREE.Color(3, 0.2, 0.15), new THREE.Color(3, 1.6, 0.1), new THREE.Color(0.2, 3, 1.2)];
   const OFF = [new THREE.Color(0.18, 0.03, 0.03), new THREE.Color(0.18, 0.12, 0.02), new THREE.Color(0.03, 0.14, 0.07)];
   let time = 0;
@@ -86,16 +99,14 @@ export function createSignals(scene) {
     count: heads.length,
     update(dt) {
       time += dt;
-      let dirty = false;
       heads.forEach((h, i) => {
         const st = light(h.sig, h.g, time);
         if (last.get(i) === st) return;
         last.set(i, st);
         const lit = st === 'red' ? 0 : st === 'amber' ? 1 : 2;
-        for (let k = 0; k < 3; k++) lenses.setColorAt(i * 3 + k, k === lit ? ON[k] : OFF[k]);
-        dirty = true;
+        for (let k = 0; k < 3; k++) h.lenses.setColorAt(h.at + k, k === lit ? ON[k] : OFF[k]);
+        h.lenses.instanceColor.needsUpdate = true;
       });
-      if (dirty) lenses.instanceColor.needsUpdate = true;
     },
     // For an AI car on `edge` heading into edge.to: the light it faces and where its stop line is
     stateFor(edge) {

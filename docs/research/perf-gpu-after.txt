@@ -1,0 +1,196 @@
+# GPU optimisation pass: after (vs perf-gpu-before.txt)
+
+Machine: AMD Vega 8 laptop, headless Chrome (ANGLE D3D11), tools/scenarios/areaperf.mjs with PERF=1 (vsync off), dpr 1.
+Baseline = commit 0a624b8 (a private copy of it), after = this branch. The two were run alternately (base, new, base, new)
+so drift in GPU clocks and in the load from other agents hits both sides. Other agents were running the game headless
+on the same GPU through the whole session, so per-frame GPU ms is noisy (a single run can be 2x off); "p10" is the
+10th-percentile frame of the better run, the figure least disturbed by contention. Draw calls and triangles are
+deterministic (one frame, main pass + shadow pass).
+
+  desktop low  = 1280x720, low tier (the phone/integrated-GPU default), lite counts (2 runs each side)
+  mobile low   = --mobile (844x390 phone viewport), low tier (2 runs each side)
+  desktop high = GFX=high: High profile (full crowd/traffic counts, 950 m view, 2048 shadow map, MSAA + bloom + grade)
+                 (1 run each side; Temple Bar / Christ Church medians in that run were disturbed, see p10)
+
+## What changed (all pure efficiency: High looks the same; the only Low/Battery-saver-only change is marked)
+
+1. Road markings (src/world/roads.js). The whole city's markings were ONE 347k-triangle mesh drawn every frame, with no
+   culling: the kerb-side double yellow lines were built from the 0.5 m test samples of clipToOwnRoad, i.e. one quad
+   per half metre of kerb. Collinear samples are now dropped after the test (same lines, ~14x fewer quads), and the
+   markings are split into 600 m blocks so off-screen blocks are culled. 347k -> ~15k triangles for the whole
+   city. Biggest single win, and it scaled with the map.
+2. Trees (src/world/chunks.js packedInstances, src/world/trees.js). The Blender trees (1-2.5k tris each) were in 250 m
+   blocks, each block drawn whole in the main pass and in the shadow pass. Now each species is one instanced mesh for
+   the view and one for the shadow map, repacked every frame with just the trees inside the camera frustum / the
+   shadow camera's box. Draw calls per species are constant however big the map; triangles follow the screen.
+   (Shadow-only meshes are shown only during the shadow pass: installShadowOnly wraps renderer.shadowMap.render.)
+3. Parked cars (src/game/fleet.js, traffic.js). All parked cars in the city lived in the moving-car instanced meshes
+   (frustumCulled = false), so every one was drawn every frame in both passes. They still share those meshes (no new
+   draw calls) but only the ones in view or within 90 m of the player (shadow range) are packed in each frame.
+4. Lamps (src/world/props.js). Modern pole + arm + head (3 meshes), heritage frame + lantern (2), wall frame + lantern
+   (2) are now one mesh per kind with one material: paint in vertex colours, roughness / metalness / emissive mask from
+   a 2-texel lookup, lantern glass doubled with flipped faces instead of side: DoubleSide. 7 -> 3 draw calls per block.
+   Same colours, finish and night glow. Low / Battery saver only: lamps no longer cast the sun shadow (as the rest of
+   the street furniture already didn't in the lite profile).
+5. Signal lenses (src/world/furniture.js): one city-wide 42k-triangle instanced mesh -> 500 m blocks (culled), and the
+   hidden back cap of each lens dropped.
+6. Water glow (src/render/waterglow.js): only reflections within the view distance take a slot (was all of them,
+   updated every frame at night; this grows with every lamp near water on the bigger map).
+7. Lamp point lights (props.js update): nearest-3 by a single linear pass instead of map + sort of every lamp in the
+   city 4x a second.
+8. Traffic respawn (traffic.js): recycled cars pick from edges 125-315 m from the player (cached, refreshed every 40 m)
+   instead of random edges anywhere; on a 2.5-3x map the old 12 random tries mostly missed, stranding cars far away.
+9. Static objects (chunks.js, buildings.js, roads.js markings): matrixAutoUpdate = false, so the per-frame scene-graph
+   update no longer recomposes their matrices (793 -> 388 auto-updating objects).
+10. Baked maps (src/render/lamplight.js, groundao.js): resolution becomes coarser only if the map exceeds 4096 m, so
+    the textures never exceed the 4096 px limit many phone GPUs have (identical at today's size).
+11. reflect.js: the program cache key includes the glass expression (two materials with different expressions could
+    otherwise share one compiled program).
+12. tools/scenarios/areaperf.mjs: GFX=high / EVENING=1 options, per-frame sums over all render() calls (the High tier
+    has several passes), p10 GPU time, and GPU timer queries are deleted after reading (they leaked).
+
+Checked and left alone: the building facade shader is the largest single fill cost (hiding buildings saves 5-9 ms at
+Temple Bar) but its work is per pixel of wall on screen, already LODs out window detail with distance, and any cut
+would change looks. The shadow pass costs 2-5 ms (low tier) and is re-rendered every frame on purpose (car shadow);
+trees and parked cars in it are now culled to the shadow box. Light pools are hidden by day and are cheap at night
+(additive, 12 m quads, ~1 ms). Festoons / baskets are already batched into a few static meshes and don't cast shadows.
+
+## Visual check (High profile, same camera spots, day and night; tools/shots/*-before-hi-* vs *-after-hi-*)
+PSNR of before vs after screenshots at the five areaperf spots (1280x720; High has animated film grain, and people,
+traffic, water ripples and the Garda light bar move between runs, so ~37-40 dB is "identical" here; the amplified
+difference images show only grain, moving people/cars, water and minimap blips):
+  High, day:    Ha'penny 36.6, Temple Bar 38.9, Christ Church 38.7, St Patrick's 38.6, Heuston 37.2 dB
+  High, night:  Ha'penny 39.5, Temple Bar 39.7, Christ Church 43.2, St Patrick's 41.1, Heuston 39.9 dB
+  Low, night (phone viewport): 41.1 / 43.8 / 44.6 / 41.8 / 47.8 dB
+Night lanterns, lamp heads, festoons and wall lanterns glow as before; tree and parked-car shadows are unchanged.
+
+## Before / after (see the notes at the top on contention)
+| profile | area | fps (mean of runs) | GPU ms median (mean of runs) | GPU ms p10 (best run) | draw calls | triangles |
+|---|---|---|---|---|---|---|
+| desktop low | hapenny-bridge | 24 -> 27 | 34.1 -> 25.0 | 21.0 -> 14.9 | 421 -> 380 | 1.50M -> 0.93M (-38%) |
+| desktop low | temple-bar | 22 -> 28 | 29.9 -> 26.1 | 25.2 -> 21.7 | 348 -> 311 | 1.32M -> 0.77M (-42%) |
+| desktop low | christ-church | 23 -> 30 | 27.1 -> 22.4 | 23.6 -> 19.9 | 312 -> 292 | 1.18M -> 0.62M (-47%) |
+| desktop low | st-patricks | 24 -> 31 | 22.8 -> 21.1 | 19.9 -> 19.3 | 222 -> 204 | 0.93M -> 0.44M (-53%) |
+| desktop low | heuston | 27 -> 29 | 15.7 -> 13.8 | 14.3 -> 11.9 | 197 -> 184 | 0.83M -> 0.35M (-58%) |
+| mobile low | hapenny-bridge | 32 -> 46 | 22.9 -> 12.4 | 11.3 -> 8.8 | 426 -> 383 | 1.52M -> 0.96M (-37%) |
+| mobile low | temple-bar | 37 -> 45 | 17.0 -> 11.1 | 14.0 -> 9.7 | 364 -> 318 | 1.35M -> 0.79M (-41%) |
+| mobile low | christ-church | 38 -> 51 | 13.1 -> 12.3 | 12.4 -> 10.6 | 331 -> 301 | 1.20M -> 0.64M (-47%) |
+| mobile low | st-patricks | 28 -> 50 | 18.8 -> 10.3 | 12.4 -> 9.4 | 235 -> 217 | 0.96M -> 0.47M (-51%) |
+| mobile low | heuston | 25 -> 62 | 10.5 -> 7.1 | 8.3 -> 6.2 | 198 -> 187 | 0.83M -> 0.35M (-58%) |
+| desktop high | hapenny-bridge | 18 -> 29 | 40.8 -> 29.2 | 34.3 -> 27.4 | 564 -> 527 | 1.92M -> 1.30M (-32%) |
+| desktop high | temple-bar | 21 -> 17 | 44.8 -> 45.7 | 41.3 -> 37.3 | 430 -> 398 | 1.70M -> 1.07M (-37%) |
+| desktop high | christ-church | 20 -> 17 | 44.5 -> 52.0 | 41.5 -> 32.6 | 398 -> 374 | 1.53M -> 0.88M (-42%) |
+| desktop high | st-patricks | 6 -> 22 | 49.0 -> 36.8 | 42.7 -> 30.5 | 257 -> 243 | 1.28M -> 0.66M (-48%) |
+| desktop high | heuston | 16 -> 27 | 36.4 -> 26.2 | 32.7 -> 22.9 | 226 -> 221 | 1.13M -> 0.53M (-53%) |
+
+## Costs that scale with the map (main is now ~1.6x wider and ~2x taller than this baseline: ~3.3x the bounds area)
+
+Fixed on this branch: road markings (were one un-culled mesh), trees (block-drawn, both passes), parked cars (all drawn
+every frame), signal lenses (one city-wide mesh), water-glow update loop, lamp nearest-light sort, traffic respawn
+picking, static matrix updates, lamp-light / ground-AO texture size cap.
+
+Still to do, by priority (sizes for the ~2.5x map at today's resolutions):
+1. Kerb distance field (roads.js: G = 1 m over the whole bounds). Three Float32 arrays of NX*NZ during the build
+   (field, scratch, rd) = ~110 MB transient, a 1 m half-float texture (18 MB on the GPU) and a width that will pass
+   4096 texels on the next widening, where phones with a 4096 limit fail to upload it. Recommendation: compute the
+   field per 256 m tile only where roads are (most of the map is buildings/parks), store tiles in a texture array or
+   an atlas, and free scratch/rd after the build. Short term: reuse one scratch array and free it.
+2. Building occupancy grid (buildings.js: Uint8 at 0.5 m over the bounds): ~37 MB at the new size, 4x the cost of a
+   1 m grid. Recommendation: 1 m cells, or a Map of 64 m tiles allocated only where lots are placed; drop it after
+   the build.
+3. Layout / minimap canvases (ground.js layoutCanvas at 1.6 px/m, hud.js mini at 1.5 px/m): ~6500x3600 RGBA
+   (~94 MB) plus a ~85 MB copy. iOS Safari refuses canvases over ~16.7 Mpx, so the minimap will go blank on iPhones
+   at the new size. Recommendation: draw the minimap per 512 px tile on demand (or at <= 1 px/m, capped to 4096 px).
+4. Lamp-light and ground-AO bakes: capped at 4096 px on this branch, but each is still W*H floats on the CPU while
+   baking (~37 MB each at 4 km x 2.3 km). Recommendation: bake per tile / only where roads are; free the Float32.
+5. World build time: buildings, pavements (ExtrudeGeometry per block), markings, landmark batching are all built at
+   load for the whole map (~18-25 s here under load). Recommendation: build per district chunk and stream the far
+   ones in after the first frame (the chunk grids already exist); at minimum yield between districts so the intro
+   doesn't freeze.
+6. people.js refreshNearby: filters every footpath lane (with a per-point distance test) each 25 m the player moves:
+   O(all lanes). Recommendation: bucket lanes into the 40 m road hash (world.segsNear) once and query nearby cells.
+7. Buildings: one InstancedMesh per 450 m chunk; all ~14k (soon ~40k) boxes live in GPU memory with 60-byte
+   per-instance attributes. Fine for draw calls; if memory bites, drop far chunks beyond the 600/950 m view.
+8. Collision segments (collision.js, 75k segments, 16 m hash): memory grows linearly (~3x) but lookups stay local.
+   OK as is.
+9. Audio junction list (audio/city.js) and signal heads update loop: linear over all junctions/heads per frame, but
+   small (hundreds). Bucket by 250 m cells if the junction count passes ~2k.
+10. Draw calls from chunk grids (lamps, furniture, chimneys, buildings: 450-600 m blocks): the number of visible
+    blocks is set by the view distance, not the map size, so this stays flat.
+
+## Raw runs (alternating baseline / this branch)
+### desktop low (ab-desktop.txt)
+== base rep 1
+loaded in 75166 ms
+AREA base hapenny-bridge   31 fps gpu 26.69 ms p10 23.08 ms calls 421 tris 1.50M street "Wellington Quay"
+AREA base temple-bar       21 fps gpu 33.79 ms p10 27.65 ms calls 348 tris 1.32M street "Temple Lane South"
+AREA base christ-church    27 fps gpu 30.07 ms p10 24.76 ms calls 312 tris 1.18M street "Temple Lane South"
+AREA base st-patricks      25 fps gpu 23.8 ms p10 22.76 ms calls 222 tris 0.93M street "Bull Alley Street"
+AREA base heuston          27 fps gpu 16.41 ms p10 14.78 ms calls 197 tris 0.83M street "Victoria Quay"
+== new rep 1
+loaded in 30127 ms
+AREA new hapenny-bridge   36 fps gpu 23.11 ms p10 20.9 ms calls 380 tris 0.93M street "Wellington Quay"
+AREA new temple-bar       27 fps gpu 29.51 ms p10 24.82 ms calls 311 tris 0.77M street "Temple Lane South"
+AREA new christ-church    28 fps gpu 23.08 ms p10 19.95 ms calls 292 tris 0.62M street "Temple Lane South"
+AREA new st-patricks      28 fps gpu 21.07 ms p10 19.27 ms calls 204 tris 0.44M street "Bull Alley Street"
+AREA new heuston          29 fps gpu 13.3 ms p10 12.12 ms calls 184 tris 0.35M street "Victoria Quay"
+== base rep 2
+loaded in 90981 ms
+AREA base hapenny-bridge   17 fps gpu 41.49 ms p10 21 ms calls 422 tris 1.50M street "Wellington Quay"
+AREA base temple-bar       22 fps gpu 26.03 ms p10 25.24 ms calls 347 tris 1.32M street "Temple Lane South"
+AREA base christ-church    18 fps gpu 24.2 ms p10 23.65 ms calls 312 tris 1.18M street "Temple Lane South"
+AREA base st-patricks      23 fps gpu 21.87 ms p10 19.85 ms calls 222 tris 0.93M street "Bull Alley Street"
+AREA base heuston          26 fps gpu 14.92 ms p10 14.26 ms calls 196 tris 0.83M street "Victoria Quay"
+== new rep 2
+loaded in 33951 ms
+AREA new hapenny-bridge   18 fps gpu 26.84 ms p10 14.87 ms calls 381 tris 0.93M street "Wellington Quay"
+AREA new temple-bar       29 fps gpu 22.59 ms p10 21.71 ms calls 310 tris 0.77M street "Temple Lane South"
+AREA new christ-church    31 fps gpu 21.66 ms p10 21.03 ms calls 292 tris 0.62M street "Temple Lane South"
+AREA new st-patricks      34 fps gpu 21.09 ms p10 20.52 ms calls 203 tris 0.44M street "Bull Alley Street"
+AREA new heuston          29 fps gpu 14.3 ms p10 11.89 ms calls 184 tris 0.35M street "Victoria Quay"
+
+### mobile low (ab-mobile.txt)
+== base rep 1
+loaded in 40946 ms
+AREA base hapenny-bridge   36 fps gpu 17.84 ms p10 11.33 ms calls 426 tris 1.52M street "Wellington Quay"
+AREA base temple-bar       42 fps gpu 19.63 ms p10 14.11 ms calls 364 tris 1.35M street "Temple Lane South"
+AREA base christ-church    47 fps gpu 13.24 ms p10 12.39 ms calls 331 tris 1.20M street "Temple Lane South"
+AREA base st-patricks      46 fps gpu 13.26 ms p10 12.43 ms calls 235 tris 0.96M street "Bull Alley Street"
+AREA base heuston          33 fps gpu 10.27 ms p10 8.27 ms calls 198 tris 0.83M street "Victoria Quay"
+== new rep 1
+loaded in 42765 ms
+AREA new hapenny-bridge   54 fps gpu 13.64 ms p10 10.03 ms calls 383 tris 0.96M street "Wellington Quay"
+AREA new temple-bar       52 fps gpu 11.72 ms p10 10.82 ms calls 318 tris 0.79M street "Temple Lane South"
+AREA new christ-church    50 fps gpu 12.55 ms p10 10.99 ms calls 301 tris 0.64M street "Temple Lane South"
+AREA new st-patricks      59 fps gpu 10.17 ms p10 9.41 ms calls 217 tris 0.47M street "Bull Alley Street"
+AREA new heuston          78 fps gpu 7.16 ms p10 6.48 ms calls 187 tris 0.35M street "Victoria Quay"
+== base rep 2
+loaded in 43274 ms
+AREA base hapenny-bridge   27 fps gpu 27.94 ms p10 11.82 ms calls 427 tris 1.52M street "Wellington Quay"
+AREA base temple-bar       31 fps gpu 14.32 ms p10 13.99 ms calls 363 tris 1.35M street "Temple Lane South"
+AREA base christ-church    29 fps gpu 12.97 ms p10 12.63 ms calls 333 tris 1.21M street "Temple Lane South"
+AREA base st-patricks      10 fps gpu 24.32 ms p10 13.03 ms calls 234 tris 0.96M street "Bull Alley Street"
+AREA base heuston          17 fps gpu 10.64 ms p10 8.85 ms calls 198 tris 0.83M street "Victoria Quay"
+== new rep 2
+loaded in 31705 ms
+AREA new hapenny-bridge   37 fps gpu 11.26 ms p10 8.8 ms calls 383 tris 0.96M street "Wellington Quay"
+AREA new temple-bar       38 fps gpu 10.51 ms p10 9.72 ms calls 318 tris 0.79M street "Temple Lane South"
+AREA new christ-church    52 fps gpu 12.1 ms p10 10.58 ms calls 301 tris 0.64M street "Temple Lane South"
+AREA new st-patricks      40 fps gpu 10.34 ms p10 9.39 ms calls 215 tris 0.47M street "Bull Alley Street"
+AREA new heuston          46 fps gpu 7.11 ms p10 6.2 ms calls 187 tris 0.35M street "Victoria Quay"
+
+### desktop high (ab-high.txt)
+== base rep 1
+loaded in 26301 ms
+AREA base hapenny-bridge   18 fps gpu 40.83 ms p10 34.34 ms calls 564 tris 1.92M street "Wellington Quay"
+AREA base temple-bar       21 fps gpu 44.83 ms p10 41.26 ms calls 430 tris 1.70M street "Temple Lane South"
+AREA base christ-church    20 fps gpu 44.47 ms p10 41.5 ms calls 398 tris 1.53M street "Temple Lane South"
+AREA base st-patricks      6 fps gpu 48.99 ms p10 42.72 ms calls 257 tris 1.28M street "Bull Alley Street"
+AREA base heuston          16 fps gpu 36.43 ms p10 32.72 ms calls 226 tris 1.13M street "Victoria Quay"
+== new rep 1
+loaded in 21460 ms
+AREA new hapenny-bridge   29 fps gpu 29.16 ms p10 27.39 ms calls 527 tris 1.30M street "Wellington Quay"
+AREA new temple-bar       17 fps gpu 45.73 ms p10 37.29 ms calls 398 tris 1.07M street "Temple Lane South"
+AREA new christ-church    17 fps gpu 51.96 ms p10 32.63 ms calls 374 tris 0.88M street "Temple Lane South"
+AREA new st-patricks      22 fps gpu 36.8 ms p10 30.5 ms calls 243 tris 0.66M street "Bull Alley Street"
+AREA new heuston          27 fps gpu 26.19 ms p10 22.91 ms calls 221 tris 0.53M street "Victoria Quay"

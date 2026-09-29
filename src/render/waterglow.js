@@ -35,7 +35,8 @@ export function buildWaterGlow(scene, sources) {
   });
   const mesh = new THREE.InstancedMesh(geo, mat, Math.max(1, sources.length));
   mesh.count = sources.length;
-  sources.forEach((s, i) => mesh.setColorAt(i, new THREE.Color(s.color).multiplyScalar(2.2))); // over 1: additive, so brighter streaks
+  const cols = sources.map((s) => new THREE.Color(s.color).multiplyScalar(2.2)); // over 1: additive, so brighter streaks
+  cols.forEach((c, i) => mesh.setColorAt(i, c));
   mesh.frustumCulled = false;
   mesh.visible = false;
   mesh.renderOrder = 2;
@@ -48,16 +49,21 @@ export function buildWaterGlow(scene, sources) {
     update(camera) {
       if (!mesh.visible) return;
       const cx = camera.position.x, cz = camera.position.z;
-      sources.forEach((s, i) => {
+      // only the lights within the view distance take a slot (the rest are past the far plane anyway)
+      let i = 0;
+      sources.forEach((s, k) => {
         let dx = cx - s.x, dz = cz - s.z;
         const d = Math.hypot(dx, dz) || 1;
+        if (d > camera.far + s.length) return;
+        mesh.setColorAt(i, cols[k]);
         dx /= d; dz /= d;
         const L = Math.min(s.length, d * 0.9); // never reach past the viewer
         q.setFromAxisAngle(up, Math.atan2(dx, dz));
         p.set(s.x + dx * L / 2, s.y, s.z + dz * L / 2);
-        mesh.setMatrixAt(i, m.compose(p, q, sc.set(s.width, 1, L)));
+        mesh.setMatrixAt(i++, m.compose(p, q, sc.set(s.width, 1, L)));
       });
-      mesh.instanceMatrix.needsUpdate = true;
+      mesh.count = i;
+      mesh.instanceMatrix.needsUpdate = true; mesh.instanceColor.needsUpdate = true;
     },
   };
 }

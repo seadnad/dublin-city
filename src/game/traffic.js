@@ -1,7 +1,7 @@
 // AI traffic: cars and buses follow the street graph, keeping LEFT, using pure-pursuit steering.
 import * as THREE from 'three';
 import { world, v2, laneOffset, hasParking } from '../world/geo.js';
-import { createFleet } from './fleet.js';
+import { createFleet, TYPES } from './fleet.js';
 import { rng } from '../world/textures.js';
 import { addBox } from './collision.js';
 
@@ -169,9 +169,9 @@ export function createTraffic(scene, { cars = 16, buses = 4, taxis = 4, parked =
   // decide every vehicle's kind first so the fleet can size its instanced meshes
   const aiKinds = [];
   for (let i = 0; i < cars; i++) aiKinds.push(i < taxis ? 'taxi' : pickKind());
-  const parkedKinds = spots.map(() => pickKind());
+  const parkedCars = spots.map((sp) => ({ kind: pickKind(), color: null, ...sp }));
   const counts = { hatch: 0, saloon: 0, suv: 0, van: 0, taxi: 0, bus: buses };
-  for (const k of [...aiKinds, ...parkedKinds]) counts[k]++;
+  for (const k of [...aiKinds, ...parkedCars.map((p) => p.kind)]) counts[k]++;
   const fleet = createFleet(scene, counts);
 
   const list = [];
@@ -185,11 +185,13 @@ export function createTraffic(scene, { cars = 16, buses = 4, taxis = 4, parked =
     ai.place(e, rand() * e.len);
     list.push(ai);
   }
-  spots.forEach((sp, i) => {
-    const h = fleet.add(parkedKinds[i], paint());
-    fleet.set(h, sp.x, sp.z, sp.heading);
-    addBox(sp.x, sp.z, h.W / 2, h.L / 2, sp.heading);
-  });
+  // parked cars: the fleet only draws the ones that can be seen (see cull)
+  for (const p of parkedCars) {
+    p.color = paint();
+    const t = TYPES[p.kind];
+    addBox(p.x, p.z, t.W / 2, t.L / 2, p.heading);
+  }
+  fleet.addParked(parkedCars);
 
   let player = null, tram = null, signals = null;
   const ctx = {
@@ -215,6 +217,15 @@ export function createTraffic(scene, { cars = 16, buses = 4, taxis = 4, parked =
   };
 
   const tmp = new THREE.Vector3();
+  // respawn candidates: drivable edges 120-320 m from the player, refreshed as the player moves. Picking from the
+  // whole map missed that ring more often the bigger the map got, leaving cars stranded far away.
+  let ring = [], ringAt = null;
+  const ringNear = (px, pz) => {
+    if (ringAt && (px - ringAt.x) ** 2 + (pz - ringAt.z) ** 2 < 40 * 40) return ring;
+    ringAt = { x: px, z: pz };
+    ring = drivable.filter((e) => { const d = Math.hypot((e.from.x + e.to.x) / 2 - px, (e.from.z + e.to.z) / 2 - pz); return d > 125 && d < 315; });
+    return ring;
+  };
   return {
     list,
     setPlayer(p) { player = p; },
@@ -223,6 +234,8 @@ export function createTraffic(scene, { cars = 16, buses = 4, taxis = 4, parked =
     fleet,
     parkedCount: spots.length,
     setLights: (v) => fleet.setLights(v),
+    // after the camera has moved this frame: which parked cars to draw
+    cull: (camera, focus) => fleet.cull(camera, focus),
     update(dt, camera) {
       for (const ai of list) {
         ai.update(dt, ctx);
@@ -230,8 +243,9 @@ export function createTraffic(scene, { cars = 16, buses = 4, taxis = 4, parked =
         if (player) {
           const dx = ai.pos.x - player.pos.x, dz = ai.pos.z - player.pos.z;
           if (dx * dx + dz * dz > 380 * 380) {
-            for (let tries = 0; tries < 12; tries++) {
-              const e = drivable[Math.floor(rand() * drivable.length)];
+            const cand = ringNear(player.pos.x, player.pos.z);
+            for (let tries = 0; tries < 12 && cand.length; tries++) {
+              const e = cand[Math.floor(rand() * cand.length)];
               const mx = (e.from.x + e.to.x) / 2, mz = (e.from.z + e.to.z) / 2;
               const d = Math.hypot(mx - player.pos.x, mz - player.pos.z);
               tmp.set(mx, 1, mz).project(camera);
