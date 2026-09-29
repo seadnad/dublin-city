@@ -29,6 +29,7 @@ const BLURBS = {
   centralBank: 'Floors hung from the roof, on Central Plaza',
   christChurch: 'Medieval cathedral and the Synod Hall bridge',
   stPatricks: "Minot's Tower and the granite spire over the park",
+  fourCourts: 'Gandon’s courts under the green dome on Inns Quay; the Luas stops behind',
   customHouse: 'Gandon’s domed masterpiece on the quays',
   stephensGreen: 'Victorian park, entered by the Fusiliers’ Arch',
   heuston: 'Kingsbridge terminus, where the western quays end',

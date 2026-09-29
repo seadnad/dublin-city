@@ -16,6 +16,12 @@ const STOP_KITS = {
     from: -17, to: 5.5, width: 3.0, poles: 11, hatch: true,
     sides: { 1: { shelters: [[-16.5, 4]] }, [-1]: { shelters: [[-7, 1]], wall: true } },
   },
+  // on Chancery Street behind the Four Courts (docs/research/four-courts.md 1.3): two side platforms, the line runs
+  // west here, so side +1 is the north platform (the Chancery Place courthouse side), -1 the courts' side
+  'Four Courts': {
+    from: -14, to: 14, width: 2.6, poles: 12,
+    sides: { 1: { shelters: [[-10, 3]] }, [-1]: { shelters: [[-2, 3]] } },
+  },
 };
 
 function arcTable(pts) {

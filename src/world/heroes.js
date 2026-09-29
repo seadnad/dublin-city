@@ -329,6 +329,31 @@ function uplit(m, top = 11) {
   m.customProgramCacheKey = () => `uplit${top}`;
   return m;
 }
+// The Four Courts after dark (docs/research/four-courts.md, refs 11-12): the whole river front is floodlit, the drum
+// and the dome too, so the wash keeps a floor all the way up instead of fading out above the cornice.
+function floodlit(m) {
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uUplight = uplight;
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying float vUpY;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvUpY = (modelMatrix * vec4(transformed, 1.0)).y;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform float uUplight;\nvarying float vUpY;')
+      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+        totalEmissiveRadiance += uUplight * diffuseColor.rgb * vec3(1.0, 0.9, 0.76) * (0.17 + 0.27 * (1.0 - smoothstep(0.0, 34.0, vUpY)));`);
+  };
+  m.customProgramCacheKey = () => 'floodlit';
+  return m;
+}
+// the copper saucer: pale verdigris sheets, standing seams running up the dome, darker streaks (u runs round the dome)
+function copperTile() {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const g = c.getContext('2d'); g.fillStyle = '#89a99a'; g.fillRect(0, 0, 128, 128);
+  let seed = 3; const r = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < 40; i++) { g.fillStyle = `rgba(${r() < 0.5 ? '70,100,88' : '170,196,184'},${0.1 + r() * 0.15})`; g.fillRect(r() * 128, 0, 2 + r() * 6, 128); }
+  g.fillStyle = 'rgba(58,84,74,0.55)'; for (let x = 0; x < 128; x += 32) g.fillRect(x, 0, 2, 128);
+  g.fillStyle = 'rgba(200,220,210,0.35)'; for (let x = 2; x < 128; x += 32) g.fillRect(x, 0, 1, 128);
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  return t;
+}
 
 // tileable stone: calp rubble (grey, irregular), ashlar courses, slate, brick
 function stoneTile(size, base, courses, jitter, mortar = 'rgba(40,38,36,0.55)', tint = 0.35, joint = 2) {
@@ -378,6 +403,14 @@ function stoneMaterials() {
   const pat = atlas(512, paintParliament);
   stoneMats.pdecal = uplit(std({ map: pat, alphaTest: 0.5, roughness: 0.7 }));
   stoneMats.pcut = uplit(std({ map: pat, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6 })); // railings, balusters, capitals
+  // the Four Courts (tools/blender/build_fourcourts.py): Portland dressings on a warmer granite, all floodlit at night
+  Object.assign(stoneMats, {
+    fportland: floodlit(std({ map: stoneMats.portland.map, roughness: 0.72 })),
+    fgranite: floodlit(std({ map: stoneTile(256, '#a4a29c', 7, 0.2, 'rgba(84,82,78,0.45)', 0.14), roughness: 0.84 })),
+    frustic: floodlit(std({ map: stoneTile(256, '#9c9a94', 5, 0.1, 'rgba(62,61,58,0.62)', 0.14, 5), roughness: 0.88 })),
+    fcopper: floodlit(std({ map: copperTile(), roughness: 0.6, metalness: 0.15 })),
+    fcut: floodlit(std({ map: pat, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6 })),
+  });
   setStoneNight(stoneNight);
   return stoneMats;
 }
@@ -518,7 +551,7 @@ function prepare(root) {
     }
     o.material = byName(o.material.name);
     const m = stoneMaterials();
-    o.castShadow = o.material !== m.decal && o.material !== m.pdecal && o.material !== m.pcut; // cut-outs would cast solid quads
+    o.castShadow = o.material !== m.decal && o.material !== m.pdecal && o.material !== m.pcut && o.material !== m.fcut; // cut-outs would cast solid quads
     o.receiveShadow = true;
   });
 }

@@ -43,10 +43,12 @@ function materials() {
 }
 export function setStopNight(level) { for (const [m, day, night] of nightMats) m.emissiveIntensity = day + (night - day) * level; }
 
-// sign atlas: 512 x 256. Name panel (0..256 x 0..256), ticket-machine screen (256..384 x 0..128)
+// sign atlas: 512 x (256 x SIGN_ROWS). Row 0: the first stop's name panel (0..256 x 0..256), the ticket-machine screen
+// (256..384 x 0..128), validator and strip light; every kitted stop gets its own 256-high row for its name panel and wall sign
+const SIGN_ROWS = 4, SIGN_H = 256 * SIGN_ROWS;
 const signCache = new Map();
 function signCanvas() {
-  const c = document.createElement('canvas'); c.width = 512; c.height = 256;
+  const c = document.createElement('canvas'); c.width = 512; c.height = SIGN_H;
   const g = c.getContext('2d');
   g.fillStyle = '#2f3337'; g.fillRect(0, 0, 256, 256);
   g.fillStyle = '#f4f4f0'; g.textAlign = 'center'; g.textBaseline = 'middle';
@@ -62,24 +64,31 @@ function signCanvas() {
   t.userData = { canvas: c, names: new Map() };
   return t;
 }
-// each stop name gets a row in the sign canvas (name totem face and wall sign); rows 128.. are used for the wall sign
+// the stops' Irish names (OSM name:ga)
+const GA = { 'Four Courts': 'Na Ceithre Cúirteanna' };
+// each stop name gets a row in the sign canvas (name totem face and wall sign; the wall sign is the row's lower right)
 function nameUV(name) {
   const t = M.sign.map, { canvas: c, names } = t.userData;
   if (!names.has(name)) {
-    const g = c.getContext('2d');
-    // totem face: Irish above (smaller), English below
+    const g = c.getContext('2d'), row = Math.min(names.size, SIGN_ROWS - 1);
+    g.save(); g.translate(0, row * 256);
+    // totem face: the Red Line band, Irish above (smaller), English below
+    g.fillStyle = '#c8102e'; g.fillRect(0, 0, 256, 18);
     g.fillStyle = '#2f3337'; g.fillRect(0, 18, 256, 238);
     g.fillStyle = '#f4f4f0'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.font = 'italic 30px "Segoe UI", Arial, sans-serif'; g.fillText(name, 128, 90);
+    const ga = GA[name] || name;
+    g.font = `italic ${ga.length > 14 ? 22 : 30}px "Segoe UI", Arial, sans-serif`; g.fillText(ga, 128, 90);
     g.font = 'bold 40px "Segoe UI", Arial, sans-serif'; g.fillText(name, 128, 150);
     // wall sign
     g.fillStyle = '#2f3337'; g.fillRect(256, 128, 256, 128);
     g.fillStyle = '#c8102e'; g.fillRect(256, 128, 256, 12);
     g.fillStyle = '#f4f4f0'; g.font = 'bold 44px "Segoe UI", Arial, sans-serif'; g.fillText(name, 384, 196);
-    names.set(name, true);
+    g.restore();
+    names.set(name, row);
     t.needsUpdate = true;
   }
-  return { totem: [0, 0, 256, 256], wall: [256, 128, 256, 128], screen: [256, 0, 128, 128], yellow: [384, 0, 64, 64], light: [456, 8, 48, 48] };
+  const y = names.get(name) * 256;
+  return { totem: [0, y, 256, 256], wall: [256, y + 128, 256, 128], screen: [256, 0, 128, 128], yellow: [384, 0, 64, 64], light: [456, 8, 48, 48] };
 }
 function hatchTexture() {
   const c = document.createElement('canvas'); c.width = c.height = 64;
@@ -115,7 +124,7 @@ function put(geo, f, side, off, y = 0, along = 0) {
 }
 const uvRect = (geo, [x, y, w, h], face = null) => { // map a plane's uvs into a sign-atlas rectangle
   const uv = geo.attributes.uv;
-  for (let i = 0; i < uv.count; i++) uv.setXY(i, (x + uv.getX(i) * w) / 512, 1 - (y + (1 - uv.getY(i)) * h) / 256);
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, (x + uv.getX(i) * w) / 512, 1 - (y + (1 - uv.getY(i)) * h) / SIGN_H);
   return geo;
 };
 
