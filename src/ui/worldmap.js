@@ -2,7 +2,7 @@
 // dimmed and hatched. Landmarks are icons (tap one to see its name and drive there); a legend explains the symbols.
 // Pan by dragging, zoom with the wheel / pinch / buttons. Tap a street to set a waypoint.
 import { world } from '../world/geo.js';
-import { parkPolys, campusPolys } from '../world/ground.js';
+import { parkPolys, campusPolys, dockPolys } from '../world/ground.js';
 
 const B = world.bounds;
 const C = {
@@ -16,6 +16,9 @@ const MAIN = new Set(['boulevard', 'primary', 'quay', 'bridge']);
 const DISTRICTS = [
   ['SMITHFIELD', 'CHS1'], ['NORTH CITY', 'OC3'], ['DOCKLANDS', 'MY1'], ['TEMPLE BAR', 'TBQ'],
   ['THE LIBERTIES', 'PK2', -70], ['TRINITY', 'NS2', 0, -40], ['GRAFTON QUARTER', 'GR2', -60], ['MERRION', 'MSNE', -60, 20],
+  ['PHOENIX PARK', 'PX17', 0, 60], ['PHIBSBOROUGH', 'RN36', 0, -30], ['DRUMCONDRA', 'RN19', 0, -40], ['CROKE PARK', 'KP8', 60, 40],
+  ['MOUNTJOY', 'RN11', 0, -30], ['NORTH STRAND', 'RN27', 40], ['PORTOBELLO', 'GXSRS1', -40], ['RANELAGH', 'GXSCH2', 0, 40],
+  ['BALLSBRIDGE', 'AVSH2', 30], ["HAROLD'S CROSS", 'GXSGR2', 0, 30], ['STONEYBATTER', 'RN63', 0, -20],
 ];
 // short icon glyphs for each landmark
 const GLYPH = { spire: 'S', gpo: 'P', oconnellBridge: 'B', hapenny: 'H', trinity: 'T', bankOfIreland: '£', christChurch: '✚', stPatricks: '✚', customHouse: 'C', stephensGreen: '♣', heuston: 'R', guinness: 'G', beckett: 'B', convention: 'CC', threeArena: '3', grandCanal: 'Th', grandCanalSt: 'O', cityHall: 'H', centralBank: '€' };
@@ -26,7 +29,7 @@ export function createWorldMap({ sites, lots, getLive, onTeleport, onWaypoint })
   root.hidden = true;
   root.innerHTML = `
     <canvas></canvas>
-    <div class="wm-title">DUBLIN<small>Playable city centre</small></div>
+    <div class="wm-title">DUBLIN<small>Inside the canal ring</small></div>
     <div class="wm-controls">
       <button data-z="close" aria-label="Close map" title="Close (M)">&times;</button>
       <button data-z="in" aria-label="Zoom in">+</button>
@@ -45,7 +48,7 @@ export function createWorldMap({ sites, lots, getLive, onTeleport, onWaypoint })
         <li><i class="lg-line lg-main"></i>Main road</li>
         <li><i class="lg-line lg-luas"></i>Luas Red Line</li>
         <li><i class="lg-swatch lg-park"></i>Park</li>
-        <li><i class="lg-swatch lg-water"></i>River Liffey</li>
+        <li><i class="lg-swatch lg-water"></i>River and canals</li>
         <li><i class="lg-line lg-limit"></i>City limit</li>
       </ul>
     </details>`;
@@ -99,10 +102,14 @@ export function createWorldMap({ sites, lots, getLive, onTeleport, onWaypoint })
     for (const L of lots) { rect(L); ctx.fill(); }
     for (const c of campusPolys) { path(c.poly, true); ctx.fillStyle = C.campus; ctx.fill(); }
     for (const p of parkPolys) { path(p.poly, true); ctx.fillStyle = C.park; ctx.fill(); }
+    for (const g of world.greens) { path(g.poly, true); ctx.fillStyle = C.park; ctx.fill(); }
     ctx.fillStyle = C.landmark;
     for (const s of Object.values(sites)) if (s.w && s.d && !s.bridge) { rect(s); ctx.fill(); }
     path(world.riverPoly, true); ctx.fillStyle = C.water; ctx.fill();
     ctx.strokeStyle = C.waterEdge; ctx.lineWidth = 1.5; ctx.stroke();
+    for (const dk of dockPolys) { path(dk.poly, true); ctx.fillStyle = C.water; ctx.fill(); }
+    // canals: drawn along their whole line (the pools stop at every bridge, which reads as dashes at map scale)
+    for (const c of world.canals) { path(c.pts); ctx.strokeStyle = C.water; ctx.lineWidth = Math.max(2, c.width * scale); ctx.stroke(); }
     // roads: minor, then main on top
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     for (const w of world.ways) if (!MAIN.has(w.type)) { path(w.pts); ctx.strokeStyle = C.road; ctx.lineWidth = Math.max(1.2, w.width * scale * 0.8); ctx.stroke(); }
