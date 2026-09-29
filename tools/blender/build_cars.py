@@ -578,15 +578,34 @@ def build(spec):
     bow_f, bow_r = spec.get('bow', (0.0, 0.0))
     roll_from = spec.get('roll_from', 0.2)
 
-    def body_deform(v):
-        # plan-view curvature: the corners of the nose and tail sweep back, so the front and rear read rounded
+    def top_z(y):  # the body outline's upper edge (before the bevel grows it)
+        best = -1.0
+        for a, b in zip(top, top[1:]):
+            if min(a[0], b[0]) <= y <= max(a[0], b[0]) and abs(b[0] - a[0]) > 1e-6:
+                best = max(best, a[1] + (b[1] - a[1]) * (y - a[0]) / (b[0] - a[0]))
+        return best
+
+    def plan(v, half):
+        """Plan-view shaping shared by the body and (optionally) the cabin: the corners of the nose and tail sweep
+        back so the ends read rounded (bow), and the sides pull in toward the ends (pinch)."""
         if bow_f or bow_r:
-            k = (v.x / hw) ** 2
+            k = (v.x / half) ** 2
             tf = max(0.0, min(1.0, (v.y - yf - ar) / (L / 2 - yf - ar)))
             tr = max(0.0, min(1.0, (yr - ar - v.y) / (L / 2 + yr - ar)))
             v.y += -bow_f * k * tf ** 1.6 + bow_r * k * tr ** 1.6
         end = min(v.y + L / 2, L / 2 - v.y)
-        pinch = 1 - spec.get('pinch', 0.1) * (1 - min(1, end / 0.75)) ** 2
+        return 1 - spec.get('pinch', 0.1) * (1 - min(1, end / 0.75)) ** 2
+
+    crown = spec.get('crown')  # (y0, y1, height): the bonnet domes up between the wings
+
+    def body_deform(v):
+        x0 = v.x
+        pinch = plan(v, hw)
+        if crown and crown[0] < v.y < crown[1]:
+            y0, y1, hc = crown
+            ramp = min(1.0, (v.y - y0) / 0.25, (y1 - v.y) / 0.2)
+            surf = max(0.0, min(1.0, (v.z - (top_z(v.y) - 0.05)) / 0.12))
+            v.z += hc * ramp * surf * (1 - (x0 / hw) ** 2)
         near = max(math.exp(-((v.y - yf) / 0.55) ** 2), math.exp(-((v.y - yr) / 0.55) ** 2))
         flare = 1 + spec.get('flare', 0.03) * near * max(0, 1 - abs(v.z - r - 0.1) / 0.6)
         roll = 1 - 0.06 * min(1, max(0, (v.z - (belt(v.y) - roll_from)) / roll_from))  # the shoulder turns in
@@ -607,7 +626,15 @@ def build(spec):
     cbow = spec.get('cab_bow', 0.0)
     ws_from = spec.get('cab_bow_from', 0.0)
 
+    follow = spec.get('cab_follow', False)  # the cabin takes the body's plan shape at the ends (no ledge)
+
+    cbow_r, cbow_r_from, cbow_r_z = spec.get('cab_bow_r', (0.0, 0.0, 0.0))
+
     def cabin_deform(v):
+        if cbow_r:  # the tailgate glass wraps forward at its sides in plan (above cbow_r_z, so it still meets the body)
+            v.y += cbow_r * (v.x / chw) ** 2 * max(0.0, min(1.0, (cbow_r_from - v.y) / 0.35)) * max(0.0, min(1.0, (v.z - cbow_r_z) / 0.25))
+        if follow:
+            v.x *= plan(v, chw)
         if cbow:  # the windscreen curves back toward the A-pillars in plan
             v.y -= cbow * (v.x / chw) ** 2 * max(0.0, min(1.0, (v.y - ws_from) / 0.6))
         v.x *= cab_x(v.z) / chw
@@ -630,7 +657,13 @@ def build(spec):
         side_z = lambda y: edge_z(y + cbow * 0.8 * max(0.0, min(1.0, (y - ws_from) / 0.6)))
     else:
         side_z = edge_z
-    dlo = [(y, side_z(y) - inset) for y in ys if side_z(y) - inset > belt(y) + 0.1]
+    cap = spec.get('dlo_drop')  # ((y0, z0), (y1, z1)): the top of the side glass falls toward the rear from y0
+    if cap:
+        (cy0, cz0), (cy1, cz1) = cap
+        dlo_top = lambda y: min(side_z(y) - inset, cz0 + (cz1 - cz0) * max(0.0, (cy0 - y) / (cy0 - cy1)))
+    else:
+        dlo_top = lambda y: side_z(y) - inset
+    dlo = [(y, dlo_top(y)) for y in ys if dlo_top(y) > belt(y) + 0.1]
     glass_poly = dlo + [(y, belt(y) + 0.045) for y, _ in reversed(dlo)]
     cp = spec.get('c_pillar')  # ((y, z) at the belt, (y, z) at the top): the glazing ends at this line
     yline = (lambda z: cp[0][0] + (cp[1][0] - cp[0][0]) * (z - cp[0][1]) / (cp[1][1] - cp[0][1])) if cp else (lambda z: -99)
@@ -648,10 +681,11 @@ def build(spec):
             zb, zt = belt(cp[0][0]) + 0.02, dtop.get(min(tys, default=cp[1][0]), cp[1][1]) + 0.025
             decal(f'dlo_c_{s}', [(yline(zb) - 0.022, zb), (yline(zb), zb), (yline(zt), zt), (yline(zt) - 0.022, zt)], view, ['cabin'], dlo_mat, 0.006, cuts=2)
         for yp, wp in spec['pillars']:
-            decal(f'pillar_{yp}_{s}', [(yp - wp / 2, belt(yp) + 0.04), (yp + wp / 2, belt(yp) + 0.04), (yp + wp / 2, side_z(yp) - inset + 0.01), (yp - wp / 2, side_z(yp) - inset + 0.01)],
+            decal(f'pillar_{yp}_{s}', [(yp - wp / 2, belt(yp) + 0.04), (yp + wp / 2, belt(yp) + 0.04), (yp + wp / 2, dlo_top(yp) + 0.01), (yp - wp / 2, dlo_top(yp) + 0.01)],
                   view, ['cabin'], M['gloss_black'], 0.008, cuts=2)
+        hd = spec.get('handle_drop', 0.0)
         for yh in spec.get('handles', []):
-            decal(f'handle_{yh}_{s}', [(yh - 0.1, belt(yh) - 0.1), (yh + 0.1, belt(yh) - 0.1), (yh + 0.1, belt(yh) - 0.065), (yh - 0.1, belt(yh) - 0.065)], view, ['body'], M['trim'], 0.012, cuts=1)
+            decal(f'handle_{yh}_{s}', [(yh - 0.1, belt(yh) - 0.1 - hd), (yh + 0.1, belt(yh) - 0.1 - hd), (yh + 0.1, belt(yh) - 0.065 - hd), (yh - 0.1, belt(yh) - 0.065 - hd)], view, ['body'], M['trim'], 0.012, cuts=1)
         decal(f'skirt_{s}', [(yr + ar + 0.02, spec['sill'] + 0.01), (yf - ar - 0.02, spec['sill'] + 0.01), (yf - ar - 0.02, spec['sill'] + 0.1), (yr + ar + 0.02, spec['sill'] + 0.1)],
               view, ['body'], M['trim'], 0.005, cuts=2)
 
@@ -667,9 +701,11 @@ def build(spec):
     decal('rear_screen', rs, 'rear', ['cabin'], M['glass'], spec.get('screen_offset', 0.004), cuts=spec.get('screen_cuts', 3))
 
     for s in (-1, 1):
-        box(f'mirror_{s}', (0.22, 0.13, 0.12), (s * (hw + 0.06), fb[0] - 0.1, belt(fb[0]) + 0.11), paint, 0.04)
-        box(f'mirror_arm_{s}', (0.12, 0.07, 0.035), (s * (hw - 0.01), fb[0] - 0.08, belt(fb[0]) + 0.07), M['trim'])
-        box(f'mirror_ind_{s}', (0.12, 0.02, 0.02), (s * (hw + 0.1), fb[0] - 0.03, belt(fb[0]) + 0.09), M['ind'])
+        my = spec.get('mirror_y', fb[0] - 0.1)  # (the mirror sits on the door, just behind the A-pillar base)
+        mz = belt(fb[0]) if 'mirror_y' not in spec else belt(my)
+        box(f'mirror_{s}', (0.22, 0.13, 0.12), (s * (hw + 0.06), my, mz + 0.11), paint, 0.04)
+        box(f'mirror_arm_{s}', (0.12, 0.07, 0.035), (s * (hw - 0.01), my + 0.02, mz + 0.07), M['trim'])
+        box(f'mirror_ind_{s}', (0.12, 0.02, 0.02), (s * (hw + 0.1), my + 0.07, mz + 0.09), M['ind'])
 
     # ---- front and rear details: 2D outlines (right-hand shapes are mirrored for the left)
     front, rear = spec['front'], spec['rear']
@@ -903,7 +939,7 @@ COUPE = dict(
 # running across the grille into the LED headlights, roof spoiler, black diffuser with a tailpipe each side,
 # dark twin-spoke alloys over red calipers. Original name and a plain badge: no maker's marks.
 GT_L = 4.27
-GT_BELT = (0.915, 0.895)  # the visible belt line, rear and front
+GT_BELT = (1.025, 0.884)  # the visible belt line (DLO bottom) at the tail and nose: 1.0 above the rear axle, 0.93 at the A-pillar
 
 
 def gt_belt(y):
@@ -940,16 +976,17 @@ def gt_extras(M, paint, geom):
             ring_decal(f'head_lens_{i}_{sx}', (cx * sx, cz), 0, rr, 'front', B, M['head'], 0.013, 20)
     both('head_drl', [(0.50, 0.724), (0.66, 0.744), (0.80, 0.749), (0.862, 0.728), (0.866, 0.716), (0.80, 0.737), (0.66, 0.733), (0.505, 0.713)], 'front', B, M['drl'], 0.015)
     # lower bumper: wide honeycomb intake, side intakes with three fins, black splitter
-    li = [(-0.54, 0.255), (0.54, 0.255), (0.585, 0.30), (0.53, 0.445), (-0.53, 0.445), (-0.585, 0.30)]
-    decal('intake_frame', [(-0.56, 0.24), (0.56, 0.24), (0.61, 0.30), (0.55, 0.46), (-0.55, 0.46), (-0.61, 0.30)], 'front', B, gb, 0.006)
+    li = [(-0.55, 0.25), (0.55, 0.25), (0.60, 0.30), (0.545, 0.455), (-0.545, 0.455), (-0.60, 0.30)]
+    decal('intake_frame', [(-0.575, 0.232), (0.575, 0.232), (0.63, 0.30), (0.565, 0.472), (-0.565, 0.472), (-0.63, 0.30)], 'front', B, gb, 0.006)
     decal('intake', li, 'front', B, void, 0.009)
     honeycomb('intake_hex', li, 0.042, 0.0075, 'front', B, gb, 0.011)
-    si = [(0.64, 0.27), (0.80, 0.285), (0.83, 0.32), (0.835, 0.455), (0.665, 0.465), (0.62, 0.36)]
-    both('side_intake_frame', [(0.625, 0.255), (0.81, 0.27), (0.85, 0.315), (0.855, 0.47), (0.655, 0.482), (0.6, 0.36)], 'front', B, gb, 0.006)
+    # side intakes: tall, framed in gloss black, reaching round the bumper corners
+    si = [(0.665, 0.255), (0.845, 0.27), (0.885, 0.32), (0.89, 0.50), (0.70, 0.50), (0.655, 0.37)]
+    both('side_intake_frame', [(0.645, 0.235), (0.86, 0.25), (0.91, 0.31), (0.915, 0.525), (0.68, 0.525), (0.63, 0.37)], 'front', B, gb, 0.006)
     both('side_intake', si, 'front', B, void, 0.009)
-    for k, z in enumerate((0.31, 0.355, 0.40)):
-        both(f'fin_{k}', [(0.635, z), (0.83, z + 0.012), (0.83, z + 0.026), (0.64, z + 0.014)], 'front', B, gb, 0.016, cuts=1)
-    both('fog', [(0.77, 0.425), (0.825, 0.428), (0.827, 0.448), (0.77, 0.446)], 'front', B, M['head'], 0.018, cuts=1)
+    for k, z in enumerate((0.31, 0.36, 0.41)):
+        both(f'fin_{k}', [(0.665, z), (0.885, z + 0.014), (0.885, z + 0.03), (0.67, z + 0.016)], 'front', B, gb, 0.016, cuts=1)
+    both('fog', [(0.73, 0.462), (0.85, 0.466), (0.852, 0.484), (0.735, 0.482)], 'front', B, M['head'], 0.018, cuts=1)
     strip('splitter', [-0.87 + 1.74 * i / 14 for i in range(15)], lambda x: 0.2, lambda x: 0.24, 'front', B, M['trim'], 0.01, rows=2)
     # wing badge: a plain red and chrome bar behind the front wheel arch
     for view in ('right', 'left'):
@@ -957,13 +994,15 @@ def gt_extras(M, paint, geom):
 
     # ---- rear: wraparound LED tail lights, plain badge, black diffuser, a tailpipe each side
     RB = ['body', 'cabin']
-    tl = [(0.33, 0.855), (0.36, 0.925), (0.60, 0.955), (0.83, 0.96), (0.872, 0.93), (0.878, 0.855), (0.80, 0.832), (0.42, 0.835)]
+    # tail lights sit on the shoulder just under the rear screen, reach in onto the tailgate and wrap round the corners
+    tl = [(0.30, 0.895), (0.33, 0.955), (0.58, 0.978), (0.84, 0.978), (0.905, 0.955), (0.92, 0.89), (0.84, 0.862), (0.40, 0.868)]
     both('r_tail', tl, 'rear', RB, M['tail'], 0.008)
-    both('r_tail_led', [(0.42, 0.905), (0.60, 0.925), (0.845, 0.928), (0.845, 0.916), (0.60, 0.913), (0.43, 0.893)], 'rear', RB, led, 0.013, cuts=1)
-    both('r_tail_led_v', [(0.845, 0.86), (0.858, 0.86), (0.858, 0.928), (0.845, 0.928)], 'rear', RB, led, 0.013, cuts=1)
-    both('r_reverse', [(0.40, 0.852), (0.53, 0.852), (0.53, 0.874), (0.41, 0.874)], 'rear', RB, rev, 0.013, cuts=1)
+    both('r_tail_led', [(0.38, 0.93), (0.60, 0.952), (0.875, 0.952), (0.875, 0.94), (0.60, 0.94), (0.39, 0.918)], 'rear', RB, led, 0.013, cuts=1)
+    both('r_tail_led_v', [(0.875, 0.878), (0.888, 0.878), (0.888, 0.952), (0.875, 0.952)], 'rear', RB, led, 0.013, cuts=1)
+    both('r_reverse', [(0.37, 0.884), (0.50, 0.886), (0.50, 0.906), (0.38, 0.906)], 'rear', RB, rev, 0.013, cuts=1)
     for view in ('right', 'left'):
-        decal(f'r_tail_side_{view}', [(-1.98, 0.862), (-2.16, 0.862), (-2.16, 0.925), (-1.98, 0.93)], view, B, M['tail'], 0.008)
+        decal(f'r_tail_side_{view}', [(-2.14, 0.868), (-1.96, 0.895), (-1.96, 0.955), (-2.14, 0.975)], view, B, M['tail'], 0.008)
+        decal(f'r_tail_side_led_{view}', [(-2.14, 0.94), (-1.99, 0.942), (-1.99, 0.952), (-2.14, 0.952)], view, B, led, 0.012, cuts=1)
     ring_decal('badge_r_ring', (0, 0.885), 0.044, 0.055, 'rear', RB, M['chrome'], 0.02, 28)
     ring_decal('badge_r', (0, 0.885), 0, 0.045, 'rear', RB, gb, 0.018, 28)
     decal('badge_r_bar', [(-0.028, 0.881), (0.028, 0.881), (0.028, 0.889), (-0.028, 0.889)], 'rear', RB, M['chrome'], 0.023, cuts=1)
@@ -973,36 +1012,57 @@ def gt_extras(M, paint, geom):
     both('r_reflector', [(0.66, 0.43), (0.845, 0.43), (0.845, 0.447), (0.66, 0.447)], 'rear', B, refl, 0.01, cuts=1)
     for s in (-1, 1):
         ring_decal(f'exhaust_surround_{s}', (s * 0.64, 0.30), 0.05, 0.062, 'rear', B, gb, 0.014, 20)
-        cylinder(f'exhaust_{s}', 0.05, 0.12, (s * 0.64, -2.1, 0.30), M['chrome'], 24, axis='Y')
-        cylinder(f'exhaust_in_{s}', 0.04, 0.12, (s * 0.64, -2.103, 0.30), void, 20, axis='Y')
+        cylinder(f'exhaust_{s}', 0.05, 0.12, (s * 0.64, -2.07, 0.30), M['chrome'], 24, axis='Y')
+        cylinder(f'exhaust_in_{s}', 0.04, 0.12, (s * 0.64, -2.073, 0.30), void, 20, axis='Y')
     # roof spoiler in body colour over the tailgate, with the high-level brake light under its lip
-    spoiler = [(-1.52, 1.432), (-1.75, 1.418), (-1.92, 1.378), (-1.94, 1.36), (-1.86, 1.355), (-1.74, 1.385), (-1.54, 1.418)]
-    extrude_profile('spoiler', spoiler, 0.6, 0.022, paint)
-    box('hmsl', (0.36, 0.02, 0.014), (0, -1.87, 1.357), M['tail'])
+    spoiler = [(-1.50, 1.424), (-1.72, 1.426), (-1.90, 1.414), (-1.985, 1.395), (-1.98, 1.384), (-1.90, 1.378), (-1.76, 1.392), (-1.52, 1.414)]
+    extrude_profile('spoiler', spoiler, 0.53, 0.02, paint)
+    box('hmsl', (0.36, 0.02, 0.014), (0, -1.94, 1.368), M['tail'])
 
+
+def offset_line(pts, d):
+    """Move an open (y, z) polyline d to its right (inside, for an outline drawn rear -> over the top -> front):
+    the extrusion bevel grows it back out by d, so the visible surface lands on the drawn line."""
+    out = []
+    for i, (y, z) in enumerate(pts):
+        a, b = pts[max(0, i - 1)], pts[min(len(pts) - 1, i + 1)]
+        dy, dz = b[0] - a[0], b[1] - a[1]
+        n = math.hypot(dy, dz) or 1.0
+        out.append((y + dz / n * d, z - dy / n * d))
+    return out
+
+
+# Visible side profile (metres; y forward from the middle of the car, z up), traced from the side reference with
+# the wheel centres aligned (2.63 m wheelbase) and the ends corrected for perspective, checked against the
+# published size: 4.27 m long, 1.45 m tall, 0.88 m front / 0.76 m rear overhang, 225/40 R18 tyres.
+GT_BODY = [(-1.96, 0.25), (-2.05, 0.31), (-2.105, 0.42), (-2.125, 0.56), (-2.12, 0.68), (-2.10, 0.80), (-2.075, 0.90),
+           (-2.045, 0.962), (-2.0, 0.995), (-1.9, gt_belt(-1.9)), (-1.37, gt_belt(-1.37)), (-0.6, gt_belt(-0.6)), (0.0, gt_belt(0.0)),
+           (0.75, gt_belt(0.75)), (1.0, 0.912), (1.35, 0.885), (1.65, 0.85), (1.85, 0.812), (1.97, 0.775), (2.05, 0.725),
+           (2.1, 0.66), (2.125, 0.58), (2.135, 0.47), (2.125, 0.36), (2.1, 0.27), (2.06, 0.205), (2.0, 0.185)]
+# the glasshouse: a gently falling roof, the rear screen leaning into a near-vertical tailgate, then the windscreen
+GT_CABIN = [(-2.045, 0.90), (-2.035, 1.0), (-1.98, 1.11), (-1.92, 1.22), (-1.865, 1.31), (-1.815, 1.36), (-1.75, 1.39),
+            (-1.6, 1.418), (-1.3, 1.432), (-0.9, 1.446), (-0.4, 1.452), (-0.1, 1.447), (0.1, 1.43), (0.22, 1.40), (0.6, 1.185),
+            (0.98, 0.965), (1.06, 0.92)]
 
 GT = dict(
-    # outlines are drawn inside the visible surface by the bevel (body 0.075, cabin 0.09), which grows them back out
-    name='gt', L=GT_L, W=1.8, sill=0.275, r=0.322, tyre_w=0.235, wheels=(-1.36, 1.27), belt=GT_BELT, pinch=0.12, flare=0.045,
-    arch_gap=0.11, wheel_inset=0.0, roll_from=0.1, bow=(0.2, 0.12), cab_bow=0.1, cab_bow_from=0.0, draco=True, bevel_res=3, glass_cuts=0, screen_offset=0.009, screen_cuts=5,
-    xcuts=((-0.72, -0.5, -0.25, 0.0, 0.25, 0.5, 0.72), (-1.6, 1.65)), cab_xcuts=((-0.5, -0.25, 0.0, 0.25, 0.5), (-99, -0.2)),
+    name='gt', L=GT_L, W=1.82, sill=0.26, r=0.324, tyre_w=0.235, wheels=(-1.375, 1.255), belt=GT_BELT, pinch=0.12, flare=0.035,
+    arch_gap=0.1, wheel_inset=-0.03, roll_from=0.1, bow=(0.2, 0.12), cab_bow=0.1, cab_bow_from=0.0, cab_follow=True, cab_bow_r=(0.16, -1.6, 1.0),
+    crown=(0.9, 2.08, 0.06), mirror_y=0.68,
+    draco=True, bevel_res=3, glass_cuts=0, screen_offset=0.009, screen_cuts=5,
+    xcuts=((-0.72, -0.5, -0.25, 0.0, 0.25, 0.5, 0.72), (-1.6, 0.85)), cab_xcuts=((-0.5, -0.25, 0.0, 0.25, 0.5), (-1.55, -0.3)),
     paint=lambda: mat('paint_red', '#c3141d', metal=0.0, rough=0.25, coat=1.0),
     rim=lambda: mat('rim_dark', '#4d5157', metal=1.0, rough=0.3),
-    lower=chaikin([(-2.03, 0.285), (-2.055, 0.40), (-2.06, 0.55), (-2.055, 0.72), (-2.035, 0.80), (-1.98, 0.845),
-                   (-1.2, gt_belt(-1.2) - 0.075), (0.0, gt_belt(0.0) - 0.075), (0.8, gt_belt(0.8) - 0.075),
-                   (1.25, 0.83), (1.65, 0.79), (1.9, 0.745), (2.0, 0.695), (2.045, 0.635),
-                   (2.058, 0.56), (2.06, 0.46), (2.05, 0.35), (2.02, 0.295), (1.98, 0.275)], 2),
-    cabin=chaikin([(-1.99, 0.86), (-1.945, 1.03), (-1.88, 1.155), (-1.81, 1.25), (-1.72, 1.305), (-1.58, 1.32), (-1.0, 1.34),
-                   (-0.4, 1.35), (-0.14, 1.345), (-0.03, 1.33), (0.05, 1.305), (0.46, 1.065), (0.87, 0.82)], 2),
-    cabin_w=0.85, tumble=0.2, dlo_inset=0.02,
-    pillars=[(-0.40, 0.085), (-1.13, 0.03)],
-    c_pillar=((-1.38, 0.95), (-1.22, 1.32)),
+    lower=offset_line(chaikin(GT_BODY, 2), 0.075),
+    cabin=offset_line(chaikin(GT_CABIN, 2), 0.09),
+    cabin_w=0.975, tumble=0.36, dlo_inset=-0.02, dlo_drop=((-0.4, 1.385), (-1.22, 1.30)),
+    pillars=[(-0.36, 0.075), (-1.06, 0.025)],
+    c_pillar=((-1.33, 1.0), (-1.13, 1.30)),
     dlo_trim='gloss_black',
-    handles=[-0.22, -1.15],
-    windscreen_top=1.34, rear_screen_top=1.3, rear_screen_bottom=1.0,
+    handles=[-0.235, -1.15], handle_drop=0.04,
+    windscreen_top=1.37, rear_screen_top=1.33, rear_screen_bottom=1.02,
     wheel_fn=lambda name, x, y, r, w, M, rim_mat, side, front: wheel_gt(name, x, y, r, w, M, rim_mat, side, front),
     front=dict(plate=(0.515, '241-D-1976')),
-    rear=dict(plate=(0.66, '241-D-1976')),
+    rear=dict(plate=(0.68, '241-D-1976')),
     extras=gt_extras,
 )
 

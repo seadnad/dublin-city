@@ -19,7 +19,7 @@ function load(file) {
 }
 
 const GARDA_VARIANTS = { garda: 'standard', garda_rp: 'roadsPolicing' };
-const WHEEL_R = { hatch: 0.34, coupe: 0.35, gt: 0.322 }; // tyre radius, for the wheel spin
+const WHEEL_R = { hatch: 0.34, coupe: 0.35, gt: 0.324 }; // tyre radius, for the wheel spin
 
 // Returns a ready-to-use car group, or null if the model can't be loaded.
 export async function loadCar(name) {
