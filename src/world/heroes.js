@@ -79,7 +79,7 @@ function paintHapenny(g, N) {
 }
 
 const cache = new Map();
-function load(name) {
+export function load(name) {
   if (!cache.has(name)) cache.set(name, loader.loadAsync(`${import.meta.env.BASE_URL}models/${name}.glb`));
   return cache.get(name);
 }

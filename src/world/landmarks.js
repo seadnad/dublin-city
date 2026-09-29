@@ -11,6 +11,7 @@ import { chunkedInstances } from './chunks.js';
 import { plantTrees } from './trees.js';
 import { KERB_H } from './roads.js';
 import { placeHapenny, placeParts, setStoneNight } from './heroes.js';
+import { placeHeuston } from './heuston.js';
 
 const rand = rng(1742);
 
@@ -1772,8 +1773,12 @@ export function buildLandmarks(scene) {
     threeArena(S.threeArena), grattanOffice(S.grandCanalSt), grandCanalTheatre(S.grandCanal), grandCanalSquare(S.grandCanal.square), markerHotel(extraSites.marker), gcsOffice(extraSites.gcsOffice),
   ];
   for (const g of groups) scene.add(g);
-  // Heuston Station (Blender hero; the old procedural model if it can't load)
-  placeParts(scene, 'heuston', S.heuston, 'Heuston Station').then((g) => { if (!g) scene.add(heuston(S.heuston)); });
+  // Heuston Station (Blender hero with its forecourt; the old procedural model if it can't load)
+  let heustonHero = null;
+  placeHeuston(scene, S.heuston).then((h) => {
+    if (!h) { scene.add(heuston(S.heuston)); return; }
+    heustonHero = h; h.setNight(nightLevel);
+  });
   // St Patrick's Cathedral (Blender hero) and its park dressing
   placeParts(scene, 'stpatricks', S.stPatricks, "St Patrick's Cathedral");
   const spPark = parkPolys.find((p) => p.name === "St Patrick's Park");
@@ -1810,6 +1815,7 @@ export function buildLandmarks(scene) {
     setNight(level) {
       for (const n of neon) n.m.emissiveIntensity = n.day + (n.night - n.day) * level;
       nightLevel = level; if (hapennyHero) hapennyHero.setNight(level);
+      if (heustonHero) heustonHero.setNight(level);
       setStoneNight(level);
     },
     update(camera) {

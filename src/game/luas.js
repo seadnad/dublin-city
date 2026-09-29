@@ -3,9 +3,20 @@ import * as THREE from 'three';
 import { addReflections } from '../render/reflect.js';
 import { world, v2, offsetPolyline, resample } from '../world/geo.js';
 import { makeTramCar } from './vehicles.js';
+import { buildStopKit } from './luasStop.js';
 
 const CAR_LEN = 11, GAP = 1.2, N = 3;
 const TRACK = 1.8; // distance of each track from the route centreline
+
+// Stops dressed with the full kit (luasStop.js); the rest keep the simple platform and shelter. Distances are metres
+// along the line from the stop (the line runs south through Heuston: side +1 is the west platform, by the station).
+// Heuston's platforms are cut to what fits between the river and St John's Road West in the compressed map.
+const STOP_KITS = {
+  Heuston: {
+    from: -17, to: 5.5, width: 3.0, poles: 11, hatch: true,
+    sides: { 1: { shelters: [[-16.5, 4]] }, [-1]: { shelters: [[-7, 1]], wall: true } },
+  },
+};
 
 function arcTable(pts) {
   const s = [0];
@@ -50,6 +61,15 @@ export function createLuas(scene, line = world.luas) {
   const shelterMat = addReflections(new THREE.MeshStandardMaterial({ color: 0x4a4c50, roughness: 0.35, metalness: 0.85 }), 0.7);
   const glass = new THREE.MeshStandardMaterial({ color: 0x9fb4bf, roughness: 0.1, transparent: true, opacity: 0.35 });
   for (const st of stops) {
+    const kit = STOP_KITS[st.name];
+    if (kit) { // the full stop kit (luasStop.js): platforms along the curve, shelter runs, poles and wires
+      const at = (d) => {
+        const p = sample(centre, cTable, st.s + d), q = sample(centre, cTable, st.s + d + 0.5), dd = v2.norm(v2.sub(q, p));
+        return { x: p.x, z: p.z, dx: dd.x, dz: dd.z };
+      };
+      buildStopKit(scene, at, { ...kit, name: st.name, track: TRACK });
+      continue;
+    }
     for (const side of [-1, 1]) {
       const p = sample(centre, cTable, st.s), q = sample(centre, cTable, st.s + 1);
       const d = v2.norm(v2.sub(q, p));

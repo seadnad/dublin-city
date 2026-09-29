@@ -17,6 +17,7 @@ import { createPhotoMode } from './game/photo.js';
 import { CameraRig } from './game/camera.js';
 import { createTraffic } from './game/traffic.js';
 import { createLuas, combineTrams } from './game/luas.js';
+import { setStopNight } from './game/luasStop.js';
 import { createPeople } from './game/people.js';
 import { audio } from './game/audio.js';
 import { createHUD } from './ui/hud.js';
@@ -170,6 +171,7 @@ function applyMode() {
 
   lamps.setLevel(p.lamps);
   landmarks.setNight(mode.evening ? p.lamps : 0);
+  setStopNight(mode.evening ? p.lamps : 0);
   waterGlow.setLevel(mode.evening ? p.lamps * (mode.rain ? 0.7 : 1) : 0);
   lampUniforms.uLampLevel.value = mode.evening ? p.lamps : 0; // baked lamp light only after dark
   landmarkMaterials.lampGlow.emissiveIntensity = 0.2 + p.lamps * 3;
