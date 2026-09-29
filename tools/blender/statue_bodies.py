@@ -14,6 +14,13 @@ facing -Y, figure's right at -X. Seated Victories sit on z 0 (the top of their b
   allegory     classical female, long chiton and mantle, left hand on a tall staff (GPO Hibernia, Custom House)
   justice      classical female, sword raised in the right hand, scales in the left (Dublin Castle gate)
   classical    classical male in a short tunic and cloak with a staff (GPO Mercury)
+  davis        Delaney's Thomas Davis: a tall, rough-cast figure in a long coat, arms at his sides (College Green)
+  herald       one of the Four Angels of the Davis fountain: elongated, robed, crowned, a long trumpet raised to its lips
+  molly        Molly Malone in her low-cut dress at the handles of her two-wheeled barrow of cockles (Suffolk St);
+               the barrow runs out in front of her (-Y) to about 1.9 m
+  torchbearer  the Shelbourne's bronze women: long skirt, the right arm raised holding a torch lamp on a short staff
+  seahorse_lamp  a cast-iron lamp standard (Grattan's): sea-horses twined round the pedestal, a slim column, a
+               crowned lantern frame. Built at real size (5.2 m to the crown): place it with height = NOMINAL
   victory_*    seated winged Victory with an attribute: patriotism, fidelity, courage, eloquence (O'Connell Monument)
   relief_*     low-poly flattened figures for the O'Connell frieze
 """
@@ -281,4 +288,142 @@ def relief(kind, seed=0):
         f.cyl((0.25, -0.1, 0.0), (0.25, -0.1, 2.0), 0.015, seg=3)               # crozier
     if kind == 'child':
         pass
+    return f
+
+
+# ---------- College Green, Suffolk Street and the Shelbourne (docs/research/kildare-street.md) ----------
+def davis():
+    """Edward Delaney's Thomas Davis (1966): tall and gaunt, a long coat hanging straight, arms down, head up."""
+    f = Fig()
+    J = pose(**_legs_trousers(),
+             rel=(-0.22, 0.0, 1.15), rwr=(-0.23, -0.03, 0.9), rha=((-0.22, -0.04, 0.8), (0.05, 0.035)),
+             lel=(0.22, 0.0, 1.15), lwr=(0.23, -0.03, 0.9), lha=((0.22, -0.04, 0.8), (0.05, 0.035)))
+    f.body(J)
+    _head(f, J)
+    # the long coat, closed to below the knee, deep ragged folds (the cast is rough)
+    f.lathe([(1.53, 0.1, 0.085), (1.45, 0.235, 0.14), (1.2, 0.2, 0.14), (0.95, 0.21, 0.15), (0.6, 0.24, 0.18), (0.3, 0.26, 0.2, 0, 0, 0.25)],
+            sides=14, folds=7, fold_amp=0.08, fold_phase=0.7)
+    return f
+
+
+def herald():
+    """One of the Four Angels: very tall and thin (Giacometti-like), a robe falling straight to the feet, a crown, the
+    long trumpet held out and down from the lips (ref 20), a big flat wing behind. Built at the nominal 1.8 m; the game scales it
+    to ~3 m. Faces -Y."""
+    f = Fig()
+    thin = lambda p, r: (p, (r, r))
+    J = pose(female=True,
+             pelvis=((0, 0, 0.98), (0.1, 0.075)), belly=((0, 0, 1.13), (0.08, 0.065)), chest=((0, 0, 1.33), (0.09, 0.07)),
+             neck=((0, -0.01, 1.5), (0.035, 0.035)), head=((0, -0.02, 1.56), (0.035, 0.035)),
+             rsh=thin((-0.11, 0, 1.43), 0.045), lsh=thin((0.11, 0, 1.43), 0.045),
+             rel=thin((-0.17, -0.2, 1.3), 0.035), rwr=thin((-0.08, -0.46, 1.2), 0.03), rha=((-0.05, -0.53, 1.17), (0.03, 0.025)),
+             lel=thin((0.28, -0.08, 1.38), 0.035), lwr=thin((0.5, -0.18, 1.3), 0.03), lha=((0.57, -0.2, 1.28), (0.03, 0.025)))
+    f.body(J, skip=('rto', 'lto'))
+    hx, hy, hz = J['head'][0]
+    f.head((hx, hy - 0.01, hz + 0.08), r=(0.065, 0.075, 0.09), crown=(0.068, 0.018))
+    f.cyl((hx, hy, hz + 0.14), (hx, hy, hz + 0.22), 0.07, 0.085, seg=6)   # the crown's points: a flaring band
+    # robe: narrow, straight, a few deep folds; small swept wings off the shoulder blades
+    f.lathe([(1.46, 0.12, 0.08), (1.25, 0.1, 0.075), (0.9, 0.11, 0.085), (0.4, 0.13, 0.1), (0.02, 0.15, 0.12)], sides=10, folds=4, fold_amp=0.1, cap=True)
+    for s in (1, -1):
+        f.wing(s, root=(s * 0.06, 0.07, 1.36), tip=(s * 0.18, 0.3, 1.75), n=4, lens=(0.3, 0.42, 0.12), droop=(0.1, 0.4, -1.0), rise=(0.2, 0.4, 1.0))
+    # the long herald's trumpet from the lips up and out, flared bell
+    f.cyl((hx, hy - 0.08, hz + 0.07), (hx - 0.04, hy - 0.74, hz - 0.42), 0.012, 0.018, seg=5)
+    f.cyl((hx - 0.04, hy - 0.74, hz - 0.42), (hx - 0.05, hy - 0.83, hz - 0.5), 0.018, 0.075, seg=8)
+    return f
+
+
+def _wheel(f, x, y, z, R):
+    """A cart wheel in the YZ plane (axle along X): rim as a ring of short tubes, six spokes, a hub."""
+    n = 14
+    pts = [(x, y + math.cos(k / n * TAU) * R, z + math.sin(k / n * TAU) * R) for k in range(n + 1)]
+    f.tube(pts, 0.03, sides=4)
+    for k in range(6):
+        a = k / 6 * TAU
+        f.cyl((x, y, z), (x, y + math.cos(a) * R, z + math.sin(a) * R), 0.012, seg=3)
+    f.cyl((x - 0.06, y, z), (x + 0.06, y, z), 0.05, seg=6)
+
+
+def molly():
+    """Jeanne Rynhart's Molly Malone (1988): a young woman in a low-cut dress and shawl, full skirt to the ground,
+    standing at the handles of a two-wheeled barrow of baskets (cockles and mussels) that runs out in front of her."""
+    f = Fig()
+    J = pose(female=True,
+             rel=(-0.2, -0.13, 1.13), rwr=(-0.23, -0.34, 0.97), rha=((-0.23, -0.4, 0.95), (0.042, 0.03)),
+             lel=(0.2, -0.13, 1.13), lwr=(0.23, -0.34, 0.97), lha=((0.23, -0.4, 0.95), (0.042, 0.03)))
+    f.body(J, skip=('rto', 'lto'))
+    hx, hy, hz = J['head'][0]
+    f.head((hx, hy - 0.01, hz + 0.1), r=(0.09, 0.105, 0.115))
+    f.sphere((hx, hy + 0.1, hz + 0.14), (0.07, 0.06, 0.06), seg=6)                 # hair gathered behind
+    # low-cut bodice and a shawl over the shoulders, then the full skirt with its folds
+    f.lathe([(1.36, 0.16, 0.11), (1.25, 0.15, 0.11), (1.1, 0.13, 0.1)], sides=14)
+    f.lathe([(1.47, 0.21, 0.14, 0, 0.02, 0.9), (1.36, 0.24, 0.15, 0, 0.02, 1.0), (1.26, 0.22, 0.14, 0, 0.03, 1.3)], sides=12, folds=3, fold_amp=0.05)
+    f.lathe([(1.1, 0.15, 0.12), (0.85, 0.24, 0.21), (0.45, 0.3, 0.27), (0.03, 0.34, 0.31)], sides=16, folds=8, fold_amp=0.07, cap=True)
+    # the barrow: handles from her hands forward to the tray, two big spoked wheels, three baskets
+    for s in (-1, 1):
+        f.cyl((s * 0.23, -0.34, 0.95), (s * 0.3, -1.0, 0.72), 0.022, seg=5)       # shafts
+        f.cyl((s * 0.3, -1.0, 0.72), (s * 0.3, -1.95, 0.72), 0.03, seg=5)        # rails along the tray
+        f.cyl((s * 0.3, -1.85, 0.72), (s * 0.3, -1.85, 0.05), 0.022, seg=4)      # the front leg
+        _wheel(f, s * 0.43, -1.35, 0.44, 0.42)
+    f.box((0, -1.47, 0.68), (0.62, 0.98, 0.07))                                  # the tray
+    for x, y, r in ((0, -1.12, 0.2), (-0.13, -1.55, 0.18), (0.14, -1.72, 0.17)):
+        f.lathe([(0.72, r * 0.8, r * 0.8, x, y), (0.95, r, r, x, y), (0.99, r * 0.9, r * 0.9, x, y)], sides=10, folds=5, fold_amp=0.05, cap=True)
+    return f
+
+
+def torchbearer():
+    """The Shelbourne's bronze women (1867, at the entrance): a long skirt and draped bodice, the right arm raised
+    high holding a torch-lamp on a short staff, the left hand at the side gathering the skirt."""
+    f = Fig()
+    J = pose(female=True,
+             rel=(-0.26, 0.0, 1.66), rwr=(-0.25, -0.04, 1.92), rha=((-0.24, -0.05, 2.0), (0.042, 0.03)),
+             lel=(0.22, 0.02, 1.15), lwr=(0.26, -0.05, 0.93), lha=((0.26, -0.08, 0.86), (0.042, 0.03)))
+    f.body(J, skip=('rto', 'lto'))
+    hx, hy, hz = J['head'][0]
+    f.head((hx, hy - 0.01, hz + 0.1), r=(0.09, 0.105, 0.115), crown=(0.09, 0.02))  # headdress band
+    f.lathe([(1.47, 0.09, 0.08), (1.4, 0.19, 0.13), (1.28, 0.17, 0.13), (1.1, 0.14, 0.11)], sides=14, folds=5, fold_amp=0.04)
+    f.lathe([(1.1, 0.16, 0.12), (0.8, 0.23, 0.18), (0.4, 0.27, 0.23), (0.02, 0.31, 0.27)], sides=16, folds=9, fold_amp=0.06, cap=True)
+    # torch: a short staff from the hand, a flared cup (the game hangs the lamp glass on it)
+    f.cyl((-0.24, -0.05, 1.9), (-0.24, -0.05, 2.25), 0.02, seg=5)
+    f.cyl((-0.24, -0.05, 2.25), (-0.24, -0.05, 2.36), 0.03, 0.09, seg=8)
+    return f
+
+
+def seahorse_lamp():
+    """Grattan's lamp standards (NIAH 50020253): a square plinth, a round pedestal with three sea-horses twined up it
+    (the tail coiled at the foot, the body rising, the head turned out under the capital), a slim fluted column, a
+    capital with scrolls and the crowned four-sided lantern frame. Real size: 5.2 m to the top of the crown."""
+    f = Fig()
+    f.box((0, 0, 0.2), (0.78, 0.78, 0.4))
+    f.box((0, 0, 0.44), (0.66, 0.66, 0.08))
+    f.lathe([(0.48, 0.24, 0.24), (0.55, 0.2, 0.2), (1.7, 0.17, 0.17), (1.8, 0.21, 0.21), (1.86, 0.14, 0.14)], sides=10, cap=True)
+    for k in range(3):
+        a0 = k / 3 * TAU
+        pts, rad = [], []
+        for i in range(16):
+            t = i / 15
+            a = a0 + t * 2.2
+            r = 0.3 - 0.06 * math.sin(math.pi * t)
+            pts.append((math.cos(a) * r, math.sin(a) * r, 0.55 + t * 1.15))
+            rad.append(0.035 + 0.06 * math.sin(math.pi * min(1, t * 1.25)))
+        f.tube(pts, rad, sides=5)
+        a = a0 + 2.2
+        hx, hy = math.cos(a) * 0.36, math.sin(a) * 0.36
+        f.cyl((hx * 0.8, hy * 0.8, 1.7), (hx * 1.25, hy * 1.25, 1.6), 0.07, 0.035, seg=5)    # the head and snout
+        f.sphere((hx * 0.85, hy * 0.85, 1.76), 0.07, seg=5)
+        # the tail curled at the foot
+        tp = [(math.cos(a0 - 0.2 * j) * (0.34 - 0.03 * j), math.sin(a0 - 0.2 * j) * (0.34 - 0.03 * j), 0.56 - 0.02 * j) for j in range(5)]
+        f.tube(tp, 0.03, sides=4)
+    f.lathe([(1.86, 0.1, 0.1), (3.9, 0.075, 0.075), (4.0, 0.12, 0.12), (4.08, 0.16, 0.16)], sides=8, folds=8, fold_amp=0.05, cap=True)
+    for k in range(4):                                                                # scroll brackets under the lantern
+        a = k / 4 * TAU + TAU / 8
+        f.tube([(math.cos(a) * 0.1, math.sin(a) * 0.1, 3.95), (math.cos(a) * 0.24, math.sin(a) * 0.24, 4.05), (math.cos(a) * 0.2, math.sin(a) * 0.2, 4.2)], 0.02, sides=3)
+    # the lantern frame: a square base, four corner bars flaring out, a cap and a crown with ribs and a finial
+    f.box((0, 0, 4.14), (0.3, 0.3, 0.06))
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            f.cyl((sx * 0.14, sy * 0.14, 4.17), (sx * 0.24, sy * 0.24, 4.78), 0.016, seg=3)
+    f.box((0, 0, 4.8), (0.56, 0.56, 0.06))
+    f.lathe([(4.83, 0.3, 0.3), (4.93, 0.24, 0.24), (5.02, 0.12, 0.12), (5.06, 0.05, 0.05)], sides=8, folds=8, fold_amp=0.15)
+    f.cyl((0, 0, 5.02), (0, 0, 5.2), 0.02, seg=4)
+    f.sphere((0, 0, 5.2), 0.04, seg=4)
     return f
