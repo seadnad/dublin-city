@@ -110,6 +110,57 @@ export function boiAt(u, v) {
 // a footprint given in model metres (u0..u1 along the front, v0..v1 into the building)
 const boiBox = (u0, u1, v0, v1) => ({ ...boiAt((u0 + u1) / 2, (v0 + v1) / 2), rot: BOI.rot, w: (u1 - u0) * BOI.sx, d: (v1 - v0) * BOI.sy });
 
+// Aviva Stadium (docs/research/aviva.md): the model's origin is the pitch centre, turned so its north end points 16
+// degrees west of north (bearing 344), and moved 13.5 m north along that axis: roads are not compressed, and the real
+// south face stands only ~5 m from Lansdowne Road. Plan scale 0.6 across x 0.55 along the axis (build_aviva.py).
+const AV_ROT = (16 * Math.PI) / 180;
+const avivaCentre = (() => {
+  const p = project(53.33519, -6.22827), k = 13.5;
+  return { x: p.x - Math.sin(AV_ROT) * k, z: p.z - Math.cos(AV_ROT) * k };
+})();
+// the outer ring (real metres from the pitch centre every 15 degrees, clockwise from the north end), scaled to the game
+const AV_R = [80, 83, 91, 102, 106, 105, 105, 108, 113, 117, 115, 111, 108, 111, 117, 118, 113, 110, 108, 108, 108, 104, 91, 83];
+const avivaLocal = (inset = 0) => AV_R.map((R, i) => { const a = (i * 15 * Math.PI) / 180; return { x: (R - inset) * Math.sin(a) * 0.6, z: -(R - inset) * Math.cos(a) * 0.55 }; });
+const toWorldRot = (c, rot, p) => ({ x: c.x + p.x * Math.cos(rot) + p.z * Math.sin(rot), z: c.z - p.x * Math.sin(rot) + p.z * Math.cos(rot) });
+// Footprint as horizontal slabs (local frame) fitted round the bulge of the facade, so the filler can build right up
+// to the curve (Havelock Square's terraces press against the north end) without a bounding box eating the corners.
+function avivaSlabs(margin = 1.5) {
+  const ring = avivaLocal(0), out = [];
+  const zs = [-47, -34, -18, 18, 38, 50, 62];
+  for (let k = 0; k + 1 < zs.length; k++) {
+    const z0 = zs[k], z1 = zs[k + 1];
+    let x0 = Infinity, x1 = -Infinity;
+    for (let i = 0; i < ring.length; i++) {
+      const a = ring[i], b = ring[(i + 1) % ring.length];
+      for (let t = 0; t <= 1; t += 0.05) {
+        const x = a.x + (b.x - a.x) * t, z = a.z + (b.z - a.z) * t;
+        if (z >= z0 - 1 && z <= z1 + 1) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); }
+      }
+    }
+    if (x0 > x1) continue;
+    const c = toWorldRot(avivaCentre, AV_ROT, { x: (x0 + x1) / 2, z: (z0 + z1) / 2 });
+    out.push({ ...c, rot: AV_ROT, w: x1 - x0 + 2 * margin, d: z1 - z0 });
+  }
+  return out;
+}
+// The DART crosses Lansdowne Road on the level (XR001, node AVLX) and runs NW under the stadium's west podium in a
+// covered way; the station platforms run SE. Frame: s along the track (+ = north-west), q across it (+ = north-east,
+// the stadium side), and u / w along and north of the road. Track bearing 322 degrees (OSM covered way).
+const lansdowneXing = (() => {
+  const X = N('AVLX'), road = v2.norm(v2.sub(N('AVL3'), N('AVL2')));
+  const B = (322 * Math.PI) / 180, track = { x: Math.sin(B), z: -Math.cos(B) };
+  const n = { x: -track.z, z: track.x }, north = { x: road.z, z: -road.x };
+  const way = wayBetween('AVLX', 'AVL3');
+  const at = (s, q) => ({ x: X.x + track.x * s + n.x * q, z: X.z + track.z * s + n.z * q });
+  const atRoad = (u, w) => ({ x: X.x + road.x * u + north.x * w, z: X.z + road.z * u + north.z * w });
+  // (s, q) of the point on the line q = q0 that stands w0 north of the road centreline
+  const sAtW = (q0, w0) => (w0 - v2.dot(n, north) * q0) / v2.dot(track, north);
+  const podium = { face: way.width / 2 + way.pave + 2.5, top: 4.4, west: -7.5, east: 16, north: 60, portal: [-5, 5], stairs: 7.5 };
+  return { x: X.x, z: X.z, road, track, n, north, way, at, atRoad, sAtW, podium, trackRot: Math.atan2(track.x, track.z), roadRot: Math.atan2(-road.z, road.x) };
+})();
+const xingBox = (s0, s1, q0, q1) => ({ ...lansdowneXing.at((s0 + s1) / 2, (q0 + q1) / 2), rot: lansdowneXing.trackRot, w: q1 - q0, d: s1 - s0 });
+const xingRoadBox = (u0, u1, w0, w1) => ({ ...lansdowneXing.atRoad((u0 + u1) / 2, (w0 + w1) / 2), rot: lansdowneXing.roadRot, w: u1 - u0, d: w1 - w0 });
+
 export const sites = {
   spire: {
     name: 'The Spire', x: N('OC2').x, z: N('OC2').z, rot: Math.atan2(oc.x, oc.z), w: 3, d: 3, labelY: 128,
@@ -237,6 +288,12 @@ export const sites = {
     name: "St Stephen's Green", ...centroid(sgPark.poly), rot: 0, w: 0, d: 0, labelY: 30, park: sgPark,
     view: spot('GR2', 'SGNW', 0.35),
   },
+  aviva: {
+    // w x d is the bounding box for the map; the filler keeps off the fitted slabs below (extraSites.avivaSlabs)
+    name: 'Aviva Stadium', ...avivaCentre, rot: AV_ROT, w: 126, d: 104, labelY: 42,
+    outline: avivaLocal(3).map((p) => toWorldRot(avivaCentre, AV_ROT, p)), // the plinth, for collision
+    view: spot('AVL2', 'AVLX', 0.2),
+  },
 };
 
 // A railway bridge over the road at a node (the GSWR, docs/research/croke-park.md 1.2; no trains, so only the deck
@@ -261,7 +318,27 @@ function shifted(site, lx, lz, w, d) {
 export const grounds = [
 
   shifted(sites.customHouse, 0, -3, 124, 34),
+  // Lansdowne FC's back pitch, between the stadium's east side and the Dodder
+  { ...shifted(sites.aviva, 75.5, -2, 15, 78), lawn: 1 },
+  // Lansdowne Lawn Tennis Club, north of it up to Bath Avenue: open courts, so the stadium shows across the Dodder
+  { ...shifted(sites.aviva, 61, -69, 34, 50), lawn: 2 },
+  // Havelock Square's green: the gap in the Bath Avenue terrace that opens on the stadium's low north end
+  (() => {
+    const a = N('AVBA2'), b = N('AVBA3'), d = v2.norm(v2.sub(b, a)), h = N('AVBH'), rot = Math.atan2(-d.z, d.x);
+    const edge = wayBetween('AVBH', 'AVBA3'), off = edge.width / 2 + edge.pave + 1, L = 60;
+    return { x: h.x - d.z * (off + L / 2), z: h.z + d.x * (off + L / 2), rot, w: 22, d: L, lawn: 4 };
+  })(),
 ];
+// Shelbourne Park greyhound stadium (OSM way 28769109): open ground east of South Lotts Road - the track, its car parks
+// and a low stand - which is why the Aviva shows over it from Ringsend Road and the dock
+// (squeezed east-west between the uncompressed road and the Dodder's banks: 74 x 93 m, the track 62 x 42 m)
+export const shelbournePark = (() => {
+  const a = N('AVSL3'), b = N('SD1'), way = wayBetween('AVSL3', 'SD1');
+  const n = project(53.34133, -6.2308), s = project(53.33965, -6.2308);
+  // the road slants north-east: clear it at the park's north edge
+  const x0 = a.x + ((n.z - a.z) / (b.z - a.z)) * (b.x - a.x) + way.width / 2 + way.pave + 2, x1 = x0 + 74;
+  return { x: (x0 + x1) / 2, z: (n.z + s.z) / 2, rot: 0, w: x1 - x0, d: s.z - n.z, track: { rx: 31, rz: 21 } };
+})();
 
 // Smaller landmarks that are modelled but not in the teleport list
 export const extraSites = {
@@ -299,7 +376,23 @@ export const extraSites = {
   boiFoster: boiBox(-61, -55.4, 31.7, 46.9),
   boiLords: boiBox(51.85, 63.3, 36.8, 57.6),
   boiCorner: boiBox(51.85, 55.4, 23.5, 36.8),
+  // the Lansdowne Road level crossing and the stadium's west podium over the covered way (see lansdowneXing above)
+  lansdowneXing,
 };
+// Aviva footprint slabs, the podium over the DART (a strip along the track and its front on Lansdowne Road with the
+// grand stairs), the station's track bed and platforms, and the station building - all kept free of filler
+{
+  const X = lansdowneXing, P = X.podium;
+  const uOf = (s, q) => v2.dot(v2.sub(X.at(s, q), X), X.road);
+  const uWest = uOf(X.sAtW(P.west, P.face), P.west), uEast = uOf(X.sAtW(P.east, P.face), P.east);
+  avivaSlabs().forEach((s, i) => { extraSites[`avivaSlab${i}`] = s; });
+  Object.assign(extraSites, {
+    avivaPodium: xingBox(X.sAtW(P.west, P.face), P.north, P.west - 0.5, P.east),
+    avivaPodiumFront: xingRoadBox(uWest - 0.5, uEast, P.face, P.face + P.stairs + 4),
+    lansdowneTrack: xingBox(-62, -15, -9, 9),
+    lansdowneStation: { ...X.atRoad(20, -13.5), rot: X.roadRot, w: 8, d: 5 },
+  });
+}
 // the two quadrant screen walls, as steps inside the curve (column line radius 31 m, centre (+-23.35, 31.4))
 for (const s of [-1, 1]) {
   const edges = [23.9, 31, 38, 44, 49, 53, 55.4];
@@ -359,6 +452,9 @@ export const reserved = [
   (extraSites.cpDavin = cpBox(-150, -114, -45, 45)), (extraSites.cpPlaza = cpBox(-176, -150, -40, 40)),
   // the GSWR embankment either side of its bridges over Jones's Road and Ballybough Road
   ...(extraSites.railBridges = [railBridge('KP9', 103), railBridge('KP21', 107)]).flatMap((b, i) => b.stubs.map((s, k) => (extraSites[`railStub${i}${k}`] = s))),
+  // Aviva Stadium: its fitted footprint, the west podium over the DART and the Lansdowne Road station
+  ...Object.entries(extraSites).filter(([k]) => /^aviva|^lansdowneT|^lansdowneS/.test(k)).map(([, s]) => s),
+  (extraSites.shelbournePark = shelbournePark),
 ].filter(Boolean);
 
 export { campusPolys, parkPolys };

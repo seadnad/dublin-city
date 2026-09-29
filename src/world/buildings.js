@@ -102,7 +102,7 @@ const DOCK_ST = /North Wall|Rogerson|City Quay|Mayor|Commons|Memorial|Lombard|Sa
 // Strand, Ballybough, Clonliffe) is terraced housing, not glass towers.
 const inDocks = (x, z) => x > 300 && z < 150 && z > -280;
 // Victorian and Edwardian red-brick terraces of the canal ring: two storeys with small front gardens
-const TERRACE_ST = /North Circular|Ballybough|Clonliffe|Jones's|Russell|Summerhill Parade|Poplar|Portland Row|Seville|North Strand|Whitworth|Drumcondra|Prussia|Aughrim|Infirmary|Grove Road|Canal Road|Heytesbury|Clanbrassil Street Upper|South Circular|Lennox|Charlemont Mall|Avenue|Ardilaun|Great Charles|Haddington|Berkeley|Mountjoy Street|Blessington|Long Lane|Camden Row|New Bride/;
+const TERRACE_ST = /North Circular|Ballybough|Clonliffe|Jones's|Russell|Summerhill Parade|Poplar|Portland Row|Seville|North Strand|Whitworth|Drumcondra|Prussia|Aughrim|Infirmary|Grove Road|Canal Road|Heytesbury|Clanbrassil Street Upper|South Circular|Lennox|Charlemont Mall|Avenue|Ardilaun|Great Charles|Haddington|Berkeley|Mountjoy Street|Blessington|Long Lane|Camden Row|New Bride|Lansdowne Road|Tritonville|Londonbridge/;
 export const isTerrace = (way) => !!way && TERRACE_ST.test(way.name);
 // Croke Park's neighbourhood (Jones's Road, Clonliffe Road, Ballybough, the NCR by Russell Street): red-brick terraces,
 // two storeys on the side streets and three on the main roads (docs/research/croke-park.md 1.3), so the stadium

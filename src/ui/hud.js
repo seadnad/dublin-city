@@ -38,6 +38,7 @@ const BLURBS = {
   threeArena: 'The old Point Depot at the mouth of the Liffey',
   grandCanal: 'Libeskind’s theatre and the red light-sticks',
   grandCanalSt: 'Offices between Merrion Square and the docks',
+  aviva: 'Lansdowne Road’s louvred glass wave, with the DART crossing at its door',
 };
 
 export function createHUD({ sites, actions }) {

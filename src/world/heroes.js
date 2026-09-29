@@ -6,6 +6,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { addReflections } from '../render/reflect.js';
 import { stoneTex } from './ground.js';
+import { IS_MOBILE } from './textures.js';
 import { LITE } from '../render/quality.js';
 
 const loader = new GLTFLoader();
@@ -716,6 +717,198 @@ export async function placeCrokePark(scene, site) {
       mats.decal.emissiveIntensity = 0.08 + l * 1.1;
       mats.turf.emissiveIntensity = l * 0.42;
       halo.material.opacity = l * 0.42; halo.visible = l > 0.01;
+    },
+  };
+}
+
+// ---------- Aviva Stadium ----------
+// tools/blender/build_aviva.py: two root nodes, `aviva` (near) and `aviva_far` (a light LOD for the skyline), whose
+// meshes carry av_* materials. Every texture is a small tile painted here; the model's UVs repeat it (metres around
+// the ring, by height up the facade), so nothing needs an atlas. docs/research/aviva.md 3.3 has the colours.
+function tile(w, h, paint, { repeat = true } = {}) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  paint(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c);
+  if (repeat) t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.flipY = false; // Blender's exporter already flipped v: the canvas top is the top of each tile
+  t.anisotropy = IS_MOBILE ? 4 : 8;
+  return t;
+}
+
+function avivaTextures() {
+  // plinth: one 12 m x 5 m bay: beige render panels, then a glazed entrance bay with doors (and its night mask)
+  const plinthBay = (g, w, h, lit) => {
+    g.fillStyle = lit ? '#000' : '#b3a68c'; g.fillRect(0, 0, w, h);
+    if (!lit) { g.fillStyle = 'rgba(80,70,50,0.35)'; for (let x = 0; x < w * 0.58; x += w / 10) g.fillRect(x, 0, 2, h); g.fillRect(0, h * 0.5, w * 0.58, 2); g.fillStyle = '#948a74'; g.fillRect(0, 0, w, 6); }
+    g.fillStyle = lit ? '#ffe2b8' : '#23302d'; g.fillRect(w * 0.6, h * 0.12, w * 0.4, h * 0.88);
+    g.fillStyle = lit ? '#4a3a26' : '#a9b0ad';
+    for (let x = w * 0.6; x <= w; x += w * 0.08) g.fillRect(x, h * 0.12, 3, h * 0.88);
+    g.fillRect(w * 0.6, h * 0.12, w * 0.4, 4); g.fillRect(w * 0.6, h * 0.55, w * 0.4, 3);
+  };
+  const plinth = tile(512, 128, (g, w, h) => plinthBay(g, w, h, false));
+  const plinthGlow = tile(512, 128, (g, w, h) => plinthBay(g, w, h, true));
+  // the concourse behind the skin: one 8 m bay by one 4.5 m floor, slab edge at the foot, columns, a stair, lit ceiling
+  const core = tile(256, 256, (g, w, h) => {
+    const grd = g.createLinearGradient(0, 0, 0, h); grd.addColorStop(0, '#8f9c98'); grd.addColorStop(0.8, '#76837f'); grd.addColorStop(1, '#6b7774');
+    g.fillStyle = grd; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#a3aaa7'; g.fillRect(0, h * 0.84, w, h * 0.16); // floor slab edge
+    g.fillStyle = '#88908d'; g.fillRect(0, h * 0.84, w, 4);
+    g.fillStyle = '#4c5754'; g.fillRect(0, 0, 10, h * 0.84); g.fillRect(w / 2 - 4, 0, 8, h * 0.84); // columns
+    g.fillStyle = '#b6c6c1'; g.fillRect(0, 0, w, 10); // ceiling light band
+  });
+  const coreGlow = tile(256, 256, (g, w, h) => {
+    g.fillStyle = '#000'; g.fillRect(0, 0, w, h);
+    const grd = g.createLinearGradient(0, 0, 0, h * 0.84); grd.addColorStop(0, '#fff1d8'); grd.addColorStop(0.35, '#b39a78'); grd.addColorStop(1, '#3a3026');
+    g.fillStyle = grd; g.fillRect(0, 0, w, h * 0.84);
+    g.fillStyle = '#d6f0dc'; g.fillRect(w * 0.52, 0, w * 0.46, h * 0.3); // a greener bay
+    g.fillStyle = '#3a3024'; g.fillRect(0, 0, 10, h * 0.84); g.fillRect(w / 2 - 4, 0, 8, h * 0.84);
+    g.fillStyle = '#2a241c'; g.fillRect(0, h * 0.84, w, h * 0.16);
+  });
+  // polycarbonate louvre course: one 3 m panel by 1.4 m, clear (low alpha) with a bright steel rail and rows of bolts
+  const louvre = tile(256, 128, (g, w, h) => {
+    g.clearRect(0, 0, w, h);
+    const grd = g.createLinearGradient(0, 0, 0, h); grd.addColorStop(0, 'rgba(236,244,242,0.8)'); grd.addColorStop(0.25, 'rgba(214,230,226,0.52)'); grd.addColorStop(0.9, 'rgba(200,220,216,0.44)'); grd.addColorStop(1, 'rgba(246,250,249,0.85)');
+    g.fillStyle = grd; g.fillRect(0, 0, w, h);
+    g.fillStyle = 'rgba(236,240,240,0.95)'; g.fillRect(0, 4, w, 9); // rail
+    g.fillStyle = 'rgba(120,130,130,0.8)'; g.fillRect(0, 13, w, 2);
+    g.fillStyle = 'rgba(250,252,252,0.95)';
+    for (const bx of [w * 0.12, w * 0.62]) for (let y = 20; y < h - 6; y += 12) { g.beginPath(); g.arc(bx, y, 2.4, 0, Math.PI * 2); g.fill(); }
+    g.fillStyle = 'rgba(255,255,255,0.8)'; g.fillRect(w * 0.985, 0, w * 0.015, h); // panel joint
+  });
+  // roof: radial corrugated clear sheet over the purlins, one 6 m tile down the slope, a silver seam at the edge
+  const roof = tile(128, 256, (g, w, h) => {
+    g.fillStyle = '#b9bcb8'; g.fillRect(0, 0, w, h);
+    for (let x = 0; x < w; x += 8) { g.fillStyle = 'rgba(255,255,255,0.16)'; g.fillRect(x, 0, 3, h); g.fillStyle = 'rgba(70,76,74,0.12)'; g.fillRect(x + 4, 0, 2, h); }
+    g.fillStyle = 'rgba(80,86,84,0.25)'; g.fillRect(0, h * 0.5, w, 3); g.fillRect(0, 0, w, 3); // purlins seen through
+    g.fillStyle = '#e3e6e7'; g.fillRect(0, 0, 5, h);
+  });
+  // leading-edge truss: one W panel (per model segment) between the chords, cut out
+  const web = tile(128, 256, (g, w, h) => {
+    g.clearRect(0, 0, w, h);
+    g.strokeStyle = '#f0f0ec'; g.lineCap = 'square';
+    g.lineWidth = 24; g.beginPath(); g.moveTo(0, 12); g.lineTo(w, 12); g.moveTo(0, h - 12); g.lineTo(w, h - 12); g.stroke();
+    g.lineWidth = 16; g.beginPath(); g.moveTo(0, h - 12); g.lineTo(w / 2, 12); g.lineTo(w, h - 12); g.stroke();
+    g.lineWidth = 9; g.beginPath(); g.moveTo(w / 2, 12); g.lineTo(w / 2, h - 12); g.moveTo(0, 12); g.lineTo(0, h - 12); g.stroke();
+  }, { repeat: false });
+  web.wrapS = THREE.RepeatWrapping;
+  // seats: one 6.4 m tile up the rake (8 rows of green seats) with a grey stair aisle
+  const seat = tile(128, 256, (g, w, h) => {
+    g.fillStyle = '#16542b'; g.fillRect(0, 0, w, h);
+    for (let k = 0; k < 8; k++) { const y = (k * h) / 8; g.fillStyle = '#1f6e3a'; g.fillRect(0, y, w, h / 8 * 0.55); g.fillStyle = '#2b8248'; g.fillRect(0, y, w, 3); }
+    g.fillStyle = '#8f928c'; g.fillRect(0, 0, 10, h);
+  });
+  // tier front: the Aviva-yellow band over the white box band with its dark glazing
+  const fascia = tile(256, 64, (g, w, h) => {
+    g.fillStyle = '#f2c500'; g.fillRect(0, 0, w, h * 0.45);
+    g.fillStyle = '#ecece6'; g.fillRect(0, h * 0.45, w, h * 0.55);
+    g.fillStyle = '#26302e'; for (let x = 6; x < w; x += 32) g.fillRect(x, h * 0.55, 26, h * 0.36);
+  });
+  // pitch: 90 x 136 m (play area and run-off), mown stripes, rugby markings
+  const pitch = tile(256, 512, (g, w, h) => {
+    for (let k = 0; k < 16; k++) { g.fillStyle = k % 2 ? '#4a6b1c' : '#527625'; g.fillRect(0, (k * h) / 16, w, h / 16 + 1); }
+    const X = (m) => w / 2 + (m / 90) * w, Y = (m) => h / 2 + (m / 136) * h;
+    g.strokeStyle = 'rgba(245,245,240,0.9)'; g.lineWidth = 2.5;
+    g.strokeRect(X(-35), Y(-60), X(35) - X(-35), Y(60) - Y(-60));
+    for (const m of [-50, -28, 0, 28, 50]) { g.beginPath(); g.moveTo(X(-35), Y(m)); g.lineTo(X(35), Y(m)); g.stroke(); }
+    g.setLineDash([6, 6]); for (const m of [-10, 10]) { g.beginPath(); g.moveTo(X(-35), Y(m)); g.lineTo(X(35), Y(m)); g.stroke(); }
+  }, { repeat: false });
+  // letters: AVIVA STADIUM in Aviva blue (top half), AVIVA in white seats (bottom half)
+  const sign = tile(1024, 256, (g, w, h) => {
+    g.clearRect(0, 0, w, h);
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.font = 'bold 86px Arial, Helvetica, sans-serif'; g.fillStyle = '#2a56b8';
+    g.fillText('AVIVA STADIUM', w / 2, h * 0.25, w * 0.96);
+    g.font = 'bold 118px Arial, Helvetica, sans-serif'; g.fillStyle = '#f4f4f0';
+    g.fillText('A V I V A', w / 2, h * 0.76, w * 0.96);
+  }, { repeat: false });
+  const glow = tile(8, 64, (g, w, h) => {
+    const grd = g.createLinearGradient(0, h, 0, 0); grd.addColorStop(0, 'rgba(255,255,255,1)'); grd.addColorStop(0.35, 'rgba(255,255,255,0.45)'); grd.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = grd; g.fillRect(0, 0, w, h);
+  }, { repeat: false });
+  // far LOD: the whole facade band (plinth top to shoulder) in one 16 m tile - the concourse with the louvre courses over it
+  const farFacade = tile(128, 256, (g, w, h) => {
+    const grd = g.createLinearGradient(0, 0, 0, h); grd.addColorStop(0, '#b2bcb9'); grd.addColorStop(0.5, '#98a3a0'); grd.addColorStop(1, '#86918e');
+    g.fillStyle = grd; g.fillRect(0, 0, w, h);
+    for (let k = 0; k < 16; k++) { const y = (k * h) / 16; g.fillStyle = 'rgba(232,240,238,0.55)'; g.fillRect(0, y, w, 2); g.fillStyle = 'rgba(40,52,48,0.25)'; g.fillRect(0, y + 5, w, 5); }
+  });
+  const farGlow = tile(128, 256, (g, w, h) => {
+    g.fillStyle = '#000'; g.fillRect(0, 0, w, h);
+    for (let k = 0; k < 7; k++) { const y = h * 0.22 + (k * h * 0.72) / 7; g.fillStyle = k % 3 === 1 ? '#c8e6cf' : '#ffe6c2'; g.fillRect(0, y, w, h * 0.06); }
+  });
+  return { plinth, plinthGlow, core, coreGlow, louvre, roof, web, seat, fascia, pitch, sign, glow, farFacade, farGlow };
+}
+
+// Keep the stadium legible through the haze (it is the landmark on the south-east skyline): a lighter share of the
+// global fog on its materials only. The fog chunk is atmosphere.js's; this scales its density.
+function lightFog(m, k = 0.55) {
+  m.onBeforeCompile = (sh) => {
+    sh.fragmentShader = sh.fragmentShader.replace('#include <fog_fragment>', THREE.ShaderChunk.fog_fragment.replace('float fogD = fogDensity', `float fogD = ${k.toFixed(2)} * fogDensity`));
+  };
+  m.customProgramCacheKey = () => `avfog${k}`;
+  return m;
+}
+
+export async function placeAviva(scene, site, { lite = false } = {}) {
+  let gltf;
+  try { gltf = await load('aviva'); } catch (e) { console.warn('aviva model failed to load', e); return null; }
+  const T = avivaTextures();
+  const S = (o) => lightFog(new THREE.MeshStandardMaterial(o));
+  const mats = {
+    av_plinth: S({ map: T.plinth, roughness: 0.8, emissive: 0xffffff, emissiveMap: T.plinthGlow, emissiveIntensity: 0 }),
+    av_core: S({ map: T.core, roughness: 0.55, metalness: 0.1, emissive: 0xffffff, emissiveMap: T.coreGlow, emissiveIntensity: 0 }),
+    // clear polycarbonate: mostly what it reflects (the sky), so metallic with a strong environment term
+    av_louvre: S({ map: T.louvre, color: 0xf2f8f6, transparent: true, depthWrite: false, roughness: 0.2, metalness: 0.55, envMapIntensity: 2.2, emissive: 0xd6efe6, emissiveIntensity: 0 }),
+    av_roof: S({ map: T.roof, color: 0xf4f6f4, roughness: 0.3, metalness: 0.15, side: THREE.DoubleSide }),
+    av_truss: S({ color: 0xf0f0ec, roughness: 0.45, side: THREE.DoubleSide, emissive: 0xf4f1e6, emissiveIntensity: 0 }),
+    av_web: S({ map: T.web, alphaTest: 0.5, roughness: 0.45, side: THREE.DoubleSide, emissive: 0xf4f1e6, emissiveMap: T.web, emissiveIntensity: 0 }),
+    av_flood: S({ color: 0x9aa0a4, roughness: 0.3, side: THREE.DoubleSide, emissive: 0xffffff, emissiveIntensity: 0.1 }),
+    av_seat: S({ map: T.seat, roughness: 0.7, vertexColors: true, emissive: 0xffffff, emissiveMap: T.seat, emissiveIntensity: 0 }),
+    av_fascia: S({ map: T.fascia, roughness: 0.6, emissive: 0xffffff, emissiveMap: T.fascia, emissiveIntensity: 0 }),
+    av_pitch: S({ map: T.pitch, roughness: 0.85, emissive: 0xffffff, emissiveMap: T.pitch, emissiveIntensity: 0 }),
+    av_sign: S({ map: T.sign, alphaTest: 0.4, roughness: 0.4, side: THREE.DoubleSide, emissive: 0xffffff, emissiveMap: T.sign, emissiveIntensity: 0.15 }),
+    av_farfacade: S({ map: T.farFacade, roughness: 0.35, metalness: 0.2, emissive: 0xffffff, emissiveMap: T.farGlow, emissiveIntensity: 0 }),
+    av_glow: new THREE.MeshBasicMaterial({ map: T.glow, color: 0xfff4dc, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false }),
+  };
+  const near = gltf.scene.getObjectByName('aviva'), far = gltf.scene.getObjectByName('aviva_far');
+  const glows = [];
+  for (const lvl of [near, far]) {
+    lvl.removeFromParent();
+    lvl.position.set(0, 0, 0);
+    lvl.traverse((o) => {
+      if (!o.isMesh) return;
+      const m = mats[o.material.name];
+      if (!m) return;
+      o.material = m;
+      if (m === mats.av_glow) { glows.push(o); o.visible = false; o.renderOrder = 3; return; }
+      if (m === mats.av_louvre) { o.renderOrder = 1; if (lite) o.visible = false; } // Low / Battery saver: no translucent layer
+      // only the near level's shell and truss cast (the far one is beyond the shadow map; the bowl's insides shade
+      // nothing anyone sees from outside)
+      o.castShadow = lvl === near && [mats.av_plinth, mats.av_core, mats.av_roof, mats.av_truss, mats.av_web].includes(m);
+      o.receiveShadow = lvl === near;
+    });
+  }
+  const lod = new THREE.LOD();
+  lod.addLevel(near, 0, 0.04);
+  lod.addLevel(far, lite ? 240 : 360, 0.04);
+  lod.position.set(site.x, 0, site.z);
+  lod.rotation.y = site.rot; // the model's north end (Blender +Y) turns to the pitch axis, 16 degrees west of north
+  lod.name = 'Aviva Stadium';
+  scene.add(lod);
+  return {
+    root: lod,
+    setNight(l) {
+      mats.av_core.emissiveIntensity = 0.95 * l;
+      mats.av_farfacade.emissiveIntensity = 1.1 * l;
+      mats.av_plinth.emissiveIntensity = 1.1 * l;
+      mats.av_louvre.emissiveIntensity = 0.22 * l;
+      mats.av_truss.emissiveIntensity = mats.av_web.emissiveIntensity = 0.45 * l;
+      mats.av_flood.emissiveIntensity = 0.1 + 3.2 * l;
+      mats.av_seat.emissiveIntensity = mats.av_fascia.emissiveIntensity = 0.28 * l;
+      mats.av_pitch.emissiveIntensity = 0.42 * l;
+      mats.av_sign.emissiveIntensity = 0.15 + 2.2 * l;
+      mats.av_glow.opacity = 0.2 * l;
+      for (const g of glows) g.visible = l > 0.01;
     },
   };
 }
