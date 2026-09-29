@@ -172,8 +172,9 @@ def material(name, rgb, rough=0.8):
     return m
 
 
-def bake_ao_vertex(objs, distance=3.0, samples=24):
-    """Bake ambient occlusion into a vertex colour layer on every object (Cycles)."""
+def bake_ao_vertex(objs, distance=3.0, samples=24, nosub=()):
+    """Bake ambient occlusion into a vertex colour layer on every object (Cycles). Objects named in `nosub` keep
+    their long edges (e.g. column shafts, where a top-to-bottom gradient is enough)."""
     sc = bpy.context.scene
     sc.render.engine = 'CYCLES'
     sc.cycles.device = 'CPU'
@@ -196,7 +197,7 @@ def bake_ao_vertex(objs, distance=3.0, samples=24):
         me = ob.data
         # subdivide big faces a little so the per-vertex AO has somewhere to live
         bm = bmesh.new(); bm.from_mesh(me)
-        long = [e for e in bm.edges if e.calc_length() > 3.0]
+        long = [e for e in bm.edges if e.calc_length() > 3.0] if ob.name not in nosub else []
         if long:
             bmesh.ops.subdivide_edges(bm, edges=long, cuts=1, use_grid_fill=True)
         bm.to_mesh(me); bm.free()

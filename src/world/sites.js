@@ -75,6 +75,18 @@ const theatre = { ...at(53.34414, -6.23995), rot: -Math.PI / 2, w: 26, d: 34 };
 const gcSquare = { ...at(53.34408, -6.23897), rot: -Math.PI / 2, w: 28, d: 33 };
 const beckett = bridges.find((b) => b.name === 'Samuel Beckett Bridge');
 
+// Parliament House / Bank of Ireland (docs/research/parliament-house.md). The hero model
+// (tools/blender/build_parliament.py) is built in real metres: origin at the middle of the piazza front (on the
+// colonnade line), +u east along College Green, +v north into the building; it is scaled 0.43 x 0.62 in plan and
+// turned so the front runs parallel to College Green's north kerb (the east end further north, as in reality).
+export const BOI = { ...at(53.344605, -6.260085), rot: 0.29, sx: 0.43, sy: 0.62 };
+export function boiAt(u, v) {
+  const c = Math.cos(BOI.rot), s = Math.sin(BOI.rot);
+  return { x: BOI.x + BOI.sx * u * c - BOI.sy * v * s, z: BOI.z - BOI.sx * u * s - BOI.sy * v * c };
+}
+// a footprint given in model metres (u0..u1 along the front, v0..v1 into the building)
+const boiBox = (u0, u1, v0, v1) => ({ ...boiAt((u0 + u1) / 2, (v0 + v1) / 2), rot: BOI.rot, w: (u1 - u0) * BOI.sx, d: (v1 - v0) * BOI.sy });
+
 export const sites = {
   spire: {
     name: 'The Spire', x: N('OC2').x, z: N('OC2').z, rot: Math.atan2(oc.x, oc.z), w: 3, d: 3, labelY: 128,
@@ -87,7 +99,7 @@ export const sites = {
   oconnellBridge: {
     name: "O'Connell Bridge", x: oconnellBridge.centre.x, z: oconnellBridge.centre.z, rot: Math.atan2(oconnellBridge.dir.x, oconnellBridge.dir.z),
     w: oconnellBridge.width, d: oconnellBridge.length, labelY: 16, bridge: oconnellBridge,
-    view: spot('WM1', 'SQ8', 0.35),
+    view: spot('WM1', 'WMS', 0.4),
   },
   hapenny: {
     name: "Ha'penny Bridge", x: (hp0.x + hp1.x) / 2, z: (hp0.z + hp1.z) / 2, rot: Math.atan2(hpDir.x, hpDir.z),
@@ -108,11 +120,11 @@ export const sites = {
     view: spot('DFU', 'DMc', 0.3),
   },
   bankOfIreland: {
-    name: 'Bank of Ireland', ...(() => {
-      const arm = wayBetween('CGT', 'CGM'), W = 36, L = v2.len(v2.sub(N('CG0'), N('CGT')));
-      return beside('CGT', 'CG0', (arm.width / 2 + arm.pave + 7.5 + W / 2) / L, -1, W, 32, { gap: 0.5 }); // clear of the north arm even at College Green's slope
-    })(), labelY: 28,
-    view: spot('DMc', 'DAN', 0.2),
+    // the main block from the piazza's back wall to the north wall; the piazza, quadrants and porticos are in
+    // extraSites (boi*) so the filler and the footprint test see the real outline
+    name: 'Bank of Ireland', ...boiBox(-55.4, 51.85, 17, 79), labelY: 22,
+    parts: { parliament: { x: BOI.x, z: BOI.z, rot: BOI.rot } },
+    view: spot('DAN', 'CG0', 0.5),
   },
   christChurch: (() => {
     // docs/research/christ-church.md: the cathedral sits in its grounds between Winetavern St (west), Fishamble St
@@ -230,13 +242,44 @@ export const extraSites = {
     // the Green West road slants ~12 degrees west going south: allow for it so the far end clears the footpath
     return beside('SGNW', 'KSS1', (west.width / 2 + west.pave + 0.4 + D * 0.22 + W / 2) / kss, 1, W, D, { gap: 0.3 });
   })(),
-  // Grattan's statue on its island in the middle of College Green
-  grattan: (() => { const a = N('CGT'), b = N('CG0'), p = v2.lerp(a, b, 0.5), d = v2.norm(v2.sub(b, a)); return { ...p, rot: Math.atan2(d.x, d.z) }; })(),
+  // Grattan's statue on its island at the east end of College Green, in front of the east arch pavilion, facing
+  // west down Dame Street (the island's east tip stays clear of the Trinity junction)
+  grattan: (() => { const a = N('CGT'), b = N('CG0'), p = v2.lerp(a, b, 0.31), d = v2.norm(v2.sub(b, a)); return { ...p, rot: Math.atan2(d.x, d.z) }; })(),
+  // Parliament House outline beyond the main block: the piazza with its arch pavilions, the porticos on Foster
+  // Place and Westmoreland Street, the SE corner block
+  boiPiazza: boiBox(-23.9, 23.9, -2.4, 17),
+  boiFoster: boiBox(-61, -55.4, 31.7, 46.9),
+  boiLords: boiBox(51.85, 63.3, 36.8, 57.6),
+  boiCorner: boiBox(51.85, 55.4, 23.5, 36.8),
 };
+// the two quadrant screen walls, as steps inside the curve (column line radius 31 m, centre (+-23.35, 31.4))
+for (const s of [-1, 1]) {
+  const edges = [23.9, 31, 38, 44, 49, 53, 55.4];
+  for (let k = 0; k < edges.length - 1; k++) {
+    const a = edges[k], b = edges[k + 1], dx = a - 23.35;
+    const v0 = 31.4 - Math.sqrt(32 * 32 - dx * dx);
+    if (v0 > 16) continue; // the main block already covers it
+    extraSites[`boiQuad${s < 0 ? 'W' : 'E'}${k}`] = s < 0 ? boiBox(-b, -a, v0, 17) : boiBox(a, b, v0, 17);
+  }
+}
+// the Westmoreland Street footpath in front of the east front north of the Lords portico widens northwards (the
+// portico's column line is ~17 degrees off the street): keep it open, stepping out to the footpath's edge
+{
+  const wm = wayBetween('CG1', 'WM1'), A = N('CG1'), B = N('WM1');
+  for (let k = 0; k < 4; k++) {
+    const v0 = 57.6 + k * 5.35, v1 = v0 + 5.35;
+    let gap = Infinity;
+    for (const v of [v0, v1]) {
+      const p = boiAt(51.85, v), t = Math.max(0, Math.min(1, v2.dot(v2.sub(p, A), v2.sub(B, A)) / v2.dot(v2.sub(B, A), v2.sub(B, A))));
+      gap = Math.min(gap, v2.len(v2.sub(p, v2.lerp(A, B, t))) - wm.width / 2 - wm.pave);
+    }
+    if (gap > 1) extraSites[`boiWalk${k}`] = boiBox(51.85, 51.85 + gap / BOI.sx, v0, v1);
+  }
+}
 
 // Footprints the filler generator must avoid (landmark buildings; parks/campus handled separately).
 export const reserved = [
-  sites.gpo, sites.bankOfIreland, sites.christChurch, sites.stPatricks, extraSites.iveaghPlay, sites.customHouse, sites.trinity, ...grounds,
+  sites.gpo, sites.bankOfIreland, ...Object.entries(extraSites).filter(([k]) => k.startsWith('boi')).map(([, s]) => s), sites.christChurch, sites.stPatricks, extraSites.iveaghPlay, sites.customHouse, sites.trinity, ...grounds,
   sites.cityHall, sites.centralBank, extraSites.olympia, extraSites.clockCorner,
   extraSites.bewleys, extraSites.brownThomas, extraSites.weir, extraSites.sgCentre, extraSites.merchantsHall, extraSites.redPub, extraSites.tbSquare,
   shifted(extraSites.sgCentre, -extraSites.sgCentre.w / 2 - 8, 0, 16, extraSites.sgCentre.d), // broad footpath facing the Green

@@ -24,7 +24,7 @@ const BLURBS = {
   oconnellBridge: 'As wide as it is long, over the Liffey',
   hapenny: 'Cast-iron footbridge from 1816',
   trinity: 'Front gate on College Green, campanile in Front Square',
-  bankOfIreland: 'Old Parliament House with its curved colonnade',
+  bankOfIreland: 'Pearce’s 1729 Parliament House and Gandon’s Lords portico; a bank since 1803',
   cityHall: 'The Royal Exchange at the top of Parliament Street',
   centralBank: 'Floors hung from the roof, on Central Plaza',
   christChurch: 'Medieval cathedral and the Synod Hall bridge',

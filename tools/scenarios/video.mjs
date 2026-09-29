@@ -163,7 +163,7 @@ export default async function (page) {
   // 2. Garda car down O'Connell Street, over the bridge, blues on
   if (want('drive')) {
     await siren(true);
-    await drive('drive', 9, ['OC3', 'OC2', 'OC1', 'NQ8', 'SQ8', 'WM1', 'CG1'], 15);
+    await drive('drive', 9, ['OC3', 'OC2', 'OC1', 'NQ8', 'SQ8', 'WMS', 'WM1', 'CG1'], 15);
     await siren(false);
   }
   // 3. the GPO, low along the street

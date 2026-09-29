@@ -178,8 +178,158 @@ function paintDecals(g, N) {
     g.strokeStyle = '#e6e3da'; g.lineWidth = 4; g.beginPath(); g.moveTo(x + w / 2, y + 90); g.lineTo(x + w / 2, y + h); g.stroke(); }
   { const [x, y, , h] = DECAL.cren; g.fillStyle = STONE_D; for (let k = 0; k < 8; k++) g.fillRect(x + k * 64, y, 40, h); }
 }
+// ---------- Parliament House (Bank of Ireland): its own small decal atlas ----------
+// regions, px in 512 (must match tools/blender/build_parliament.py PDECAL)
+const PDECAL = {
+  niche: [0, 0, 128, 256], roundel: [128, 0, 128, 128], coffer: [128, 128, 128, 128], ionic: [256, 0, 128, 64],
+  corinth: [256, 64, 128, 128], lamp: [384, 0, 64, 64], door: [448, 0, 64, 128], blind: [384, 128, 128, 128],
+  arms: [0, 256, 256, 128], balust: [256, 256, 256, 64], railing: [256, 320, 256, 64], triumph: [256, 384, 128, 128],
+};
+const PORT = '#e4e1da', PORT_D = '#a3a099', GRAN = '#aca69c', RECESS = '#6f6b64', IRONB = '#1b1c1d';
+function paintParliament(g, N) {
+  g.clearRect(0, 0, N, N);
+  const roundArch = (x, y, w, h) => { g.beginPath(); g.moveTo(x, y + h); g.lineTo(x, y + w / 2); g.arc(x + w / 2, y + w / 2, w / 2, Math.PI, 0); g.lineTo(x + w, y + h); g.closePath(); };
+  const courses = (x, y, w, h, step, col) => { g.fillStyle = col; for (let yy = y + step; yy < y + h; yy += step) g.fillRect(x, yy, w, 2); };
+  { // blind round-headed niche in a Portland architrave frame (the cornice over it is geometry)
+    const [x, y, w, h] = PDECAL.niche;
+    g.fillStyle = PORT; g.fillRect(x, y, w, h);
+    g.fillStyle = PORT_D; g.fillRect(x + 12, y + 12, w - 24, h - 16);
+    g.fillStyle = GRAN; g.fillRect(x + 16, y + 16, w - 32, h - 22); courses(x + 16, y + 16, w - 32, h - 22, 22, 'rgba(90,88,84,0.45)');
+    const nx = x + 30, nw = w - 60;
+    g.fillStyle = '#8a8680'; roundArch(nx - 5, y + 30, nw + 10, h - 50); g.fill();
+    const grd = g.createLinearGradient(nx, 0, nx + nw, 0); grd.addColorStop(0, '#4f4c47'); grd.addColorStop(0.55, RECESS); grd.addColorStop(1, '#85817a');
+    g.fillStyle = grd; roundArch(nx, y + 35, nw, h - 57); g.fill();
+    g.fillStyle = '#5a5751'; g.fillRect(nx - 6, y + 30 + nw / 2 + 2, nw + 12, 5); // impost
+    g.fillStyle = PORT; g.fillRect(x + w / 2 - 7, y + 28, 14, 16); // keystone
+    g.fillStyle = '#8f8b84'; g.fillRect(nx, y + h - 26, nw, 6); // sill
+  }
+  { // Portland roundel: a moulded ring round a sunk disc, a laurel wreath
+    const [x, y, w] = PDECAL.roundel, cx = x + w / 2, cy = y + w / 2;
+    g.fillStyle = PORT; g.beginPath(); g.arc(cx, cy, w / 2 - 4, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = PORT_D; g.lineWidth = 5; g.beginPath(); g.arc(cx, cy, w / 2 - 14, 0, Math.PI * 2); g.stroke();
+    g.fillStyle = '#b7b3a9'; g.beginPath(); g.arc(cx, cy, w / 2 - 22, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#9d998f'; for (let k = 0; k < 16; k++) { const a = (k / 16) * Math.PI * 2; g.beginPath(); g.ellipse(cx + Math.cos(a) * 30, cy + Math.sin(a) * 30, 7, 3.5, a + 0.6, 0, Math.PI * 2); g.fill(); }
+  }
+  { // coffered soffit: 2 x 2 recessed panels with rosettes
+    const [x, y, w, h] = PDECAL.coffer;
+    g.fillStyle = '#b9b5ac'; g.fillRect(x, y, w, h);
+    for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) {
+      const px = x + 8 + i * 60, py = y + 8 + j * 60;
+      g.fillStyle = '#8f8c85'; g.fillRect(px, py, 52, 52);
+      g.fillStyle = '#76736c'; g.fillRect(px + 8, py + 8, 36, 36);
+      g.fillStyle = '#c4c0b6'; g.beginPath(); g.arc(px + 26, py + 26, 7, 0, Math.PI * 2); g.fill();
+    }
+  }
+  { // Ionic capital: the volute pair joined by an egg-and-dart band (cut out)
+    const [x, y, w, h] = PDECAL.ionic;
+    g.fillStyle = PORT; g.fillRect(x + 14, y + 8, w - 28, 16);
+    g.fillStyle = '#b5b1a7'; for (let k = 0; k < 7; k++) { g.beginPath(); g.ellipse(x + 32 + k * 11, y + 32, 4, 6, 0, 0, Math.PI * 2); g.fill(); }
+    for (const cx of [x + 18, x + w - 18]) {
+      g.fillStyle = PORT; g.beginPath(); g.arc(cx, y + 36, 17, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = '#8d8a82'; g.lineWidth = 3; g.beginPath();
+      for (let t = 0; t < 14; t += 0.2) { const r = 15 - t, a = t * 1.1; g.lineTo(cx + Math.cos(a) * r, y + 36 + Math.sin(a) * r); }
+      g.stroke();
+    }
+  }
+  { // Corinthian bell: one acanthus leaf per face (cut out), two tiers and a small volute at the top
+    const [x, y, w, h] = PDECAL.corinth;
+    const leaf = (cx, by, lw, lh) => {
+      g.fillStyle = PORT; g.beginPath(); g.moveTo(cx - lw / 2, by);
+      g.bezierCurveTo(cx - lw / 2 - 8, by - lh * 0.6, cx - 10, by - lh * 0.9, cx, by - lh);
+      g.bezierCurveTo(cx + 10, by - lh * 0.9, cx + lw / 2 + 8, by - lh * 0.6, cx + lw / 2, by); g.closePath(); g.fill();
+      g.strokeStyle = '#8f8b83'; g.lineWidth = 2; g.beginPath(); g.moveTo(cx, by); g.lineTo(cx, by - lh + 6); g.stroke();
+      for (let k = 1; k < 4; k++) { g.beginPath(); g.moveTo(cx, by - (lh * k) / 4); g.lineTo(cx - lw * 0.3, by - (lh * k) / 4 - 8); g.moveTo(cx, by - (lh * k) / 4); g.lineTo(cx + lw * 0.3, by - (lh * k) / 4 - 8); g.stroke(); }
+    };
+    leaf(x + w / 2, y + h, w * 0.9, h * 0.62);
+    leaf(x + w / 2, y + h * 0.62, w * 0.62, h * 0.5);
+    g.fillStyle = PORT; g.fillRect(x + 8, y + 2, w - 16, 12);
+    g.strokeStyle = PORT; g.lineWidth = 7; for (const s of [-1, 1]) { g.beginPath(); g.arc(x + w / 2 + s * 44, y + 20, 10, 0, Math.PI * 1.5); g.stroke(); }
+  }
+  { // lantern glass
+    const [x, y, w, h] = PDECAL.lamp; g.fillStyle = '#f3e2b0'; g.fillRect(x, y, w, h);
+  }
+  { // panelled timber door in a Portland surround
+    const [x, y, w, h] = PDECAL.door;
+    g.fillStyle = PORT; g.fillRect(x, y, w, h);
+    g.fillStyle = '#3a2e25'; roundArch(x + 8, y + 8, w - 16, h - 8); g.fill();
+    g.strokeStyle = '#241b15'; g.lineWidth = 2;
+    for (const [px, py, pw, ph] of [[x + 13, y + 44, 17, 30], [x + 34, y + 44, 17, 30], [x + 13, y + 80, 17, 40], [x + 34, y + 80, 17, 40]]) g.strokeRect(px, py, pw, ph);
+    g.fillStyle = '#5a4a3a'; g.fillRect(x + 12, y + 24, w - 24, 12); // fanlight bar
+  }
+  { // rusticated blind arch (under the porticos)
+    const [x, y, w, h] = PDECAL.blind;
+    g.fillStyle = '#9c968c'; g.fillRect(x, y, w, h); courses(x, y, w, h, 16, 'rgba(55,53,49,0.8)');
+    g.fillStyle = '#b1ab9f'; roundArch(x + 20, y + 14, w - 40, h - 14); g.fill();
+    g.fillStyle = '#7d786f'; roundArch(x + 28, y + 22, w - 56, h - 22); g.fill();
+    g.strokeStyle = 'rgba(60,58,54,0.7)'; g.lineWidth = 2;
+    for (let k = 1; k < 7; k++) { const a = Math.PI + (k / 7) * Math.PI; g.beginPath(); g.moveTo(x + w / 2 + Math.cos(a) * 36, y + 14 + (w - 40) / 2 + Math.sin(a) * 36); g.lineTo(x + w / 2 + Math.cos(a) * 44, y + 14 + (w - 40) / 2 + Math.sin(a) * 44); g.stroke(); }
+  }
+  { // the royal arms carved in the south tympanum (relief in the same stone): shield, crown, lion and unicorn
+    const [x, y, w, h] = PDECAL.arms, cx = x + w / 2;
+    g.fillStyle = '#cfcbc1';
+    g.beginPath(); g.moveTo(cx - 30, y + 38); g.lineTo(cx + 30, y + 38); g.lineTo(cx + 30, y + 86); g.quadraticCurveTo(cx, y + 118, cx - 30, y + 86); g.closePath(); g.fill();
+    g.strokeStyle = '#8f8b83'; g.lineWidth = 3; g.beginPath(); g.moveTo(cx, y + 38); g.lineTo(cx, y + 104); g.moveTo(cx - 30, y + 66); g.lineTo(cx + 30, y + 66); g.stroke();
+    g.beginPath(); g.arc(cx, y + 72, 44, Math.PI * 0.1, Math.PI * 0.9); g.stroke(); // garter
+    g.fillStyle = '#cfcbc1'; g.beginPath(); g.moveTo(cx - 18, y + 34); g.lineTo(cx - 20, y + 16); g.lineTo(cx - 8, y + 24); g.lineTo(cx, y + 8); g.lineTo(cx + 8, y + 24); g.lineTo(cx + 20, y + 16); g.lineTo(cx + 18, y + 34); g.closePath(); g.fill();
+    for (const s of [-1, 1]) { // rampant supporters
+      const bx = cx + s * 62;
+      g.beginPath(); g.ellipse(bx, y + 78, 18, 30, s * 0.35, 0, Math.PI * 2); g.fill();
+      g.beginPath(); g.arc(bx + s * 8, y + 42, 12, 0, Math.PI * 2); g.fill();
+      g.fillRect(bx - 14, y + 100, 8, 22); g.fillRect(bx + 4, y + 100, 8, 22);
+      g.beginPath(); g.moveTo(bx - s * 6, y + 60); g.lineTo(bx - s * 30, y + 50); g.lineTo(bx - s * 28, y + 58); g.closePath(); g.fill();
+      if (s > 0) { g.fillRect(bx + 14, y + 22, 3, 16); } else { g.beginPath(); g.arc(bx - 8, y + 34, 16, Math.PI * 1.1, Math.PI * 1.9); g.fill(); }
+    }
+    g.fillRect(x + 30, y + h - 8, w - 60, 6);
+  }
+  { // Portland balusters (cut out), six per strip
+    const [x, y, w, h] = PDECAL.balust, n = 6, bw = w / n;
+    for (let k = 0; k < n; k++) {
+      const cx = x + (k + 0.5) * bw;
+      g.fillStyle = PORT; g.beginPath();
+      g.moveTo(cx - 9, y + h); g.lineTo(cx - 9, y + h - 6); g.bezierCurveTo(cx - 20, y + h - 20, cx - 16, y + 26, cx - 5, y + 16);
+      g.lineTo(cx - 9, y + 8); g.lineTo(cx - 9, y); g.lineTo(cx + 9, y); g.lineTo(cx + 9, y + 8); g.lineTo(cx + 5, y + 16);
+      g.bezierCurveTo(cx + 16, y + 26, cx + 20, y + h - 20, cx + 9, y + h - 6); g.lineTo(cx + 9, y + h); g.closePath(); g.fill();
+      g.fillStyle = 'rgba(120,116,108,0.5)'; g.fillRect(cx + 3, y + 18, 5, h - 26);
+    }
+  }
+  { // Kennan cast-iron railing: spear-topped bars, top rail, a row of dog bars
+    const [x, y, w, h] = PDECAL.railing;
+    g.fillStyle = IRONB;
+    g.fillRect(x, y + 10, w, 3); g.fillRect(x, y + h - 6, w, 4); g.fillRect(x, y + h - 20, w, 2);
+    for (let bx = x + 2; bx < x + w; bx += 10) {
+      g.fillRect(bx, y + 4, 2.5, h - 6);
+      g.beginPath(); g.moveTo(bx - 2.5, y + 6); g.lineTo(bx + 1.25, y); g.lineTo(bx + 5, y + 6); g.fill();
+      g.fillRect(bx + 5, y + h - 20, 1.5, 14);
+    }
+  }
+  { // triumphal arch at the north ends of the flanks: an arched opening between engaged columns
+    const [x, y, w, h] = PDECAL.triumph;
+    g.fillStyle = PORT; g.fillRect(x, y, w, h);
+    g.fillStyle = PORT_D; g.fillRect(x + 6, y, 16, h); g.fillRect(x + w - 22, y, 16, h);
+    g.fillStyle = '#2a2b2c'; roundArch(x + 32, y + 18, w - 64, h - 18); g.fill();
+    g.strokeStyle = '#46474a'; g.lineWidth = 2; for (let k = 1; k < 6; k++) { g.beginPath(); g.moveTo(x + 32 + k * (w - 64) / 6, y + 50); g.lineTo(x + 32 + k * (w - 64) / 6, y + h); g.stroke(); }
+    g.fillStyle = '#c4c0b6'; g.fillRect(x, y + 8, w, 6);
+  }
+}
+// Night uplighting for the Parliament House: ground-mounted warm floods wash the stone, brightest at the foot of
+// the walls and columns and fading out above the cornice. One shared uniform; per-fragment it is a height ramp
+// in world space, so no extra vertex data.
+const uplight = { value: 0 };
+function uplit(m, top = 11) {
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uUplight = uplight;
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying float vUpY;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvUpY = (modelMatrix * vec4(transformed, 1.0)).y;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform float uUplight;\nvarying float vUpY;')
+      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+        totalEmissiveRadiance += uUplight * diffuseColor.rgb * vec3(1.0, 0.88, 0.72) * (0.03 + 0.42 * (1.0 - smoothstep(0.0, ${top.toFixed(1)}, vUpY)));`);
+  };
+  m.customProgramCacheKey = () => `uplit${top}`;
+  return m;
+}
+
 // tileable stone: calp rubble (grey, irregular), ashlar courses, slate, brick
-function stoneTile(size, base, courses, jitter, mortar = 'rgba(40,38,36,0.55)') {
+function stoneTile(size, base, courses, jitter, mortar = 'rgba(40,38,36,0.55)', tint = 0.35, joint = 2) {
   const c = document.createElement('canvas'); c.width = c.height = size;
   const g = c.getContext('2d'); g.fillStyle = base; g.fillRect(0, 0, size, size);
   let seed = 11; const r = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
@@ -188,11 +338,11 @@ function stoneTile(size, base, courses, jitter, mortar = 'rgba(40,38,36,0.55)') 
     let x = -r() * 40;
     while (x < size) {
       const w = ch * (1.2 + r() * jitter * 2.5), l = (r() - 0.5) * 30;
-      g.fillStyle = `hsl(30, 4%, ${45 + l * 0.5}%)`; g.globalAlpha = 0.35; g.fillRect(x, row * ch, w, ch); g.globalAlpha = 1;
+      g.fillStyle = `hsl(30, 4%, ${45 + l * 0.5}%)`; g.globalAlpha = tint; g.fillRect(x, row * ch, w, ch); g.globalAlpha = 1;
       g.fillStyle = mortar; g.fillRect(x, row * ch, 2, ch);
       x += w;
     }
-    g.fillStyle = mortar; g.fillRect(0, row * ch, size, 2);
+    g.fillStyle = mortar; g.fillRect(0, row * ch, size, joint);
   }
   const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
   return t;
@@ -216,7 +366,17 @@ function stoneMaterials() {
     door: std({ color: 0x2c3e9a, roughness: 0.5 }),
     glass: std({ color: 0x9fb3bd, roughness: 0.2, metalness: 0.3 }),
     roof: std({ color: 0x6e7378, roughness: 0.6, metalness: 0.4 }),
+    // Parliament House: white Portland stone dressings against grey granite walls, rusticated below the platband
+    portland: uplit(std({ map: stoneTile(256, PORT, 6, 0.15, 'rgba(120,114,104,0.35)', 0.1), roughness: 0.72 })),
+    pgranite: uplit(std({ map: stoneTile(256, GRAN, 7, 0.2, 'rgba(90,88,84,0.45)', 0.18), roughness: 0.82 })),
+    prustic: uplit(std({ map: stoneTile(256, '#a39d93', 5, 0.1, 'rgba(70,68,63,0.6)', 0.18, 5), roughness: 0.88 })),
+    lead: std({ color: 0x6b7075, roughness: 0.6, metalness: 0.3 }),
+    plamp: std({ color: 0xfff1d6, emissive: 0xffc98a, emissiveIntensity: 0.15, roughness: 0.3 }),
   };
+  const pat = atlas(512, paintParliament);
+  stoneMats.pdecal = uplit(std({ map: pat, alphaTest: 0.5, roughness: 0.7 }));
+  stoneMats.pcut = uplit(std({ map: pat, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6 })); // railings, balusters, capitals
+  setStoneNight(stoneNight);
   return stoneMats;
 }
 const byName = (name) => {
@@ -236,11 +396,19 @@ function prepare(root) {
       decoded.add(col); col.needsUpdate = true;
     }
     o.material = byName(o.material.name);
-    o.castShadow = o.material !== stoneMaterials().decal;
+    const m = stoneMaterials();
+    o.castShadow = o.material !== m.decal && o.material !== m.pdecal && o.material !== m.pcut; // cut-outs would cast solid quads
     o.receiveShadow = true;
   });
 }
-export function setStoneNight(level) { if (stoneMats) stoneMats.decal.emissiveIntensity = level * 0.9; }
+let stoneNight = 0; // remembered so a model that loads after dark comes up lit
+export function setStoneNight(level) {
+  stoneNight = level;
+  if (!stoneMats) return;
+  stoneMats.decal.emissiveIntensity = level * 0.9;
+  stoneMats.plamp.emissiveIntensity = 0.15 + level * 3.2;
+  uplight.value = level;
+}
 
 // Place the named nodes of a stone-landmark GLB at the positions given in site.parts ({ x, z, rot, len? }).
 export async function placeParts(scene, file, site, name) {
