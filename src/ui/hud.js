@@ -44,7 +44,7 @@ export function createHUD({ sites, actions }) {
   const hud = document.getElementById('hud');
   hud.insertAdjacentHTML('beforeend', `
     <div class="street" id="street"></div>
-    <div class="speedo"><b id="speed">0</b><span>km/h</span></div>
+    <div class="speedo"><b id="speed">0</b><span>km/h</span><span class="alt" id="alt" hidden></span></div>
     <div class="toolbar panel" role="toolbar" aria-label="Game options">
       <button data-a="play" title="Play (G)" class="play-btn">${svg('play')}<span>Play</span><kbd>G</kbd></button>
       <button data-a="rain" title="Rain (R)">${svg('rain')}<span>Rain</span><kbd>R</kbd></button>
@@ -79,16 +79,18 @@ export function createHUD({ sites, actions }) {
         <tr><td><kbd>T</kbd> <kbd>1</kbd>&ndash;<kbd>9</kbd></td><td>Landmark list / teleport</td></tr>
         <tr><td><kbd>P</kbd></td><td>Photo mode: drag to orbit, scroll to zoom, right-drag to pan, WASD to move, Space to snap</td></tr>
         <tr><td><kbd>Backspace</kbd></td><td>Reset car onto the road</td></tr>
-        <tr><td>🎮</td><td>Controller: stick steers, RT go, LT brake / reverse, A or B handbrake, Y siren, X camera, LB siren tone, RB night, View map, Menu play, right stick click photo mode; in menus D-pad + A, B back</td></tr><tr><td><kbd>Q</kbd></td><td>Graphics: Auto / High / Medium / Low / Battery saver (also in Play)</td></tr>
+        <tr><td><kbd>L</kbd></td><td>Garda helicopter / back to the car (also in Play)</td></tr>
+        <tr><td>🚁</td><td>Flying: <kbd>W</kbd> <kbd>S</kbd> tilt forward / back, <kbd>A</kbd> <kbd>D</kbd> turn, <kbd>&larr;</kbd> <kbd>&rarr;</kbd> bank, <kbd>Space</kbd> climb, <kbd>Shift</kbd> descend (hands off to hover, descend to land), <kbd>X</kbd> searchlight, <kbd>C</kbd> near / far camera</td></tr>
+        <tr><td>🎮</td><td>Controller: stick steers, RT go, LT brake / reverse, A or B handbrake, Y siren, X camera, LB siren tone, RB night, View map, Menu play, right stick click photo mode, D-pad right helicopter (flying: left stick tilts, right stick turns, RT / LT climb / descend, Y searchlight); in menus D-pad + A, B back</td></tr><tr><td><kbd>Q</kbd></td><td>Graphics: Auto / High / Medium / Low / Battery saver (also in Play)</td></tr>
         <tr><td><kbd>V</kbd> <kbd>F</kbd></td><td>Sound / frame rate</td></tr>
       </table>
-      <p class="touch-note">On a phone: steer with the left pad, pedals on the right, <b>HB</b> is the handbrake.</p>
+      <p class="touch-note">On a phone: steer with the left pad, pedals on the right, <b>HB</b> is the handbrake. Flying: tilt with the stick on the left; climb, descend and turn on the right.</p>
     </div>
     <div class="toast" id="toast"></div>
     <div class="fps" id="fps" hidden></div>
   `);
   const $ = (id) => document.getElementById(id);
-  const streetEl = $('street'), speedEl = $('speed'), toastEl = $('toast'), fpsEl = $('fps'), stopEl = $('tramstop');
+  const streetEl = $('street'), speedEl = $('speed'), toastEl = $('toast'), fpsEl = $('fps'), stopEl = $('tramstop'), altEl = $('alt');
   const places = $('places'), help = $('help');
 
   const panels = { places, help };
@@ -226,6 +228,9 @@ export function createHUD({ sites, actions }) {
         streetEl.classList.remove('flip'); void streetEl.offsetWidth; streetEl.classList.add('flip');
       }
       speedEl.textContent = Math.round(Math.abs(car.speed) * 3.6);
+      // flying: height above the ground (or roof) below
+      const alt = car.alt != null ? `▲ ${Math.max(0, Math.round(car.alt))} m` : '';
+      if (altEl.textContent !== alt) { altEl.textContent = alt; altEl.hidden = !alt; }
       if (waypoint) {
         const d = Math.hypot(waypoint.x - car.pos.x, waypoint.z - car.pos.z);
         if (d < 18) { toast(`Arrived: ${waypoint.name}`, 2500); this.setWaypoint(null); actions.waypointReached && actions.waypointReached(); }

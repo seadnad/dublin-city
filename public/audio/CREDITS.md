@@ -28,3 +28,6 @@ Run `node tools/audio/build.mjs` to rebuild them.
 
 Synthesised in code, no recording: the siren's hi-lo tone (`src/game/audio/siren.js`), the impact thud
 (`src/game/audio/engine.js`) and the game-mode cue beeps (`src/game/audio.js`).
+
+The helicopter (`src/game/audio/rotor.js`) is synthesised too: pulsed band-passed noise for the blade slap, a low
+thump, rotor wash, and oscillators for the fenestron whine and the turbine whistle. No recording is used.

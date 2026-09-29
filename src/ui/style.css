@@ -247,3 +247,15 @@ kbd { display: inline-block; min-width: 1.5em; padding: 1px 5px; border-radius: 
 #photo .lens input { width: 110px; accent-color: #f2c94c; }
 #photo button:focus-visible { outline: 2px solid #f2c94c; outline-offset: 2px; }
 @media (pointer: coarse) { #photo .hint { display: none; } #photo .lens input { width: 90px; } }
+
+/* helicopter touch layout: a tilt stick on the left, climb / descend and yaw on the right */
+.touch .hpad { display: none; position: absolute; bottom: max(16px, env(safe-area-inset-bottom)); }
+.touch.heli .pad { display: none; }
+.touch.heli .hpad { display: flex; gap: 10px; align-items: flex-end; }
+.touch .hpad.left { left: max(20px, env(safe-area-inset-left)); }
+.touch .hpad.right { right: max(16px, env(safe-area-inset-right)); }
+.touch .stick { pointer-events: auto; width: 150px; height: 150px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.24); background: rgba(12,18,16,0.14); box-shadow: 0 1px 6px rgba(0,0,0,0.12); display: grid; place-items: center; touch-action: none; }
+.touch .stick i { width: 58px; height: 58px; border-radius: 50%; background: rgba(255,255,255,0.3); border: 1.5px solid rgba(255,255,255,0.5); box-shadow: 0 1px 6px rgba(0,0,0,0.25); }
+@media (max-height: 420px) { .touch .stick { width: 128px; height: 128px; } .touch .stick i { width: 50px; height: 50px; } }
+/* altitude readout while flying */
+.speedo .alt { font-size: 15px; font-weight: 700; opacity: 0.9; margin-left: 6px; font-variant-numeric: tabular-nums; }

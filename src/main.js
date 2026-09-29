@@ -12,7 +12,7 @@ import { IS_MOBILE } from './world/textures.js';
 import { segmentCount } from './game/collision.js';
 import { Car } from './game/car.js';
 import { makePlayerCar } from './game/fleet.js';
-import { input, updateInput, onKey, buildTouchControls, pad, readPad } from './game/input.js';
+import { input, updateInput, onKey, buildTouchControls, pad, readPad, setInputMode } from './game/input.js';
 import { createPhotoMode } from './game/photo.js';
 import { CameraRig } from './game/camera.js';
 import { createTraffic } from './game/traffic.js';
@@ -36,6 +36,8 @@ import { bakeGroundAO, groundAOUniforms } from './render/groundao.js';
 import { bakeLampLight, lampUniforms } from './render/lamplight.js';
 import { reserved as landmarkFootprints } from './world/sites.js';
 import { KERB_H } from './world/roads.js';
+import { Heli, loadHeli, MAX_ALT } from './game/heli.js';
+import { captureHeightmap } from './game/heightmap.js';
 
 const canvas = document.getElementById('scene');
 // ---- renderer baseline (three r186) ----
@@ -98,6 +100,7 @@ const rain = buildRain(scene);
 const furniture = buildFurniture(scene);
 const signals = createSignals(scene);
 console.log('furniture', JSON.stringify(furniture), 'signal heads', signals.count);
+const worldRoots = new Set(scene.children); // the static city (the helicopter's height field is drawn from these)
 console.log(`world built in ${Math.round(performance.now() - t0)} ms: ${buildings.count} buildings, ${lamps.count} lamps, ${landmarks.trees} trees, ${segmentCount()} collision segments`);
 
 // ---------- player ----------
@@ -143,6 +146,8 @@ await step(0.8, 'Starting the traffic…');
 const traffic = createTraffic(scene, LITE ? { cars: 12, buses: 3, taxis: 3, parked: 120 } : { cars: 26, buses: 6, taxis: 5, parked: 320 });
 const tram = combineTrams(world.luasLines.map((line) => createLuas(scene, line)));
 const people = createPeople(scene, { count: LITE ? 110 : 300 });
+// everything added since the world was built moves (player, traffic, trams, people): not part of the height field
+const dynamicRoots = scene.children.filter((c) => !worldRoots.has(c));
 traffic.setPlayer(car);
 traffic.setTram(tram);
 traffic.setSignals(signals);
@@ -188,13 +193,14 @@ const siteKeys = Object.keys(sites);
 function teleportTo(key) {
   const v = sites[key].view;
   car.teleport(v.x, v.z, v.heading);
+  if (flying) { heli.place(v.x, groundAt(v.x, v.z) + 40, v.z, v.heading); heli.rpm = 1; heli.landed = false; }
   rig.snap();
   hud.toast(sites[key].name);
 }
 const actions = {
   rain: () => { mode.rain = !mode.rain; applyMode(); hud.toast(mode.rain ? 'Rain' : 'Dry'); },
   evening: () => { mode.evening = !mode.evening; applyMode(); hud.toast(mode.evening ? 'Night' : 'Daytime'); },
-  camera: () => { rig.toggle(); hud.toast(rig.mode === 'chase' ? 'Chase camera' : 'Bonnet camera'); },
+  camera: () => { rig.toggle(); hud.toast(flying ? (rig.mode === 'chase' ? 'Near camera' : 'Far camera') : rig.mode === 'chase' ? 'Chase camera' : 'Bonnet camera'); },
   sound: () => { const on = audio.toggle(); hud.setOn('sound', on); hud.toast(on ? 'Sound on' : 'Sound off'); },
   teleport: teleportTo,
   map: () => worldMap.toggle(),
@@ -208,7 +214,7 @@ const photo = createPhotoMode({
   onEnter: () => hudEl.classList.add('photo-hidden'),
   onExit: () => { hudEl.classList.remove('photo-hidden'); carMesh.visible = true; camera.fov = 62; camera.updateProjectionMatrix(); rig.snap(); },
 });
-actions.photo = () => { if (photo.active) photo.exit(); else if (!flight && !worldMap.isOpen) photo.enter(car.pos); };
+actions.photo = () => { if (photo.active) photo.exit(); else if (!flight && !worldMap.isOpen) photo.enter(flying ? { x: heli.pos.x, y: heli.pos.y + 1.6, z: heli.pos.z } : car.pos); };
 onKey('p', actions.photo);
 const pipeline = createPipeline(renderer, scene, camera, { quality: profile.tier });
 const failed = { high: false, medium: false };
@@ -265,9 +271,10 @@ function applyFlight() {
 const gameUI = createGameUI({
   gfx: { modes: GFX_MODES, names: GFX_NAMES, get: () => gfxMode, set: (m) => applyGfx(m) },
   onPursuit: () => { trial.stop(); pursuit.start(); },
-  onTrial: (r) => { pursuit.stop(); trial.start(r); rig.snap(); },
+  onTrial: (r) => { pursuit.stop(); exitHeli(); trial.start(r); rig.snap(); },
   onFree: () => { pursuit.stop(); trial.stop(); hud.toast('Free roam'); },
   onCar: (name) => actions.car(name),
+  flying: () => flying || heliBusy,
   trialInfo: (r) => trial.info(r),
   toast: (m, ms) => hud.toast(m, ms),
 });
@@ -329,11 +336,115 @@ async function useCar(name) {
 }
 const carReady = useCar(save.get('car', 'garda'));
 const CAR_NAMES = { garda: 'Garda Hyundai i40 patrol car', garda_rp: 'Garda Roads Policing i40', hatch: 'Hyundai i30 N' };
-actions.car = (name) => { useCar(name); hud.toast(CAR_NAMES[name] || name); };
+actions.car = (name) => {
+  if (name === 'heli') { enterHeli(); return; }
+  exitHeli();
+  useCar(name); hud.toast(CAR_NAMES[name] || name);
+};
 loadCar('coupe').then((m) => { suspectModel = m; });
 const treesReady = loadTrees().then((s) => console.log('trees loaded:', s.join(', ')));
+// ---------- Garda Air Support Unit helicopter ----------
+// Switching lifts off from where the car is; switching back puts the car on the nearest road below. The car stays
+// in the scene with its bodywork hidden (its lights keep the scene's light count, so no shader recompiles), and its
+// position follows the helicopter so traffic recycling, people, the minimap and the pursuit all track the player.
+const heli = new Heli();
+let heliVis = null, heightField = null, flying = false, heliBusy = false, beamPref = null;
+const heliEnv = { hm: null, bounds: world.bounds, overWater: isOverWater, waterY: WATER_Y };
+const NO_STICK = { pitch: 0, roll: 0, yaw: 0, lift: 0 };
+const BASE_FAR = camera.far;
+const headlightDefaults = { angle: headlight.angle, penumbra: headlight.penumbra, decay: headlight.decay };
+const groundAt = (x, z) => (heightField ? heightField.at(x, z) : 0);
+function setCarBodyVisible(v) { for (const c of carMesh.children) if (!c.isLight && c !== headlight.target) c.visible = v; }
+async function enterHeli() {
+  if (flying || heliBusy) return;
+  heliBusy = true;
+  if (!heliVis) {
+    heliVis = await loadHeli();
+    if (!heliVis) { heliBusy = false; hud.toast('Helicopter unavailable'); return; }
+    // compile its shaders off the main thread where the driver allows, before the first frame that draws it
+    const probe = new THREE.Group(); probe.add(heliVis.group, heliVis.beam); heliVis.beam.visible = true;
+    renderer.setRenderTarget(pipeline.sceneTarget);
+    try { if (renderer.compileAsync) await renderer.compileAsync(probe, camera, scene); } catch { /* compiles on first draw instead */ }
+    renderer.setRenderTarget(null);
+    probe.remove(heliVis.group, heliVis.beam); heliVis.beam.visible = false;
+  }
+  if (!heightField) {
+    heightField = captureHeightmap(renderer, scene, world.bounds, {
+      skip: new Set([...dynamicRoots, carMesh, heliVis.group, heliVis.beam, ...(suspectModel ? [suspectModel] : [])]),
+      // the Spire's needle is thinner than a cell near the top: a column for it
+      extra: [{ x: sites.spire.x, z: sites.spire.z, r: 1.5, h: 121 }],
+    });
+    heliEnv.hm = heightField;
+  }
+  if (trial.active) trial.stop();
+  car.siren = false; audio.setSiren(false);
+  heli.place(car.pos.x, heightField.maxIn(car.pos.x, car.pos.z, 1.7), car.pos.z, car.heading);
+  scene.add(heliVis.group, heliVis.beam);
+  setCarBodyVisible(false);
+  // the car's headlight becomes the searchlight (one light either way: no shader recompiles)
+  heliVis.searchlight.add(headlight, headlight.target);
+  headlight.position.set(0, 0, 0);
+  Object.assign(headlight, { angle: 0.13, penumbra: 0.45, decay: 1.1, distance: 420 });
+  flying = true; heliBusy = false; car.airborne = true;
+  heliVis.setNight(atmosphere.state.values.lamps);
+  setInputMode('heli');
+  rig.mode = 'chase'; rig.snap();
+  hud.toast('Garda Air Support Unit: Space to climb, W A S D to fly', 3500);
+}
+function exitHeli() {
+  if (!flying) return;
+  flying = false; car.airborne = false;
+  scene.remove(heliVis.group, heliVis.beam);
+  setCarBodyVisible(true);
+  carMesh.add(headlight, headlight.target);
+  headlight.position.set(0, 0.8, 2.2); headlight.target.position.set(0, 0, 14);
+  Object.assign(headlight, headlightDefaults);
+  applyMode(); // headlight intensity and distance for the car
+  car.pos.x = heli.pos.x; car.pos.z = heli.pos.z; car.heading = heli.heading;
+  respawnNearRoad();
+  setInputMode('car');
+  camera.far = BASE_FAR; camera.updateProjectionMatrix();
+  atmosphere.setShadowExtent(0); atmosphere.setFogScale(1);
+  heliVis.aimBeam(false);
+}
+actions.heli = () => { if (flying) { exitHeli(); hud.toast(CAR_NAMES[save.get('car', 'garda')] || 'Car'); } else enterHeli(); };
+onKey('l', actions.heli);
+const beamTarget = new THREE.Vector3(), beamFrom = new THREE.Vector3();
+// the searchlight: ahead and below the nose, or on the suspect during a pursuit; marched along the height field
+function updateHeliBeam() {
+  const auto = mode.evening ? 1 : mode.rain ? 0.35 : 0;
+  const level = beamPref === null ? auto : beamPref ? Math.max(auto, 0.6) : 0;
+  heliVis.searchlight.getWorldPosition(beamFrom);
+  let dx = Math.sin(heli.heading) * 0.8, dz = Math.cos(heli.heading) * 0.8, dy = -0.6;
+  const blip = pursuit.active && pursuit.blips()[0];
+  if (blip && Math.hypot(blip.x - beamFrom.x, blip.z - beamFrom.z) < 320) {
+    dx = blip.x - beamFrom.x; dz = blip.z - beamFrom.z; dy = groundAt(blip.x, blip.z) + 0.8 - beamFrom.y;
+  }
+  const l = Math.hypot(dx, dy, dz); dx /= l; dy /= l; dz /= l;
+  let t = 4;
+  for (; t < 420; t += 3) if (beamFrom.y + dy * t <= groundAt(beamFrom.x + dx * t, beamFrom.z + dz * t)) break;
+  beamTarget.set(beamFrom.x + dx * t, beamFrom.y + dy * t, beamFrom.z + dz * t);
+  heliVis.aimBeam(level > 0, beamTarget, level);
+  headlight.intensity = level * 900; headlight.distance = 420;
+  heliVis.setNight(atmosphere.state.values.lamps);
+  headlight.target.position.copy(heliVis.searchlight.worldToLocal(beamTarget.clone()));
+}
+// view distance with altitude: the far plane reaches further (up to +50 % at the ceiling) and the haze thickens
+// just enough that the far edge still melts into it; the shadowed area widens so building shadows don't stop
+// in a square around the helicopter
+const heliTune = { far: 0.5, shadow: LITE ? 0.8 : 1.2 }; // (the perf scenario varies these)
+function updateHeliView() {
+  const alt = THREE.MathUtils.clamp(heli.alt, 0, MAX_ALT);
+  const far = BASE_FAR * (1 + (alt / MAX_ALT) * heliTune.far);
+  if (Math.abs(camera.far - far) > 5) { camera.far = far; camera.updateProjectionMatrix(); }
+  const camY = camera.position.y, hf = 0.3 + 0.7 * Math.exp(-(camY * 0.5) / 70);
+  atmosphere.setFogScale(Math.max(1, 1.7 / (atmosphere.fogDensity * hf * far)));
+  atmosphere.setShadowExtent(60 + alt * heliTune.shadow);
+}
 onKey('g', actions.play);
-onKey('x', () => { if (pursuit.active) return; car.siren = !car.siren; audio.setSiren(car.siren); hud.toast(car.siren ? 'Siren on' : 'Siren off'); });
+onKey('x', () => {
+  if (flying) { const on = beamPref === null ? !(mode.evening || mode.rain) : !beamPref; beamPref = on; hud.toast(on ? 'Searchlight on' : 'Searchlight off'); return; }
+  if (pursuit.active) return; car.siren = !car.siren; audio.setSiren(car.siren); hud.toast(car.siren ? 'Siren on' : 'Siren off'); });
 // audio: siren tone (auto / wail / yelp / hi-lo)
 onKey('z', () => { const m = audio.cycleSirenTone(); hud.toast(`Siren tone: ${{ auto: 'auto (wail / yelp)', wail: 'wail', yelp: 'yelp', hilo: 'hi-lo' }[m]}`); });
 onKey('h', () => hud.togglePanel('help'));
@@ -341,7 +452,7 @@ pad.onConnect = (name) => hud.toast(`Controller connected: ${/xbox|xinput/i.test
 onKey('t', () => hud.togglePanel('places'));
 onKey('escape', () => { hud.togglePanel(null); worldMap.close(); if (gameUI.playOpen) gameUI.togglePlay(false); });
 onKey('f', () => hud.toggleFps());
-onKey('backspace', respawnNearRoad);
+onKey('backspace', () => { if (!flying) respawnNearRoad(); });
 siteKeys.forEach((k, i) => onKey(String(i + 1), () => { teleportTo(k); hud.togglePanel(null); }));
 applyMode();
 
@@ -376,15 +487,23 @@ function frame() {
   const tp0 = performance.now();
   updateInput(dt);
   const held = frozen || photo.active;
-  if (held) car.hold();
-  car.update(dt, held ? { throttle: 0, brake: 0, steer: 0, handbrake: true } : input);
-  if (held) car.hold();
+  if (flying) {
+    heli.update(dt, held ? NO_STICK : input.heli, heliEnv);
+    // the (hidden) car follows, for everything that tracks the player
+    car.pos.x = heli.pos.x; car.pos.z = heli.pos.z; car.heading = heli.heading; car.hold();
+    car.airborne = heli.pos.y > 2.5; // traffic stops for it only while it sits in the street
+  } else {
+    if (held) car.hold();
+    car.update(dt, held ? { throttle: 0, brake: 0, steer: 0, handbrake: true } : input);
+    if (held) car.hold();
+  }
   pursuit.update(dt);
   trial.update(dt);
-  garda.update(time, car.siren);
+  garda.update(time, car.siren && !flying);
+  if (flying && car.siren) { car.siren = false; audio.setSiren(false); } // no siren in the air (a pursuit switches it on)
   // brake lamps while slowing under braking, reversing lamps when backing up
   if (carMesh.userData.setBrake) { carMesh.userData.setBrake(input.brake > 0 && car.speed > 0.3); carMesh.userData.setReverse(car.speed < -0.3); }
-  if (isOverWater(car.pos.x, car.pos.z)) respawnNearRoad();
+  if (!flying && isOverWater(car.pos.x, car.pos.z)) respawnNearRoad();
   const tp1 = performance.now();
   traffic.update(dt, camera);
   const tp2 = performance.now();
@@ -399,9 +518,19 @@ function frame() {
   carMesh.rotation.set(car.pitch, car.heading, car.roll);
   carMesh.userData.update(car.speed, dt, car.steer * 0.5);
   carMesh.visible = !photo.hideCar;
-  playerContact.set(0, car.pos.x, rideY, car.pos.z, car.heading, photo.hideCar ? 0.01 : 2.5, photo.hideCar ? 0.01 : 5.3); playerContact.commit();
+  if (flying) {
+    const g = heliVis.group, a = Math.max(0, heli.alt), k = photo.hideCar || a > 25 ? 0.01 : 1 - a / 30;
+    g.position.set(heli.pos.x, heli.pos.y, heli.pos.z);
+    g.rotation.set(heli.pitch, heli.heading, heli.roll);
+    g.visible = !photo.hideCar;
+    heliVis.update(dt, heli.rpm);
+    playerContact.set(0, heli.pos.x, heli.floor, heli.pos.z, heli.heading, 2.6 * k, 5 * k);
+  } else playerContact.set(0, car.pos.x, rideY, car.pos.z, car.heading, photo.hideCar ? 0.01 : 2.5, photo.hideCar ? 0.01 : 5.3);
+  playerContact.commit();
   if (photo.active) photo.update(Math.min(rawDt, 0.1));
+  else if (flying) rig.updateHeli(dt, heli, groundAt);
   else rig.update(dt, car, carMesh);
+  if (flying) { updateHeliBeam(); updateHeliView(); }
   if (flight) applyFlight();
   focus.set(car.pos.x, 0, car.pos.z);
   ground.update(dt, time);
@@ -417,13 +546,17 @@ function frame() {
   waterGlow.update(camera);
   lamps.update(dt, focus);
   rain.update(dt, time, camera);
-  hud.update(dt, { car, traffic, tram });
+  hud.update(dt, { car: flying ? heli : car, traffic, tram });
   // audio reads the city state it needs (weather, traffic, tram) rather than being called from those modules
-  audio.update(car, input, { rain: mode.rain, night: mode.evening, traffic: traffic.list, tram, paused: still });
+  audio.update(car, input, { rain: mode.rain, night: mode.evening, traffic: traffic.list, tram, paused: still,
+    heli: flying ? { on: true, rpm: heli.rpm, alt: heli.alt, load: Math.min(1, Math.abs(heli.vel.y) / 9 + (Math.abs(heli.pitch) + Math.abs(heli.roll)) * 1.5) } : null });
 
   const tp5 = performance.now();
-  // shadow map every frame: with half-rate updates the car's own shadow lagged and jittered at speed
-  renderer.shadowMap.needsUpdate = true;
+  // shadow map every frame: with half-rate updates the car's own shadow lagged and jittered at speed.
+  // Low / Battery saver, flying above 40 m: every other frame (the shadowed square is hundreds of metres across and
+  // the view drifts slowly over it; the only moving shadows are specks)
+  frameNo++;
+  if (!(flying && heli.alt > 40 && pipeline.quality === 'low' && (frameNo & 1))) renderer.shadowMap.needsUpdate = true;
   pipeline.render(dt);
   // photo snap: re-render this frame at a higher resolution and read it back before the browser presents it
   if (photo.wantsSnap) {
@@ -499,6 +632,8 @@ setTimeout(() => hud.toast(IS_MOBILE ? 'Tap ? for help' : 'Press H for controls,
 window.__dublin = {
   photo,
   ready: false, // set once shaders are compiled and the first frame has drawn
+  heli, heliState: () => ({ flying, x: +heli.pos.x.toFixed(1), y: +heli.pos.y.toFixed(1), z: +heli.pos.z.toFixed(1), alt: +heli.alt.toFixed(1), speed: +heli.speed.toFixed(1), heading: +heli.heading.toFixed(2), rpm: +heli.rpm.toFixed(2), landed: heli.landed, floor: +heli.floor.toFixed(1), hm: heightField ? { W: heightField.W, H: heightField.H, cell: +heightField.cell.toFixed(2), ms: heightField.ms } : null, shadowExt: atmosphere.shadowExtent, far: Math.round(camera.far), fog: +scene.fog.density.toFixed(5) }),
+  groundAt: (x, z) => groundAt(x, z), heliTune, heliEnv,
   THREE, scene, camera, world, carMesh: () => carMesh, renderer, pipeline, groundAOUniforms, atmosphere, car, input, rig, traffic, tram, people, pursuit, trial, gameUI, buildings, landmarks, sites, teleportTo, actions, mode, audio,
   gfx: () => ({ mode: gfxMode, tier: pipeline.quality, dpr, maxDpr, lite: LITE, fpsCap }),
   lockQuality(q, d) { userQuality = true; dpr = d; renderer.setPixelRatio(d); pipeline.setQuality(q); pipeline.setMood(mode); slowTime = fastTime = 0; lastSwitch = time + 1e9; },

@@ -2,13 +2,14 @@
 // Nothing is created or downloaded until the first user gesture (browser autoplay rules; iOS needs a touchend/click),
 // then the files in public/audio stream in, most important first. Sounds join as their files arrive.
 import { LOAD_ORDER } from './audio/assets.js';
-import { gain, filter } from './audio/nodes.js';
+import { gain, filter, ramp, clamp01 } from './audio/nodes.js';
 import { createEngine } from './audio/engine.js';
 import { createSiren, SIREN_MODES } from './audio/siren.js';
 import { createCity } from './audio/city.js';
+import { createRotor } from './audio/rotor.js';
 
 const MASTER = 0.8;
-let ctx = null, master, engine, siren, city;
+let ctx = null, master, engine, siren, city, cityBus, rotor = null;
 let muted = false, hidden = document.hidden, lastT = 0, lastResume = 0;
 let sirenOn = false, sirenMode = 'auto', env = { rain: false, night: false }, worldRef = null;
 const loaded = [], failed = [];
@@ -35,7 +36,9 @@ function create() {
   sirenOut.connect(gain(ctx, 0.5, echoIn));
   siren = createSiren(ctx, sirenOut);
   siren.set(sirenOn); siren.setMode(sirenMode);
-  city = createCity(ctx, master, echoIn);
+  // the street ambience goes through its own bus, so it can thin out as the helicopter climbs
+  cityBus = gain(ctx, 1, master);
+  city = createCity(ctx, cityBus, echoIn);
   city.setEnv(env);
   if (worldRef) city.setWorld(worldRef.world, worldRef.signals);
   load();
@@ -131,6 +134,12 @@ export const audio = {
     const w = typeof world === 'boolean' ? { rain: world } : world;
     const t = ctx.currentTime, dt = Math.min(0.1, Math.max(0, t - lastT)); lastT = t;
     if (!!w.rain !== env.rain || !!w.night !== env.night) { env = { rain: !!w.rain, night: !!w.night }; city.setEnv(env); }
+    // flying: the car engine falls silent, the rotor plays (created on the first flight) and the street fades with height
+    const heli = w.heli;
+    if (heli && heli.on && !rotor) rotor = createRotor(ctx, gain(ctx, 1, master));
+    if (rotor) rotor.update(heli);
+    engine.state.mute = !!(heli && heli.on);
+    ramp(cityBus.gain, heli && heli.on ? 1 - 0.7 * clamp01(heli.alt / 150) : 1, t, 0.3);
     engine.update(car, input, dt);
     siren.update(dt, car.speed);
     city.update(w.paused ? 0 : dt, car, w.traffic, w.tram, sirenOn);

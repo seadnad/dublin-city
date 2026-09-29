@@ -58,7 +58,7 @@ export function createEngine(ctx, out) {
       });
       const rev = clamp01((r - IDLE) / (MAX_RPM - IDLE));
       ramp(tone.frequency, (700 + st.load * 2400 + rev * 1400) * (muffled ? 0.7 : 1), t, 0.06);
-      ramp(bus.gain, st.ready ? 0.2 + st.load * 0.14 + rev * 0.12 : 0, t, 0.08);
+      ramp(bus.gain, st.ready && !st.mute ? 0.2 + st.load * 0.14 + rev * 0.12 : 0, t, st.mute ? 0.3 : 0.08);
 
       // tyre squeal: sliding sideways at speed, harder on the handbrake
       const slide = clamp01((Math.abs(car.slip) - 2.5) / 6) * clamp01((v - 3) / 3);
