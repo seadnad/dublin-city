@@ -2,7 +2,7 @@
 // Each site: position, rotation (local +z faces the street), footprint (w along street, d deep),
 // a label height, and a teleport spot on a nearby road looking at it.
 import { world, v2, PAVEMENT, pointInPolygon, laneOffset, project } from './geo.js';
-import { bridges, parkPolys, campusPolys } from './ground.js';
+import { bridges, parkPolys, campusPolys, dockPolys } from './ground.js';
 import { monumentSites } from './oconnell.js';
 import tanksData from '../data/guinness-tanks.json';
 import bsLayout from '../data/barrowst.json';
@@ -70,12 +70,37 @@ const heustonFront = (() => {
   const f = project(53.34656, -6.2922), bank = project(53.34692, -6.2922);
   return { x: f.x, z: bank.z + 17.5 };
 })();
-// Grand Canal Square (positions from the OSM footprints): the theatre at the west end with its glass front facing
-// east down the square to the water, the Marker Hotel along the north side, 1 Grand Canal Square to the south.
-// Theatre local +z faces west (Macken Street), so its glass front (local -z) looks east.
 const at = (lat, lon) => project(lat, lon);
-const theatre = { ...at(53.34414, -6.23995), rot: -Math.PI / 2, w: 26, d: 34 };
-const gcSquare = { ...at(53.34408, -6.23897), rot: -Math.PI / 2, w: 28, d: 33 };
+// Grand Canal Square (docs/research/grand-canal-square.md): the theatre at the west end with its glass front facing east
+// down the square to the water, the Marker along the north side on Misery Hill's paved section, 4-5 Grand Canal Square
+// across Misery Hill from the theatre, 2 Grand Canal Square behind (south of) the theatre, 1 Grand Canal Square on the
+// square's south side. Footprints in game (x, z), from the OSM footprints projected and nudged clear of Misery Hill
+// (streets.json MC1-MH1-MH2-MH3-HQ1); the Blender hero (tools/blender/build_gcsquare.py) is built on the same numbers.
+const P = (x, z) => ({ x, z });
+export const GCSQ = {
+  origin: P(640, 150),                                                           // the hero's origin
+  theatre: [P(619, 157.3), P(657.5, 164), P(651, 189.3), P(619, 175.6)],         // NW, NE, SE (the glass front's foot), SW
+  marker: [P(647, 148), P(685.5, 155.4), P(687, 140.8), P(648.5, 133.4)],        // front W, front E, back E, back W
+  // 4-5 GCS at street level: the two-storey base, less the entrance notch on Misery Hill (the upper floors oversail it)
+  north: [P(641.5, 146.4), P(644, 100), P(621.8, 89.6), P(621.05, 136), P(627, 135.5), P(634, 143.7)],
+  south: [P(614, 173.8), P(642, 185.9), P(640.5, 210.5), P(612.5, 207.5)],     // 2 GCS
+  one: [P(649.4, 195.6), P(676.8, 208.1), P(674.3, 227), P(645.8, 223.3)],      // 1 GCS
+  wedge: [P(660.2, 166.8), P(667.5, 168), P(666.4, 173.4), P(659.6, 171.6)],   // the car park stair on the square
+};
+// the smallest box at angle rot (local +z = (sin rot, cos rot)) round a polygon, grown by pad
+function fitBox(poly, rot, pad = 0) {
+  const c = Math.cos(rot), s = Math.sin(rot);
+  const lx = poly.map((p) => p.x * c - p.z * s), lz = poly.map((p) => p.x * s + p.z * c);
+  const x0 = Math.min(...lx) - pad, x1 = Math.max(...lx) + pad, z0 = Math.min(...lz) - pad, z1 = Math.max(...lz) + pad;
+  const mx = (x0 + x1) / 2, mz = (z0 + z1) / 2;
+  return { x: mx * c + mz * s, z: -mx * s + mz * c, rot, w: x1 - x0, d: z1 - z0 };
+}
+// the theatre's box runs along its north wall (Misery Hill); the Marker's along its front, out over the lawn terrace
+const theatre = fitBox(GCSQ.theatre, -Math.atan2(6.7, 38.5));
+const mkRot = -Math.atan2(7.4, 38.5);
+const markerBox = fitBox([...GCSQ.marker, ...GCSQ.marker.slice(0, 2).map((p) => ({ x: p.x + Math.sin(mkRot) * 3.3, z: p.z + Math.cos(mkRot) * 3.3 }))], mkRot);
+// the square: local +z faces the theatre (west), local -z runs out to the water (east), local +x is south
+const gcSquare = { x: 671, z: 179, rot: -Math.PI / 2, w: 24, d: 32 };
 const beckett = bridges.find((b) => b.name === 'Samuel Beckett Bridge');
 // Barrow Street, the Google campus and Boland's Quay (docs/research/barrow-street.md): the hero's building boxes and
 // the Google Docks outline come from src/data/barrowst.json (game metres, squeezed clear of the roads), shared with
@@ -395,6 +420,11 @@ export const sites = {
     square: gcSquare,
     view: spot('HQM', 'HQ1', 0.55),
   },
+  marker: {
+    // the Marker hotel, with Misery Hill between the theatre and 4-5 Grand Canal Square
+    name: 'The Marker and Misery Hill', ...markerBox, labelY: 30,
+    view: spot('MC1', 'MH1', 0.1),
+  },
   grandCanalSt: {
     // the precast-concrete office block on the corner of Grattan Street (south side), set back behind a raised
     // forecourt with steps up from the footpath
@@ -587,6 +617,168 @@ extraSites.bsPlaza = bsLayout.plaza;
 // the O'Connell Street monuments on their islands down the middle of the street (src/world/oconnell.js)
 Object.assign(extraSites, monumentSites);
 
+// ---------- Dublin's tall buildings (docs/research/tallest-buildings.md; built in src/world/towers.js) ----------
+// Each stands on its OSM centre and is then slid (along a given direction, in 0.25 m steps) until every part of it is
+// clear of the carriageways and their footpaths, the river and the docks, and the neighbouring landmarks. Plans are
+// scaled ~0.55-0.6 of real (the map is half scale but the roads are not, so a true 0.5 reads too thin next to them);
+// heights are real.
+const boxPts = (o, step = 1) => {
+  const c = Math.cos(o.rot), s = Math.sin(o.rot), out = [];
+  const nx = Math.max(1, Math.ceil(o.w / step)), nz = Math.max(1, Math.ceil(o.d / step));
+  for (let i = 0; i <= nx; i++) for (let k = 0; k <= nz; k++) {
+    const lx = -o.w / 2 + (o.w * i) / nx, lz = -o.d / 2 + (o.d * k) / nz;
+    out.push({ x: o.x + lx * c + lz * s, z: o.z - lx * s + lz * c });
+  }
+  return out;
+};
+const insideBox = (p, o, pad = 0) => {
+  const c = Math.cos(o.rot), s = Math.sin(o.rot), dx = p.x - o.x, dz = p.z - o.z;
+  return Math.abs(dx * c - dz * s) < o.w / 2 + pad && Math.abs(dx * s + dz * c) < o.d / 2 + pad;
+};
+function clearSpot(o, avoid, margin) {
+  for (const p of boxPts(o)) {
+    const r = world.nearestRoad(p.x, p.z);
+    if (r && !r.way.pedestrian && r.edgeDist < r.way.pave + margin) return false;
+    if (pointInPolygon(p, world.riverPoly) || dockPolys.some((dk) => pointInPolygon(p, dk.poly))) return false;
+    if (avoid.some((a) => insideBox(p, a, 0.5))) return false;
+  }
+  return true;
+}
+/// slide a group of boxes (all moved together) until they are all clear, trying each direction (compass bearings) and
+// taking the shortest move; returns it
+// pull: start that far back towards the street (against the first bearing), so a building that fronts the street ends
+// up hard against its footpath instead of wherever its OSM centre happened to fall (the roads are not compressed)
+function slideClear(boxes, bearings, { avoid = [], margin = 0.4, max = 40, pull = 0 } = {}) {
+  if (pull) { const u = unit([].concat(bearings)[0]); for (const b of boxes) { b.x -= u.x * pull; b.z -= u.z * pull; } }
+  let best = null;
+  for (const brg of [].concat(bearings)) {
+    const dir = unit(brg);
+    for (let k = 0; k <= max * 4 && (!best || k * 0.25 < best.k); k++) {
+      const dx = dir.x * k * 0.25, dz = dir.z * k * 0.25;
+      if (boxes.every((b) => clearSpot({ ...b, x: b.x + dx, z: b.z + dz }, avoid, margin))) { best = { k: k * 0.25, dx, dz }; break; }
+    }
+  }
+  if (!best) { console.warn('tall building: no clear spot near', Math.round(boxes[0].x), Math.round(boxes[0].z)); return -1; }
+  for (const b of boxes) { b.x += best.dx; b.z += best.dz; }
+  return best.k;
+}
+const unit = (deg) => ({ x: Math.sin((deg * Math.PI) / 180), z: -Math.cos((deg * Math.PI) / 180) }); // compass bearing -> world
+const bearingOf = (a, b) => { const d = v2.sub(N(b), N(a)); return (Math.atan2(d.x, -d.z) * 180) / Math.PI; };
+// a rotation whose local +x runs along compass bearing `deg` (local +z is then 90 degrees clockwise of it)
+const rotAlong = (deg) => { const d = unit(deg); return Math.atan2(-d.z, d.x); };
+// parts at real-metre offsets (east, north) from an OSM origin, scaled by k; each box w along bearing brg, d across
+function composition(lat, lon, k, brg, parts) {
+  const o = project(lat, lon), rot = rotAlong(brg);
+  return parts.map(([e, n, w, d, extra]) => ({ x: o.x + k * e, z: o.z - k * n, rot, w: w * k, d: d * k, ...extra }));
+}
+// real metres (east, north) between two OSM points
+const enOf = (lat0, lon0, lat, lon) => [(lon - lon0) * 111320 * Math.cos((lat0 * Math.PI) / 180), (lat - lat0) * 111320];
+
+export const tall = (() => {
+  const T = {};
+  const arena = [sites.threeArena, sites.threeArena.plaza, sites.convention];
+  // Liberty Hall (OSM way 42266091 and its parts): the 17 x 17 m tower on the corner of Eden Quay and Beresford
+  // Place, 59.4 m to the top of its plant room; the low theatre wing with its folded roof runs west along the quay.
+  {
+    const brg = bearingOf('NQ9', 'NQ10');
+    const [tower, wing] = composition(53.348462, -6.255344, 0.6, brg, [[0, 0, 17, 17], [-23, -1.5, 22, 19]]);
+    slideClear([tower, wing], [brg - 90, brg - 135, brg + 180], { avoid: [sites.customHouse], pull: 8 });
+    T.libertyHall = { ...tower, wing, h: 59.4 };
+  }
+  // College Square (2025, on the Hawkins House site): the 22-storey tower on Tara Street, 82-83 m with its open
+  // crown, and the 11-storey office building (43 m) behind it
+  {
+    const brg = bearingOf('SQ10', 'TA1'); // down Tara Street, southward (local +z is then westward, off the street)
+    const [e0, n0] = enOf(53.346646, -6.255447, 53.34618, -6.25615);
+    const [tower, office] = composition(53.346646, -6.255447, 0.6, brg, [[0, 0, 26, 22], [e0, n0, 40, 30]]);
+    slideClear([tower, office], [brg + 90, brg + 60, brg + 120], { avoid: [sites.oconnellBridgeHouse, extraSites.obhExtension], pull: 8 });
+    T.collegeSquare = { ...tower, office, h: 83 };
+  }
+  // George's Quay Plaza (2002): seven 15 m square glass towers stepped up to the middle one and down again, each under
+  // a 7 m glass-and-zinc pyramid (OSM building:parts 1488401186-1205: roofs 31/38/45/52/45/38/31 m, tops +7)
+  {
+    const lat0 = 53.346784, lon0 = -6.25328;
+    const P = [[53.346963, -6.253777, 31], [53.346950, -6.253518, 38], [53.346797, -6.253540, 45], [53.346784, -6.253280, 52],
+      [53.346633, -6.253307, 45], [53.346620, -6.253052, 38], [53.346465, -6.253070, 31]];
+    const blocks = composition(lat0, lon0, 0.56, 95, P.map(([la, lo, h]) => [...enOf(lat0, lon0, la, lo), 15.3, 15.3, { h }]));
+    slideClear(blocks, [180, 135, 225], { pull: 8 });
+    T.gqPlaza = { ...blocks[3], blocks };
+  }
+  // Capital Dock (2018): the 22-storey, 79 m tower on Sir John Rogerson's Quay with the 19-storey tower beside it,
+  // and the ten- and nine-storey blocks south of them (OSM parts 1271279149-1271279152)
+  {
+    const lat0 = 53.345257, lon0 = -6.231011, at = (la, lo) => enOf(lat0, lon0, la, lo);
+    const B = composition(lat0, lon0, 0.6, 97, [[...at(53.345257, -6.231011), 16.8, 17.2, { h: 79, fl: 22 }], [...at(53.345240, -6.231266), 17, 16.1, { h: 66, fl: 19 }],
+      [...at(53.344872, -6.231219), 32.5, 40.9, { h: 36, fl: 10 }], [...at(53.345067, -6.231206), 13, 12, { h: 33, fl: 9 }]]);
+    slideClear(B, [187, 150, 220], { pull: 30 });
+    T.capitalDock = { ...B[0], parts: B };
+  }
+  // The Exo Building (2022, 73 m, 17 storeys): the tower part only (37.8 m north-south); its eight-storey wing south of
+  // it would stand in East Wall Road here. The tower keeps west of East Wall Road and north of the 3Arena's forecourt,
+  // at 0.5 across (a slimmer footprint) and 0.55 along.
+  {
+    const brg = bearingOf('NQ19', 'EW2') - 90; // across East Wall Road, westward
+    const [t] = composition(53.347978, -6.227434, 1, brg, [[0, 0, 9.4, 20.8]]);
+    slideClear([t], [brg, brg + 45, brg + 90], { avoid: arena, max: 60, pull: 6 });
+    T.exo = { ...t, h: 73 };
+  }
+  // Grand Canal Dock, south side: the Millennium Tower on Charlotte Quay (1998, 16 storeys, 63 m to the mast) at the
+  // water's edge, and Alto Vetro (2008, 16 storeys, 52 m), the glass blade at the corner of Grand Canal Quay and
+  // Ringsend Road where the canal comes into the basin
+  {
+    const brg = bearingOf('RR1', 'CQ1');
+    const [m] = composition(53.342856, -6.236881, 0.52, brg, [[0, 0, 21.5, 19.7]]);
+    slideClear([m], [brg + 90, brg - 90, brg, brg + 180], { max: 30 });
+    T.millennium = { ...m, h: 63 };
+    const [a] = composition(53.342245, -6.238723, 0.55, 97, [[0, 0, 9.6, 20.9]]);
+    slideClear([a], [270, 180, 225, 315], { max: 30 });
+    T.altoVetro = { ...a, h: 52 };
+  }
+  // John's Lane Church (SS Augustine and John, Pugin & Ashlin 1862-95): the nave runs north from Thomas Street, the
+  // tower and 70 m spire over the entrance on the street
+  {
+    const brg = bearingOf('CM', 'TS1'); // Thomas Street, westward
+    const [c] = composition(53.343151, -6.277518, 0.55, brg + 180, [[0, 0, 24.3, 50.4]]);
+    slideClear([c], [brg + 90, brg + 45, brg + 135], { pull: 8 });
+    T.johnsLane = { ...c, h: 70.4 };
+  }
+  // St George's Church, Hardwicke Place (Francis Johnston, 1802-13): Ionic portico and a 61 m steeple facing
+  // south-west down Hardwicke Street; Hardwicke Place is not in the street graph, so it stands inside its block
+  {
+    const [c] = composition(53.357368, -6.262781, 0.55, 126, [[0, 0, 24, 40]]);
+    slideClear([c], [36, 126, 306], {});
+    T.stGeorges = { ...c, h: 61 };
+  }
+  // Findlater's Church (Abbey Presbyterian, 1864): on the corner of Parnell Square North and Frederick Street North,
+  // the gable and the corner spire (55 m) to the square, the nave running up Frederick Street
+  {
+    const brg = bearingOf('RN03', 'RN13'); // up Frederick Street
+    const [c] = composition(53.354566, -6.263908, 0.55, brg - 90, [[0, 0, 18.3, 39]]);
+    slideClear([c], [brg, brg - 45, brg - 90], { pull: 6 });
+    T.findlaters = { ...c, h: 54.9 };
+  }
+  return T;
+})();
+// the notable ones join the Places list; every part is kept free of filler and checked by footprints.mjs
+Object.assign(sites, {
+  libertyHall: { name: 'Liberty Hall', ...tall.libertyHall, labelY: 62, view: spot('NQ8', 'NQ9', 0.35) },
+  georgesQuayPlaza: { name: "George's Quay Plaza", ...tall.gqPlaza, labelY: 62, view: spot('SQ9', 'SQ10', 0.35) },
+  collegeSquare: { name: 'College Square', ...tall.collegeSquare, labelY: 86, view: spot('TA1', 'SQ10', 0.25) },
+  capitalDock: { name: 'Capital Dock', ...tall.capitalDock, labelY: 82, view: spot('SQ16', 'SQ17', 0.3) },
+  exo: { name: 'The Exo Building', ...tall.exo, labelY: 76, view: spot('NQ16', 'NQ17', 0.5) },
+  johnsLane: { name: "John's Lane Church", ...tall.johnsLane, labelY: 72, view: spot('TS2', 'TS1', 0.5) },
+  stGeorges: { name: "St George's Church", ...tall.stGeorges, labelY: 63, view: spot('RN43', 'RN16', 0.6) },
+  findlaters: { name: "Findlater's Church", ...tall.findlaters, labelY: 57, view: spot('RN02', 'RN03', 0.4) },
+});
+Object.assign(extraSites, {
+  libertyHallWing: tall.libertyHall.wing, collegeSquareOffice: tall.collegeSquare.office,
+  millenniumTower: tall.millennium, altoVetro: tall.altoVetro,
+  ...Object.fromEntries(tall.gqPlaza.blocks.map((b, i) => [`gqPlaza${i}`, b])),
+  ...Object.fromEntries(tall.capitalDock.parts.slice(1).map((b, i) => [`capitalDock${i + 1}`, b])),
+});
+const tallFootprints = [sites.libertyHall, sites.collegeSquare, sites.capitalDock, sites.exo, sites.johnsLane, sites.stGeorges, sites.findlaters,
+  ...Object.entries(extraSites).filter(([k]) => /^(libertyHallWing|collegeSquareOffice|millenniumTower|altoVetro|gqPlaza\d|capitalDock\d)$/.test(k)).map(([, s]) => s)];
+
 // Footprints the filler generator must avoid (landmark buildings; parks/campus handled separately).
 export const reserved = [
   sites.gpo, sites.bankOfIreland, ...Object.entries(extraSites).filter(([k]) => k.startsWith('boi')).map(([, s]) => s), sites.christChurch, sites.stPatricks, extraSites.iveaghPlay, sites.customHouse, sites.trinity, ...grounds,
@@ -607,9 +799,16 @@ export const reserved = [
   // Dr Steevens' Hospital (1720s): across St John's Road West from the station, facing north over its lawn
   (extraSites.steevens = { ...at(53.34537, -6.29229), rot: Math.PI, w: 40, d: 30 }),
 
-  // the Marker Hotel on Pearse Street, south side of the square
-  (extraSites.marker = { ...at(53.34454, -6.2391), rot: 0, w: 36, d: 12 }),
-  (extraSites.gcsOffice = { ...at(53.34348, -6.2392), rot: Math.PI, w: 26, d: 26 }),
+  // Grand Canal Square: the Marker on the north side, 4-5 GCS across Misery Hill (its main block and the strip along
+  // Misery Hill, so the box stays off the road), 2 GCS behind the theatre, the car park stair on the square, and 1 GCS
+  sites.marker,
+  (extraSites.gcsNorth = fitBox(GCSQ.north.filter((p) => p.z < 141), -0.02)),
+  (extraSites.gcsNorthS = fitBox([P(621, 139), P(641.5, 146.4), P(641.5, 138), P(621, 131)], -Math.atan2(7.4, 20.5))),
+  (extraSites.gcsSouth = fitBox(GCSQ.south, -0.05)),
+  (extraSites.gcsWedge = fitBox(GCSQ.wedge, -0.16)),
+  // open paving between the theatre, the square and 1 GCS, out to the dock (no filler in front of the theatre)
+  (extraSites.gcsPlaza = { x: 668, z: 194.5, rot: 0, w: 46, d: 7 }),
+  (extraSites.gcsOffice = fitBox(GCSQ.one, -0.13)),
   // St James's Gate, in the brewery wall on James's Street
   (extraSites.jamesGate = { ...beside('TS3', 'JS1', 0.5, 1, 14, 4, { gap: 0.2 }) }),
   // the St James's Gate skyline round the Storehouse (placed with it, src/world/heroes.js placeGuinness): the Power
@@ -647,6 +846,8 @@ export const reserved = [
   // ...and the grounds behind it, out to the park wall (the green's edge, src/data/streets.json) on the west and north
   (extraSites.ccjWest = { x: CCJ.x - 34, z: CCJ.z - 10, rot: 0, w: 18, d: 38 }),
   (extraSites.ccjNorth = { x: CCJ.x - 6, z: CCJ.z - 29, rot: 0, w: 38, d: 8 }),
+  // the tall buildings (src/world/towers.js)
+  ...tallFootprints,
 ].filter(Boolean);
 
 export { campusPolys, parkPolys };

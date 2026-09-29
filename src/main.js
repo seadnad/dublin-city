@@ -27,6 +27,7 @@ import { createPursuit } from './game/modes/pursuit.js';
 import { createTrial } from './game/modes/trial.js';
 import { addGardaKit } from './game/garda.js';
 import { loadCar } from './game/models.js';
+import { CARS, paintFor } from './game/carlist.js';
 import { loadTrees } from './world/trees.js';
 import { createPipeline } from './render/pipeline.js';
 import { batchStatic } from './render/batch.js';
@@ -289,6 +290,12 @@ const gameUI = createGameUI({
   onTrial: (r) => { pursuit.stop(); exitHeli(); trial.start(r); rig.snap(); },
   onFree: () => { pursuit.stop(); trial.stop(); hud.toast('Free roam'); },
   onCar: (name) => actions.car(name),
+  // paint choice for the current car (saved per car; applied now if that car is on the road)
+  onPaint: (name, id) => {
+    save.set(`paint.${name}`, id);
+    const p = paintFor(name, id);
+    if (p && carMesh.userData.model === name && carMesh.userData.setPaint) carMesh.userData.setPaint(p);
+  },
   flying: () => flying || heliBusy,
   trialInfo: (r) => trial.info(r),
   toast: (m, ms) => hud.toast(m, ms),
@@ -307,10 +314,14 @@ hud.setBlips(() => [...pursuit.blips(), ...trial.blips()]);
 
 // ---------- Blender hero cars: swap in when loaded ----------
 let suspectModel = null;
-// swap the player's car for a loaded model: 'garda' (default) or 'hatch'
+// swap the player's car for a loaded model: 'garda' (default), 'garda_rp', 'hatch' or 'gt'
 async function useCar(name) {
   const m = await loadCar(name);
   if (!m) return;
+  car.setProfile(name); // handling (car.js CAR_PROFILES) and engine voice follow the model
+  audio.setCar(name);
+  const paint = paintFor(name, save.get(`paint.${name}`, null));
+  if (paint) m.userData.setPaint(paint);
   m.rotation.order = 'YXZ';
   m.add(headlight, headlight.target);
   scene.remove(carMesh);
@@ -350,7 +361,7 @@ async function useCar(name) {
   save.set('car', name);
 }
 const carReady = useCar(save.get('car', 'garda'));
-const CAR_NAMES = { garda: 'Garda Hyundai i40 patrol car', garda_rp: 'Garda Roads Policing i40', hatch: 'Hyundai i30 N' };
+const CAR_NAMES = Object.fromEntries(Object.entries(CARS).map(([k, c]) => [k, c.name]));
 actions.car = (name) => {
   if (name === 'heli') { enterHeli(); return; }
   exitHeli();

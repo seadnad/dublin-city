@@ -17,6 +17,8 @@ import { placeHeuston } from './heuston.js';
 import { placeThreeArena } from './threearena.js';
 import { placeCCJ } from './ccj.js';
 import { placeBarrowStreet } from './barrowst.js';
+import { placeGrandCanal, gcsColliders } from './gcsquare.js';
+import { buildTowers } from './towers.js';
 import { LITE } from '../render/quality.js';
 const lawnMat = () => getStreets().grassMat;
 import { buildPark } from './park.js';
@@ -111,7 +113,7 @@ export const landmarkMaterials = M;
 
 // ---------- builder ----------
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _s = new THREE.Vector3(), _p = new THREE.Vector3();
-class Builder {
+export class Builder {
   constructor(site) { this.parts = new Map(); this.site = site; }
   add(geo, mat, { x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, s = 1, sx = s, sy = s, sz = s } = {}) {
     let g = geo.index ? geo.toNonIndexed() : geo.clone();
@@ -2296,12 +2298,15 @@ export function buildLandmarks(scene) {
     merchantsHall(extraSites.merchantsHall), redPub(extraSites.redPub), templeBarSquare(extraSites.tbSquare), templeBarDressing(),
     bewleys(extraSites.bewleys), brownThomas(extraSites.brownThomas), weirAndSons(extraSites.weir), stephensGreenCentre(extraSites.sgCentre), graftonDressing(),
     drSteevens(extraSites.steevens), jamesGate(extraSites.jamesGate), breweryWall(extraSites.breweryWall0), breweryWall(extraSites.breweryWall1), beckettHarp(S.beckett), convention(S.convention),
-    grattanOffice(S.grandCanalSt), grandCanalTheatre(S.grandCanal), grandCanalSquare(S.grandCanal.square), markerHotel(extraSites.marker), gcsOffice(extraSites.gcsOffice),
+    grattanOffice(S.grandCanalSt), grandCanalSquare(S.grandCanal.square),
     railBridges(), oconnellBridgeHouse(S.oconnellBridgeHouse),
     lansdowneCrossing(extraSites.lansdowneXing), shelbournePark(extraSites.shelbournePark),
   ];
   // Phoenix Park: woods, avenue, lamps, walls, heroes and deer (its static meshes join the landmark batch)
   const phoenixPark = buildPark(scene);
+  // Dublin's tall buildings (src/world/towers.js): Liberty Hall, George's Quay Plaza, College Square, Capital Dock, the Exo,
+  // the Grand Canal Dock towers and the three tallest church spires
+  const towers = buildTowers(scene, Builder);
   if (phoenixPark) groups.push(phoenixPark.group);
   for (const g of groups) scene.add(g);
   fourCourts(); // its colliders and statues (the hero is placed below)
@@ -2360,17 +2365,26 @@ export function buildLandmarks(scene) {
   // Criminal Courts of Justice (Blender hero): its outline collides whether or not the model loads
   let ccjHero = null;
   placeCCJ(scene, S.ccj, S.ccj.outline).then((h) => { if (h) { ccjHero = h; h.setNight(nightLevel); } });
-  // Barrow Street, the Google campus, Boland's Quay, Alto Vetro and the DART embankment (one Blender hero, lit offices
+  // Barrow Street, the Google campus, Boland's Quay and the DART embankment (one Blender hero, lit offices
   // at night): Google Docks' outline, every building box and the embankment are solid whether or not it loads; the
   // lit towers show in the inner basin after dark
   let barrowHero = null;
   addPolyline(S.google.outline, true);
   for (const [k, b] of Object.entries(extraSites)) if (k.startsWith('bs_')) addBox(b.x, b.z, b.w / 2, b.d / 2, b.rot);
-  // (on the inner basin, in front of Boland's Quay, the mills, Alto Vetro and Google Docks)
-  for (const [x, z, col, w] of [[712, 316, 0xfff0d8, 9], [708, 338, 0xfff0d8, 9], [714, 300, 0xffc070, 6], [690, 298, 0xfff4e0, 4], [700, 398, 0xe8f0ff, 10]]) {
+  // (on the inner basin, in front of Boland's Quay, the mills and Google Docks)
+  for (const [x, z, col, w] of [[712, 316, 0xfff0d8, 9], [708, 338, 0xfff0d8, 9], [714, 300, 0xffc070, 6], [700, 398, 0xe8f0ff, 10]]) {
     waterGlowSources.push({ x, z, y: WATER_Y + 0.65, color: col, width: w, length: 30 });
   }
   placeBarrowStreet(scene).then((h) => { if (h) { barrowHero = h; h.setNight(nightLevel); } });
+  // Grand Canal Square: the theatre, the Marker, the Libeskind offices and 1 GCS (Blender hero; the old procedural
+  // blocks if it can't load). Solid whether or not the model loads; after dark the lit lobby shows in the dock.
+  let gcsHero = null;
+  gcsColliders();
+  for (const [x, z, w] of [[702, 172, 9], [702, 183, 7]]) waterGlowSources.push({ x, z, y: WATER_Y + 0.65, color: 0xffdcaa, width: w, length: 40 });
+  placeGrandCanal(scene).then((h) => {
+    if (!h) { scene.add(grandCanalTheatre({ ...S.grandCanal, rot: -Math.PI / 2, w: 26, d: 36 }), markerHotel(S.marker), gcsOffice(extraSites.gcsOffice)); return; }
+    gcsHero = h; h.setNight(nightLevel);
+  });
   // Guinness Storehouse with the Gravity Bar, the Power House stacks and St Patrick's Tower (Blender hero with a far
   // LOD; the old procedural block and chimney if it can't load)
   let guinnessHero = null;
@@ -2400,7 +2414,7 @@ export function buildLandmarks(scene) {
   // floating place labels were removed from the 3D view (landmarks are on the map instead)
   const labels = new THREE.Group();
   return {
-    groups, labels, trees, park: phoenixPark,
+    groups, labels, trees, park: phoenixPark, towers,
     setLabels(on) { labels.visible = on; },
     // docklands lighting after dark (0 = day, 1 = night)
     setNight(level) {
@@ -2412,7 +2426,9 @@ export function buildLandmarks(scene) {
       if (avivaHero) avivaHero.setNight(level);
       if (ccjHero) ccjHero.setNight(level);
       if (barrowHero) barrowHero.setNight(level);
+      if (gcsHero) gcsHero.setNight(level);
       if (guinnessHero) guinnessHero.setNight(level);
+      towers.setNight(level);
       setStoneNight(level);
       if (phoenixPark) phoenixPark.setNight(level);
     },

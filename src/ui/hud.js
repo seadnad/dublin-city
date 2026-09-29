@@ -38,6 +38,7 @@ const BLURBS = {
   convention: 'The tilted glass drum on North Wall Quay',
   threeArena: 'The old Point Depot at the mouth of the Liffey',
   grandCanal: 'Libeskind’s theatre and the red light-sticks',
+  marker: 'Aires Mateus’s chequerboard hotel, Libeskind’s leaning glass offices and the theatre’s silver flank',
   grandCanalSt: 'Offices between Merrion Square and the docks',
   aviva: 'Lansdowne Road’s louvred glass wave, with the DART crossing at its door',
   oconnellBridgeHouse: 'The 1965 tower at the end of the bridge, and its Heineken sign',

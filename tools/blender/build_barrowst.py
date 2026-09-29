@@ -1,7 +1,7 @@
-"""Barrow Street, the Google campus, Boland's Quay and Alto Vetro (docs/research/barrow-street.md): Google Docks (the old
+"""Barrow Street, the Google campus and Boland's Quay (docs/research/barrow-street.md): Google Docks (the old
 Montevetro) with its yellow east end, Gordon House and Gasworks House and the skybridge over Barrow Street, the two
 Boland's Quay towers behind the restored calp-limestone Boland's Mills (twin gables and the BOLANDS FLOUR MILLS
-lettering to the basin), the stone warehouses along the basin's east side, Alto Vetro on the quay by MacMahon Bridge, the
+lettering to the basin), the stone warehouses along the basin's east side, the marina in the inner basin, the
 Waterways Ireland visitor centre on its stilts, and the DART embankment with Grand Canal Dock station and the low bridge
 over Barrow Street.
 
@@ -17,7 +17,7 @@ Materials (painted at load in src/world/barrowst.js; the module sizes MOD here m
   bs_mvy    its east end: the yellow spandrel strip             bs_glass  plain office glass (Gordon, Gasworks, Grand Mill Quay, skybridge)
   bs_bol    Boland's Quay's pale panels and window slots        bs_cu     its copper-red fins
   bs_stone  calp limestone with sash windows (the mills)        bs_calp   plain calp (gables, embankment, parapets)
-  bs_alto   Alto Vetro's glass and black floor bands            bs_dec    atlas: lettering, signs, chevrons, flat swatches
+  bs_dec    atlas: lettering, signs, chevrons, flat swatches (Alto Vetro is src/world/towers.js's)
 """
 import bpy, json, math, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -34,7 +34,7 @@ OX, OZ = L['origin']
 bpy.ops.wm.read_factory_settings(use_empty=True)
 
 # facade modules (metres across, metres up) per tiled material: must match MOD in src/world/barrowst.js
-MOD = dict(mv=(14.4, 17.5), mvy=(7.2, 17.5), glass=(12.0, 15.2), bol=(12.0, 15.6), cu=(6.0, 15.6), stone=(4.8, 6.6), calp=(4.0, 4.0), alto=(4.0, 12.4))
+MOD = dict(mv=(14.4, 17.5), mvy=(7.2, 17.5), glass=(12.0, 15.2), bol=(12.0, 15.6), cu=(6.0, 15.6), stone=(4.8, 6.6), calp=(4.0, 4.0))
 # the atlas (px, 1024 x 1024): must match DEC in src/world/barrowst.js
 DEC = dict(letters=(0, 0, 1024, 256), sign=(0, 256, 512, 128), chevron=(512, 256, 512, 64), roundel=(512, 320, 64, 64),
            gordon=(0, 384, 512, 64))
@@ -359,23 +359,6 @@ for i in range(len(curve) - 1):
     wall(dec_sw('dark'), sL[i], sL[i + 1], Z0, Z0 + 0.6)
     flat('dark', [sL[i], sL[i + 1], sR[i + 1], sR[i]], Z1)
     flat('dark', [sL[i], sL[i + 1], sR[i + 1], sR[i]], Z0, up=False)
-
-# =============== Alto Vetro ===============
-av = BX['altovetro']
-Pa = frame(av)
-H_AV = av['h'] - 3.2
-r = rect(av)
-prism('alto', r, 0, H_AV)
-cap('dark', r, H_AV)
-# the glass pavilion on the roof, and the cantilevered balconies alternating up both long sides (ref 15)
-dbox('glassd', Pa, -1.6, 1.8, -3.6, 2.8, H_AV, H_AV + 3.0)
-dbox('dark', Pa, -2.7, 2.7, -5.1, 5.1, H_AV + 0.0, H_AV + 1.1)
-for fl in range(1, 16):
-    side = 1 if fl % 2 else -1
-    v = -2.6 if (fl // 2) % 2 else 1.4
-    lx0 = side * av['w'] / 2
-    lx1 = lx0 + side * 1.0
-    dbox('balc', Pa, min(lx0, lx1), max(lx0, lx1), v, v + 2.3, fl * 3.1, fl * 3.1 + 1.05)
 
 # =============== Waterways Ireland visitor centre (white box on stilts in the basin) ===============
 ww = L['waterways']

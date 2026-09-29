@@ -1,6 +1,7 @@
 // Game-mode UI: the Play menu, the mission panel (timer, meter), the countdown and the results card.
 import { ROUTES, dailyRoute } from '../game/modes/trial.js';
 import { fmt } from '../game/modes/pursuit.js';
+import { CARS, paintFor } from '../game/carlist.js';
 
 export const save = {
   get(k, d) { try { const v = localStorage.getItem(`dublin.${k}`); return v ? JSON.parse(v) : d; } catch { return d; } },
@@ -8,7 +9,7 @@ export const save = {
 };
 const MEDAL = { gold: '🥇', silver: '🥈', bronze: '🥉' };
 
-export function createGameUI({ onPursuit, onTrial, onFree, onCar, trialInfo, toast, gfx, flying = () => false }) {
+export function createGameUI({ onPursuit, onTrial, onFree, onCar, onPaint = () => {}, trialInfo, toast, gfx, flying = () => false }) {
   const root = document.getElementById('hud');
   root.insertAdjacentHTML('beforeend', `
     <div class="mission" id="mission" hidden>
@@ -32,11 +33,17 @@ export function createGameUI({ onPursuit, onTrial, onFree, onCar, trialInfo, toa
     play.innerHTML = `
       <header><h2>Play</h2><button class="close" aria-label="Close">&times;</button></header>
       <div class="cars">Your car:
-        <button data-car="garda" class="${car === 'garda' ? 'on' : ''}">Garda i40 patrol</button>
-        <button data-car="garda_rp" class="${car === 'garda_rp' ? 'on' : ''}">Roads Policing</button>
-        <button data-car="hatch" class="${car === 'hatch' ? 'on' : ''}">i30 N</button>
+        ${Object.entries(CARS).map(([k, c]) => `<button data-car="${k}" class="${car === k ? 'on' : ''}" title="${c.name}">${c.label}</button>`).join('')}
         <button data-car="heli" class="${car === 'heli' ? 'on' : ''}" title="Garda Air Support Unit helicopter (L)">🚁 Helicopter</button>
       </div>
+      ${CARS[car] ? `<p class="car-blurb">${CARS[car].blurb}</p>` : ''}
+      ${CARS[car] && CARS[car].paints ? (() => {
+        const cur = paintFor(car, save.get(`paint.${car}`, null));
+        return `<div class="cars paints">Colour:
+          ${CARS[car].paints.map((pt) => `<button data-paint="${pt.id}" class="swatch ${pt.id === cur.id ? 'on' : ''}" title="${pt.label}" aria-label="${pt.label}" style="--sw:${pt.color}"></button>`).join('')}
+          <span class="paint-name">${cur.label}</span>
+        </div>`;
+      })() : ''}
       ${gfx ? `<div class="cars gfx">Graphics:
         ${gfx.modes.map((m) => `<button data-gfx="${m}" class="${gfx.get() === m ? 'on' : ''}">${gfx.names[m]}</button>`).join('')}
       </div>` : ''}`;
@@ -59,6 +66,7 @@ export function createGameUI({ onPursuit, onTrial, onFree, onCar, trialInfo, toa
       <button class="card free" data-mode="free"><b>Free roam</b><small>Just drive.</small></button>`;
     q(play, '.close').onclick = () => { play.hidden = true; };
     play.querySelectorAll('[data-gfx]').forEach((b) => b.addEventListener('click', () => { gfx.set(b.dataset.gfx); renderPlay(); }));
+    play.querySelectorAll('[data-paint]').forEach((b) => b.addEventListener('click', () => { onPaint(car, b.dataset.paint); renderPlay(); }));
     play.querySelectorAll('[data-car]').forEach((b) => b.addEventListener('click', () => { onCar(b.dataset.car); if (b.dataset.car !== 'heli') save.set('car', b.dataset.car); renderPlay(); }));
     play.querySelectorAll('[data-mode], [data-route]').forEach((b) => b.addEventListener('click', () => {
       play.hidden = true;

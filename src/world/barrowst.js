@@ -2,7 +2,7 @@
 // (tools/blender/build_barrowst.py -> public/models/barrowst.glb, laid out from src/data/barrowst.json) with its
 // textures painted here at load: one repeating facade module per curtain wall (Google Docks' black grid and its yellow
 // east end, plain office glass, Boland's Quay's pale panels and slots, its copper fins, the calp mills with their sash
-// windows, Alto Vetro's banded glass), plain calp for the gables and the DART embankment, and a 1024 atlas for the
+// windows), plain calp for the gables and the DART embankment, and a 1024 atlas for the
 // BOLANDS FLOUR MILLS lettering, the station boards, the bridge's chevron bar and the flat colours. Each lit material
 // has a night twin as its emissive map: offices lit floor by floor, the mills' windows, the lettering. Nine draw calls.
 // Low / Battery saver paints the textures at half size.
@@ -20,7 +20,7 @@ import { dockPolys, openQuay } from './ground.js';
 import layout from '../data/barrowst.json';
 
 // facade modules (metres across, metres up): must match MOD in tools/blender/build_barrowst.py
-const MOD = { mv: [14.4, 17.5], mvy: [7.2, 17.5], glass: [12, 15.2], bol: [12, 15.6], cu: [6, 15.6], stone: [4.8, 6.6], calp: [4, 4], alto: [4, 12.4] };
+const MOD = { mv: [14.4, 17.5], mvy: [7.2, 17.5], glass: [12, 15.2], bol: [12, 15.6], cu: [6, 15.6], stone: [4.8, 6.6], calp: [4, 4] };
 // the atlas (px in 1024 x 1024): must match DEC there
 const DEC = { letters: [0, 0, 1024, 256], sign: [0, 256, 512, 128], chevron: [512, 256, 512, 64], roundel: [512, 320, 64, 64], gordon: [0, 384, 512, 64] };
 const SWATCH = { roof: '#8d8f8e', dark: '#1e2124', white: '#e9ebea', slate: '#4a4e52', gravel: '#6a645c', conc: '#a29d94', rail: '#3b3531', pave: '#b5b2aa', glassd: '#27333b', steel: '#9ea3a6', copper: '#9c4a2c', balc: '#1a1d20', stilt: '#3c4145', wood: '#6f5a44', hullg: '#2f5a3c', hullr: '#7a2424', cream: '#e4dcc6' };
@@ -128,20 +128,6 @@ function paintStone(g, night) {
     }
   }
 }
-// Alto Vetro: floor-to-ceiling glass with slim mullions and a black floor band, 4 floors
-function paintAlto(g, night) {
-  const W = 256, H = 794, r = rng(51), fh = H / 4;
-  g.fillStyle = night ? '#000' : '#15181a'; g.fillRect(0, 0, W, H);
-  for (let j = 0; j < 4; j++) {
-    const on = lit(r, 0.5);
-    for (let k = 0; k < 4; k++) {
-      const x = k * 64 + 3, y = j * fh + 20;
-      if (night) { g.fillStyle = on ? warm(r, 0.8) : '#080a0c'; g.fillRect(x, y, 58, fh - 26); continue; }
-      const gr = g.createLinearGradient(0, y, 0, y + fh); gr.addColorStop(0, '#80a0b0'); gr.addColorStop(1, '#465e6b');
-      g.fillStyle = gr; g.fillRect(x, y, 58, fh - 26);
-    }
-  }
-}
 function paintDec(g, night) {
   g.clearRect(0, 0, 1024, 1024);
   for (const [k, col] of Object.entries(SWATCH)) { const [x, y, w, h] = DEC[k]; g.fillStyle = night ? SWATCH_LIT[k] || '#000' : col; g.fillRect(x, y, w, h); }
@@ -195,7 +181,6 @@ function materials() {
     bs_cu: lm(pair(256, 666, paintCu), { roughness: 0.45, metalness: 0.3 }),
     bs_stone: lm(pair(256, 352, paintStone), { roughness: 0.9 }),
     bs_calp: std({ map: stoneTile(256, '#8a857d', 12, 0.5, 'rgba(38,36,34,0.55)', 0.4), roughness: 0.92 }),
-    bs_alto: glassy(lm(pair(256, 794, paintAlto), { roughness: 0.15, metalness: 0.4 })),
     bs_dec: lm(decMaps, { alphaTest: 0.5, roughness: 0.6 }),
   };
   for (const [k, m] of Object.entries(mats)) m.name = k;
@@ -273,7 +258,7 @@ export async function placeBarrowStreet(scene) {
   return {
     root: group,
     setNight(l) {
-      for (const k of ['bs_mv', 'bs_mvy', 'bs_glass', 'bs_alto']) M[k].emissiveIntensity = 0.6 * l;
+      for (const k of ['bs_mv', 'bs_mvy', 'bs_glass']) M[k].emissiveIntensity = 0.6 * l;
       M.bs_bol.emissiveIntensity = 0.62 * l;
       M.bs_cu.emissiveIntensity = 0.5 * l;
       M.bs_stone.emissiveIntensity = 0.7 * l;

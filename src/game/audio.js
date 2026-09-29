@@ -11,6 +11,7 @@ import { createRotor } from './audio/rotor.js';
 const MASTER = 0.8;
 let ctx = null, master, engine, siren, city, cityBus, rotor = null;
 let muted = false, hidden = document.hidden, lastT = 0, lastResume = 0;
+let voice = 'diesel'; // engine voice for the player's car: 'sport' for the GT hot hatch
 let sirenOn = false, sirenMode = 'auto', env = { rain: false, night: false }, worldRef = null;
 const loaded = [], failed = [];
 
@@ -32,6 +33,7 @@ function create() {
   tone.connect(gain(ctx, 0.3, master));
 
   engine = createEngine(ctx, gain(ctx, 1, master));
+  engine.setVoice(voice);
   const sirenOut = gain(ctx, 0.3, master);
   sirenOut.connect(gain(ctx, 0.5, echoIn));
   siren = createSiren(ctx, sirenOut);
@@ -102,6 +104,8 @@ export const audio = {
     return !muted;
   },
   get muted() { return muted; },
+  // the player's car model picks the engine voice
+  setCar(name) { voice = name === 'gt' ? 'sport' : 'diesel'; if (engine) engine.setVoice(voice); },
   setSiren(on) { sirenOn = !!on; if (siren) siren.set(sirenOn); },
   // cycle the siren tone: auto (wail when fast, yelp when slow) -> wail -> yelp -> hi-lo
   cycleSirenTone() { sirenMode = SIREN_MODES[(SIREN_MODES.indexOf(sirenMode) + 1) % SIREN_MODES.length]; if (siren) siren.setMode(sirenMode); return sirenMode; },
@@ -151,7 +155,7 @@ export const audio = {
     return {
       created: true, state: ctx.state, sampleRate: ctx.sampleRate, loaded: [...loaded], failed: [...failed],
       master: master.gain.value, siren: { on: siren.on, mode: siren.mode, tone: siren.tone, gains: siren.gains() },
-      engine: { rpm: Math.round(engine.state.rpm), gear: engine.state.gear },
+      engine: { rpm: Math.round(engine.state.rpm), gear: engine.state.gear, voice: engine.state.voice },
       env: { ...city.env }, targets: { ...city.levels }, gains: city.gains(), events: { ...city.stats },
     };
   },
