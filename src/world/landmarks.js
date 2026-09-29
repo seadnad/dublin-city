@@ -14,6 +14,7 @@ import { addStatue, buildStatues, placeOConnell } from './statues.js';
 import { ISLANDS, CHAIN, along, LENGTH } from './oconnell.js';
 import { placeHapenny, placeParts, setStoneNight, placeCrokePark, placeAviva } from './heroes.js';
 import { placeHeuston } from './heuston.js';
+import { placeThreeArena } from './threearena.js';
 import { LITE } from '../render/quality.js';
 const lawnMat = () => getStreets().grassMat;
 import { buildPark } from './park.js';
@@ -907,6 +908,8 @@ function convention(site) {
   return b.build('Convention Centre');
 }
 
+// the old stand-in, used only if the Blender hero (threearena.js) fails to load. Colliders and water glow are added
+// in buildLandmarks either way.
 function threeArena(site) {
   const b = new Builder(site);
   const W = site.w, D = site.d;
@@ -917,8 +920,6 @@ function threeArena(site) {
   b.box(W, 22, 10, M.curtain, { z: D / 2 - 5 });
   b.box(W + 0.3, 0.6, 10.3, M.arenaGlow, { y: 22, z: D / 2 - 5 });
   b.add(new THREE.PlaneGeometry(20, 4.5), signMat('3ARENA', { bg: '#101216', fg: '#ffffff', font: 'bold 48px Arial' }, true), { y: 17, z: D / 2 + 0.06 });
-  for (const ox of [-20, 0, 20]) waterGlowSources.push({ ...toWorld(site, ox, D / 2 + 26), y: WATER_Y + 0.05, color: 0x4f7dff, width: 8, length: 60 });
-  b.solid(0, 0, W, D);
   return b.build('3Arena');
 }
 
@@ -2249,7 +2250,7 @@ export function buildLandmarks(scene) {
     merchantsHall(extraSites.merchantsHall), redPub(extraSites.redPub), templeBarSquare(extraSites.tbSquare), templeBarDressing(),
     bewleys(extraSites.bewleys), brownThomas(extraSites.brownThomas), weirAndSons(extraSites.weir), stephensGreenCentre(extraSites.sgCentre), graftonDressing(),
     drSteevens(extraSites.steevens), guinness(S.guinness), jamesGate(extraSites.jamesGate), beckettHarp(S.beckett), convention(S.convention),
-    threeArena(S.threeArena), grattanOffice(S.grandCanalSt), grandCanalTheatre(S.grandCanal), grandCanalSquare(S.grandCanal.square), markerHotel(extraSites.marker), gcsOffice(extraSites.gcsOffice),
+    grattanOffice(S.grandCanalSt), grandCanalTheatre(S.grandCanal), grandCanalSquare(S.grandCanal.square), markerHotel(extraSites.marker), gcsOffice(extraSites.gcsOffice),
     railBridges(), oconnellBridgeHouse(S.oconnellBridgeHouse),
     lansdowneCrossing(extraSites.lansdowneXing), shelbournePark(extraSites.shelbournePark),
   ];
@@ -2267,6 +2268,20 @@ export function buildLandmarks(scene) {
     if (!h) { scene.add(heuston(S.heuston)); return; }
     heustonHero = h; h.setNight(nightLevel);
   });
+  // 3Arena (Blender hero; the old stand-in if it can't load). The building and its railed forecourt are solid; after
+  // dark the lit arcade and the hall's LED cladding show in the Liffey.
+  let arenaHero = null;
+  {
+    const A = S.threeArena, at = A.at;
+    const c = at(-0.5, 26.1); addBox(c.x, c.z, 22, 27.9, A.rot);
+    for (const [u, col, w] of [[-18, 0xd6e2ff, 7], [-6, 0xffd49a, 6], [4, 0xffd49a, 6], [14, 0xffd49a, 6], [10, 0xc9d8ff, 9]]) {
+      waterGlowSources.push({ ...at(u, -20), y: WATER_Y + 0.05, color: col, width: w, length: 55 });
+    }
+    placeThreeArena(scene, A.front).then((h) => {
+      if (!h) { scene.add(threeArena(A)); return; }
+      arenaHero = h; h.setNight(nightLevel);
+    });
+  }
   // St Patrick's Cathedral (Blender hero) and its park dressing
   placeParts(scene, 'stpatricks', S.stPatricks, "St Patrick's Cathedral");
   const spPark = parkPolys.find((p) => p.name === "St Patrick's Park");
@@ -2322,6 +2337,7 @@ export function buildLandmarks(scene) {
       nightLevel = level; if (hapennyHero) hapennyHero.setNight(level);
       if (crokeHero) crokeHero.setNight(level);
       if (heustonHero) heustonHero.setNight(level);
+      if (arenaHero) arenaHero.setNight(level);
       if (avivaHero) avivaHero.setNight(level);
       setStoneNight(level);
       if (phoenixPark) phoenixPark.setNight(level);

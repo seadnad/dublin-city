@@ -518,7 +518,10 @@
     "PXR4": [53.359808, -6.325773],
     "PXR5": [53.359901, -6.326387],
     "PXR6": [53.36013, -6.326614],
-    "PXR7": [53.360359, -6.326387]
+    "PXR7": [53.360359, -6.326387],
+    "SPD": [53.34886, -6.2373],
+    "PT": [53.348466, -6.228994],
+    "PTE": [53.348482, -6.22791]
   },
   "ways": [
     { "name": "Arran Quay", "type": "quay", "nodes": ["AQ2", "AQ1", "NQ0"] },
@@ -907,8 +910,10 @@
   },
   "luas": {
     "name": "Luas Red Line",
-    "route": ["MY2", "MY1", "IF1", "BP3", "BP2", "AB0", "AB1", "OC1", "AB2", "JV0", "CA1", "MA1", "CH1", "NQ2", "NQ1", "NQ0", "AQ1", "AQ2", "BB0", "BB1", "BB2", "BB3", "WT3", "HB1", "HS", "SJ1", "SL1", "SL2", "JS3"],
+    "route": ["PTE", "PT", "MU3", "MU2", "SPD", "GS1", "MY2", "MY1", "IF1", "BP3", "BP2", "AB0", "AB1", "OC1", "AB2", "JV0", "CA1", "MA1", "CH1", "NQ2", "NQ1", "NQ0", "AQ1", "AQ2", "BB0", "BB1", "BB2", "BB3", "WT3", "HB1", "HS", "SJ1", "SL1", "SL2", "JS3"],
     "stops": {
+      "PT": "The Point",
+      "SPD": "Spencer Dock",
       "MY1": "Mayor Square",
       "BP2": "Busáras",
       "AB1": "Abbey Street",

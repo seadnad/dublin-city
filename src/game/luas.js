@@ -7,6 +7,7 @@ import { buildStopKit } from './luasStop.js';
 
 const CAR_LEN = 11, GAP = 1.2, N = 3;
 const TRACK = 1.8; // distance of each track from the route centreline
+const BERTH = N * (CAR_LEN + GAP) + 2; // where a tram's front stands after reversing at the end of the line
 
 // Stops dressed with the full kit (luasStop.js); the rest keep the simple platform and shelter. Distances are metres
 // along the line from the stop (the line runs south through Heuston: side +1 is the west platform, by the station).
@@ -15,6 +16,13 @@ const STOP_KITS = {
   Heuston: {
     from: -17, to: 5.5, width: 3.0, poles: 11, hatch: true,
     sides: { 1: { shelters: [[-16.5, 4]] }, [-1]: { shelters: [[-7, 1]], wall: true } },
+  },
+  // the terminus (docs/research/three-arena.md): the line starts here, so the stop sits one tram length in from the
+  // end of the track and the platforms run back over the whole berth. Side +1 is north (the inbound and event
+  // platforms), -1 south, towards the 3Arena's gables.
+  'The Point': {
+    from: -35, to: 1.5, width: 2.8, poles: 12,
+    sides: { 1: { shelters: [[-30, 3], [-12, 2]] }, [-1]: { shelters: [[-24, 3]] } },
   },
 };
 
@@ -90,7 +98,7 @@ export function createLuas(scene, line = world.luas) {
 
   const tram = {
     name: line.name,
-    dir: 0, s: N * (CAR_LEN + GAP) + 2, speed: 0, dwell: 4, nextStop: null,
+    dir: 0, s: BERTH, speed: 0, dwell: 4, nextStop: null,
     carriages: cars.map(() => ({ x: 0, z: 0, heading: 0, hx: 1.25, hz: CAR_LEN / 2 })),
     stops, currentStop: null,
   };
@@ -98,7 +106,8 @@ export function createLuas(scene, line = world.luas) {
     // stops are measured on the centreline in outbound terms; convert for inbound
     const list = tram.dir === 0 ? stops.map((s) => s.s) : stops.map((s) => total - s.s);
     let best = null;
-    for (const s of list) if (s > tram.s + 0.5 && (best === null || s < best)) best = s;
+    // a stop within a tram's length of the end of the line is served by the terminus dwell (no second stop short of it)
+    for (const s of list) if (s > tram.s + 0.5 && s < total - BERTH && (best === null || s < best)) best = s;
     return best === null ? total - 1 : best;
   }
 
@@ -115,7 +124,7 @@ export function createLuas(scene, line = world.luas) {
         tram.speed = 0; tram.dwell = 7;
         if (stopAt >= total - 1.5) { // end of the line: swap to the other track
           tram.dir ^= 1;
-          tram.s = N * (CAR_LEN + GAP) + 2;
+          tram.s = BERTH;
         }
       }
     }
