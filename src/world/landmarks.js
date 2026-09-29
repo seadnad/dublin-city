@@ -2,15 +2,17 @@
 import * as THREE from 'three';
 import { addReflections } from '../render/reflect.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { world, v2, pointInPolygon, insetPolygon } from './geo.js';
+import { world, v2, pointInPolygon, insetPolygon, project } from './geo.js';
 import { sites, reserved, grounds, extraSites } from './sites.js';
-import { parkPolys, campusPolys, stoneTex, WATER_Y, paintArea, COLORS } from './ground.js';
+import { parkPolys, campusPolys, stoneTex, WATER_Y, paintArea, COLORS, getStreets } from './ground.js';
 import { rng, makeStoneTexture } from './textures.js';
-import { addBox } from '../game/collision.js';
+import { addBox, addSegment, addPolyline } from '../game/collision.js';
 import { chunkedInstances } from './chunks.js';
 import { plantTrees } from './trees.js';
-import { KERB_H } from './roads.js';
-import { placeHapenny, placeParts, setStoneNight } from './heroes.js';
+import { KERB_H, grassPolygon } from './roads.js';
+const lawnMat = () => getStreets().grassMat;
+import { placeHapenny, placeParts, setStoneNight, placeAviva } from './heroes.js';
+import { LITE } from '../render/quality.js';
 
 const rand = rng(1742);
 
@@ -867,6 +869,131 @@ function markerHotel(site) {
   b.box(W + 0.2, 4, D + 0.2, M.curtain, {});
   b.solid(0, 0, W, D);
   return b.build('The Marker');
+}
+
+// ---------- Aviva Stadium: the Lansdowne Road level crossing, the station and the west podium ----------
+// docs/research/aviva.md 1.2 / P1: there is no railway in the game, so these are props. XR001 has red-and-white half
+// barriers (standing up, as they are between trains), wig-wags, rails set into the road and catenary overhead. North-west
+// of the crossing the line vanishes into a dark portal under the stadium's west podium (a covered way); south-east of it
+// run the station's two side platforms, with the small hipped-roof station building beside the down platform.
+const stripeTex = canvasTex(8, 96, (ctx, w, h) => { for (let k = 0; k < 6; k++) { ctx.fillStyle = k % 2 ? '#f2f0ea' : '#c8201c'; ctx.fillRect(0, (k * h) / 6, w, h / 6); } });
+// ballast with concrete sleepers across it: one sleeper per 0.65 m tile
+const ballastTex = canvasTex(64, 32, (ctx, w, h) => {
+  ctx.fillStyle = '#6f675e'; ctx.fillRect(0, 0, w, h);
+  for (let i = 0; i < 90; i++) { ctx.fillStyle = `rgba(${40 + Math.random() * 90},${38 + Math.random() * 80},${34 + Math.random() * 70},0.6)`; ctx.fillRect(Math.random() * w, Math.random() * h, 2, 2); }
+  ctx.fillStyle = '#8f8c86'; ctx.fillRect(w * 0.12, h * 0.25, w * 0.76, h * 0.42);
+});
+function lansdowneCrossing(X) {
+  const b = new Builder({ x: 0, z: 0, rot: 0 }); // world coordinates
+  const P = X.podium, K = KERB_H;
+  const concrete = M.avConcrete || (M.avConcrete = new THREE.MeshStandardMaterial({ color: 0xa39e93, roughness: 0.85 }));
+  const render = M.avRender || (M.avRender = new THREE.MeshStandardMaterial({ color: 0xb3a68c, roughness: 0.9 }));
+  const rail = M.avRail || (M.avRail = new THREE.MeshStandardMaterial({ color: 0x9aa0a4, roughness: 0.3, metalness: 0.8, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }));
+  const ballast = M.avBallast || (M.avBallast = new THREE.MeshStandardMaterial({ map: ballastTex, roughness: 0.95 }));
+  const portal = M.avPortal || (M.avPortal = new THREE.MeshBasicMaterial({ color: 0x08090a }));
+  const stripe = M.avStripe || (M.avStripe = new THREE.MeshStandardMaterial({ map: stripeTex, roughness: 0.5 }));
+  const mast = M.avMast || (M.avMast = new THREE.MeshStandardMaterial({ color: 0x7d8580, roughness: 0.6, metalness: 0.4 }));
+  const lamp = M.avWigwag || (M.avWigwag = glow(0xb01e18, 0.03, 0.25)); // unlit between trains: just the red lenses
+  const along = (s0, s1, q, y, w, h, mat) => { const a = X.at(s0, q), c = X.at(s1, q); b.box(w, h, s1 - s0, mat, { x: (a.x + c.x) / 2, y, z: (a.z + c.z) / 2, ry: X.trackRot }); };
+  const edge = X.way.width / 2 + X.way.pave; // the footpath's outer edge
+  const tracks = [-1.9, 1.9];
+  // ---- rails: flush in the carriageway, then on ballast beds out to the portal (north) and past the platforms (south)
+  for (const q of tracks) {
+    const sRoadN = X.sAtW(q, edge), sRoadS = X.sAtW(q, -edge), sPortal = X.sAtW(q, P.face);
+    for (const r of [-0.8, 0.8]) {
+      along(X.sAtW(q + r, -X.way.width / 2), X.sAtW(q + r, X.way.width / 2), q + r, 0.0, 0.08, 0.025, rail); // set in the road
+      along(sRoadN, sPortal + 1, q + r, K + 0.12, 0.08, 0.14, rail);
+      along(-62, sRoadS, q + r, K + 0.12, 0.08, 0.14, rail);
+    }
+    for (const [s0, s1] of [[sRoadN, sPortal + 1], [-62, sRoadS]]) {
+      const g = new THREE.PlaneGeometry(3.4, s1 - s0).rotateX(-Math.PI / 2);
+      const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i), uv.getY(i) * (s1 - s0) / 0.65);
+      const m = X.at((s0 + s1) / 2, q);
+      b.add(g, ballast, { x: m.x, y: K + 0.1, z: m.z, ry: X.trackRot });
+    }
+  }
+  // ---- platforms (two side platforms, SE of the crossing), a white edge line, a brick shelter on the up side
+  for (const side of [-1, 1]) {
+    along(-60, -16, side * 4.4, K, 3.0, 0.9, concrete);
+    along(-60, -16, side * 3.05, K + 0.9, 0.3, 0.02, M.white || M.iron);
+    b.solid(...Object.values(X.at(-38, side * 4.4)).slice(0, 2), 3.0, 44, X.trackRot);
+  }
+  { const c = X.at(-34, -5.2); b.box(2.6, 2.8, 7, M.brickChimney, { x: c.x, y: K + 0.9, z: c.z, ry: X.trackRot }); b.box(3.2, 0.25, 8, M.slate, { x: c.x, y: K + 3.7, z: c.z, ry: X.trackRot }); }
+  // station building: red brick, a hipped slate roof
+  { const c = X.atRoad(20, -13.5);
+    b.box(7.5, 3.4, 4.6, M.brickChimney, { x: c.x, y: K, z: c.z, ry: X.roadRot });
+    b.add(new THREE.CylinderGeometry(0.01, 1, 1, 4, 1).rotateY(Math.PI / 4).translate(0, 0.5, 0), M.slate, { x: c.x, y: K + 3.4, z: c.z, ry: X.roadRot, sx: 5.9, sy: 2.0, sz: 3.9 });
+    b.solid(c.x, c.z, 7.5, 4.6, X.roadRot); }
+  // ---- catenary: portal masts either side with a cross-girder, and the contact wires over each track
+  for (const s of [-58, -34, -12, 11]) {
+    for (const side of [-1, 1]) { const c = X.at(s, side * 6.4); b.box(0.35, 7.2, 0.35, mast, { x: c.x, y: K, z: c.z, ry: X.trackRot }); addBox(c.x, c.z, 0.25, 0.25, 0); }
+    const c = X.at(s, 0); b.box(13.2, 0.35, 0.3, mast, { x: c.x, y: K + 6.7, z: c.z, ry: X.trackRot });
+  }
+  for (const q of tracks) along(-62, X.sAtW(q, P.face), q, 5.6, 0.04, 0.04, M.dark);
+  // ---- barriers (booms raised) and wig-wags, both kerbs, both sides of the line; the pedestals are solid
+  for (const w of [-(X.way.width / 2 + 1.1), X.way.width / 2 + 1.1]) {
+    const s0 = X.sAtW(0, w), uTrack = v2.dot(v2.sub(X.at(s0, 0), X), X.road);
+    for (const du of [-6.6, 6.6]) {
+      const c = X.atRoad(uTrack + du, w);
+      b.box(0.7, 1.1, 0.7, M.white || M.iron, { x: c.x, y: K, z: c.z });
+      b.cyl(0.09, 0.11, 6.4, stripe, { x: c.x, y: K + 1.1, z: c.z }, 8);
+      // wig-wag: black backboard with two red lamps, facing the traffic coming towards the line
+      const face = X.roadRot + (du < 0 ? Math.PI / 2 : -Math.PI / 2);
+      const o = X.atRoad(uTrack + du + (du < 0 ? -0.6 : 0.6), w);
+      b.cyl(0.07, 0.07, 3.2, M.dark, { x: o.x, y: K, z: o.z }, 6);
+      b.box(1.3, 0.55, 0.08, M.dark, { x: o.x, y: K + 2.5, z: o.z, ry: face });
+      for (const l of [-0.38, 0.38]) b.box(0.3, 0.3, 0.12, lamp, { x: o.x + Math.cos(face) * l, y: K + 2.62, z: o.z - Math.sin(face) * l, ry: face });
+      addBox(c.x, c.z, 0.45, 0.45, 0);
+    }
+  }
+  // ---- the west podium: a concrete deck over the covered way, its front on Lansdowne Road, the dark portal where the
+  // line goes under, and broad grand stairs down to the footpath beside it
+  const face = (q) => X.at(X.sAtW(q, P.face), q);
+  const u = (p) => v2.dot(v2.sub(p, X), X.road);
+  const uP = u(face(P.portal[1] + 0.5)), uE = u(face(P.east));
+  const top = P.face + P.stairs;
+  const deck = [face(P.west), face(P.portal[1] + 0.5), X.atRoad(uP, top), X.atRoad(uE, top), X.at(X.sAtW(P.east, top), P.east), X.at(P.north, P.east), X.at(P.north, P.west)];
+  const shape = new THREE.Shape(deck.map((p) => new THREE.Vector2(p.x, -p.z)));
+  const dg = new THREE.ExtrudeGeometry(shape, { depth: P.top, bevelEnabled: false }).rotateX(-Math.PI / 2);
+  { const uv = dg.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) / 4, uv.getY(i) / 4); }
+  b.add(dg, concrete, {});
+  b.box(0.3, 1.1, P.north - X.sAtW(P.west, P.face), M.dark, { ...(() => { const m = X.at((P.north + X.sAtW(P.west, P.face)) / 2, P.west); return { x: m.x, z: m.z }; })(), y: P.top, ry: X.trackRot }); // parapet rail
+  for (let i = 0; i < deck.length; i++) { const a = deck[i], c = deck[(i + 1) % deck.length]; addSegment(a.x, a.z, c.x, c.z); }
+  // the portal: a black opening across both tracks with a concrete reveal round it
+  { const a = face(P.portal[0]), c = face(P.portal[1]), m = v2.lerp(a, c, 0.5), L = v2.len(v2.sub(c, a));
+    b.box(L, P.top - 0.8, 0.06, portal, { x: m.x - X.north.x * 0.05, y: K, z: m.z - X.north.z * 0.05, ry: X.roadRot });
+    b.box(L + 1.2, 0.8, 0.5, render, { x: m.x - X.north.x * 0.2, y: P.top - 0.8, z: m.z - X.north.z * 0.2, ry: X.roadRot }); }
+  // stairs: twelve risers climbing north from the footpath to the deck
+  const N = 12;
+  for (let k = 0; k < N; k++) {
+    const w0 = P.face + (k * P.stairs) / N, d = top - w0, c = X.atRoad((uP + uE) / 2, w0 + d / 2);
+    b.box(uE - uP, ((k + 1) * P.top) / N, d, concrete, { x: c.x, y: 0, z: c.z, ry: X.roadRot });
+  }
+  { const a = X.atRoad(uP, P.face), c = X.atRoad(uE, P.face); addSegment(a.x, a.z, c.x, c.z); }
+  const g = b.build('Lansdowne Road level crossing');
+  g.traverse((o) => { if (o.isMesh && (o.material === rail || o.material === portal || o.material === ballast)) o.castShadow = false; });
+  return g;
+}
+
+// Shelbourne Park: the sand oval of the greyhound track round a grass infield, car parks round it, and a long low
+// stand facing the track from the South Lotts Road side
+function shelbournePark(P) {
+  const oval = (rx, rz) => Array.from({ length: 40 }, (_, i) => { const a = (i / 40) * Math.PI * 2; return { x: P.x + Math.cos(a) * rx, z: P.z + Math.sin(a) * rz }; });
+  paintArea(oval(P.track.rx - 5, P.track.rz - 5), COLORS.lawn);
+  paintArea(oval(P.track.rx, P.track.rz), COLORS.path);
+  const b = new Builder(P);
+  // the 3D surfaces (the minimap paint above is only the map): a sand ring with the grass infield inside it
+  const ring = (rx, rz) => Array.from({ length: 40 }, (_, i) => { const a = (i / 40) * Math.PI * 2; return new THREE.Vector2(Math.cos(a) * rx, -Math.sin(a) * rz); });
+  const sand = new THREE.Shape(ring(P.track.rx, P.track.rz)); sand.holes.push(new THREE.Path(ring(P.track.rx - 5, P.track.rz - 5).reverse()));
+  const sandMat = M.avSand || (M.avSand = new THREE.MeshStandardMaterial({ color: 0xa8916c, roughness: 0.95 }));
+  b.add(new THREE.ShapeGeometry(sand, 12).rotateX(-Math.PI / 2), sandMat, { y: KERB_H + 0.006 });
+  b.add(new THREE.ShapeGeometry(new THREE.Shape(ring(P.track.rx - 5, P.track.rz - 5)), 12).rotateX(-Math.PI / 2), lawnMat(), { y: KERB_H + 0.006 });
+  const sx = -P.w / 2 + 5;
+  b.box(9, 6.5, 58, M.cladGrey, { x: sx, y: 0 });
+  b.box(11, 0.5, 60, M.lead, { x: sx + 0.8, y: 6.5 });
+  b.box(0.2, 2.4, 56, M.glass, { x: sx + 4.6, y: 3.2 });
+  b.solid(sx, 0, 9, 58);
+  return b.build('Shelbourne Park');
 }
 
 // ---------- Dame Street and College Green ----------
@@ -1770,6 +1897,7 @@ export function buildLandmarks(scene) {
     bewleys(extraSites.bewleys), brownThomas(extraSites.brownThomas), weirAndSons(extraSites.weir), stephensGreenCentre(extraSites.sgCentre), graftonDressing(),
     drSteevens(extraSites.steevens), guinness(S.guinness), jamesGate(extraSites.jamesGate), beckettHarp(S.beckett), convention(S.convention),
     threeArena(S.threeArena), grattanOffice(S.grandCanalSt), grandCanalTheatre(S.grandCanal), grandCanalSquare(S.grandCanal.square), markerHotel(extraSites.marker), gcsOffice(extraSites.gcsOffice),
+    lansdowneCrossing(extraSites.lansdowneXing), shelbournePark(extraSites.shelbournePark),
   ];
   for (const g of groups) scene.add(g);
   // Heuston Station (Blender hero; the old procedural model if it can't load)
@@ -1786,9 +1914,16 @@ export function buildLandmarks(scene) {
     if (!h) { scene.add(hapenny(S.hapenny)); return; }
     hapennyHero = h; h.setNight(nightLevel);
   });
+  // Aviva Stadium (Blender hero with a far LOD). The plinth is solid; the lit bowl throws light on the Dodder at night.
+  let avivaHero = null;
+  addPolyline(S.aviva.outline, true);
+  placeAviva(scene, S.aviva, { lite: LITE }).then((h) => { if (h) { avivaHero = h; h.setNight(nightLevel); } });
+  for (const [lat, lon] of [[53.33524, -6.22516], [53.33605, -6.22571], [53.3369, -6.22622]]) waterGlowSources.push({ ...project(lat, lon), y: WATER_Y + 0.65, color: 0xffe3b8, width: 6, length: 45 });
   for (const g of grounds) {
     const c = Math.cos(g.rot), s = Math.sin(g.rot), hx = g.w / 2, hz = g.d / 2;
     paintArea([[-hx, -hz], [hx, -hz], [hx, hz], [-hx, hz]].map(([lx, lz]) => ({ x: g.x + lx * c + lz * s, z: g.z - lx * s + lz * c })), COLORS.lawn);
+    // grass on the ground too where asked (inset, so a paved margin is left round it)
+    if (g.lawn) { const k = g.lawn, a = hx - k, bz = hz - k; scene.add(grassPolygon([[-a, -bz], [a, -bz], [a, bz], [-a, bz]].map(([lx, lz]) => ({ x: g.x + lx * c + lz * s, z: g.z - lx * s + lz * c })), lawnMat())); }
   }
 
   // pond in St Stephen's Green
@@ -1810,6 +1945,7 @@ export function buildLandmarks(scene) {
     setNight(level) {
       for (const n of neon) n.m.emissiveIntensity = n.day + (n.night - n.day) * level;
       nightLevel = level; if (hapennyHero) hapennyHero.setNight(level);
+      if (avivaHero) avivaHero.setNight(level);
       setStoneNight(level);
     },
     update(camera) {

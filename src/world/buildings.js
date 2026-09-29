@@ -101,7 +101,7 @@ const DOCK_ST = /North Wall|Rogerson|City Quay|Mayor|Commons|Memorial|Lombard|Sa
 // Docklands: east of the Custom House, north of Pearse Street, south of Sheriff Street
 const inDocks = (x, z) => x > 300 && z < 150 && z > -320;
 // Victorian and Edwardian red-brick terraces of the canal ring: two storeys with small front gardens
-const TERRACE_ST = /North Circular|Ballybough|Clonliffe|Jones's|Russell|Summerhill Parade|Poplar|Portland Row|Seville|North Strand|Whitworth|Drumcondra|Prussia|Aughrim|Infirmary|Grove Road|Canal Road|Heytesbury|Clanbrassil Street Upper|South Circular|Lennox|Charlemont Mall|Avenue|Ardilaun|Great Charles|Haddington|Berkeley|Mountjoy Street|Blessington|Long Lane|Camden Row|New Bride/;
+const TERRACE_ST = /North Circular|Ballybough|Clonliffe|Jones's|Russell|Summerhill Parade|Poplar|Portland Row|Seville|North Strand|Whitworth|Drumcondra|Prussia|Aughrim|Infirmary|Grove Road|Canal Road|Heytesbury|Clanbrassil Street Upper|South Circular|Lennox|Charlemont Mall|Avenue|Ardilaun|Great Charles|Haddington|Berkeley|Mountjoy Street|Blessington|Long Lane|Camden Row|New Bride|Lansdowne Road|Tritonville|Londonbridge/;
 export const isTerrace = (way) => !!way && TERRACE_ST.test(way.name);
 
 function styleFor(x, z, way) {
