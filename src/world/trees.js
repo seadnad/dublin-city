@@ -15,9 +15,13 @@ function pick(mix, rand) {
   return Object.keys(mix)[0];
 }
 
-// items: { x, y?, z, rot, s (number) }; mix: { plane: 3, lime: 1, ... }
+// items: { x, y?, z, rot, s (number), species?, tint? (THREE.Color: multiplies leaves and bark) }; mix: { plane: 3, ... }
+// Tinted items (the Phoenix Park's dark holm oaks, say) get per-instance colours.
+const WHITE = new THREE.Color(1, 1, 1);
+const tintOf = (it) => it.tint || WHITE;
 export function plantTrees(scene, items, mix, rand = Math.random) {
-  const planting = { scene, items: items.map((it) => ({ ...it, species: pick(mix, rand) })), groups: [] };
+  const planting = { scene, items: items.map((it) => ({ ...it, species: it.species || pick(mix, rand) })), groups: [] };
+  planting.colors = items.some((it) => it.tint) ? tintOf : null;
   plantings.push(planting);
   if (models) build();
   else buildFallback(planting);
@@ -30,7 +34,7 @@ function buildFallback(p) {
   const its = p.items.map((it) => ({ ...it, s: it.s }));
   p.groups = [
     chunkedInstances(trunk, new THREE.MeshStandardMaterial({ color: 0x4a3b2c, roughness: 0.9 }), its, { shadow: true, y: it0y(p) }),
-    chunkedInstances(crown, new THREE.MeshStandardMaterial({ color: 0x5b8a3a, roughness: 0.9, flatShading: true }), its, { shadow: true, y: it0y(p) }),
+    chunkedInstances(crown, new THREE.MeshStandardMaterial({ color: 0x5b8a3a, roughness: 0.9, flatShading: true }), its, { shadow: true, y: it0y(p), colors: p.colors }),
   ];
   p.scene.add(...p.groups);
 }
@@ -48,7 +52,7 @@ function build() {
   for (const sp of SPECIES) {
     const its = plantings.flatMap((p) => p.items.filter((it) => it.species === sp).map((it) => ({ ...it, y: it.y ?? it0y(p) })));
     if (!its.length || !models[sp]) continue;
-    const pk = packedInstances(its, ['bark', 'leaves'].map((part) => models[sp][part]).filter(Boolean));
+    const pk = packedInstances(its, ['bark', 'leaves'].map((part) => models[sp][part]).filter(Boolean), { colors: its.some((it) => it.tint) ? tintOf : null });
     packs.push(pk);
     scene.add(...pk.meshes);
   }

@@ -46,7 +46,8 @@ const packs = [];
 const _f = new THREE.Frustum(), _pm = new THREE.Matrix4(), _sph = new THREE.Sphere();
 
 // items: { x, y?, z, rot?, s?: number }; parts: [{ geometry, material }]. Returns { meshes } to add to the scene.
-export function packedInstances(items, parts, { y = 0 } = {}) {
+// colors: optional (item) => THREE.Color, a per-instance tint (multiplies the material colour)
+export function packedInstances(items, parts, { y = 0, colors = null } = {}) {
   let r = 0, cy = 0;
   for (const p of parts) {
     p.geometry.computeBoundingSphere();
@@ -60,13 +61,15 @@ export function packedInstances(items, parts, { y = 0 } = {}) {
     _m.compose(_p.set(it.x, it.y ?? y, it.z), _q, _s.setScalar(sc)).toArray(mats, i * 16);
     spheres.push({ x: it.x, y: (it.y ?? y) + cy * sc, z: it.z, r: r * sc });
   });
-  const pack = { mats, spheres, view: [], shadow: [] };
+  const pack = { mats, spheres, view: [], shadow: [], cols: null };
+  if (colors) { pack.cols = new Float32Array(items.length * 3); items.forEach((it, i) => colors(it).toArray(pack.cols, i * 3)); }
   for (const { geometry, material } of parts) {
     const view = new THREE.InstancedMesh(geometry, material, items.length);
     view.castShadow = false; view.receiveShadow = true;
     const shadow = new THREE.InstancedMesh(geometry, material, items.length);
     shadow.castShadow = true; shadow.receiveShadow = false;
     shadow.visible = false; // only switched on for the shadow pass (see installShadowOnly)
+    if (pack.cols) view.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(items.length * 3), 3);
     for (const m of [view, shadow]) { m.count = 0; m.frustumCulled = false; m.matrixAutoUpdate = false; }
     pack.view.push(view); pack.shadow.push(shadow);
   }
@@ -77,15 +80,18 @@ export function packedInstances(items, parts, { y = 0 } = {}) {
 export function removePack(pack) { const i = packs.indexOf(pack); if (i >= 0) packs.splice(i, 1); }
 
 function fill(meshes, pack, frustum, show) {
-  const arr = meshes[0].instanceMatrix.array;
+  const arr = meshes[0].instanceMatrix.array, cols = show && pack.cols ? meshes[0].instanceColor.array : null;
   let n = 0;
   pack.spheres.forEach((s, i) => {
     _sph.center.set(s.x, s.y, s.z); _sph.radius = s.r;
     if (!frustum.intersectsSphere(_sph)) return;
-    arr.set(pack.mats.subarray(i * 16, i * 16 + 16), n * 16); n++;
+    arr.set(pack.mats.subarray(i * 16, i * 16 + 16), n * 16);
+    if (cols) cols.set(pack.cols.subarray(i * 3, i * 3 + 3), n * 3);
+    n++;
   });
   meshes.forEach((m, k) => {
     if (k) m.instanceMatrix.array.set(arr.subarray(0, n * 16));
+    if (cols) { if (k) m.instanceColor.array.set(cols.subarray(0, n * 3)); m.instanceColor.clearUpdateRanges(); m.instanceColor.addUpdateRange(0, n * 3); m.instanceColor.needsUpdate = true; }
     m.count = n; if (show) m.visible = n > 0; // an empty instanced mesh would still cost a draw call
     m.instanceMatrix.clearUpdateRanges(); m.instanceMatrix.addUpdateRange(0, n * 16); m.instanceMatrix.needsUpdate = true;
   });

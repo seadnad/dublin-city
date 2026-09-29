@@ -16,6 +16,7 @@ import { placeHapenny, placeParts, setStoneNight, placeCrokePark, placeAviva } f
 import { placeHeuston } from './heuston.js';
 import { LITE } from '../render/quality.js';
 const lawnMat = () => getStreets().grassMat;
+import { buildPark } from './park.js';
 
 const rand = rng(1742);
 
@@ -2118,6 +2119,9 @@ export function buildLandmarks(scene) {
     railBridges(),
     lansdowneCrossing(extraSites.lansdowneXing), shelbournePark(extraSites.shelbournePark),
   ];
+  // Phoenix Park: woods, avenue, lamps, walls, heroes and deer (its static meshes join the landmark batch)
+  const phoenixPark = buildPark(scene);
+  if (phoenixPark) groups.push(phoenixPark.group);
   for (const g of groups) scene.add(g);
   buildStatues(scene); // the statue-kit figures queued by the builders above (loads statues.glb)
   // Parliament House / Bank of Ireland (Blender hero; the old procedural block if it can't load)
@@ -2176,7 +2180,7 @@ export function buildLandmarks(scene) {
   // floating place labels were removed from the 3D view (landmarks are on the map instead)
   const labels = new THREE.Group();
   return {
-    groups, labels, trees,
+    groups, labels, trees, park: phoenixPark,
     setLabels(on) { labels.visible = on; },
     // docklands lighting after dark (0 = day, 1 = night)
     setNight(level) {
@@ -2186,6 +2190,7 @@ export function buildLandmarks(scene) {
       if (heustonHero) heustonHero.setNight(level);
       if (avivaHero) avivaHero.setNight(level);
       setStoneNight(level);
+      if (phoenixPark) phoenixPark.setNight(level);
     },
     update(camera) {
       // hide labels that are far away or behind the camera

@@ -16,7 +16,7 @@ function lampSpots() {
   const spots = [];
   const near = (p) => spots.some((q) => (q.x - p.x) ** 2 + (q.z - p.z) ** 2 < 100);
   for (const way of world.ways) {
-    if (way.bridge) continue;
+    if (way.bridge || way.lamps) continue; // ways with a lighting style of their own (park gas lamps) or unlit
     // cobbled lanes (Temple Bar) are lit by lanterns on scroll brackets fixed to the buildings at first-floor
     // height, about every 12 m, alternating sides (docs/research/temple-bar.md A4: ~70% wall-mounted)
     const wall = way.surface === 'sett';

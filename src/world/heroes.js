@@ -383,8 +383,127 @@ function stoneMaterials() {
 }
 const byName = (name) => {
   const m = stoneMaterials(), k = name.replace(/^[a-z]+_/, '');
+  if (name.startsWith('pk_') && parkMaterials()[k]) return parkMats[k];
   return m[k] || m.rubble;
 };
+
+// ---------- Phoenix Park heroes (tools/blender/build_phoenixpark.py): their own atlas of bronze reliefs and ironwork ----------
+// regions, px in 1024 (must match build_phoenixpark.py PARK)
+const PARK = {
+  waterloo: [0, 0, 1024, 192], liberty: [0, 192, 1024, 192], india: [0, 384, 1024, 192], inscr: [0, 576, 1024, 192],
+  ncr: [0, 768, 256, 256], aras: [256, 768, 256, 256], phx: [512, 768, 256, 128], arms: [512, 896, 256, 128], names: [768, 768, 256, 256],
+};
+function paintPark(g) {
+  g.clearRect(0, 0, 1024, 1024);
+  let seed = 5; const r = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  // bronze relief panels cast from Waterloo cannon: dark bronze, verdigris run-off, a frieze of figures in relief
+  // (a stylised procession: standing and striding figures, horses, standards) lit from above
+  const bronze = (key, scene) => {
+    const [x, y, w, h] = PARK[key];
+    const grd = g.createLinearGradient(0, y, 0, y + h); grd.addColorStop(0, '#2c302d'); grd.addColorStop(1, '#1a1d1c');
+    g.fillStyle = grd; g.fillRect(x, y, w, h);
+    g.strokeStyle = '#3f4a43'; g.lineWidth = 6; g.strokeRect(x + 5, y + 5, w - 10, h - 10);
+    const fig = (fx, base, s, lean = 0, horse = false) => {
+      const hi = '#58615a', lo = '#141615';
+      for (const [col, off] of [[lo, 2], [hi, 0]]) {
+        g.fillStyle = col;
+        if (horse) {
+          g.beginPath(); g.ellipse(fx + off, base - 46 * s, 34 * s, 15 * s, 0, 0, 6.29); g.fill();          // body
+          g.fillRect(fx - 26 * s + off, base - 40 * s, 6 * s, 40 * s); g.fillRect(fx + 22 * s + off, base - 40 * s, 6 * s, 40 * s);
+          g.beginPath(); g.moveTo(fx + 28 * s + off, base - 52 * s); g.lineTo(fx + 48 * s + off, base - 84 * s); g.lineTo(fx + 58 * s + off, base - 76 * s); g.lineTo(fx + 36 * s + off, base - 44 * s); g.fill(); // neck
+          g.beginPath(); g.ellipse(fx - 2 * s + off, base - 78 * s, 8 * s, 16 * s, 0, 0, 6.29); g.fill(); // rider
+          g.beginPath(); g.arc(fx - 2 * s + off, base - 100 * s, 7 * s, 0, 6.29); g.fill();
+        } else {
+          g.beginPath(); g.arc(fx + lean * 10 * s + off, base - 112 * s, 9 * s, 0, 6.29); g.fill();        // head
+          g.beginPath(); g.moveTo(fx - 12 * s + lean * 8 * s + off, base - 100 * s); g.lineTo(fx + 12 * s + lean * 8 * s + off, base - 100 * s);
+          g.lineTo(fx + 16 * s + off, base - 40 * s); g.lineTo(fx - 16 * s + off, base - 40 * s); g.fill();    // cloaked body
+          g.fillRect(fx - 12 * s + off, base - 40 * s, 8 * s, 40 * s); g.fillRect(fx + 4 * s + lean * 8 * s + off, base - 40 * s, 8 * s, 40 * s);
+        }
+      }
+    };
+    const base = y + h - 22;
+    let fx = x + 40;
+    while (fx < x + w - 40) {
+      const k = r();
+      if (scene === 'battle' && k < 0.28) { fig(fx + 30, base, 1.05, 0, true); fx += 110; }
+      else { fig(fx, base, 1.0 + (r() - 0.5) * 0.12, (r() - 0.5) * 1.4); fx += 44 + r() * 26; }
+      if (scene === 'battle' && r() < 0.18) { g.fillStyle = '#58615a'; g.fillRect(fx - 20, y + 20, 4, h - 44); g.fillRect(fx - 16, y + 22, 34, 22); } // standard
+    }
+    // verdigris streaks
+    for (let k = 0; k < 30; k++) { g.fillStyle = `rgba(80,120,100,${0.08 + r() * 0.12})`; g.fillRect(x + r() * w, y + h * 0.3 + r() * h * 0.5, 3 + r() * 6, h * 0.4); }
+  };
+  bronze('waterloo', 'battle'); bronze('liberty', 'civic'); bronze('india', 'battle');
+  { // the east face's inscription panel
+    const [x, y, w, h] = PARK.inscr;
+    g.fillStyle = '#262a28'; g.fillRect(x, y, w, h);
+    g.strokeStyle = '#4a544d'; g.lineWidth = 6; g.strokeRect(x + 5, y + 5, w - 10, h - 10);
+    g.fillStyle = '#7d8a80'; g.font = 'bold 26px Georgia'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    ['ASIA AND EUROPE, SAVED BY THEE, PROCLAIM', 'INVINCIBLE IN WAR THY DEATHLESS NAME,', 'NOW ROUND THY BROW THE CIVIC OAK WE TWINE', 'THAT EVERY EARTHLY GLORY MAY BE THINE.']
+      .forEach((t, i) => g.fillText(t, x + w / 2, y + 36 + i * 40));
+  }
+  { // battle names cut into the shaft (dark lettering on a transparent ground)
+    const [x, y, w, h] = PARK.names;
+    g.fillStyle = 'rgba(40,42,40,0.75)'; g.font = 'bold 17px Georgia'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    const names = ['WATERLOO', 'VITTORIA', 'SALAMANCA', 'TALAVERA', 'BUSACO', 'ASSAYE', 'SERINGAPATAM', 'TOULOUSE', 'BADAJOZ', 'ORTHES'];
+    names.forEach((t, i) => g.fillText(t, x + w / 2, y + 14 + i * 24));
+  }
+  { // white cast-iron openwork (NCR gate screens and piers, Áras railings): verticals with spear heads, a scroll band
+    const [x, y, w, h] = PARK.ncr;
+    g.fillStyle = '#f1efe8';
+    g.fillRect(x, y + 6, w, 10); g.fillRect(x, y + h - 16, w, 12); g.fillRect(x, y + h * 0.62, w, 7);
+    for (let k = 0; k < 10; k++) {
+      const bx = x + 8 + k * (w / 10);
+      g.fillRect(bx, y + 10, 7, h - 20);
+      g.beginPath(); g.moveTo(bx - 4, y + 14); g.lineTo(bx + 3.5, y); g.lineTo(bx + 11, y + 14); g.fill();
+    }
+    g.strokeStyle = '#f1efe8'; g.lineWidth = 5;
+    for (let k = 0; k < 5; k++) { g.beginPath(); g.arc(x + 25 + k * 51, y + h * 0.75, 17, 0, 6.29); g.stroke(); }
+  }
+  { // the Áras gate leaf: bars, a double rail, scrolls and a crest roundel
+    const [x, y, w, h] = PARK.aras;
+    g.fillStyle = '#f4f2ec';
+    g.fillRect(x, y + h - 14, w, 12); g.fillRect(x, y + h * 0.4, w, 8); g.fillRect(x, y + h * 0.55, w, 6);
+    for (let k = 0; k < 12; k++) { const bx = x + 4 + k * (w / 12); const top = y + 18 + Math.abs(k - 5.5) * 5; g.fillRect(bx, top, 6, y + h - top); g.beginPath(); g.moveTo(bx - 4, top + 6); g.lineTo(bx + 3, top - 10); g.lineTo(bx + 10, top + 6); g.fill(); }
+    g.strokeStyle = '#f4f2ec'; g.lineWidth = 6; g.beginPath(); g.arc(x + w / 2, y + h * 0.47, 26, 0, 6.29); g.stroke();
+  }
+  { // the Phoenix column's inscribed marble plaque
+    const [x, y, w, h] = PARK.phx;
+    g.fillStyle = '#d9d4c7'; g.fillRect(x, y, w, h); g.strokeStyle = '#8f8a80'; g.lineWidth = 5; g.strokeRect(x + 6, y + 6, w - 12, h - 12);
+    g.fillStyle = '#5a564f'; g.font = 'bold 14px Georgia'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    ['PHILIPPUS DORMER STANHOPE', 'COMES DE CHESTERFIELD', 'PROREX', 'MDCCXLVII'].forEach((t, i) => g.fillText(t, x + w / 2, y + 30 + i * 22));
+  }
+  { // carved arms on the north and south faces
+    const [x, y, w, h] = PARK.arms;
+    g.fillStyle = '#c9c4b8'; g.fillRect(x, y, w, h);
+    g.fillStyle = '#9d988c'; g.beginPath(); g.moveTo(x + w / 2 - 34, y + 22); g.lineTo(x + w / 2 + 34, y + 22); g.lineTo(x + w / 2 + 30, y + 80); g.quadraticCurveTo(x + w / 2, y + 112, x + w / 2 - 30, y + 80); g.fill();
+    g.fillStyle = '#b3aea2'; g.fillRect(x + w / 2 - 4, y + 30, 8, 60); g.fillRect(x + w / 2 - 26, y + 48, 52, 8);
+    for (const s of [-1, 1]) { g.fillStyle = '#a9a498'; g.beginPath(); g.ellipse(x + w / 2 + s * 70, y + 64, 18, 40, 0, 0, 6.29); g.fill(); }
+  }
+}
+let parkMats = null;
+function parkMaterials() {
+  if (parkMats) return parkMats;
+  const map = atlas(1024, paintPark);
+  const std = (o) => { const m = new THREE.MeshStandardMaterial(o); m.vertexColors = true; return m; };
+  parkMats = {
+    granite: stoneMaterials().granite,
+    // Portland stone (the Phoenix column): pale, floodlit after dark (OPW; docs/research/phoenix-park.md §3.2)
+    portland: std({ map: stoneTile(256, '#e2ddd0', 6, 0.15, 'rgba(120,114,104,0.35)'), roughness: 0.85, emissive: 0xfff2dc, emissiveIntensity: 0 }),
+    limestone: std({ map: stoneTile(256, '#8f8f8c', 7, 0.2, 'rgba(60,58,56,0.5)'), roughness: 0.85 }),
+    bronze: std({ map, roughness: 0.45, metalness: 0.35, alphaTest: 0.3, transparent: false }),
+    cut: std({ map, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.5 }),
+    white: std({ color: 0xece9e1, roughness: 0.55 }),
+    slate: stoneMaterials().slate,
+    render: std({ color: 0xd8d2c2, roughness: 0.9 }),
+    lantern: std({ color: 0xe8d9b0, emissive: 0xffb36a, emissiveIntensity: 0.04, roughness: 0.2 }),
+    grass: std({ color: 0x5b7a3e, roughness: 0.95, side: THREE.DoubleSide }), // lathed mounds: either winding
+    sett: std({ map: stoneTile(128, '#7a7a7b', 14, 0.05, 'rgba(40,40,40,0.55)'), roughness: 0.8, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }), // over the island's grass (which is offset itself)
+    dark: stoneMaterials().dark,
+    decal: stoneMaterials().decal,
+  };
+  parkMats.sett.map.repeat.set(3, 3);
+  return parkMats;
+}
 const decoded = new WeakSet();
 function prepare(root) {
   root.traverse((o) => {
@@ -406,6 +525,7 @@ function prepare(root) {
 let stoneNight = 0; // remembered so a model that loads after dark comes up lit
 export function setStoneNight(level) {
   stoneNight = level;
+  if (parkMats) { parkMats.lantern.emissiveIntensity = 0.04 + level * 2.6; parkMats.portland.emissiveIntensity = level * 0.14; }
   if (!stoneMats) return;
   stoneMats.decal.emissiveIntensity = level * 0.9;
   stoneMats.plamp.emissiveIntensity = 0.15 + level * 3.2;
@@ -418,10 +538,11 @@ export async function placeParts(scene, file, site, name) {
   try { gltf = await load(file); } catch (e) { console.warn(`${file} model failed to load`, e); return null; }
   prepare(gltf.scene);
   const group = new THREE.Group(); group.name = name;
+  // a part may name the node it copies ({ node: 'pier' }): one model placed several times (gate piers)
   for (const [part, p] of Object.entries(site.parts)) {
-    const node = gltf.scene.getObjectByName(part);
+    let node = gltf.scene.getObjectByName(p.node || part);
     if (!node) continue;
-    node.removeFromParent();
+    if (p.node) node = node.clone(); else node.removeFromParent();
     node.position.set(p.x, 0, p.z);
     node.rotation.set(0, p.rot, 0);
     if (p.len) node.scale.set(p.len, 1, 1);
