@@ -49,6 +49,8 @@ const BLURBS = {
   rotunda: 'Cassels’ maternity hospital, the Ambassador’s drum and the Gate at the top of O’Connell Street',
   gardenOfRemembrance: 'The sunken garden and cruciform pool, with Oisín Kelly’s Children of Lir',
   busaras: 'Michael Scott’s 1953 bus station, its wavy canopy and blue mosaic',
+  connolly: 'The 1844 Italianate terminus on Amiens Street; the DART calls on the Loop Line behind',
+  loopline: 'The 1891 lattice railway bridge that cuts across the view of the Custom House',
 };
 
 export function createHUD({ sites, actions }) {

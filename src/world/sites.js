@@ -10,6 +10,7 @@ import { collegeGreenSites, cgAt, CG_SPOTS, CG_EAST } from './collegegreen.js';
 import { KD_BOXES, KD_OPEN } from './kildarelayout.js';
 import tanksData from '../data/guinness-tanks.json';
 import bsLayout from '../data/barrowst.json';
+import { spans as railSpans, at as railAt, footprints as railFootprints, pearseFront, fireTower } from './railline.js';
 
 const N = (id) => world.nodes.get(id);
 const wayBetween = (a, b) => world.ways.find((w) => {
@@ -481,6 +482,20 @@ export const sites = {
     outline: ccjOutline(),
     view: spot('WT3', 'PG1', 0.35),
   },
+  // Connolly Station (docs/research/railway.md): William Deane Butler's 1844 granite front with its Italianate tower,
+  // on the east side of Amiens Street at the Talbot Street / Store Street junction, facing west (local +z). The
+  // train shed over platforms 1-4 runs north-east behind it (railway.js); the Loop Line's DART platforms pass south of
+  // it, beyond the Luas stop (left open). Seen from Talbot Street, eastbound.
+  connolly: {
+    name: 'Connolly Station', ...beside('BP3', 'AM', 1, -1, 40, 17, { gap: 0.6, shift: -14 }), labelY: 36, // clear of Sheriff Street
+    view: spot('TB1', 'AM', 0.55),
+  },
+  // the Loopline Bridge (1891): the lattice girders over the Liffey between Custom House Quay and George's Quay, in
+  // front of the Custom House (a bridge: not a footprint). Seen from Burgh Quay, eastbound, with the dome behind it.
+  loopline: (() => {
+    const sp = railSpans.find((k) => k.hero), a = railAt(sp ? (sp.s0 + sp.s1) / 2 : 0);
+    return { name: 'Loopline Bridge', x: a.x, z: a.z, rot: Math.atan2(a.d.x, a.d.z), w: 12, d: sp ? sp.s1 - sp.s0 : 0, labelY: 14, bridge: true, view: spot('SQ8', 'SQ9', 0.55) };
+  })(),
 };
 
 // A railway bridge over the road at a node (the GSWR, docs/research/croke-park.md 1.2; no trains, so only the deck
@@ -943,6 +958,12 @@ export const reserved = [
   ...tallFootprints,
   // Clerys, Parnell Square (the Rotunda, the Ambassador, the Gate, the Garden of Remembrance) and Busáras
   ...northCityFootprints,
+  // the DART viaduct between its street bridges (railline.js), Connolly's front, Pearse's front on Westland Row, and
+  // the Tara Street fire station's tower
+  ...railFootprints().map((b, i) => (extraSites[`rail${i}`] = b)),
+  sites.connolly,
+  (extraSites.pearseFront = (() => { const F = pearseFront(); return F ? fitBox(F.poly, Math.atan2(F.poly[1].x - F.poly[0].x, F.poly[1].z - F.poly[0].z)) : null; })()),
+  (extraSites.fireTower = { x: fireTower.x, z: fireTower.z, rot: 0, w: fireTower.w + 1, d: fireTower.w + 1 }),
 ].filter(Boolean);
 
 export { campusPolys, parkPolys };

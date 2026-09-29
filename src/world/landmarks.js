@@ -21,6 +21,7 @@ import { placeGrandCanal, gcsColliders } from './gcsquare.js';
 import { buildTowers } from './towers.js';
 import { collegeGreen, suffolkStreet, placeKildare, setKildareNight } from './kildare.js';
 import { placeNorthCity, northCityColliders } from './northcity.js';
+import { buildRailway, placeLoopline } from './railway.js';
 import { LITE } from '../render/quality.js';
 const lawnMat = () => getStreets().grassMat;
 import { buildPark } from './park.js';
@@ -2297,6 +2298,12 @@ export function buildLandmarks(scene) {
   // Dublin's tall buildings (src/world/towers.js): Liberty Hall, George's Quay Plaza, College Square, Capital Dock, the Exo,
   // the Grand Canal Dock towers and the three tallest church spires
   const towers = buildTowers(scene, Builder);
+  // the DART line (src/world/railway.js): viaduct, street bridges, track, overhead line, stations; joins the batch
+  const railway = buildRailway();
+  groups.push(railway.group);
+  placeLoopline(scene); // the Loopline Bridge and the lattice span over Beresford Place (Blender hero)
+  // Connolly Station's 1844 front on Amiens Street (Blender hero, shared stone materials; lit windows at night)
+  { const C = S.connolly; addBox(C.x, C.z, C.w / 2, C.d / 2, C.rot); placeParts(scene, 'connolly', { parts: { connolly: { x: C.x, z: C.z, rot: C.rot } } }, 'Connolly Station'); }
   if (phoenixPark) groups.push(phoenixPark.group);
   for (const g of groups) scene.add(g);
   fourCourts(); // its colliders and statues (the hero is placed below)
@@ -2428,6 +2435,7 @@ export function buildLandmarks(scene) {
       if (northHero) northHero.setNight(level);
       towers.setNight(level);
       setKildareNight(level);
+      railway.setNight(level);
       setStoneNight(level);
       if (phoenixPark) phoenixPark.setNight(level);
     },
