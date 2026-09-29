@@ -21,7 +21,9 @@ export const HS_ATLAS = {
   capital: [1280, 0, 256, 128], vous: [1280, 128, 256, 128], modsoffit: [1280, 256, 512, 64],
   swag: [1536, 0, 256, 96], balcon: [1536, 96, 128, 64], lion: [1664, 96, 64, 64], patera: [1728, 96, 64, 64],
   oculus: [1856, 96, 64, 64], vic: [1792, 0, 256, 96], ad: [1536, 160, 256, 96], arms: [1920, 96, 128, 128],
-  diepanel: [1792, 160, 64, 128], white: [1024, 192, 32, 32], lunette: [1024, 256, 256, 128],
+  diepanel: [1792, 160, 64, 128], white: [1024, 192, 32, 32], roofgrey: [1056, 192, 32, 32], glassflat: [1088, 192, 32, 32],
+  ironwhite: [1024, 224, 32, 32], ribdark: [1056, 224, 32, 32], lantern: [1088, 224, 32, 32],
+  lunette: [1024, 256, 256, 128],
   balus: [0, 384, 512, 96], spandrel: [0, 480, 512, 160], ring: [512, 384, 256, 96], plate1821: [768, 384, 128, 64],
 };
 
@@ -241,6 +243,11 @@ function paintAtlas(g, emit) {
     g.strokeStyle = CREVICE; g.lineWidth = 2; g.stroke(); g.beginPath(); g.moveTo(x + w / 2, y + 14); g.lineTo(x + w / 2, y + h - 14); g.stroke();
   }
   { const [x, y, w, h] = R('white'); g.fillStyle = emit ? '#000' : '#e8e8e6'; g.fillRect(x, y, w, h); }
+  { const [x, y, w, h] = R('roofgrey'); g.fillStyle = emit ? '#000' : '#4f5459'; g.fillRect(x, y, w, h); }
+  { const [x, y, w, h] = R('glassflat'); g.fillStyle = emit ? '#3a3020' : '#9fb3bd'; g.fillRect(x, y, w, h); }
+  { const [x, y, w, h] = R('ironwhite'); g.fillStyle = emit ? '#000' : '#dcdcd6'; g.fillRect(x, y, w, h); }
+  { const [x, y, w, h] = R('ribdark'); g.fillStyle = emit ? '#000' : '#1f2530'; g.fillRect(x, y, w, h); }
+  { const [x, y, w, h] = R('lantern'); g.fillStyle = emit ? '#fff0d0' : '#c8c0b0'; g.fillRect(x, y, w, h); }
   // lunette: a semicircular fanlight (south range pavilion)
   {
     const [x, y, w, h] = R('lunette'); const cx = x + w / 2, cy = y + h - 2;
@@ -382,9 +389,6 @@ function materials() {
     hs_brick: std({ map: brickTile(), roughness: 0.9 }),
     hs_roof: std({ color: 0x6e7378, roughness: 0.6, metalness: 0.4 }),
     hs_glass: std({ color: 0x9fb3bd, roughness: 0.2, metalness: 0.3 }),
-    hb_iron: withFlood(std({ color: 0xdcdcd6, roughness: 0.45 })),
-    hb_rib: std({ color: 0x1f2530, roughness: 0.5 }),
-    hb_lantern: std({ color: 0x8f9aad, emissive: 0xffd6a0, emissiveIntensity: 0.05, roughness: 0.15 }),
     hs_atlas: withFlood(std({ map, emissiveMap, emissive: 0xffffff, emissiveIntensity: 0, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6 })),
   };
   return mats;
@@ -464,11 +468,11 @@ function forecourt(scene, st) {
       for (let k = 1; k < 10; k++) { const q = bar.clone(); q.translate(x + dx * k * 0.2, y0, z + dz * k * 0.2); rail.push(q); }
     }
   }
-  const mk = (list, mat, shadow = true) => { if (!list.length) return; const m = new THREE.Mesh(mergeGeometries(list), mat); m.castShadow = shadow; m.receiveShadow = true; g.add(m); };
-  mk(bol, new THREE.MeshStandardMaterial({ color: 0xc9ccce, roughness: 0.3, metalness: 0.8 }));
-  mk(green, new THREE.MeshStandardMaterial({ color: 0x5f7f3a, roughness: 0.95 }), false);
-  mk(hedge, new THREE.MeshStandardMaterial({ color: 0x3f5a2c, roughness: 0.95 }));
-  mk(rail, new THREE.MeshStandardMaterial({ color: 0x9aa0a4, roughness: 0.5, metalness: 0.6 }));
+  // two draw calls: steel (bollards, guard rail) and planting (lawn, hedge, mounds), coloured per vertex
+  const tint = (list, hex) => { const c = new THREE.Color(hex); return list.map((q) => { const n = q.attributes.position.count, a = new Float32Array(n * 3); for (let i = 0; i < n; i++) a.set([c.r, c.g, c.b], i * 3); q.setAttribute('color', new THREE.BufferAttribute(a, 3)); return q.index ? q.toNonIndexed() : q; }); };
+  const mk = (list, mat) => { const m = new THREE.Mesh(mergeGeometries(list), mat); m.castShadow = m.receiveShadow = true; g.add(m); };
+  mk([...tint(bol, 0xc9ccce), ...tint(rail, 0x9aa0a4)], new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.4, metalness: 0.7 }));
+  mk([...tint(green, 0x5f7f3a), ...tint(hedge, 0x3f5a2c)], new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }));
   scene.add(g);
   for (let v = -15.5; v <= 15.5; v += 1.6) { if (Math.abs(v) < 1.2) continue; const p = P(2.6, v); addBox(p.x, p.z, 0.08, 0.08, 0); }
   { const c = P(26, 11.6); addBox(c.x, c.z, 2.6, 3.8, st.rot); }
@@ -482,7 +486,9 @@ function forecourt(scene, st) {
 
 // ---------------- Sean Heuston Bridge (tools/blender/build_heustonbridge.py) ----------------
 const BRIDGE_SPAN = 51.34; // the river channel the model was built for
-async function placeBridge(scene) {
+// The bridge uses only the station's two materials (granite, atlas), so its meshes are merged into the station's:
+// no extra draw calls.
+async function placeBridge(scene, station) {
   const br = bridges.find((b) => /Heuston/.test(b.name));
   if (!br) return null;
   let gltf;
@@ -494,8 +500,20 @@ async function placeBridge(scene) {
   root.rotation.set(0, Math.atan2(br.dir.x, br.dir.z) - Math.PI / 2, 0);
   root.scale.set(br.length / BRIDGE_SPAN, 1, 1);
   root.position.set(br.centre.x, 0, br.centre.z);
-  root.name = `${br.name} (hero)`;
-  scene.add(root);
+  root.updateMatrixWorld(true); station.updateMatrixWorld(true);
+  const into = new Map();
+  station.traverse((o) => { if (o.isMesh) into.set(o.material, o); });
+  const orphans = [];
+  root.traverse((o) => {
+    if (!o.isMesh) return;
+    const host = into.get(o.material);
+    if (!host) { orphans.push(o); return; }
+    const geo = o.geometry.clone().applyMatrix4(o.matrixWorld).applyMatrix4(host.matrixWorld.clone().invert());
+    const merged = mergeGeometries([host.geometry, geo]);
+    if (!merged) { orphans.push(o); return; }
+    host.geometry.dispose(); host.geometry = merged;
+  });
+  if (orphans.length) { root.clear(); root.add(...orphans); root.name = `${br.name} (hero)`; scene.add(root); }
   // hide the generic arch and parapets (their collision stays)
   const standIn = scene.getObjectByName(br.name);
   if (standIn) standIn.traverse((o) => { if (o.userData.standIn) o.visible = false; });
@@ -514,7 +532,7 @@ export async function placeHeuston(scene, site) {
   group.add(node);
   scene.add(group);
   forecourt(scene, st);
-  placeBridge(scene);
+  placeBridge(scene, node);
   const M = materials();
   return {
     group,
@@ -522,7 +540,6 @@ export async function placeHeuston(scene, site) {
     setNight(level) {
       flood.level.value = level; flood.sky.value = 3.3 - 2.1 * level;
       M.hs_atlas.emissiveIntensity = level * 0.7;
-      M.hb_lantern.emissiveIntensity = 0.05 + level * 3;
       // green for St Patrick's Day (ref 03)
       const d = new Date(); flood.tint.value.set(d.getMonth() === 2 && d.getDate() === 17 ? 0x5cff7a : 0xffc890);
     },

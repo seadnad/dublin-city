@@ -217,6 +217,15 @@ class Atlas(Part):
         return self.facen(pts, wf.n3, uvs)
 
 
+class Flat(Part):
+    """Flat-coloured surfaces drawn into an Atlas at a solid swatch (no extra material, no extra draw call)."""
+    def __init__(self, atlas, region):
+        self.atl, self.uvc, self.flood = atlas, atlas.tc(region, 0.5, 0.5), 0.0
+
+    def face(self, pts, uvs=None):
+        return self.atl.face(pts, [self.uvc] * len(pts))
+
+
 # ---------------- architectural helpers (Heuston v2) ----------------
 # Everything below works in real metres; Part.face applies SCALE. A wall frame WF puts a wall in plan: origin (u, v)
 # on the wall face, outward normal n (unit, in plan); s runs along the wall (h = up x n, so a face drawn with s and z

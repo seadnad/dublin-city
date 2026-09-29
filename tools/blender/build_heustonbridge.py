@@ -8,7 +8,7 @@ Sources: docs/research/heuston-v2.md section 11, refs/heuston/12, 13. Built at g
 street graph; trams and people are real size): X runs along the span, Y across, Z up with the deck at 0. The game's
 water is only 2.6 m down, so the 30 m arch is much flatter than the real one (accepted); the river channel under the
 bridge is 51.3 m, so granite abutments fill out to the quays. src/world/heuston.js places it on the bridge's deck and
-scales it to the span. Materials: hb_iron, hb_rib, hb_lantern, hs_granite, hs_atlas (the Heuston atlas).
+scales it to the span. Materials: hs_granite and hs_atlas (the Heuston atlas, with swatches for the iron and lamps).
 """
 import bpy, math, os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -21,10 +21,12 @@ OUT = os.path.abspath(ARGS[0] if ARGS else 'public/models')
 SRC = os.path.abspath(ARGS[1] if len(ARGS) > 1 else 'models')
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
-MAT = {n: kit.material(n, c) for n, c in dict(hb_iron=(0.72, 0.72, 0.69), hb_rib=(0.02, 0.025, 0.035), hb_lantern=(0.8, 0.7, 0.5),
-                                              hs_granite=(0.4, 0.39, 0.36), hs_atlas=(1, 1, 1)).items()}
-iron, rib, lan, gra = Part('hb_iron'), Part('hb_rib'), Part('hb_lantern'), Part('hs_granite')
+MAT = {n: kit.material(n, c) for n, c in dict(hs_granite=(0.4, 0.39, 0.36), hs_atlas=(1, 1, 1)).items()}
+gra = Part('hs_granite')
 atl = Atlas('hs_atlas', HS_ATLAS, 2048, 1024)
+# the painted iron, the dark ribs and the lanterns are swatches in the Heuston atlas: the whole bridge draws with the
+# station's two materials (heuston.js merges it into the station's meshes)
+iron, rib, lan = kit.Flat(atl, 'ironwhite'), kit.Flat(atl, 'ribdark'), kit.Flat(atl, 'lantern')
 
 LB = 51.34                     # the river channel under the bridge in the game (ground.js bridges)
 HALF = LB / 2
@@ -106,7 +108,7 @@ for sx in (-1, 1):
         gra.box(xa, xb, sy * PAR - 0.28, sy * PAR + 0.28, 0.0, 1.1, top=True)
         gra.box(xa, xb, sy * PAR - 0.36, sy * PAR + 0.36, 1.1, 1.22, top=True, bottom=True)
 
-objs = [p.build(MAT[m]) for p, m in ((iron, 'hb_iron'), (rib, 'hb_rib'), (lan, 'hb_lantern'), (gra, 'hs_granite'), (atl, 'hs_atlas'))]
+objs = [p.build(MAT[m]) for p, m in ((gra, 'hs_granite'), (atl, 'hs_atlas'))]
 kit.bake_ao_vertex(objs, distance=1.5, samples=24, cell=3.0, passes=1)
 root = bpy.data.objects.new('bridge', None); bpy.context.collection.objects.link(root)
 for o in objs:

@@ -34,10 +34,11 @@ SRC = os.path.abspath(ARGS[1] if len(ARGS) > 1 else 'models')
 bpy.ops.wm.read_factory_settings(use_empty=True)
 kit.SCALE[:] = [0.6, 0.64, 0.75]
 MAT = {n: kit.material('hs_' + n, c) for n, c in dict(granite=(0.42, 0.41, 0.38), rustic=(0.4, 0.39, 0.36), slate=(0.07, 0.08, 0.09),
-                                                     brick=(0.26, 0.07, 0.04), roof=(0.16, 0.17, 0.18), glass=(0.34, 0.45, 0.51), atlas=(1, 1, 1)).items()}
-gra, rus, sla, bri, roo, gla = (Part('hs_' + n) for n in ('granite', 'rustic', 'slate', 'brick', 'roof', 'glass'))
+                                                     brick=(0.26, 0.07, 0.04), atlas=(1, 1, 1)).items()}
+gra, rus, sla, bri = (Part('hs_' + n) for n in ('granite', 'rustic', 'slate', 'brick'))
 rus.tile = 3.3
 atl = Atlas('hs_atlas', HS_ATLAS, 2048, 1024)
+roo, gla = kit.Flat(atl, 'roofgrey'), kit.Flat(atl, 'glassflat')   # lead roofs, lantern glazing: swatches in the atlas
 
 # ---------------- dimensions (real metres, docs/research/heuston-v2.md section 3) ----------------
 HW, D, BAY = 16.2, 17.7, 3.6                  # main block half-width, depth, bay
@@ -125,7 +126,7 @@ _last = [0]
 
 
 def mark(label):
-    t = sum(sum(len(f.verts) - 2 for f in p.bm.faces) for p in (gra, rus, sla, bri, roo, gla, atl))
+    t = sum(sum(len(f.verts) - 2 for f in p.bm.faces) for p in (gra, rus, sla, bri, atl))
     print('TRIS', label, t - _last[0]); _last[0] = t
 
 
@@ -524,7 +525,7 @@ rect(bri, WF(SU1, 0, -1, 0), -SW, SW, 0, 8.0)
 
 mark('shed')
 # =============== finish ===============
-parts = [(gra, 'granite'), (rus, 'rustic'), (sla, 'slate'), (bri, 'brick'), (roo, 'roof'), (gla, 'glass'), (atl, 'atlas')]
+parts = [(gra, 'granite'), (rus, 'rustic'), (sla, 'slate'), (bri, 'brick'), (atl, 'atlas')]
 objs = [p.build(MAT[m]) for p, m in parts]
 print('TRIANGLES before AO', kit.tris(objs))
 kit.bake_ao_vertex(objs, distance=1.6, samples=32, cell=3.0, passes=1, flood=True)

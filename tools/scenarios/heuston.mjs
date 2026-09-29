@@ -7,7 +7,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const SHOTS = [
   ['junction', 'VQ2:0:4', '4,1', 1.2, 7],
   ['platform', '17,0', '0,0', 1.6, 7.5],
-  ['ne-corner', '26,30', '-4,4', 1.6, 7],
+  ['ne-corner', '27,19', '-4,6', 1.6, 7],
   ['river', '37,62', '0,3', 1.8, 6],
   ['bridge', '47,33', '0,2', 1.3, 7],
   ['hbridge', '42,36', '18,46', 2.6, -0.5],

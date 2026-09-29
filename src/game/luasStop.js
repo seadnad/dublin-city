@@ -35,11 +35,10 @@ function materials() {
     metal: addReflections(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.4, metalness: 0.6 }), 0.5),
     glass: new THREE.MeshStandardMaterial({ color: 0xa9c0c8, roughness: 0.08, metalness: 0.2, transparent: true, opacity: 0.32, depthWrite: false, side: THREE.DoubleSide }),
     sign: new THREE.MeshStandardMaterial({ map: signs, emissive: 0xffffff, emissiveMap: signs, emissiveIntensity: 0.08, roughness: 0.5 }),
-    strip: new THREE.MeshStandardMaterial({ color: 0xdfe6ea, emissive: 0xf4f8ff, emissiveIntensity: 0.0, roughness: 0.3 }),
     hatch: new THREE.MeshStandardMaterial({ map: hatchTexture(), transparent: true, depthWrite: false, roughness: 0.8, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }),
     wire: new THREE.LineBasicMaterial({ color: 0x2a2c2e }),
   };
-  nightMats.push([M.sign, 0.08, 0.9], [M.strip, 0.0, 1.3]);
+  nightMats.push([M.sign, 0.08, 1.1]);
   return M;
 }
 export function setStopNight(level) { for (const [m, day, night] of nightMats) m.emissiveIntensity = day + (night - day) * level; }
@@ -56,8 +55,9 @@ function signCanvas() {
   const scr = g.createLinearGradient(0, 16, 0, 112); scr.addColorStop(0, '#3f7fd0'); scr.addColorStop(1, '#1e4f9a');
   g.fillStyle = scr; g.fillRect(270, 16, 100, 70);
   g.fillStyle = '#e8eef4'; g.fillRect(282, 96, 76, 12);
-  // yellow validator head (384..448 x 0..64), a white wall sign strip (256..512 x 128..192)
+  // yellow validator head (384..448 x 0..64), the white strip light (448..512 x 0..64)
   g.fillStyle = '#e8c020'; g.fillRect(384, 0, 64, 64);
+  g.fillStyle = '#ffffff'; g.fillRect(448, 0, 64, 64);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
   t.userData = { canvas: c, names: new Map() };
   return t;
@@ -79,7 +79,7 @@ function nameUV(name) {
     names.set(name, true);
     t.needsUpdate = true;
   }
-  return { totem: [0, 0, 256, 256], wall: [256, 128, 256, 128], screen: [256, 0, 128, 128], yellow: [384, 0, 64, 64] };
+  return { totem: [0, 0, 256, 256], wall: [256, 128, 256, 128], screen: [256, 0, 128, 128], yellow: [384, 0, 64, 64], light: [456, 8, 48, 48] };
 }
 function hatchTexture() {
   const c = document.createElement('canvas'); c.width = c.height = 64;
@@ -125,7 +125,7 @@ export function buildStopKit(scene, at, cfg) {
   const uvs = nameUV(cfg.name);
   const from = cfg.from ?? -13, to = cfg.to ?? 13, W = cfg.width ?? 2.4, TRACK = cfg.track ?? 1.8;
   const e0 = TRACK + TRAM_HALF + GAP; // platform inner edge
-  const ground = [], metal = [], glass = [], signs = [], strips = [], hatch = [], wires = [];
+  const ground = [], metal = [], glass = [], signs = [], hatch = [], wires = [];
   const frames = [];
   for (let d = from; d <= to + 1e-6; d += 1) frames.push({ d, ...at(d) });
   const F = (d) => at(d);
@@ -173,7 +173,7 @@ export function buildStopKit(scene, at, cfg) {
         const canopy = new THREE.BoxGeometry(2.0, 0.04, 5.0).rotateZ(-0.1).translate(-0.8, 0, 0);
         glass.push(put(canopy, f, side, back, PLAT_H + 3.02));
         metal.push(colorize(put(new THREE.BoxGeometry(0.08, 0.14, 5.0).translate(-1.8, 0, 0), f, side, back, PLAT_H + 2.84), C.steel));
-        strips.push(put(new THREE.BoxGeometry(0.06, 0.03, 4.6).translate(-1.74, 0, 0), f, side, back, PLAT_H + 2.75));
+        signs.push(uvRect(put(new THREE.BoxGeometry(0.06, 0.03, 4.6).translate(-1.74, 0, 0), f, side, back, PLAT_H + 2.75), uvs.light));
         glass.push(put(new THREE.BoxGeometry(0.03, 2.2, 4.6), f, side, back + 0.12, PLAT_H + 1.35));
         metal.push(colorize(put(new THREE.BoxGeometry(0.035, 0.2, 4.6), f, side, back + 0.12, PLAT_H + 1.2), C.steel)); // frit band
         metal.push(colorize(put(new THREE.BoxGeometry(0.45, 0.06, 3.0), f, side, back - 0.3, PLAT_H + 0.45), C.timber));
@@ -243,7 +243,7 @@ export function buildStopKit(scene, at, cfg) {
   }
   const group = new THREE.Group(); group.name = `Luas stop ${cfg.name}`;
   const mk = (list, m, shadow) => { if (!list.length) return; const mesh = new THREE.Mesh(mergeGeometries(list.map(prep)), m); mesh.castShadow = shadow; mesh.receiveShadow = true; group.add(mesh); };
-  mk(ground, mat.ground, true); mk(metal, mat.metal, true); mk(glass, mat.glass, false); mk(signs, mat.sign, false); mk(strips, mat.strip, false); mk(hatch, mat.hatch, false);
+  mk(ground, mat.ground, true); mk(metal, mat.metal, true); mk(glass, mat.glass, false); mk(signs, mat.sign, false); mk(hatch, mat.hatch, false);
   if (wires.length) { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(wires, 3)); group.add(new THREE.LineSegments(g, mat.wire)); }
   scene.add(group);
   return group;
