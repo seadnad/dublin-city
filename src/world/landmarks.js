@@ -16,6 +16,7 @@ import { placeHapenny, placeParts, setStoneNight, placeCrokePark, placeAviva, pl
 import { placeHeuston } from './heuston.js';
 import { placeThreeArena } from './threearena.js';
 import { placeCCJ } from './ccj.js';
+import { buildTowers } from './towers.js';
 import { LITE } from '../render/quality.js';
 const lawnMat = () => getStreets().grassMat;
 import { buildPark } from './park.js';
@@ -110,7 +111,7 @@ export const landmarkMaterials = M;
 
 // ---------- builder ----------
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _s = new THREE.Vector3(), _p = new THREE.Vector3();
-class Builder {
+export class Builder {
   constructor(site) { this.parts = new Map(); this.site = site; }
   add(geo, mat, { x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0, s = 1, sx = s, sy = s, sz = s } = {}) {
     let g = geo.index ? geo.toNonIndexed() : geo.clone();
@@ -2301,6 +2302,9 @@ export function buildLandmarks(scene) {
   ];
   // Phoenix Park: woods, avenue, lamps, walls, heroes and deer (its static meshes join the landmark batch)
   const phoenixPark = buildPark(scene);
+  // Dublin's tall buildings (src/world/towers.js): Liberty Hall, George's Quay Plaza, College Square, Capital Dock, the Exo,
+  // the Grand Canal Dock towers and the three tallest church spires
+  const towers = buildTowers(scene, Builder);
   if (phoenixPark) groups.push(phoenixPark.group);
   for (const g of groups) scene.add(g);
   fourCourts(); // its colliders and statues (the hero is placed below)
@@ -2388,7 +2392,7 @@ export function buildLandmarks(scene) {
   // floating place labels were removed from the 3D view (landmarks are on the map instead)
   const labels = new THREE.Group();
   return {
-    groups, labels, trees, park: phoenixPark,
+    groups, labels, trees, park: phoenixPark, towers,
     setLabels(on) { labels.visible = on; },
     // docklands lighting after dark (0 = day, 1 = night)
     setNight(level) {
@@ -2400,6 +2404,7 @@ export function buildLandmarks(scene) {
       if (avivaHero) avivaHero.setNight(level);
       if (ccjHero) ccjHero.setNight(level);
       if (guinnessHero) guinnessHero.setNight(level);
+      towers.setNight(level);
       setStoneNight(level);
       if (phoenixPark) phoenixPark.setNight(level);
     },
