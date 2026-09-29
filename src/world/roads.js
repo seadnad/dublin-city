@@ -5,10 +5,12 @@
 //  - granite sett lanes, the Luas track bed and rails, the O'Connell Street median.
 // The field is also uploaded as a texture so shaders know how far each pixel is from the kerb.
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { addReflections } from '../render/reflect.js';
 import { groundAOUniforms, GROUND_AO_GLSL, GROUND_AO_APPLY } from '../render/groundao.js';
 import { lampUniforms } from '../render/lamplight.js';
 import { world, v2, PAVEMENT, offsetPolyline, pointInPolygon, hasParking, insetPolygon, roadInsetFor } from './geo.js';
+import { ISLANDS, islandOutline } from './oconnell.js';
 import { IS_MOBILE, fbm } from './textures.js';
 import { LITE } from '../render/quality.js';
 import { asphalt, paving, granite, setts, grass } from './surfaces.js';
@@ -706,27 +708,33 @@ export function grassPolygon(poly, mat) {
   return m;
 }
 
-// O'Connell Street's raised central median, split at junctions.
+// O'Connell Street's raised islands down the middle (layout in oconnell.js): granite paving with a kerb. All islands
+// share two meshes (paving tops, kerb sides) so they batch into the static landmark draw calls.
 export function buildMedian(mats) {
   const group = new THREE.Group();
-  for (const way of world.ways) {
-    if (way.type !== 'boulevard') continue;
-    for (const run of runs(way)) {
-      if (run.a.id === 'NQ8') continue; // bridge end: the monument island is separate
-      const pts = trim(run.pts, junctionClear(run.a) + 2, junctionClear(run.b) + 2);
-      if (!pts) continue;
-      const L = offsetPolyline(pts, 3), R = offsetPolyline(pts, -3).reverse();
-      const shape = new THREE.Shape([...L, ...R].map((p) => new THREE.Vector2(p.x, -p.z)));
-      const g = new THREE.ExtrudeGeometry(shape, { depth: 0.16, bevelEnabled: false });
-      g.rotateX(-Math.PI / 2);
-      const uv = g.attributes.uv, p = g.attributes.position, n = g.attributes.normal;
-      for (let i = 0; i < p.count; i++) {
-        if (Math.abs(n.getY(i)) > 0.5) uv.setXY(i, p.getX(i) / 3.6, p.getZ(i) / 3.6);
-      }
-      const m = new THREE.Mesh(g, [mats.pavingMat, mats.kerbMat]);
-      m.receiveShadow = m.castShadow = true;
-      group.add(m);
+  const tops = [], sides = [];
+  for (const isl of ISLANDS) {
+    const shape = new THREE.Shape(islandOutline(isl).map((p) => new THREE.Vector2(p.x, -p.z)));
+    const g = new THREE.ExtrudeGeometry(shape, { depth: 0.16, bevelEnabled: false });
+    g.rotateX(-Math.PI / 2);
+    const uv = g.attributes.uv, p = g.attributes.position, n = g.attributes.normal;
+    for (let i = 0; i < p.count; i++) {
+      if (Math.abs(n.getY(i)) > 0.5) uv.setXY(i, p.getX(i) / 3.6, p.getZ(i) / 3.6);
     }
+    // ExtrudeGeometry is non-indexed with two groups: 0 = the caps, 1 = the sides
+    for (const grp of g.groups) {
+      const part = new THREE.BufferGeometry();
+      for (const k of ['position', 'normal', 'uv']) {
+        const at = g.attributes[k];
+        part.setAttribute(k, new THREE.BufferAttribute(at.array.slice(grp.start * at.itemSize, (grp.start + grp.count) * at.itemSize), at.itemSize));
+      }
+      (grp.materialIndex === 0 ? tops : sides).push(part);
+    }
+  }
+  for (const [geos, mat] of [[tops, mats.pavingMat], [sides, mats.kerbMat]]) {
+    const m = new THREE.Mesh(mergeGeometries(geos), mat);
+    m.receiveShadow = m.castShadow = true;
+    group.add(m);
   }
   return group;
 }

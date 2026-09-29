@@ -3,6 +3,7 @@
 // a label height, and a teleport spot on a nearby road looking at it.
 import { world, v2, PAVEMENT, pointInPolygon, laneOffset, project } from './geo.js';
 import { bridges, parkPolys, campusPolys } from './ground.js';
+import { monumentSites } from './oconnell.js';
 
 const N = (id) => world.nodes.get(id);
 const wayBetween = (a, b) => world.ways.find((w) => {
@@ -233,6 +234,9 @@ export const extraSites = {
   // Grattan's statue on its island in the middle of College Green
   grattan: (() => { const a = N('CGT'), b = N('CG0'), p = v2.lerp(a, b, 0.5), d = v2.norm(v2.sub(b, a)); return { ...p, rot: Math.atan2(d.x, d.z) }; })(),
 };
+
+// the O'Connell Street monuments on their islands down the middle of the street (src/world/oconnell.js)
+Object.assign(extraSites, monumentSites);
 
 // Footprints the filler generator must avoid (landmark buildings; parks/campus handled separately).
 export const reserved = [

@@ -5,6 +5,7 @@ import { world, PAVEMENT, v2, offsetPolyline, resample, pointInPolygon, insetPol
 import { makePuddleTexture, makeStoneTexture, makeWaterNormal, fbm, rng } from './textures.js';
 import { addPolyline, addSegment } from '../game/collision.js';
 import { addReflections } from '../render/reflect.js';
+import { ISLANDS, islandOutline } from './oconnell.js';
 import { buildStreets, buildMedian, grassPolygon, greenLand, fieldUniforms, KERB_H } from './roads.js';
 import { buildCanals } from './canals.js';
 
@@ -108,11 +109,7 @@ function drawLayout() {
     strokePts(ctx, w.pts); ctx.stroke();
   }
   // O'Connell Street central median
-  for (const w of roads) {
-    if (w.type !== 'boulevard') continue;
-    ctx.strokeStyle = COLORS.kerb; ctx.lineWidth = 6.5 * PPM; strokePts(ctx, w.pts.slice(1)); ctx.stroke();
-    ctx.strokeStyle = COLORS.pavement; ctx.lineWidth = 6 * PPM; strokePts(ctx, w.pts.slice(1)); ctx.stroke();
-  }
+  for (const isl of ISLANDS) fillPoly(ctx, islandOutline(isl), COLORS.pavement);
 
   // Luas track bed + rails
   for (const { pts: lp } of world.luasLines) {

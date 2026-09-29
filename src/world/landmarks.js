@@ -11,6 +11,8 @@ import { chunkedInstances } from './chunks.js';
 import { plantTrees } from './trees.js';
 import { KERB_H } from './roads.js';
 import { placeHapenny, placeParts, setStoneNight } from './heroes.js';
+import { addStatue, buildStatues, placeOConnell } from './statues.js';
+import { ISLANDS, CHAIN, along, LENGTH } from './oconnell.js';
 
 const rand = rng(1742);
 
@@ -91,7 +93,9 @@ const M = {
   iron: addReflections(new THREE.MeshStandardMaterial({ color: 0xf2f1ec, roughness: 0.38, metalness: 0 }), 0.6), // painted cast iron
   ironLace: new THREE.MeshStandardMaterial({ map: ironTex, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.5 }),
   dark: new THREE.MeshStandardMaterial({ color: 0x15181b, roughness: 0.6 }),
-  bronze: addReflections(new THREE.MeshStandardMaterial({ color: 0x4f5b47, roughness: 0.45, metalness: 0.85 }), 0.6),
+  // near-black statue bronze with a green cast, matte and low-metal (docs/research/monuments.md 3.4)
+  bronze: new THREE.MeshStandardMaterial({ color: 0x2e332f, roughness: 0.6, metalness: 0.35 }),
+  steelMatte: new THREE.MeshStandardMaterial({ color: 0xb4b9bc, roughness: 0.5, metalness: 1.0 }), // the Spire's bead-blasted lower 10 m
   flag: new THREE.MeshStandardMaterial({ map: tricolour, side: THREE.DoubleSide, roughness: 0.8 }),
   lampGlow: new THREE.MeshStandardMaterial({ color: 0xfff1d0, emissive: 0xffd9a0, emissiveIntensity: 0.2 }),
   water: new THREE.MeshStandardMaterial({ color: 0x2b4540, roughness: 0.05, metalness: 0.4 }),
@@ -172,6 +176,12 @@ class Builder {
     this.add(new THREE.SphereGeometry(0.22 * s, 8, 6), mat, { x, y: y + 2.2 * s, z });
     return this;
   }
+  // a statue-kit figure (src/world/statues.js) standing at local (x, y, z), facing local +z turned by ry
+  figure(body, x, y, z, { h = 2.5, ry = 0, finish = 'bronze' } = {}) {
+    const S = this.site, c = Math.cos(S.rot), s = Math.sin(S.rot);
+    addStatue({ body, x: S.x + x * c + z * s, y, z: S.z - x * s + z * c, rot: S.rot + ry, height: h, finish });
+    return this;
+  }
   dome(r, mat, o = {}, seg = 20) { return this.add(new THREE.SphereGeometry(r, seg, 10, 0, Math.PI * 2, 0, Math.PI / 2), mat, o); }
   archWall(w, h, t, aw, ah, mat, o = {}) {
     const s = new THREE.Shape([new THREE.Vector2(-w / 2, 0), new THREE.Vector2(w / 2, 0), new THREE.Vector2(w / 2, h), new THREE.Vector2(-w / 2, h)]);
@@ -204,9 +214,12 @@ class Builder {
 
 // ---------- landmarks ----------
 function spire(site) {
+  // 120 m of stainless steel, 3 m across at the foot, rising straight out of a small paved disc in the median (OSM way
+  // 42638929, 7 m): no plinth. The lower 10 m is bead-blasted (duller), the top lit through its perforations.
   const b = new Builder(site);
-  b.cyl(1.4, 1.5, 3, M.bronze, {}, 16);
-  b.cyl(0.06, 1.4, 118, M.steel, { y: 3 }, 16);
+  b.cyl(3.5, 3.5, 0.03, M.graniteSmooth, { y: 0.16 }, 24);
+  b.cyl(1.39, 1.5, 10, M.steelMatte, { y: 0.16 }, 16);
+  b.cyl(0.06, 1.39, 110.8, M.steel, { y: 10.16 }, 16);
   b.cyl(0.04, 0.12, 12, M.lampGlow, { y: 106 }, 8);
   b.solid(0, 0, 3.2, 3.2);
   return b.build('The Spire');
@@ -294,7 +307,8 @@ function trinity(site) {
     b.box(W / 2 - 3, 0.08, site.gap - 1, M.planting, { x: sx * (W / 4 + 1.5), y: KERB_H, z: D / 2 + site.gap / 2 - 0.3 });
     // Burke and Goldsmith on their plinths
     b.box(1.6, 2.2, 1.6, M.graniteSmooth, { x: sx * 7, y: KERB_H, z: D / 2 + site.gap / 2 });
-    b.statue(sx * 7, KERB_H + 2.2, D / 2 + site.gap / 2, 1.1, M.bronze);
+    // Goldsmith reading (south of the gate, sx = 1), Burke (north)
+    b.figure(sx > 0 ? 'reader' : 'frock_chest', sx * 7, KERB_H + 2.2, D / 2 + site.gap / 2, { h: 2.7 });
   }
   railings(b, -W / 2, -3, fz); railings(b, 3, W / 2, fz);
   for (const x of [-3, 3]) b.box(1, 2.8, 1, M.granite, { x, z: fz });
@@ -442,7 +456,7 @@ function customHouse(site) {
   for (let i = 0; i < 4; i++) b.column(-7.5 + i * 5, pz, 10, 0.62, M.portland, 4.3);
   b.box(22, 1.6, 3.8, M.portland, { y: 14.3, z: D / 2 + 1.6 });
   b.pediment(22.4, 4.4, 3.6, M.portland, { y: 15.9, z: D / 2 + 1.6 });
-  for (const x of [-9, -3, 3, 9]) b.statue(x, 15.9, D / 2 + 1, 1.2, M.portland);
+  [-9, -3, 3, 9].forEach((x, i) => b.figure(i % 2 ? 'allegory' : 'classical', x, 15.9, D / 2 + 1, { h: 2.8, finish: 'portland' }));
   // drum and copper dome over the centre
   b.box(14, 5, 14, M.portland, { y: H + 0.9 });
   b.cyl(5.6, 5.6, 7, M.portland, { y: H + 5.9 }, 24);
@@ -450,24 +464,185 @@ function customHouse(site) {
   b.cyl(6.8, 6.8, 0.8, M.portland, { y: H + 12.3 }, 24);
   b.dome(6.1, M.copper, { y: H + 13.1 });
   b.cyl(1.2, 1.4, 3, M.portland, { y: H + 18.9 }, 10);
-  b.statue(0, H + 21.9, 0, 1.4, M.bronze);
+  b.figure('allegory', 0, H + 21.9, 0, { h: 3.2, finish: 'portland' }); // Commerce on the dome
   b.solid(0, 0, W, D + 4);
   return b.build('Custom House');
 }
 
+// ---------- O'Connell Street monuments (docs/research/monuments.md; layout in oconnell.js) ----------
+// Every monument faces south down the street to the bridge (the sites' local +z). Statues are statue-kit figures;
+// plinths are granite / limestone Builder geometry standing on the islands (whose top is 0.16 m up).
+const ISL = 0.16;
+// plain dressed stone for the statue plinths (the block-textured granite read as brickwork at this size)
+Object.assign(M, {
+  plinth: new THREE.MeshStandardMaterial({ color: 0xa8a59d, roughness: 0.8 }),             // mid-grey granite
+  limestone: new THREE.MeshStandardMaterial({ color: 0x9a9d9c, roughness: 0.82 }),         // Father Mathew's blue-grey pedestal
+  shantalla: new THREE.MeshStandardMaterial({ color: 0xa69f93, roughness: 0.78 }),         // Parnell's Galway granite
+  shantallaPolished: new THREE.MeshStandardMaterial({ color: 0x8d877d, roughness: 0.42 }),
+});
+// gilt lettering on a stone face (Larkin's pedestal, Parnell's obelisk)
+function giltPanel(lines, { bg, w = 512, h = 256, font = 'bold 44px Georgia', harp = false } = {}) {
+  return new THREE.MeshStandardMaterial({ roughness: 0.6, map: canvasTex(w, h, (g) => {
+    g.fillStyle = bg; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#c9a247'; g.font = font; g.textAlign = 'center'; g.textBaseline = 'middle';
+    const lh = h / (lines.length + (harp ? 2.2 : 1));
+    lines.forEach((t, i) => g.fillText(t, w / 2, lh * (i + 1)));
+    if (harp) { // a gilt harp under the inscription
+      const cx = w / 2, cy = h - lh * 1.1, s = lh * 0.9;
+      g.strokeStyle = '#c9a247'; g.lineWidth = 6;
+      g.beginPath(); g.moveTo(cx - s * 0.5, cy + s * 0.55); g.lineTo(cx - s * 0.5, cy - s * 0.5); g.quadraticCurveTo(cx + s * 0.1, cy - s * 0.8, cx + s * 0.55, cy - s * 0.45); g.lineTo(cx - s * 0.5, cy + s * 0.55); g.stroke();
+      g.lineWidth = 2; for (let k = 1; k < 6; k++) { const x = cx - s * 0.5 + k * s * 0.17; g.beginPath(); g.moveTo(x, cy + s * 0.55 - k * s * 0.18); g.lineTo(x, cy - s * 0.52 + k * 0.02 * s); g.stroke(); }
+    }
+  }) });
+}
+
 function oconnellMonument() {
-  const n0 = world.nodes.get('NQ8'), n1 = world.nodes.get('OC1');
-  const d = v2.norm(v2.sub(n1, n0));
-  const site = { x: n0.x + d.x * 16, z: n0.z + d.z * 16, rot: Math.atan2(d.x, d.z) + Math.PI };
+  // the Blender hero (tools/blender/build_oconnell.py): 12.2 m, 7.3 m base, winged Victories, the frieze drum
+  const site = extraSites.oconnellMonument;
+  const group = new THREE.Group(); group.name = "O'Connell Monument";
   const b = new Builder(site);
-  b.box(5, 1.2, 5, M.granite);
-  b.cyl(2.3, 2.5, 3.2, M.granite, { y: 1.2 }, 16);
-  for (let k = 0; k < 4; k++) { const a = (k / 4) * Math.PI * 2 + Math.PI / 4; b.statue(Math.cos(a) * 2.9, 1.2, Math.sin(a) * 2.9, 0.9, M.bronze); }
-  b.cyl(1.6, 1.9, 4.5, M.bronze, { y: 4.4 }, 14);
-  b.cyl(1.1, 1.1, 2.5, M.granite, { y: 8.9 }, 12);
-  b.statue(0, 11.4, 0, 1.5, M.bronze);
-  b.solid(0, 0, 5.4, 5.4);
-  return b.build("O'Connell Monument");
+  b.solid(0, 0, 7.3, 7.3);
+  // traffic signals on the island's south corners
+  for (const sx of [-1, 1]) {
+    b.cyl(0.07, 0.08, 3.4, M.dark, { x: sx * 3.6, y: ISL, z: 4.4 }, 8);
+    b.box(0.34, 0.95, 0.26, M.dark, { x: sx * 3.6, y: ISL + 2.5, z: 4.5 });
+  }
+  const fixtures = b.build("O'Connell Monument island");
+  placeOConnell(group, site).then((g) => {
+    if (g) return;
+    // stand-in if the model can't load: the stacked granite and bronze massing at the right proportions
+    const f = new Builder(site);
+    f.box(7.3, 1.2, 7.3, M.granite); f.box(6, 1.5, 6, M.granite, { y: 1.2 });
+    f.cyl(1.35, 1.35, 2.6, M.granite, { y: 2.7 }, 16); f.cyl(1.45, 1.45, 2.3, M.bronze, { y: 5.3 }, 16);
+    f.cyl(1.5, 1.2, 1.4, M.granite, { y: 7.6 }, 16);
+    group.add(...f.build('fallback').children);
+    group.position.set(site.x, 0, site.z); group.rotation.y = site.rot;
+  });
+  return [group, fixtures];
+}
+
+function smithOBrien(site) {
+  // NIAH 50010513: a four-tier stepped granite base, an inscribed granite pedestal, the Portland stone figure with his
+  // arms folded (ref 11). ~7 m overall.
+  const b = new Builder(site);
+  let y = ISL;
+  for (const [w, h, mat] of [[3.2, 0.35, M.plinth], [2.7, 0.85, M.plinth], [2.3, 0.9, M.plinth], [1.9, 0.25, M.graniteSmooth], [1.35, 1.5, M.graniteSmooth], [1.7, 0.3, M.graniteSmooth], [1.15, 0.2, M.graniteSmooth]]) {
+    b.box(w, h, w, mat, { y }); y += h;
+  }
+  b.box(0.95, 0.95, 0.04, M.portlandSmooth, { y: ISL + 2.65, z: 0.68 }); // the inscription panel
+  b.figure('folded', 0, y, 0, { h: 2.45, finish: 'portland' });
+  b.solid(0, 0, 3.2, 3.2);
+  return b.build("Smith O'Brien");
+}
+
+function grayMonument(site) {
+  // NIAH 50010514: three granite steps and a block, a pale stone pedestal and cornice, the figure with his right hand
+  // on his chest (ref 12). ~7.2 m.
+  const b = new Builder(site);
+  let y = ISL;
+  for (const [w, h, mat] of [[3.8, 0.33, M.plinth], [3.4, 0.33, M.plinth], [3.0, 0.34, M.plinth], [2.4, 1.1, M.graniteSmooth], [1.75, 0.2, M.portlandSmooth], [1.5, 2.0, M.portlandSmooth], [1.8, 0.3, M.portlandSmooth], [1.3, 0.15, M.portlandSmooth]]) {
+    b.box(w, h, w, mat, { y }); y += h;
+  }
+  b.figure('frock_chest', 0, y, 0, { h: 2.55, finish: 'portland' });
+  b.solid(0, 0, 3.8, 3.8);
+  return b.build('Sir John Gray');
+}
+
+function larkinMonument(site) {
+  // Oisín Kelly, 1979: textured bronze, right arm straight up and left arm flung out, on a tapering pedestal of four
+  // granite blocks with gilt JIM LARKIN 1874-1947 (ref 13). ~6.4 m.
+  const b = new Builder(site);
+  b.cyl(0.68 * Math.SQRT2, 0.8 * Math.SQRT2, 3.3, M.graniteSmooth, { y: ISL, ry: Math.PI / 4 }, 4);
+  b.add(new THREE.PlaneGeometry(1.2, 0.6), giltPanel(['JIM LARKIN', '1874 - 1947'], { bg: '#a9a79f', w: 256, h: 128, font: 'bold 34px Georgia' }),
+    { y: ISL + 2.55, z: 0.705, rx: -0.036 });
+  b.figure('larkin', 0, ISL + 3.3, 0, { h: 2.55, finish: 'oliveBronze' });
+  b.solid(0, 0, 1.8, 1.8);
+  return b.build('Jim Larkin');
+}
+
+function fatherMathewMonument(site) {
+  // Mary Redmond, 1893; reinstated just north of the Spire in 2018 (NIAH 50010613): a two-stage octagonal stepped
+  // base, a pedestal with diagonal buttresses, the friar blessing with his right arm raised (ref 14). ~7 m.
+  const b = new Builder(site);
+  const oct = (r, h, y, mat) => b.cyl(r / Math.cos(Math.PI / 8), r / Math.cos(Math.PI / 8), h, mat, { y, ry: Math.PI / 8 }, 8);
+  oct(1.75, 0.35, ISL, M.graniteSmooth); oct(1.45, 0.35, ISL + 0.35, M.graniteSmooth);
+  const y0 = ISL + 0.7;
+  b.box(1.3, 2.9, 1.3, M.limestone, { y: y0 });
+  for (let k = 0; k < 4; k++) { // the buttresses on the diagonals, stepping in as they rise
+    const a = Math.PI / 4 + (k * Math.PI) / 2, cx = Math.sin(a) * 0.75, cz = Math.cos(a) * 0.75;
+    b.box(0.42, 1.6, 0.7, M.limestone, { x: cx, y: y0, z: cz, ry: a });
+    b.box(0.34, 0.8, 0.45, M.limestone, { x: cx * 0.85, y: y0 + 1.6, z: cz * 0.85, ry: a });
+  }
+  b.box(1.65, 0.3, 1.65, M.limestone, { y: y0 + 2.9 });
+  b.box(1.2, 0.18, 1.2, M.limestone, { y: y0 + 3.2 });
+  b.figure('friar', 0, y0 + 3.38, 0, { h: 2.9, finish: 'limestone' });
+  b.solid(0, 0, 3.2, 3.2);
+  return b.build('Father Mathew');
+}
+
+function parnellMonument(site) {
+  // Saint-Gaudens and Bacon, 1911 (NIAH 50010557): a 19 m triangular obelisk of Shantalla granite with a bronze tripod
+  // and flame, the gilt inscription and harp on its south face, Parnell in mid-speech on the pedestal projecting south
+  // at 2.7 m, a bronze festoon band, a cobbled island ringed with granite bollards (refs 15, 16).
+  const b = new Builder(site);
+  const shant = M.shantalla;
+  const polished = M.shantallaPolished;
+  b.box(6.6, 0.02, 8.6, M.cobble, { y: ISL });
+  // bollards round the island
+  for (let t = -3.9; t <= 3.91; t += 1.3) for (const sx of [-1, 1]) b.cyl(0.16, 0.2, 0.85, M.graniteSmooth, { x: sx * 3.1, y: ISL, z: t }, 8);
+  for (const x of [-1.9, -0.6, 0.6, 1.9]) b.cyl(0.16, 0.2, 0.85, M.graniteSmooth, { x, y: ISL, z: 4.1 }, 8);
+  // obelisk: triangular, a flat face to the south, tapering from ~3 m to ~1.8 m wide at 17 m
+  const oz = -0.8, r0 = 3 / Math.sqrt(3), r1 = 1.8 / Math.sqrt(3);
+  b.cyl(r0 + 0.25, r0 + 0.3, 0.6, shant, { y: ISL, z: oz, ry: Math.PI }, 3);
+  b.cyl(r1, r0, 16.2, polished, { y: ISL + 0.6, z: oz, ry: Math.PI }, 3);
+  b.cyl(r1 + 0.18, r1 - 0.05, 0.5, shant, { y: ISL + 16.8, z: oz, ry: Math.PI }, 3); // the capital
+  // bronze tripod and flame
+  for (let k = 0; k < 3; k++) {
+    const a = (k / 3) * Math.PI * 2;
+    b.cyl(0.05, 0.07, 1.3, M.bronze, { x: Math.sin(a) * 0.35, y: ISL + 17.3, z: oz + Math.cos(a) * 0.35, rz: Math.sin(a) * 0.2, rx: -Math.cos(a) * 0.2 }, 5);
+  }
+  b.cyl(0.45, 0.2, 0.35, M.bronze, { y: ISL + 18.5, z: oz }, 10);
+  b.cyl(0.02, 0.3, 0.6, M.bronze, { y: ISL + 18.85, z: oz }, 8);
+  // the gilt inscription and harp on the south face, above the statue
+  const face = oz + r0 / 2, lean = Math.atan((r0 - r1) / 2 / 16.2);
+  b.add(new THREE.PlaneGeometry(2.0, 3.0), giltPanel(['TO CHARLES STEWART', 'PARNELL', '1846 - 1891'], { bg: '#8d877d', w: 256, h: 384, font: 'bold 24px Georgia', harp: true }),
+    { y: ISL + 6.8, z: face - Math.tan(lean) * 6.6 + 0.03, rx: -lean });
+  // the pedestal projecting south, with the bronze festoon band, and Parnell on it
+  b.box(5.0, 2.55, 3.4, shant, { y: ISL, z: 0.9 });
+  b.box(5.12, 0.4, 3.52, M.bronze, { y: ISL + 1.8, z: 0.9 });
+  b.box(5.2, 0.18, 3.6, shant, { y: ISL + 2.37, z: 0.9 });
+  b.figure('orator_out', 0, ISL + 2.55, 1.5, { h: 2.4, finish: 'darkBronze' });
+  b.box(0.9, 1.0, 0.7, M.bronze, { x: 0.8, y: ISL + 2.55, z: 1.0 }); // the draped table behind him
+  b.solid(0, 0.9, 5.0, 3.4); b.solid(0, oz, 3.0, 2.6);
+  return b.build('Parnell Monument');
+}
+
+// O'Connell Street trees (2006 IAP): ornamental rowans on the islands, kept clear of the monuments; the big
+// Oriental planes along both footpaths. Returns { rowans, planes } as tree spots.
+function oconnellTrees() {
+  const rowans = [], planes = [];
+  const clear = [[CHAIN.oconnell, 6.2], [CHAIN.smithOBrien, 4.2], [CHAIN.gray, 4.4], [CHAIN.larkin, 3.6], [CHAIN.spire, 6.5], [CHAIN.fatherMathew, 4.4], [CHAIN.parnell, 16]];
+  const free = (s) => clear.every(([c, r]) => Math.abs(s - c) > r);
+  for (const isl of ISLANDS) {
+    if (isl.cobbles) continue;
+    let last = -Infinity;
+    for (let s = isl.from + 2.5; s <= isl.to - 2.5; s += 0.5) {
+      if (s - last < 14 || !free(s)) continue;
+      rowans.push({ ...along(s), s: 1.0 }); last = s;
+    }
+  }
+  const gpo = sites.gpo, portico = toWorld(gpo, 0, gpo.d / 2 + 3);
+  const way = world.ways.find((w) => w.type === 'boulevard'), off = way.width / 2 + 1.4;
+  for (const side of [1, -1]) {
+    for (let s = 14; s < LENGTH - 16; s += 13) {
+      const p = along(s, side * off);
+      if ((p.x - portico.x) ** 2 + (p.z - portico.z) ** 2 < 16 ** 2) continue;
+      const r = world.nearestRoad(p.x, p.z);
+      if (r && r.way !== way && r.edgeDist < 1.5) continue; // not in a side street's mouth
+      planes.push({ x: p.x, z: p.z, s: 1.0 });
+    }
+  }
+  return { rowans, planes };
 }
 
 // the Fusiliers' Arch stands in the Green's railings at the Grafton Street corner; local +z faces Grafton Street
@@ -976,7 +1151,7 @@ function dublinCastle(site) {
   const b = new Builder(site);
   b.archWall(8, 8.5, 1.6, 4, 6, M.portland);
   b.box(8.6, 0.8, 2, M.portland, { y: 8.5 });
-  b.statue(0, 9.3, 0, 1.1, M.bronze);
+  b.figure('justice', 0, 9.3, 0, { h: 2.6, ry: Math.PI, finish: 'darkBronze' }); // Justice turns her back on the city
   b.box(3.8, 5, 0.1, M.dark, { z: -0.3 });
   railings(b, -18, -4.4, 0.3); railings(b, 4.4, 18, 0.3);
   for (const x of [-18, 18]) b.box(1.2, 2.6, 1.2, M.portland, { x });
@@ -1421,9 +1596,9 @@ function gpo(site) {
   for (let x = -PW / 2; x <= PW / 2; x += 0.5) b.box(0.22, 0.2, 0.2, M.portlandSmooth, { x, y: ey + 1.5, z: ez + pd / 2 + 0.2 });
   b.pediment(PW + 1.1, 4.2, pd + 0.4, M.portlandSmooth, { y: ey + 2.2, z: ez });
   b.box(1.6, 1, 1.6, M.portlandSmooth, { y: ey + 6.3, z: pz - 1 });
-  b.statue(0, ey + 7.3, pz - 1, 1.5, M.portland); // Hibernia
-  b.statue(-PW / 2, ey + 2.2, pz - 1, 1.35, M.portland); // Mercury
-  b.statue(PW / 2, ey + 2.2, pz - 1, 1.35, M.portland); // Fidelity
+  b.figure('allegory', 0, ey + 7.3, pz - 1, { h: 3.2, finish: 'portland' }); // Hibernia with her spear
+  b.figure('classical', -PW / 2, ey + 2.2, pz - 1, { h: 2.9, finish: 'portland' }); // Mercury
+  b.figure('allegory', PW / 2, ey + 2.2, pz - 1, { h: 2.9, finish: 'portland' }); // Fidelity
   // flagpole with the tricolour
   b.cyl(0.08, 0.1, 10, M.iron, { x: 0, y: H + 1.2, z: 0 }, 6);
   b.add(new THREE.PlaneGeometry(3.6, 1.8), M.flag, { x: 1.85, y: H + 10, z: 0 });
@@ -1738,19 +1913,12 @@ function buildTrees(scene) {
       spots.push({ ...p, s: 0.95, street: true }); addBox(p.x, p.z, 0.4, 0.4, 0);
     }
   }
-  // London planes along O'Connell Street's median
-  const oc = world.ways.find((w) => w.type === 'boulevard');
-  for (let k = 1; k < oc.pts.length - 1; k++) {
-    const a = oc.pts[k], b = oc.pts[k + 1];
-    const L = v2.len(v2.sub(b, a));
-    for (let s = 8; s < L - 8; s += 13) {
-      const p = v2.lerp(a, b, s / L);
-      if (Math.hypot(p.x - sites.spire.x, p.z - sites.spire.z) < 12) continue;
-      spots.push({ ...p, s: 0.75, street: true });
-      addBox(p.x, p.z, 0.4, 0.4, 0);
-    }
-  }
-  // parks get a mix of species; O'Connell Street's median is lined with London planes
+  // O'Connell Street: rowans on the islands, Oriental planes along the footpaths
+  const oct = oconnellTrees();
+  for (const p of oct.planes) { spots.push({ ...p, street: true }); addBox(p.x, p.z, 0.4, 0.4, 0); }
+  for (const p of oct.rowans) addBox(p.x, p.z, 0.25, 0.25, 0);
+  plantTrees(scene, oct.rowans.map((p) => ({ x: p.x, y: 0.16, z: p.z, rot: rand() * 6.28, s: 0.95 + rand() * 0.15 })), { rowan: 1 }, rand);
+  // parks get a mix of species; street trees are London planes
   const item = (p, k) => ({ x: p.x, y: KERB_H, z: p.z, rot: rand() * 6.28, s: p.s * k * (0.9 + rand() * 0.25) });
   plantTrees(scene, spots.filter((p) => !p.street).map((p) => item(p, 0.85)), { plane: 3, lime: 2, chestnut: 3, birch: 2, young: 1 }, rand);
   plantTrees(scene, spots.filter((p) => p.street).map((p) => item(p, 1.05)), { plane: 1 }, rand);
@@ -1762,7 +1930,9 @@ export function buildLandmarks(scene) {
   const groups = [
     spire(S.spire), gpo(S.gpo), oconnellBridge(S.oconnellBridge), trinity(S.trinity),
     bankOfIreland(S.bankOfIreland), customHouse(S.customHouse),
-    oconnellMonument(), fusiliersArch(S.stephensGreen.park),
+    ...oconnellMonument(), fusiliersArch(S.stephensGreen.park),
+    smithOBrien(extraSites.smithOBrien), grayMonument(extraSites.gray), larkinMonument(extraSites.larkin),
+    fatherMathewMonument(extraSites.fatherMathew), parnellMonument(extraSites.parnell),
     cityHall(S.cityHall), dublinCastle(extraSites.castle), centralBank(S.centralBank), olympia(extraSites.olympia),
     clockCorner(extraSites.clockCorner), grattanIsland(extraSites.grattan),
     iveaghPlayCentre(extraSites.iveaghPlay),
@@ -1772,6 +1942,7 @@ export function buildLandmarks(scene) {
     threeArena(S.threeArena), grattanOffice(S.grandCanalSt), grandCanalTheatre(S.grandCanal), grandCanalSquare(S.grandCanal.square), markerHotel(extraSites.marker), gcsOffice(extraSites.gcsOffice),
   ];
   for (const g of groups) scene.add(g);
+  buildStatues(scene); // the statue-kit figures queued by the builders above (loads statues.glb)
   // Heuston Station (Blender hero; the old procedural model if it can't load)
   placeParts(scene, 'heuston', S.heuston, 'Heuston Station').then((g) => { if (!g) scene.add(heuston(S.heuston)); });
   // St Patrick's Cathedral (Blender hero) and its park dressing
