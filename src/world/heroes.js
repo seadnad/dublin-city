@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { addReflections } from '../render/reflect.js';
 import { stoneTex } from './ground.js';
 import { IS_MOBILE } from './textures.js';
@@ -1063,6 +1064,249 @@ export async function placeAviva(scene, site, { lite = false } = {}) {
       mats.av_sign.emissiveIntensity = 0.15 + 2.2 * l;
       mats.av_glow.opacity = 0.2 * l;
       for (const g of glows) g.visible = l > 0.01;
+    },
+  };
+}
+
+// ---------- Guinness Storehouse, the Gravity Bar and the St James's Gate skyline ----------
+// tools/blender/build_guinness.py: roots `storehouse` / `storehouse_far` (LOD), `powerhouse`, four `stack_*` and
+// `tower` (St Patrick's Tower), each placed from site.parts (OSM positions, src/world/sites.js). Every texture is a
+// tile painted here (docs/research/guinness.md 4 has the palette). The materials thin their fog like the Aviva's, so the
+// block and the glass drum on its roof still read on the skyline from the quays and Heuston.
+const GS = { brick: '#95523a', brickHi: '#a65f45', dark: '#56322a', darkHi: '#653c32', stone: '#b3ac9f', glass: '#1d2327', frame: '#d7d3c9' };
+const GS_H = 34; // the elevation tile spans 0..34 m (build_guinness.py H_TOP)
+function guinnessTextures(S) {
+  const rnd = (() => { let s = 11; return () => ((s = (s * 16807) % 2147483647) / 2147483647); })();
+  const T = (w, h, paint, k = 1) => tile(Math.round(w * S * k), Math.round(h * S * k), (g, cw, ch) => { g.scale(cw / w, ch / h); paint(g, w, h); });
+  // the storehouse elevations: 4 bays (24 m) x 34 m; top half the blind-arched Market Street front, bottom half the
+  // windowed brewery sides. PX: px per metre across; Y(z, half): the row of height z (build_guinness.py elev_v)
+  const PX = 1024 / 24, Y = (z, half) => (half ? 2044 : 1020) - (1016 * z) / GS_H;
+  const bays = (fn) => { for (let k = -1; k <= 4; k++) fn(k * 6 * PX); };
+  const arch = (g, x, y0, w, y1) => { g.beginPath(); g.moveTo(x, y1); g.lineTo(x, y0 + w / 2); g.arc(x + w / 2, y0 + w / 2, w / 2, Math.PI, 0); g.lineTo(x + w, y1); g.closePath(); };
+  const elevation = (g, half, lit) => {
+    const y = (z) => Y(z, half), top = y(GS_H) - 4, bot = y(0) + 4;
+    g.save(); g.beginPath(); g.rect(0, top, 1024, bot - top); g.clip();
+    if (lit) { g.fillStyle = '#000'; g.fillRect(0, top, 1024, bot - top); } else {
+      g.fillStyle = GS.brick; g.fillRect(0, top, 1024, bot - top);
+      for (let yy = top; yy < bot; yy += 3) { g.fillStyle = `rgba(40,18,12,${0.1 + rnd() * 0.12})`; g.fillRect(0, yy, 1024, 1); }
+      for (let i = 0; i < 900; i++) { g.fillStyle = rnd() < 0.5 ? 'rgba(160,82,56,0.25)' : 'rgba(70,32,24,0.2)'; g.fillRect(rnd() * 1024, top + rnd() * (bot - top), 3 + rnd() * 6, 2); }
+      // plinth, the string course over the arcade, the cornice, the coping
+      for (const [z0, z1] of [[-1, 0.8], [7.05, 7.4], [30.2, 31], [33.6, GS_H + 1]]) { g.fillStyle = GS.stone; g.fillRect(0, y(z1), 1024, y(z0) - y(z1)); g.fillStyle = 'rgba(0,0,0,0.18)'; g.fillRect(0, y(z0) - 2, 1024, 2); }
+      // corbel table under the parapet: little round arches on corbels
+      g.fillStyle = GS.dark; g.fillRect(0, y(32.1), 1024, y(31) - y(32.1));
+      g.fillStyle = GS.brick; for (let x = 0; x < 1024; x += 0.75 * PX) { arch(g, x + 4, y(31.9), 0.75 * PX - 8, y(31.05)); g.fill(); }
+    }
+    bays((x0) => {
+      const c = x0 + 3 * PX; // bay centre
+      { // ground floor: an arched opening with stone imposts and an iron grille (ref 02)
+        const w = 2.9 * PX, x = c - w / 2, y0 = y(5.7), y1 = y(1.4);
+        if (!lit) {
+          g.fillStyle = GS.dark; arch(g, x - 10, y0 - 10, w + 20, y1); g.fill();
+          g.fillStyle = GS.glass; arch(g, x, y0, w, y1); g.fill();
+          g.fillStyle = 'rgba(150,150,150,0.45)'; for (let bx = x + 8; bx < x + w; bx += 11) g.fillRect(bx, y0 + w / 2, 2, y1 - y0 - w / 2);
+          g.fillStyle = GS.stone; g.fillRect(x - 22, y(4.55), 30, y(4.1) - y(4.55)); g.fillRect(x + w - 8, y(4.55), 30, y(4.1) - y(4.55)); g.fillRect(x - 4, y(1.4), w + 8, 7);
+        } else { g.fillStyle = rnd() < 0.45 ? '#8a6640' : '#2a2018'; arch(g, x, y0, w, y1); g.fill(); }
+      }
+      if (half === 0) {
+        // Market Street: two tiers of tall blind panels in dark-brick frames, arched heads on the upper tier, then the
+        // top storey's paired windows under the corbel table
+        if (!lit) for (const [z0, z1, arched] of [[8.4, 16.6, false], [17.6, 25.4, true]]) {
+          const w = 3.4 * PX, x = c - w / 2;
+          g.fillStyle = GS.dark; g.fillRect(x, y(z1), w, y(z0) - y(z1));
+          g.fillStyle = '#6f3927';
+          if (arched) { arch(g, x + 14, y(z1) + 14, w - 28, y(z0) - 14); g.fill(); } else g.fillRect(x + 14, y(z1) + 14, w - 28, y(z0) - y(z1) - 28);
+          g.fillStyle = 'rgba(0,0,0,0.25)'; g.fillRect(x + 14, y(z1) + 14, w - 28, 5); g.fillRect(x + 14, y(z1) + 14, 5, y(z0) - y(z1) - 28);
+        }
+        for (const dx of [-0.75, 0.75]) {
+          const w = 0.95 * PX, x = c + dx * PX - w / 2, y0 = y(29.4), y1 = y(26.9);
+          g.fillStyle = lit ? (rnd() < 0.35 ? '#e8c38a' : '#000') : GS.glass; g.fillRect(x, y0, w, y1 - y0);
+          if (!lit) { g.fillStyle = GS.frame; g.fillRect(x, y0, w, 3); g.fillRect(x + w / 2 - 1, y0, 3, y1 - y0); g.fillStyle = GS.stone; g.fillRect(x - 4, y1, w + 8, 5); }
+        }
+      } else {
+        // the brewery sides: a regular grid of windows, three to a bay on five floors, stone sill bands, round-headed
+        // windows on the top floor (ref 01)
+        if (!lit) for (const z of [7.9, 12.5, 17.1, 21.7, 26.3]) { g.fillStyle = GS.stone; g.fillRect(x0 + 0.5 * PX, y(z) - 2, 5 * PX, 6); }
+        for (let f = 0; f < 5; f++) {
+          const zb = 8.1 + f * 4.6, top = f === 4;
+          for (const dx of [-1.55, 0, 1.55]) {
+            const w = 1.0 * PX, x = c + dx * PX - w / 2, y0 = y(zb + 2.5), y1 = y(zb);
+            if (lit) { const r = rnd(); g.fillStyle = r < 0.28 ? '#ecc990' : r < 0.4 ? '#9fb6c8' : '#000'; g.fillRect(x + 3, y0 + 3, w - 6, y1 - y0 - 6); continue; }
+            if (top) { g.fillStyle = GS.brickHi; arch(g, x - 5, y0 - 5, w + 10, y1); g.fill(); g.fillStyle = GS.glass; arch(g, x, y0, w, y1); g.fill(); }
+            else { g.fillStyle = GS.glass; g.fillRect(x, y0, w, y1 - y0); }
+            g.fillStyle = GS.frame;
+            g.fillRect(x, (y0 + y1) / 2, w, 3); g.fillRect(x + w / 2 - 1.5, y0, 3, y1 - y0);
+            g.fillRect(x, y0 + (top ? w / 2 : 0), 3, y1 - y0 - (top ? w / 2 : 0)); g.fillRect(x + w - 3, y0 + (top ? w / 2 : 0), 3, y1 - y0 - (top ? w / 2 : 0));
+          }
+        }
+      }
+      // the pilaster on the bay line (dark engineering brick, plinth to cornice)
+      if (!lit) {
+        g.fillStyle = GS.dark; g.fillRect(x0 - 0.55 * PX, y(30.2), 1.1 * PX, y(0.8) - y(30.2));
+        g.fillStyle = GS.darkHi; for (let yy = y(30.2); yy < y(0.8); yy += 6) g.fillRect(x0 - 0.55 * PX, yy, 1.1 * PX, 1);
+      }
+    });
+    g.restore();
+  };
+  const brick = T(1024, 2048, (g) => { elevation(g, 0, false); elevation(g, 1, false); });
+  const brickLit = T(1024, 2048, (g) => { elevation(g, 0, true); elevation(g, 1, true); }, 0.5); // the night windows need less
+  // Gravity Bar glazing: one 8 m run (four 2 m panels) by the glass height; the sky in it by day, the bar lit at night
+  const glassPanel = (g, w, h, lit) => {
+    const gr = g.createLinearGradient(0, 0, 0, h);
+    if (lit) { gr.addColorStop(0, '#fff2d6'); gr.addColorStop(0.55, '#f0c890'); gr.addColorStop(1, '#8a5a32'); }
+    else { gr.addColorStop(0, '#d5e0e6'); gr.addColorStop(0.45, '#8ea5b2'); gr.addColorStop(1, '#3a4a54'); }
+    g.fillStyle = gr; g.fillRect(0, 0, w, h);
+    g.fillStyle = lit ? 'rgba(30,18,10,0.85)' : 'rgba(20,30,36,0.55)'; // people and tables against the light
+    for (let i = 0; i < 26; i++) { const x = rnd() * w, hh = h * (0.18 + rnd() * 0.3); g.fillRect(x, h - hh, 3 + rnd() * 6, hh); }
+    g.fillStyle = lit ? '#1a120c' : '#20272c';
+    for (let x = 0; x <= w; x += w / 4) g.fillRect(x - 2, 0, 4, h);
+    g.fillRect(0, h * 0.7, w, 2);
+    if (!lit) { g.fillStyle = 'rgba(255,255,255,0.18)'; g.fillRect(0, 0, w, 6); }
+  };
+  const glass = T(256, 128, (g, w, h) => glassPanel(g, w, h, false));
+  const glassLit = T(256, 128, (g, w, h) => glassPanel(g, w, h, true));
+  // Power House: plain 1940s brick with steel windows, one 6 m bay by one 4.5 m floor
+  const plainBay = (g, w, h, lit) => {
+    if (lit) { g.fillStyle = '#000'; g.fillRect(0, 0, w, h); g.fillStyle = '#b8966a'; g.fillRect(w * 0.3, h * 0.32, w * 0.4, h * 0.5); return; }
+    g.fillStyle = '#8d4b36'; g.fillRect(0, 0, w, h);
+    for (let y = 0; y < h; y += 3) { g.fillStyle = 'rgba(40,18,12,0.15)'; g.fillRect(0, y, w, 1); }
+    g.fillStyle = '#20262a'; g.fillRect(w * 0.3, h * 0.32, w * 0.4, h * 0.5);
+    g.fillStyle = '#c9c6bc'; for (let x = w * 0.3; x <= w * 0.7 + 1; x += w * 0.1) g.fillRect(x - 1, h * 0.32, 2, h * 0.5);
+    for (let y = h * 0.32; y <= h * 0.82 + 1; y += h * 0.125) g.fillRect(w * 0.3, y - 1, w * 0.4, 2);
+    g.fillStyle = '#a9a295'; g.fillRect(w * 0.28, h * 0.82, w * 0.44, 4);
+  };
+  const plain = T(256, 192, (g, w, h) => plainBay(g, w, h, false));
+  const plainLit = T(128, 96, (g, w, h) => plainBay(g, w, h, true));
+  // the stacks: brick, steel with a red band, cream; each column wraps a stack once, v runs up its height
+  const stacks = T(384, 512, (g) => {
+    g.fillStyle = '#7a3f2e'; g.fillRect(0, 0, 128, 512);
+    for (let y = 0; y < 512; y += 3) { g.fillStyle = `rgba(30,14,10,${0.12 + rnd() * 0.1})`; g.fillRect(0, y, 128, 1); }
+    g.fillStyle = '#231a17'; g.fillRect(0, 0, 128, 26); g.fillStyle = '#4a2b24'; for (const y of [60, 170, 300]) g.fillRect(0, y, 128, 5);
+    const sg = g.createLinearGradient(128, 0, 256, 0); sg.addColorStop(0, '#9aa0a3'); sg.addColorStop(0.5, '#e4e6e6'); sg.addColorStop(1, '#9aa0a3');
+    g.fillStyle = sg; g.fillRect(128, 0, 128, 512); g.fillStyle = '#9b3a2c'; g.fillRect(128, 40, 128, 36); g.fillStyle = '#2b2b2b'; g.fillRect(128, 0, 128, 10);
+    g.fillStyle = '#cdbf98'; g.fillRect(256, 0, 128, 512); g.fillStyle = 'rgba(90,80,60,0.35)'; for (let y = 0; y < 512; y += 22) g.fillRect(256, y, 128, 2);
+    g.fillStyle = '#3a342c'; g.fillRect(256, 0, 128, 12);
+  });
+  // GUINNESS in cream letters on the Power House parapet (ref 07)
+  const sign = tile(512, 80, (g, w, h) => {
+    g.clearRect(0, 0, w, h); g.fillStyle = '#efe6cf'; g.font = 'bold 64px Georgia, "Times New Roman", serif';
+    g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('GUINNESS', w / 2, h / 2 + 3, w * 0.96);
+  }, { repeat: false });
+  // St Patrick's Tower: dark calp-and-brick courses, small square windows climbing it (ref 10); a quarter round per tile
+  const tower = T(256, 512, (g, w, h) => {
+    g.fillStyle = '#3d332b'; g.fillRect(0, 0, w, h);
+    for (let y = 0; y < h; y += 2) { g.fillStyle = `rgba(${rnd() < 0.5 ? '20,16,12' : '96,80,64'},${0.15 + rnd() * 0.2})`; g.fillRect(0, y, w, 1); }
+    for (let i = 0; i < 500; i++) { g.fillStyle = rnd() < 0.5 ? 'rgba(110,86,66,0.3)' : 'rgba(18,14,10,0.3)'; g.fillRect(rnd() * w, rnd() * h, 5 + rnd() * 6, 2); }
+    for (let k = 0; k < 11; k++) { const y = h * (0.06 + k * 0.083), x = (k % 2 ? 0.25 : 0.72) * w; g.fillStyle = '#6d6356'; g.fillRect(x - 11, y - 3, 22, 4); g.fillStyle = '#141210'; g.fillRect(x - 8, y, 16, 14); }
+    g.fillStyle = 'rgba(0,0,0,0.25)'; g.fillRect(0, h - 26, w, 26); // damp at the foot
+  });
+  // a fermenter's aluminium cladding: panel seams, a ladder, the railing round the top (three's cylinder UVs: the
+  // canvas top is the tank's foot)
+  const tank = T(128, 256, (g, w, h) => {
+    const gr = g.createLinearGradient(0, 0, w, 0); gr.addColorStop(0, '#aeb4b6'); gr.addColorStop(0.5, '#dfe2e2'); gr.addColorStop(1, '#aeb4b6');
+    g.fillStyle = gr; g.fillRect(0, 0, w, h);
+    g.fillStyle = 'rgba(80,88,92,0.35)'; for (let y = 0; y < h; y += 22) g.fillRect(0, y, w, 2); for (let x = 0; x < w; x += 32) g.fillRect(x, 0, 1, h);
+    g.fillStyle = 'rgba(60,64,66,0.8)'; g.fillRect(w * 0.7, 0, 3, h); g.fillRect(w * 0.7 + 9, 0, 3, h);
+    for (let y = 4; y < h; y += 8) g.fillRect(w * 0.7, y, 12, 1.5);
+    g.fillStyle = '#4a4f52'; g.fillRect(0, h - 10, w, 3); for (let x = 0; x < w; x += 8) g.fillRect(x, h - 10, 1.5, 10);
+  });
+  return { brick, brickLit, glass, glassLit, plain, plainLit, stacks, sign, tower, tank };
+}
+
+// One mesh per material for a static hero group (fewer draw calls): geometry baked to the root's frame
+function mergeByMaterial(root) {
+  root.updateMatrixWorld(true);
+  const inv = root.matrixWorld.clone().invert(), m = new THREE.Matrix4(), by = new Map();
+  root.traverse((o) => {
+    if (!o.isMesh) return;
+    const g = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone();
+    for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(k)) g.deleteAttribute(k);
+    g.applyMatrix4(m.multiplyMatrices(inv, o.matrixWorld));
+    if (!by.has(o.material)) by.set(o.material, { geos: [], cast: o.castShadow, receive: o.receiveShadow });
+    by.get(o.material).geos.push(g);
+  });
+  const out = new THREE.Group(); out.name = root.name;
+  for (const [mat, { geos, cast, receive }] of by) {
+    const mesh = new THREE.Mesh(mergeGeometries(geos), mat);
+    mesh.castShadow = cast; mesh.receiveShadow = receive;
+    out.add(mesh);
+  }
+  return out;
+}
+
+export async function placeGuinness(scene, site, { lite = false } = {}) {
+  let gltf;
+  try { gltf = await load('guinness'); } catch (e) { console.warn('guinness model failed to load', e); return null; }
+  const near = gltf.scene.getObjectByName('storehouse'), far = gltf.scene.getObjectByName('storehouse_far');
+  if (!near || !far) return null;
+  const T = guinnessTextures(lite ? 0.5 : 1); // Low / Battery saver: textures painted at half size
+  const S = (o) => lightFog(new THREE.MeshStandardMaterial(o), 0.5);
+  const stone = stoneTex.clone(); stone.wrapS = stone.wrapT = THREE.RepeatWrapping; stone.needsUpdate = true;
+  const mats = {
+    gs_brick: S({ map: T.brick, roughness: 0.9, emissive: 0xffffff, emissiveMap: T.brickLit, emissiveIntensity: 0 }),
+    gs_stone: S({ map: stone, color: 0xb9b2a4, roughness: 0.85 }),
+    gs_roof: S({ color: 0x5b5d5e, roughness: 0.95 }),
+    gs_glass: addReflections(S({ map: T.glass, roughness: 0.1, metalness: 0.45, emissive: 0xffffff, emissiveMap: T.glassLit, emissiveIntensity: 0.02 }), 0.9),
+    gs_dark: S({ color: 0x2b2e31, roughness: 0.5, metalness: 0.3 }),
+    gs_metal: S({ color: 0xc9cccd, roughness: 0.45, metalness: 0.25 }),
+    gs_plain: S({ map: T.plain, roughness: 0.9, emissive: 0xffffff, emissiveMap: T.plainLit, emissiveIntensity: 0 }),
+    gs_stacks: S({ map: T.stacks, roughness: 0.85 }),
+    gs_sign: S({ map: T.sign, alphaTest: 0.5, roughness: 0.6, emissive: 0xfff0d0, emissiveMap: T.sign, emissiveIntensity: 0.05 }),
+    gs_tower: S({ map: T.tower, roughness: 0.92 }),
+    gs_copper: S({ color: 0x78ad98, roughness: 0.55, metalness: 0.2 }),
+    gs_tank: S({ map: T.tank, roughness: 0.35, metalness: 0.5 }),
+  };
+  const prep = (root, isFar) => root.traverse((o) => {
+    if (!o.isMesh) return;
+    o.material = mats[o.material.name] || mats.gs_roof;
+    o.castShadow = !isFar && o.material !== mats.gs_sign && o.material !== mats.gs_glass;
+    o.receiveShadow = !isFar;
+  });
+  const group = new THREE.Group(); group.name = 'Guinness Storehouse';
+  for (const [r, isFar] of [[near, false], [far, true]]) { prep(r, isFar); r.removeFromParent(); r.position.set(0, 0, 0); }
+  const lod = new THREE.LOD();
+  lod.addLevel(mergeByMaterial(near), 0, 0.04);
+  lod.addLevel(mergeByMaterial(far), lite ? 220 : 320, 0.04);
+  lod.position.set(site.x, 0, site.z);
+  lod.rotation.y = site.rot; // the model's south front (Blender -Y) is the site's local +z, Market Street
+  group.add(lod);
+  // the Power House, its stacks and St Patrick's Tower: placed, then merged into one mesh per material (static)
+  const parts = new THREE.Group();
+  for (const [part, p] of Object.entries(site.parts)) {
+    const node = gltf.scene.getObjectByName(part);
+    if (!node) continue;
+    prep(node, false); node.removeFromParent();
+    node.position.set(p.x, 0, p.z); node.rotation.set(0, p.rot || 0, 0);
+    parts.add(node);
+  }
+  group.add(mergeByMaterial(parts));
+  // the fermenter banks: one instanced body and one instanced dome over every tank (8-sided; 6 on Low / Battery saver)
+  if (site.tanks.length) {
+    const sides = lite ? 6 : 8, n = site.tanks.length;
+    const bodyG = new THREE.CylinderGeometry(1, 1, 1, sides, 1, true); bodyG.translate(0, 0.5, 0);
+    const domeG = new THREE.SphereGeometry(1, sides, 2, 0, Math.PI * 2, 0, Math.PI / 2); domeG.scale(1, 0.5, 1);
+    const body = new THREE.InstancedMesh(bodyG, mats.gs_tank, n), dome = new THREE.InstancedMesh(domeG, mats.gs_metal, n);
+    const m = new THREE.Matrix4(), q = new THREE.Quaternion(), p = new THREE.Vector3(), sc = new THREE.Vector3();
+    site.tanks.forEach((t, i) => {
+      body.setMatrixAt(i, m.compose(p.set(t.x, 0, t.z), q, sc.set(t.r, t.h, t.r)));
+      dome.setMatrixAt(i, m.compose(p.set(t.x, t.h, t.z), q, sc.set(t.r, t.r, t.r)));
+    });
+    for (const im of [body, dome]) { im.castShadow = im.receiveShadow = true; im.computeBoundingSphere(); group.add(im); }
+  }
+  // the lit bar's glow in the night haze, over the drum
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: haloTexture(), color: 0xffd9a8, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, fog: false, opacity: 0 }));
+  halo.position.set(site.bar.x, site.bar.y, site.bar.z);
+  halo.scale.set(40, 18, 1);
+  halo.visible = false;
+  group.add(halo);
+  scene.add(group);
+  return {
+    root: group,
+    setNight(l) {
+      mats.gs_glass.emissiveIntensity = 0.02 + 2.4 * l;
+      mats.gs_brick.emissiveIntensity = 0.85 * l;
+      mats.gs_plain.emissiveIntensity = 0.7 * l;
+      mats.gs_sign.emissiveIntensity = 0.05 + 1.3 * l;
+      halo.material.opacity = 0.42 * l; halo.visible = l > 0.01;
     },
   };
 }
