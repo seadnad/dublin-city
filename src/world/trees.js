@@ -1,11 +1,11 @@
-// Trees from the Blender-grown set (public/models/trees.glb: plane, lime, chestnut, birch, young).
+// Trees from the Blender-grown set (public/models/trees.glb: plane, lime, chestnut, birch, young, rowan).
 // Callers plant items with a species mix; a simple procedural tree stands in until the models load
 // (or for good if they can't be loaded).
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { chunkedInstances } from './chunks.js';
 
-const SPECIES = ['plane', 'lime', 'chestnut', 'birch', 'young'];
+const SPECIES = ['plane', 'lime', 'chestnut', 'birch', 'young', 'rowan'];
 const plantings = [];
 let models = null;
 

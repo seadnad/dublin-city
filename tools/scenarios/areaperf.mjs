@@ -20,7 +20,8 @@ export default async function (page, shot, { fps }) {
       while (pending.length && gl.getQueryParameter(pending[0], gl.QUERY_RESULT_AVAILABLE)) d.gpuTimes.push(gl.getQueryParameter(pending.shift(), gl.QUERY_RESULT) / 1e6); };
   });
   const tag = process.env.TAG || 'run';
-  for (const [slug, lat, lon, hdg] of AREAS) {
+  // AREAS='[[slug,lat,lon,hdg],...]' overrides the list
+  for (const [slug, lat, lon, hdg] of (process.env.AREAS ? JSON.parse(process.env.AREAS) : AREAS)) {
     await page.evaluate(async ([lat, lon, hdg]) => {
       const d = window.__dublin, { project } = await import('/src/world/geo.js');
       const p = project(lat, lon), h = (hdg * Math.PI) / 180;

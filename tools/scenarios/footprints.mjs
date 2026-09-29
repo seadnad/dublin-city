@@ -1,12 +1,15 @@
 // Every landmark / reserved footprint must stay off the carriageways: samples each box (shrunk 0.6 m) against
 // the street graph and lists any that sit on a road.
+// Monuments that really stand in the middle of O'Connell Street, on its islands (and Parnell's island in the mouth of
+// the Parnell Street junction), are allowed by name. Nothing else is exempt.
+const IN_STREET = ['spire', 'extra.oconnellMonument', 'extra.smithOBrien', 'extra.gray', 'extra.larkin', 'extra.fatherMathew', 'extra.parnell'];
 export default async function (page) {
-  const r = await page.evaluate(async () => {
+  const r = await page.evaluate(async (IN_STREET) => {
     const d = window.__dublin, { sites, extraSites, reserved } = await import('/src/world/sites.js');
     const named = new Map();
     for (const [k, s] of Object.entries(sites)) named.set(s, k);
     for (const [k, s] of Object.entries(extraSites)) named.set(s, 'extra.' + k);
-    const all = new Set([...Object.values(sites), ...Object.values(extraSites), sites.grandCanal.square].filter((s) => s !== sites.spire)); // the Spire stands in the median
+    const all = new Set([...Object.values(sites), ...Object.values(extraSites), sites.grandCanal.square].filter((s) => !IN_STREET.includes(named.get(s))));
     const out = [];
     for (const s of all) {
       if (!s || !s.w || !s.d || s.bridge || s.park) continue;
@@ -19,8 +22,14 @@ export default async function (page) {
       }
       if (hits.size) out.push({ site: named.get(s) || `reserved@${Math.round(s.x)},${Math.round(s.z)}`, roads: Object.fromEntries(hits) });
     }
+    // ...but the exempt ones must actually stand on one of the street's islands
+    const { ISLANDS, islandOutline } = await import('/src/world/oconnell.js'), { pointInPolygon } = await import('/src/world/geo.js');
+    for (const k of IN_STREET) {
+      const s = k.startsWith('extra.') ? extraSites[k.slice(6)] : sites[k];
+      if (!s || !ISLANDS.some((isl) => pointInPolygon(s, islandOutline(isl)))) out.push({ site: k, roads: { 'not on an island': 1 } });
+    }
     return out;
-  });
+  }, IN_STREET);
   console.log('FOOTPRINTS ON ROADS:', r.length);
   for (const o of r) console.log(' ', o.site.padEnd(30), JSON.stringify(o.roads));
 }

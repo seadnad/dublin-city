@@ -10,6 +10,7 @@ variation in the foliage. Species are tuned by silhouette:
   chestnut - horse chestnut: dense, rounded dome, low branching
   birch    - silver birch: slender, airy, pale bark
   young    - a young street tree with a small crown
+  rowan    - mountain ash: a small upright street tree with orange-red berry clusters (O'Connell Street's islands)
 Objects are named tree_<variant>_bark and tree_<variant>_leaves; the game instances each one.
 """
 import bpy, bmesh, math, os, random, sys
@@ -57,6 +58,8 @@ SPECIES = {
                   clump=(0.9, 1.4), clumps_per_tip=1, leaf='#86a54c', leaf_var=0.25, bark='#d9d6cc', birch=True, seed=51),
     'young': dict(height=5.5, trunk_r=0.12, split=2.4, depth=3, kids=(2, 3), spread=0.5, droop=0.02, shrink=0.72,
                   clump=(1.0, 1.4), clumps_per_tip=1, leaf='#6b9a42', leaf_var=0.2, bark='#6a5f52', seed=67),
+    'rowan': dict(height=6.5, trunk_r=0.14, split=2.3, depth=3, kids=(2, 3), spread=0.36, droop=0.0, shrink=0.72,
+                  clump=(0.9, 1.25), clumps_per_tip=1, leaf='#ffffff', leaf_vc='#5a8a3e', leaf_var=0.16, bark='#77726a', berries=0.1, seed=83),
 }
 
 
@@ -119,6 +122,12 @@ def grow(sp):
                 speck = 0.9 + 0.2 * noise.noise(p * 3.7)
                 k = tint * shade * speck
                 loop[col_l] = (min(1, k * (1 + warm)), min(1, k), min(1, k * (1 - warm)), 1)
+                if sp.get('leaf_vc'):  # the leaf colour lives in the vertex colours (the material is white) so berries can be orange
+                    lc = [int(sp['leaf_vc'][i:i + 2], 16) / 255 for i in (1, 3, 5)]  # byte colours are stored sRGB
+                    loop[col_l] = (min(1, k * (1 + warm) * lc[0]), min(1, k * lc[1]), min(1, k * (1 - warm) * lc[2]), 1)
+                if sp.get('berries') and noise.noise(p * 6.1) > 0.62 - sp['berries'] * 1.5:
+                    # berry clusters: orange-red against the leaf tint (the colour is multiplied by the leaf colour)
+                    loop[col_l] = (0.72 * shade, 0.2 * shade, 0.08 * shade, 1)
 
     def branch(start, direction, length, radius, depth):
         # gentle droop and wander along the limb
