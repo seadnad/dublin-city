@@ -7,6 +7,7 @@ import { world, v2 } from './geo.js';
 import { IS_MOBILE } from './textures.js';
 import { LITE } from '../render/quality.js';
 import { addBox } from '../game/collision.js';
+import { underSpan } from './railline.js';
 
 // ---------- street lamps ----------
 // Heritage lanterns on Georgian streets, the quays, Temple Bar and College Green; modern poles elsewhere.
@@ -34,7 +35,7 @@ function lampSpots() {
         // keep clear of junction mouths: must not be inside another road
         const r = world.nearestRoad(p.x, p.z);
         if (r && r.way !== way && r.edgeDist < (wall ? r.way.pave + 0.3 : 0.3)) { side = -side; continue; }
-        if (!near(p)) spots.push({ ...p, rot: Math.atan2(-n.x, -n.z), heritage, wall });
+        if (!near(p) && !underSpan(p.x, p.z)) spots.push({ ...p, rot: Math.atan2(-n.x, -n.z), heritage, wall }); // none under the DART's bridges
         side = -side;
       }
     }

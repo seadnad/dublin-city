@@ -45,6 +45,8 @@ const BLURBS = {
   ccj: 'The courts’ glass drum, at the Parkgate end of the Phoenix Park',
   google: 'Google Docks (the old Montevetro), Gordon House and the skybridge, under the DART',
   bolands: 'The 1830s flour mills, a 1916 garrison, under two new towers on the dock',
+  connolly: 'The 1844 Italianate terminus on Amiens Street; the DART calls on the Loop Line behind',
+  loopline: 'The 1891 lattice railway bridge that cuts across the view of the Custom House',
 };
 
 export function createHUD({ sites, actions }) {
