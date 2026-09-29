@@ -19,6 +19,7 @@ function load(file) {
 }
 
 const GARDA_VARIANTS = { garda: 'standard', garda_rp: 'roadsPolicing' };
+const WHEEL_R = { hatch: 0.34, coupe: 0.35, gt: 0.322 }; // tyre radius, for the wheel spin
 
 // Returns a ready-to-use car group, or null if the model can't be loaded.
 export async function loadCar(name) {
@@ -45,17 +46,22 @@ export async function loadCar(name) {
     material = carMaterialCache(); // one tuned material per source material, per car (lights are per car)
   }
 
-  const wheels = [], glow = [];
+  const wheels = [], glow = [], calipers = [], paints = [];
+  let reverseLamp = null;
   src.traverse((o) => {
     // Only the wheel node itself spins and steers. A multi-material wheel loads as a group named wheel_front_l
     // with child meshes (wheel_front_l_1, ...); rotating the children as well applied steer and spin twice,
     // and the second steer about an already-spun axis tipped the wheel over.
     if (/^wheel_(front|rear)_[lr]$/.test(o.name)) wheels.push({ o, front: /front/.test(o.name) });
+    // front brake calipers steer with their wheel but don't spin (pivot at the wheel centre)
+    if (/^caliper_front_[lr]$/.test(o.name)) calipers.push(o);
     if (!o.isMesh) return;
     o.castShadow = true; o.receiveShadow = true;
     o.material = material(o.material);
     const n = o.material.name || '';
     if (!garda && /headlight|drl|taillight|indicator|lightbar_\d/.test(n) && !glow.some((g) => g.m === o.material)) glow.push({ m: o.material, base: o.material.emissiveIntensity, kind: n });
+    if (!garda && /^paint_/.test(n) && !paints.includes(o.material)) paints.push(o.material);
+    if (!garda && /^reverse/.test(n)) reverseLamp = o.material;
   });
   // Merge every non-wheel mesh into one mesh per material (a draw call each, twice with shadows).
   // Geometry is baked into the car root's space; wheels keep their own nodes.
@@ -64,7 +70,7 @@ export async function loadCar(name) {
   const buckets = new Map(), victims = [];
   src.traverse((o) => {
     if (!o.isMesh) return;
-    for (let p = o; p && p !== src; p = p.parent) if (/^wheel_/.test(p.name)) return;
+    for (let p = o; p && p !== src; p = p.parent) if (/^wheel_|^caliper_front_/.test(p.name)) return;
     const g = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone();
     for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(k)) g.deleteAttribute(k);
     if (!g.attributes.uv) g.setAttribute('uv', new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2));
@@ -81,9 +87,17 @@ export async function loadCar(name) {
     merged.renderOrder = mat.transparent ? 2 : 0;
     src.add(merged);
   }
-  let spin = 0;
+  let spin = 0, lights = 0, braking = false;
   const q = new THREE.Quaternion(), qs = new THREE.Quaternion(), X = new THREE.Vector3(1, 0, 0), Y = new THREE.Vector3(0, 1, 0);
-  const r = name === 'hatch' ? 0.34 : name === 'coupe' ? 0.35 : variant ? 0.325 : 0.33;
+  const r = WHEEL_R[name] ?? (variant ? 0.325 : 0.33);
+  const hasTail = glow.some((g) => /taillight/.test(g.kind));
+  // lamps: brighter after dark; the tail lamps light up further under braking (lightbars are driven by the siren)
+  const lamps = () => {
+    for (const g of glow) {
+      if (/lightbar/.test(g.kind)) continue;
+      g.m.emissiveIntensity = g.base * (1 + lights * 3) * (braking && /taillight/.test(g.kind) ? 4 : 1);
+    }
+  };
   group.userData = {
     model: name,
     update(speed, dt, steer) {
@@ -95,16 +109,22 @@ export async function loadCar(name) {
         q.multiply(qs.setFromAxisAngle(X, -spin));
         w.o.quaternion.copy(q);
       }
+      for (const c of calipers) c.quaternion.setFromAxisAngle(Y, steer);
     },
     setLights(level) {
       if (garda) { garda.controls.setLights(level); return; }
-      for (const g of glow) {
-        if (/lightbar/.test(g.kind)) continue; // driven by the siren
-        g.m.emissiveIntensity = g.base * (1 + level * 3);
-      }
+      lights = level; lamps();
+    },
+    // body colour, for the cars that offer a choice: { color, metal } (see carlist.js)
+    setPaint(p) {
+      for (const m of paints) { m.color.set(p.color); m.metalness = p.metal || 0; m.roughness = p.rough ?? 0.35; }
     },
     lightbar: garda ? garda.controls.lightbar : glow.filter((g) => /lightbar/.test(g.kind)).map((g) => g.m),
-    ...(garda ? { flash: garda.controls.flash, setBrake: garda.controls.setBrake, setReverse: garda.controls.setReverse } : {}),
+    ...(garda ? { flash: garda.controls.flash, setBrake: garda.controls.setBrake, setReverse: garda.controls.setReverse } : {
+      // only on a change of state, so there are no per-frame material writes
+      setBrake(on) { if (on !== braking && hasTail) { braking = on; lamps(); } },
+      setReverse(on) { if (reverseLamp) reverseLamp.emissiveIntensity = on ? 3 : 0; },
+    }),
   };
   return group;
 }

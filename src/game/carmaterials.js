@@ -46,7 +46,13 @@ function tune(src) {
   if (/^lightbar_panel/.test(n)) return [physical(src, { metalness: 0, roughness: 0.25, clearcoat: 0.6, clearcoatRoughness: 0.1 }), 0.8];
   // ---- lamps: chrome reflector behind a clear lens
   if (/^headlight/.test(n)) return [physical(src, { metalness: 0.9, roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.02 }), 1.0];
-  if (/^(taillight|indicator)/.test(n)) return [physical(src, { metalness: 0.0, roughness: 0.15, clearcoat: 1, clearcoatRoughness: 0.03 }), 0.9];
+  if (/^(taillight|indicator|reflector)/.test(n)) return [physical(src, { metalness: 0.0, roughness: 0.15, clearcoat: 1, clearcoatRoughness: 0.03 }), 0.9];
+  // reversing lamp: a clear lens, lit only when backing up (models.js)
+  if (/^reverse/.test(n)) return [physical(src, { metalness: 0.0, roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.03, emissive: new THREE.Color(0xffffff), emissiveIntensity: 0 }), 0.9];
+  // ---- hot hatch details: red grille line, painted brake calipers, the dark void behind honeycomb grilles
+  if (/^accent_red/.test(n)) return [physical(src, { metalness: 0, roughness: 0.25, clearcoat: 1, clearcoatRoughness: 0.05 }), 0.9];
+  if (/^caliper/.test(n)) return [physical(src, { metalness: 0, roughness: 0.3, clearcoat: 0.6, clearcoatRoughness: 0.1 }), 0.6];
+  if (/^grille_void/.test(n)) { const m = src.clone(); m.metalness = 0; m.roughness = 0.9; return [m, 0.15]; }
   // ---- livery vinyl: matt enough that reflections never wash the markings out
   if (/^(garda_|chevron_|stripe_|n_red|battenburg)/.test(n)) {
     const m = src.clone();

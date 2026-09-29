@@ -7,6 +7,7 @@ Modelled after real cars from reference photos (all procedural, no downloaded as
   garda_rp  - Hyundai i40 Tourer, Roads Policing Battenburg livery
   hatch     - Hyundai i30 N style hot hatch in Performance Blue
   coupe     - fastback coupe (the pursuit suspect)
+  gt        - "Liffey GT": a hot hatch inspired by the Mk7 / Mk8-era GTI silhouette (original name, plain badge)
 
 Technique:
   - lower body: a filled 2D side profile with wheel arches, extruded with a rounded bevel, pinched in plan view
@@ -15,7 +16,10 @@ Technique:
   - details are projected decals: 2D outlines (front / rear / side / top view) triangulated, subdivided and
     raycast onto the bodywork, so lights, grilles, glazing, livery and lettering wrap the real curvature
     (the same projection works on any imported mesh);
-  - wheels: tyre, spoked alloy, barrel and brake disc joined into wheel_* objects (the game spins and steers them).
+  - wheels: tyre, spoked alloy, barrel and brake disc joined into wheel_* objects (the game spins and steers them);
+    front brake calipers are caliper_front_* objects pivoting at the wheel centre (the game steers them, no spin);
+  - optional per car: extra vertex columns across the width (xcuts) so the nose, tail and windscreen can curve in
+    plan (bow), a C-pillar line that ends the side glazing, honeycomb grilles, Draco compression.
 Axes: Blender X = width, +Y = forward, +Z = up.
 """
 import bpy, bmesh, math, os, sys
@@ -72,14 +76,16 @@ def add_obj(name, me, material):
     return ob
 
 
-def extrude_profile(name, pts, half_width, bevel, material, deform=None):
-    """pts: closed (y, z) outline -> mesh extruded symmetrically along X with rounded edges."""
+def extrude_profile(name, pts, half_width, bevel, material, deform=None, xcuts=(), res=5):
+    """pts: closed (y, z) outline -> mesh extruded symmetrically along X with rounded edges.
+    The bevel grows the outline outward by `bevel`. xcuts: X positions of extra vertex columns across the width,
+    so a deform can curve the nose, tail or windscreen in plan (otherwise each strip spans the car in one quad)."""
     cu = bpy.data.curves.new(name, 'CURVE')
     cu.dimensions = '2D'
     cu.fill_mode = 'BOTH'
     cu.extrude = max(0.001, half_width - bevel)
     cu.bevel_depth = bevel
-    cu.bevel_resolution = 5
+    cu.bevel_resolution = res
     cu.resolution_u = 1
     sp = cu.splines.new('POLY')
     sp.points.add(len(pts) - 1)
@@ -93,6 +99,15 @@ def extrude_profile(name, pts, half_width, bevel, material, deform=None):
     ob.select_set(True)
     bpy.ops.object.convert(target='MESH')
     ob = bpy.context.active_object
+    if xcuts:
+        # only the strips toward the ends (outside ycut) are cut: that's where the plan curvature is
+        cuts, (y_lo, y_hi) = (xcuts, (-99, 99)) if not isinstance(xcuts[0], (tuple, list)) else xcuts
+        bm = bmesh.new(); bm.from_mesh(ob.data)
+        for xc in cuts:
+            fs = [f for f in bm.faces if not (y_lo < f.calc_center_median().x < y_hi)]
+            es = list({e for f in fs for e in f.edges}); vs = list({v for f in fs for v in f.verts})
+            bmesh.ops.bisect_plane(bm, geom=vs + es + fs, dist=1e-5, plane_co=(0, 0, xc), plane_no=(0, 0, 1))
+        bm.to_mesh(ob.data); bm.free()
     for v in ob.data.vertices:
         a, b, c = v.co
         co = Vector((c, a, b))
@@ -282,6 +297,212 @@ def clip(poly, x0, x1, y0, y1):
     return out
 
 
+def clip_half(poly, keep):
+    """Clip a polygon to the half-plane where keep(p) >= 0 (keep is linear in p)."""
+    out = []
+    for i in range(len(poly)):
+        a, b = poly[i - 1], poly[i]
+        ka, kb = keep(a), keep(b)
+        if kb >= 0:
+            if ka < 0:
+                t = ka / (ka - kb)
+                out.append((a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t))
+            out.append(b)
+        elif ka >= 0:
+            t = ka / (ka - kb)
+            out.append((a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t))
+    return out
+
+
+def chaikin(pts, n=2, hard=()):
+    """Corner-cutting smoothing of an open polyline; the ends and the indices in `hard` stay sharp."""
+    keep = [i == 0 or i == len(pts) - 1 or i in hard for i in range(len(pts))]
+    for _ in range(n):
+        out, ok = [pts[0]], [True]
+        for i in range(len(pts) - 1):
+            a, b = pts[i], pts[i + 1]
+            q = (a[0] * 0.75 + b[0] * 0.25, a[1] * 0.75 + b[1] * 0.25)
+            r = (a[0] * 0.25 + b[0] * 0.75, a[1] * 0.25 + b[1] * 0.75)
+            if i > 0 and not keep[i]:
+                out.append(q); ok.append(False)
+            elif i > 0:
+                out.append(a); ok.append(True)
+            if i + 1 < len(pts) - 1 and not keep[i + 1]:
+                out.append(r); ok.append(False)
+        out.append(pts[-1]); ok.append(True)
+        pts, keep = out, ok
+    return pts
+
+
+def inside(poly, p):
+    c = False
+    for i in range(len(poly)):
+        a, b = poly[i - 1], poly[i]
+        if (a[1] > p[1]) != (b[1] > p[1]) and p[0] < a[0] + (b[0] - a[0]) * (p[1] - a[1]) / (b[1] - a[1]):
+            c = not c
+    return c
+
+
+def honeycomb(name, poly, pitch, wall, view, targets, material, offset=0.014):
+    """Hexagonal mesh (the cell walls) filling a 2D outline: whole cells only, pointy-top rows staggered.
+    Neighbouring cells share a wall, so each wall is drawn once (a quad centred on the cell edge)."""
+    s = pitch / math.sqrt(3)  # cell radius: the distance from centre to corner
+    xs = [p[0] for p in poly]; zs = [p[1] for p in poly]
+    corner = lambda cx, cz, k, rr: (cx + math.cos(math.pi / 2 + k * math.pi / 3) * rr, cz + math.sin(math.pi / 2 + k * math.pi / 3) * rr)
+    cells, row, z = set(), 0, min(zs) + s
+    while z < max(zs):
+        x = min(xs) + (pitch / 2 if row % 2 else 0)
+        col = 0
+        while x < max(xs):
+            if all(inside(poly, corner(x, z, k, s)) for k in range(6)):
+                cells.add((round(x, 5), round(z, 5)))
+            x += pitch; col += 1
+        z += s * 1.5; row += 1
+    # the neighbour across edge k (between corners k and k+1) lies at 60k + 120 degrees
+    nb = [(math.cos(math.radians(60 * k + 120)) * pitch, math.sin(math.radians(60 * k + 120)) * pitch) for k in range(6)]
+    bm = bmesh.new()
+    for (cx, cz) in cells:
+        for k in range(6):
+            other = (round(cx + nb[k][0], 5), round(cz + nb[k][1], 5))
+            if k >= 3 and other in cells:
+                continue  # that neighbour draws this wall
+            a, b = corner(cx, cz, k, s + wall * 0.5), corner(cx, cz, k + 1, s + wall * 0.5)
+            c, d = corner(cx, cz, k + 1, s - wall * 0.5), corner(cx, cz, k, s - wall * 0.5)
+            bm.faces.new([bm.verts.new((u, w, 0)) for u, w in (a, b, c, d)])
+    return project_bm(name, bm, view, targets, material, offset)
+
+
+def ring_decal(name, c, r0, r1, view, targets, material, offset=0.012, n=24, sx=1.0):
+    """An annulus (r0 inner, r1 outer; r0 = 0 gives a disc) projected onto the bodywork."""
+    bm = bmesh.new()
+    inner = [bm.verts.new((c[0] + math.cos(k / n * math.tau) * r0 * sx, c[1] + math.sin(k / n * math.tau) * r0, 0)) for k in range(n)] if r0 > 0 else None
+    outer = [bm.verts.new((c[0] + math.cos(k / n * math.tau) * r1 * sx, c[1] + math.sin(k / n * math.tau) * r1, 0)) for k in range(n)]
+    if inner:
+        for k in range(n):
+            bm.faces.new((outer[k], outer[(k + 1) % n], inner[(k + 1) % n], inner[k]))
+    else:
+        mid = bm.verts.new((c[0], c[1], 0))
+        for k in range(n):
+            bm.faces.new((outer[k], outer[(k + 1) % n], mid))
+    return project_bm(name, bm, view, targets, material, offset)
+
+
+def annulus(name, r0, r1, depth, loc, material, n=32, a0=0.0, a1=math.tau, axis_x=True):
+    """A flat ring (or a sector of one, a0..a1) of thickness `depth`, facing X, in the (y, z) plane."""
+    bm = bmesh.new()
+    full = abs(a1 - a0 - math.tau) < 1e-6
+    steps = n if full else max(2, int(n * (a1 - a0) / math.tau))
+    rings = []
+    for x in (-depth / 2, depth / 2):
+        ring = []
+        for k in range(steps + (0 if full else 1)):
+            a = a0 + (a1 - a0) * k / steps
+            ring.append((bm.verts.new((x, math.cos(a) * r0, math.sin(a) * r0)), bm.verts.new((x, math.cos(a) * r1, math.sin(a) * r1))))
+        rings.append(ring)
+    m = len(rings[0])
+    for k in range(m if full else m - 1):
+        j = (k + 1) % m
+        (a_i, a_o), (b_i, b_o) = rings[0][k], rings[0][j]
+        (c_i, c_o), (d_i, d_o) = rings[1][k], rings[1][j]
+        bm.faces.new((a_i, b_i, b_o, a_o)); bm.faces.new((c_o, d_o, d_i, c_i))
+        bm.faces.new((a_o, b_o, d_o, c_o)); bm.faces.new((c_i, d_i, b_i, a_i))
+    if not full:
+        for k in (0, m - 1):
+            (a_i, a_o), (c_i, c_o) = rings[0][k], rings[1][k]
+            f = bm.faces.new((a_i, a_o, c_o, c_i))
+    bm.normal_update()
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me); bm.free()
+    ob = add_obj(name, me, material)
+    ob.location = loc
+    smooth(ob, 40)
+    return ob
+
+
+def spoke(name, side, face, y, zc, a_hub, a_rim, r_hub, r_rim, w_hub, w_rim, depth, dish, material):
+    """A tapered spoke from the hub (angle a_hub) to the rim (angle a_rim), dished: the hub end sits further out."""
+    bm = bmesh.new()
+    def pt(a, rr, off, x):
+        d = Vector((0, math.cos(a), math.sin(a))); n = Vector((0, -math.sin(a), math.cos(a)))
+        return Vector((x, y, zc)) + d * rr + n * off
+    vs = []
+    for a, rr, w, x in ((a_hub, r_hub, w_hub, face + side * dish), (a_rim, r_rim, w_rim, face)):
+        for off in (-w / 2, w / 2):
+            for dx in (0, -side * depth):
+                vs.append(bm.verts.new(pt(a, rr, off, x + dx)))
+    # vs index: [end][off][dx] -> end*4 + off*2 + dx
+    V = lambda e, o, d: vs[e * 4 + o * 2 + d]
+    for f in ((V(0, 0, 0), V(1, 0, 0), V(1, 1, 0), V(0, 1, 0)),  # front
+              (V(0, 0, 1), V(0, 1, 1), V(1, 1, 1), V(1, 0, 1)),  # back
+              (V(0, 0, 0), V(0, 0, 1), V(1, 0, 1), V(1, 0, 0)),
+              (V(0, 1, 0), V(1, 1, 0), V(1, 1, 1), V(0, 1, 1)),
+              (V(1, 0, 0), V(1, 0, 1), V(1, 1, 1), V(1, 1, 0))):
+        bm.faces.new(f)
+    bm.normal_update()
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me); bm.free()
+    ob = add_obj(name, me, material)
+    for p in ob.data.polygons:
+        p.use_smooth = False
+    return ob
+
+
+def tyre_ring(name, r, width, loc, material, n=36, rim=0.72):
+    """A tyre as a revolved section (open in the middle, so the brake shows through the spokes): rounded
+    shoulders and a slightly bulged low-profile sidewall."""
+    h = width / 2
+    sec = [(-h, r * rim), (-h - 0.008, r * 0.86), (-h + 0.01, r * 0.97), (-h + 0.04, r),
+           (h - 0.04, r), (h - 0.01, r * 0.97), (h + 0.008, r * 0.86), (h, r * rim)]
+    bm = bmesh.new()
+    rings = [[bm.verts.new((dx, math.cos(k / n * math.tau) * rr, math.sin(k / n * math.tau) * rr)) for dx, rr in sec] for k in range(n)]
+    m = len(sec)
+    for k in range(n):
+        a, b = rings[k], rings[(k + 1) % n]
+        for i in range(m):  # (the last pair closes the section across the inner barrel)
+            j = (i + 1) % m
+            bm.faces.new((a[i], a[j], b[j], b[i]))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me); bm.free()
+    ob = add_obj(name, me, material)
+    ob.location = loc
+    smooth(ob, 50)
+    return ob
+
+
+def wheel_gt(name, x, y, r, width, M, rim_mat, side, front):
+    """Low-profile tyre on a dark twin-spoke alloy with a machined lip, a visible brake disc and a red caliper.
+    The caliper doesn't spin: it is its own object (caliper_front_* steer with the wheel; the rear ones are fixed)."""
+    face = x + side * width / 2
+    parts = [
+        tyre_ring(f'{name}_tyre', r, width, (x, y, r), M['tyre'], 30),
+        annulus(f'{name}_barrel', r * 0.6, r * 0.73, 0.012, (face - side * 0.012, y, r), M['barrel'], 24),
+        cylinder(f'{name}_back', r * 0.73, 0.01, (face - side * 0.11, y, r), M['tyre'], 24),
+        annulus(f'{name}_disc', r * 0.2, r * 0.53, 0.022, (face - side * 0.055, y, r), M['disc'], 20),
+        annulus(f'{name}_lip', r * 0.655, r * 0.725, 0.022, (face + side * 0.004, y, r), rim_mat, 30),
+        cylinder(f'{name}_hub', r * 0.17, 0.05, (face - side * 0.004, y, r), rim_mat, 12),
+        cylinder(f'{name}_cap', r * 0.075, 0.012, (face + side * 0.024, y, r), rim_mat, 12),
+    ]
+    for k in range(5):
+        a = k / 5 * math.tau + 0.3
+        for j, d in enumerate((-1, 1)):
+            parts.append(spoke(f'{name}_spoke{k}_{j}', side, face + side * 0.004, y, r, a + d * 0.1, a + d * 0.2,
+                               r * 0.15, r * 0.67, 0.044, 0.032, 0.03, 0.02, rim_mat))
+    w = join(parts, name)
+    bpy.context.scene.cursor.location = (x, y, r)
+    bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+    # the caliper grips the rear of the disc, just inside the spokes
+    ca = math.pi - 0.45  # toward the back of the car, a little above the axle
+    cal = annulus(f'caliper_{"front" if front else "rr"}_{name[-1]}', r * 0.34, r * 0.56, 0.05,
+                  (face - side * 0.036, y, r), M['caliper'], 24, ca - 0.5, ca + 0.5)
+    bpy.context.view_layer.objects.active = cal
+    bpy.ops.object.select_all(action='DESELECT'); cal.select_set(True)
+    bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+    return w
+
+
 def wheel(name, x, y, r, width, M, rim_mat, spokes, side, paired=False):
     face = x + side * width / 2
     parts = [
@@ -325,6 +546,7 @@ def common():
         plate=mat('plate', '#f1f1ec', rough=0.4),
         plate_band=mat('plate_band', '#2a4aa8', rough=0.4),
         plate_text=mat('plate_text', '#111111', rough=0.5),
+        caliper=mat('caliper_red', '#c4121c', rough=0.3),  # (only exported by cars that use it)
     )
 
 
@@ -336,7 +558,7 @@ def build(spec):
     L, W, r = spec['L'], spec['W'], spec['r']
     hw = W / 2
     yr, yf = spec['wheels']
-    ar = r + 0.07
+    ar = r + spec.get('arch_gap', 0.07)
     b_r, b_f = spec['belt']
 
     def belt(y):  # belt line height, rising toward the rear
@@ -353,16 +575,25 @@ def build(spec):
         bottom.append((yc - ar, spec['sill']))
     bottom.append((top[0][0], spec['sill']))
 
+    bow_f, bow_r = spec.get('bow', (0.0, 0.0))
+    roll_from = spec.get('roll_from', 0.2)
+
     def body_deform(v):
+        # plan-view curvature: the corners of the nose and tail sweep back, so the front and rear read rounded
+        if bow_f or bow_r:
+            k = (v.x / hw) ** 2
+            tf = max(0.0, min(1.0, (v.y - yf - ar) / (L / 2 - yf - ar)))
+            tr = max(0.0, min(1.0, (yr - ar - v.y) / (L / 2 + yr - ar)))
+            v.y += -bow_f * k * tf ** 1.6 + bow_r * k * tr ** 1.6
         end = min(v.y + L / 2, L / 2 - v.y)
         pinch = 1 - spec.get('pinch', 0.1) * (1 - min(1, end / 0.75)) ** 2
         near = max(math.exp(-((v.y - yf) / 0.55) ** 2), math.exp(-((v.y - yr) / 0.55) ** 2))
         flare = 1 + spec.get('flare', 0.03) * near * max(0, 1 - abs(v.z - r - 0.1) / 0.6)
-        roll = 1 - 0.06 * min(1, max(0, (v.z - (belt(v.y) - 0.2)) / 0.2))
+        roll = 1 - 0.06 * min(1, max(0, (v.z - (belt(v.y) - roll_from)) / roll_from))  # the shoulder turns in
         v.x *= pinch * flare * roll
         return v
 
-    extrude_profile('body', top + bottom, hw, 0.075, paint, body_deform)
+    extrude_profile('body', top + bottom, hw, 0.075, paint, body_deform, spec.get('xcuts', ()), spec.get('bevel_res', 5))
 
     cab = spec['cabin']
     roof = max(p[1] for p in cab)
@@ -373,11 +604,16 @@ def build(spec):
     def cab_x(z):
         return chw * (1 - tumble * max(0, min(1, (z - blo) / (roof - blo))))
 
+    cbow = spec.get('cab_bow', 0.0)
+    ws_from = spec.get('cab_bow_from', 0.0)
+
     def cabin_deform(v):
+        if cbow:  # the windscreen curves back toward the A-pillars in plan
+            v.y -= cbow * (v.x / chw) ** 2 * max(0.0, min(1.0, (v.y - ws_from) / 0.6))
         v.x *= cab_x(v.z) / chw
         return v
 
-    extrude_profile('cabin', cab, chw, 0.09, paint, cabin_deform)
+    extrude_profile('cabin', cab, chw, spec.get('cab_bevel', 0.09), paint, cabin_deform, spec.get('cab_xcuts', ()), spec.get('bevel_res', 5))
 
     def edge_z(y):
         best = -1.0
@@ -390,16 +626,29 @@ def build(spec):
     # ---- side glazing (daylight opening) with chrome surround and black pillars
     inset = spec.get('dlo_inset', 0.075)
     ys = [cab[0][0] + i * (cab[-1][0] - cab[0][0]) / 120 for i in range(121)]
-    dlo = [(y, edge_z(y) - inset) for y in ys if edge_z(y) - inset > belt(y) + 0.1]
+    if cbow:  # the side of the cabin is swept back by the windscreen's curvature
+        side_z = lambda y: edge_z(y + cbow * 0.8 * max(0.0, min(1.0, (y - ws_from) / 0.6)))
+    else:
+        side_z = edge_z
+    dlo = [(y, side_z(y) - inset) for y in ys if side_z(y) - inset > belt(y) + 0.1]
     glass_poly = dlo + [(y, belt(y) + 0.045) for y, _ in reversed(dlo)]
+    cp = spec.get('c_pillar')  # ((y, z) at the belt, (y, z) at the top): the glazing ends at this line
+    yline = (lambda z: cp[0][0] + (cp[1][0] - cp[0][0]) * (z - cp[0][1]) / (cp[1][1] - cp[0][1])) if cp else (lambda z: -99)
+    if cp:
+        glass_poly = clip_half(glass_poly, lambda p: p[0] - yline(p[1]))
+    dlo_mat = M[spec.get('dlo_trim', 'chrome')]
     for view, s in (('right', 1), ('left', -1)):
-        decal(f'side_glass_{s}', glass_poly, view, ['cabin'], M['glass'], 0.004, cuts=2)
-        dys = [y for y, _ in dlo]
+        decal(f'side_glass_{s}', glass_poly, view, ['cabin'], M['glass'], 0.004, cuts=spec.get('glass_cuts', 2))
         dtop = dict(dlo)
-        strip(f'dlo_chrome_bot_{s}', dys, lambda y: belt(y) + 0.02, lambda y: belt(y) + 0.045, view, ['cabin', 'body'], M['chrome'], 0.006, rows=1)
-        strip(f'dlo_chrome_top_{s}', dys, lambda y: dtop[y], lambda y: dtop[y] + 0.025, view, ['cabin'], M['chrome'], 0.006, rows=1)
+        bys = [y for y, _ in dlo if y >= yline(belt(y) + 0.03)]
+        tys = [y for y, _ in dlo if y >= yline(dtop[y])]
+        strip(f'dlo_chrome_bot_{s}', bys, lambda y: belt(y) + 0.02, lambda y: belt(y) + 0.045, view, ['cabin', 'body'], dlo_mat, 0.006, rows=1)
+        strip(f'dlo_chrome_top_{s}', tys, lambda y: dtop[y], lambda y: dtop[y] + 0.025, view, ['cabin'], dlo_mat, 0.006, rows=1)
+        if cp:  # a trim edge down the front of the C-pillar
+            zb, zt = belt(cp[0][0]) + 0.02, dtop.get(min(tys, default=cp[1][0]), cp[1][1]) + 0.025
+            decal(f'dlo_c_{s}', [(yline(zb) - 0.022, zb), (yline(zb), zb), (yline(zt), zt), (yline(zt) - 0.022, zt)], view, ['cabin'], dlo_mat, 0.006, cuts=2)
         for yp, wp in spec['pillars']:
-            decal(f'pillar_{yp}_{s}', [(yp - wp / 2, belt(yp) + 0.04), (yp + wp / 2, belt(yp) + 0.04), (yp + wp / 2, edge_z(yp) - inset + 0.01), (yp - wp / 2, edge_z(yp) - inset + 0.01)],
+            decal(f'pillar_{yp}_{s}', [(yp - wp / 2, belt(yp) + 0.04), (yp + wp / 2, belt(yp) + 0.04), (yp + wp / 2, side_z(yp) - inset + 0.01), (yp - wp / 2, side_z(yp) - inset + 0.01)],
                   view, ['cabin'], M['gloss_black'], 0.008, cuts=2)
         for yh in spec.get('handles', []):
             decal(f'handle_{yh}_{s}', [(yh - 0.1, belt(yh) - 0.1), (yh + 0.1, belt(yh) - 0.1), (yh + 0.1, belt(yh) - 0.065), (yh - 0.1, belt(yh) - 0.065)], view, ['body'], M['trim'], 0.012, cuts=1)
@@ -411,11 +660,11 @@ def build(spec):
     zt_f = spec.get('windscreen_top', roof - 0.1)
     zb_f = fb[1] + 0.06
     ws = [(-cab_x(zb_f) + 0.07, zb_f), (cab_x(zb_f) - 0.07, zb_f), (cab_x(zt_f) - 0.08, zt_f), (-cab_x(zt_f) + 0.08, zt_f)]
-    decal('windscreen', ws, 'front', ['cabin'], M['glass'], 0.004, cuts=3)
+    decal('windscreen', ws, 'front', ['cabin'], M['glass'], spec.get('screen_offset', 0.004), cuts=spec.get('screen_cuts', 3))
     zt_r = spec.get('rear_screen_top', roof - 0.1)
     zb_r = spec.get('rear_screen_bottom', rb[1] + 0.08)
     rs = [(-cab_x(zb_r) + 0.1, zb_r), (cab_x(zb_r) - 0.1, zb_r), (cab_x(zt_r) - 0.12, zt_r), (-cab_x(zt_r) + 0.12, zt_r)]
-    decal('rear_screen', rs, 'rear', ['cabin'], M['glass'], 0.004, cuts=3)
+    decal('rear_screen', rs, 'rear', ['cabin'], M['glass'], spec.get('screen_offset', 0.004), cuts=spec.get('screen_cuts', 3))
 
     for s in (-1, 1):
         box(f'mirror_{s}', (0.22, 0.13, 0.12), (s * (hw + 0.06), fb[0] - 0.1, belt(fb[0]) + 0.11), paint, 0.04)
@@ -449,13 +698,18 @@ def build(spec):
     rim_mat = spec['rim']() if 'rim' in spec else M['rim']
     for yc, tag in ((yr, 'rear'), (yf, 'front')):
         for s in (-1, 1):
+            if 'wheel_fn' in spec:
+                spec['wheel_fn'](f'wheel_{tag}_{"l" if s < 0 else "r"}', s * (hw - spec['tyre_w'] / 2 - spec.get('wheel_inset', 0.03)), yc, r, spec['tyre_w'], M, rim_mat, s, tag == 'front')
+                continue
             wheel(f'wheel_{tag}_{"l" if s < 0 else "r"}', s * (hw - spec['tyre_w'] / 2 - 0.03), yc, r, spec['tyre_w'], M, rim_mat, spec.get('spokes', 5), s, spec.get('paired', False))
     if 'extras' in spec:
         spec['extras'](M, paint, dict(belt=belt, edge_z=edge_z, cab_x=cab_x, roof=roof, hw=hw, L=L))
 
     path = os.path.join(OUT, f"{spec['name']}.glb")
     bpy.ops.object.select_all(action='SELECT')
-    bpy.ops.export_scene.gltf(filepath=path, export_format='GLB', use_selection=True, export_apply=True, export_yup=True)
+    draco = dict(export_draco_mesh_compression_enable=True, export_draco_mesh_compression_level=6, export_draco_position_quantization=14,
+                 export_draco_normal_quantization=10, export_draco_texcoord_quantization=12) if spec.get('draco') else {}
+    bpy.ops.export_scene.gltf(filepath=path, export_format='GLB', use_selection=True, export_apply=True, export_yup=True, **draco)
     print('EXPORTED', path, os.path.getsize(path))
 
 
@@ -643,9 +897,118 @@ COUPE = dict(
     extras=coupe_extras,
 )
 
+# ------------------------------------------------------------------ GT: a hot hatch in the classic mould
+# Inspired by the Mk7 / Mk8-era hot hatch silhouette (reference photos: refs/hot-hatch/sources.json): a short,
+# upright five-door with a thick forward-leaning C-pillar, low stance, honeycomb grilles with a thin red line
+# running across the grille into the LED headlights, roof spoiler, black diffuser with a tailpipe each side,
+# dark twin-spoke alloys over red calipers. Original name and a plain badge: no maker's marks.
+GT_L = 4.27
+GT_BELT = (0.915, 0.895)  # the visible belt line, rear and front
+
+
+def gt_belt(y):
+    return GT_BELT[0] + (GT_BELT[1] - GT_BELT[0]) * (y + GT_L / 2) / GT_L
+
+
+def gt_extras(M, paint, geom):
+    accent = mat('accent_red', '#d0101c', rough=0.25)
+    void = mat('grille_void', '#050506', rough=0.9)
+    led = mat('taillight_led', '#ff5a48', rough=0.1, emit='#ff2a1a', strength=1.6)
+    rev = mat('reverse_lamp', '#dde1e4', rough=0.08, emit='#ffffff', strength=0.0)
+    refl = accent  # (the red reflectors share the grille line's material: one draw call fewer)
+    gb, B = M['gloss_black'], ['body']
+
+    def both(name, poly, view, targets, material, off, cuts=3):
+        decal(name, poly, view, targets, material, off, cuts)
+        decal(f'{name}_m', mirror_x(poly), view, targets, material, off, cuts)
+
+    # ---- front: upper honeycomb grille between the headlights, the red line under it, plain round badge
+    ug = [(-0.45, 0.655), (0.45, 0.655), (0.475, 0.70), (0.455, 0.728), (-0.455, 0.728), (-0.475, 0.70)]
+    decal('grille_up', ug, 'front', B, void, 0.008)
+    honeycomb('grille_up_hex', ug, 0.028, 0.005, 'front', B, gb, 0.011)
+    xs = [-0.64 + 1.28 * i / 16 for i in range(17)]
+    strip('red_line', xs, lambda x: 0.643, lambda x: 0.657, 'front', B, accent, 0.018, rows=1)
+    ring_decal('badge_f_ring', (0, 0.69), 0.046, 0.058, 'front', B, M['chrome'], 0.024, 28)
+    ring_decal('badge_f', (0, 0.69), 0, 0.047, 'front', B, gb, 0.022, 28)
+    decal('badge_f_bar', [(-0.03, 0.686), (0.03, 0.686), (0.03, 0.694), (-0.03, 0.694)], 'front', B, M['chrome'], 0.027, cuts=1)
+    # headlights: dark housing, two projector lenses in chrome rings, an LED wing along the top edge
+    hl = [(0.44, 0.645), (0.475, 0.70), (0.505, 0.737), (0.66, 0.757), (0.80, 0.762), (0.872, 0.738), (0.888, 0.69), (0.862, 0.65), (0.62, 0.641)]
+    both('head_housing', hl, 'front', B, gb, 0.009)
+    for i, (cx, cz, rr) in enumerate(((0.575, 0.694, 0.03), (0.765, 0.7, 0.036))):
+        for sx in (1, -1):
+            ring_decal(f'head_ring_{i}_{sx}', (cx * sx, cz), rr, rr + 0.009, 'front', B, M['chrome'], 0.013, 20)
+            ring_decal(f'head_lens_{i}_{sx}', (cx * sx, cz), 0, rr, 'front', B, M['head'], 0.013, 20)
+    both('head_drl', [(0.50, 0.724), (0.66, 0.744), (0.80, 0.749), (0.862, 0.728), (0.866, 0.716), (0.80, 0.737), (0.66, 0.733), (0.505, 0.713)], 'front', B, M['drl'], 0.015)
+    # lower bumper: wide honeycomb intake, side intakes with three fins, black splitter
+    li = [(-0.54, 0.255), (0.54, 0.255), (0.585, 0.30), (0.53, 0.445), (-0.53, 0.445), (-0.585, 0.30)]
+    decal('intake_frame', [(-0.56, 0.24), (0.56, 0.24), (0.61, 0.30), (0.55, 0.46), (-0.55, 0.46), (-0.61, 0.30)], 'front', B, gb, 0.006)
+    decal('intake', li, 'front', B, void, 0.009)
+    honeycomb('intake_hex', li, 0.042, 0.0075, 'front', B, gb, 0.011)
+    si = [(0.64, 0.27), (0.80, 0.285), (0.83, 0.32), (0.835, 0.455), (0.665, 0.465), (0.62, 0.36)]
+    both('side_intake_frame', [(0.625, 0.255), (0.81, 0.27), (0.85, 0.315), (0.855, 0.47), (0.655, 0.482), (0.6, 0.36)], 'front', B, gb, 0.006)
+    both('side_intake', si, 'front', B, void, 0.009)
+    for k, z in enumerate((0.31, 0.355, 0.40)):
+        both(f'fin_{k}', [(0.635, z), (0.83, z + 0.012), (0.83, z + 0.026), (0.64, z + 0.014)], 'front', B, gb, 0.016, cuts=1)
+    both('fog', [(0.77, 0.425), (0.825, 0.428), (0.827, 0.448), (0.77, 0.446)], 'front', B, M['head'], 0.018, cuts=1)
+    strip('splitter', [-0.87 + 1.74 * i / 14 for i in range(15)], lambda x: 0.2, lambda x: 0.24, 'front', B, M['trim'], 0.01, rows=2)
+    # wing badge: a plain red and chrome bar behind the front wheel arch
+    for view in ('right', 'left'):
+        decal(f'wing_badge_{view}', [(0.78, 0.765), (0.9, 0.765), (0.9, 0.778), (0.78, 0.778)], view, B, accent, 0.012, cuts=1)
+
+    # ---- rear: wraparound LED tail lights, plain badge, black diffuser, a tailpipe each side
+    RB = ['body', 'cabin']
+    tl = [(0.33, 0.855), (0.36, 0.925), (0.60, 0.955), (0.83, 0.96), (0.872, 0.93), (0.878, 0.855), (0.80, 0.832), (0.42, 0.835)]
+    both('r_tail', tl, 'rear', RB, M['tail'], 0.008)
+    both('r_tail_led', [(0.42, 0.905), (0.60, 0.925), (0.845, 0.928), (0.845, 0.916), (0.60, 0.913), (0.43, 0.893)], 'rear', RB, led, 0.013, cuts=1)
+    both('r_tail_led_v', [(0.845, 0.86), (0.858, 0.86), (0.858, 0.928), (0.845, 0.928)], 'rear', RB, led, 0.013, cuts=1)
+    both('r_reverse', [(0.40, 0.852), (0.53, 0.852), (0.53, 0.874), (0.41, 0.874)], 'rear', RB, rev, 0.013, cuts=1)
+    for view in ('right', 'left'):
+        decal(f'r_tail_side_{view}', [(-1.98, 0.862), (-2.16, 0.862), (-2.16, 0.925), (-1.98, 0.93)], view, B, M['tail'], 0.008)
+    ring_decal('badge_r_ring', (0, 0.885), 0.044, 0.055, 'rear', RB, M['chrome'], 0.02, 28)
+    ring_decal('badge_r', (0, 0.885), 0, 0.045, 'rear', RB, gb, 0.018, 28)
+    decal('badge_r_bar', [(-0.028, 0.881), (0.028, 0.881), (0.028, 0.889), (-0.028, 0.889)], 'rear', RB, M['chrome'], 0.023, cuts=1)
+    strip('diffuser', [-0.87 + 1.74 * i / 14 for i in range(15)], lambda x: 0.24, lambda x: 0.40, 'rear', B, M['trim'], 0.008, rows=3)
+    for k, x in enumerate((-0.3, -0.15, 0.0, 0.15, 0.3)):
+        decal(f'diffuser_fin_{k}', [(x - 0.012, 0.235), (x + 0.012, 0.235), (x + 0.012, 0.35), (x - 0.012, 0.35)], 'rear', B, gb, 0.013, cuts=1)
+    both('r_reflector', [(0.66, 0.43), (0.845, 0.43), (0.845, 0.447), (0.66, 0.447)], 'rear', B, refl, 0.01, cuts=1)
+    for s in (-1, 1):
+        ring_decal(f'exhaust_surround_{s}', (s * 0.64, 0.30), 0.05, 0.062, 'rear', B, gb, 0.014, 20)
+        cylinder(f'exhaust_{s}', 0.05, 0.12, (s * 0.64, -2.1, 0.30), M['chrome'], 24, axis='Y')
+        cylinder(f'exhaust_in_{s}', 0.04, 0.12, (s * 0.64, -2.103, 0.30), void, 20, axis='Y')
+    # roof spoiler in body colour over the tailgate, with the high-level brake light under its lip
+    spoiler = [(-1.52, 1.432), (-1.75, 1.418), (-1.92, 1.378), (-1.94, 1.36), (-1.86, 1.355), (-1.74, 1.385), (-1.54, 1.418)]
+    extrude_profile('spoiler', spoiler, 0.6, 0.022, paint)
+    box('hmsl', (0.36, 0.02, 0.014), (0, -1.87, 1.357), M['tail'])
+
+
+GT = dict(
+    # outlines are drawn inside the visible surface by the bevel (body 0.075, cabin 0.09), which grows them back out
+    name='gt', L=GT_L, W=1.8, sill=0.275, r=0.322, tyre_w=0.235, wheels=(-1.36, 1.27), belt=GT_BELT, pinch=0.12, flare=0.045,
+    arch_gap=0.11, wheel_inset=0.0, roll_from=0.1, bow=(0.2, 0.12), cab_bow=0.1, cab_bow_from=0.0, draco=True, bevel_res=3, glass_cuts=0, screen_offset=0.009, screen_cuts=5,
+    xcuts=((-0.72, -0.5, -0.25, 0.0, 0.25, 0.5, 0.72), (-1.6, 1.65)), cab_xcuts=((-0.5, -0.25, 0.0, 0.25, 0.5), (-99, -0.2)),
+    paint=lambda: mat('paint_red', '#c3141d', metal=0.0, rough=0.25, coat=1.0),
+    rim=lambda: mat('rim_dark', '#4d5157', metal=1.0, rough=0.3),
+    lower=chaikin([(-2.03, 0.285), (-2.055, 0.40), (-2.06, 0.55), (-2.055, 0.72), (-2.035, 0.80), (-1.98, 0.845),
+                   (-1.2, gt_belt(-1.2) - 0.075), (0.0, gt_belt(0.0) - 0.075), (0.8, gt_belt(0.8) - 0.075),
+                   (1.25, 0.83), (1.65, 0.79), (1.9, 0.745), (2.0, 0.695), (2.045, 0.635),
+                   (2.058, 0.56), (2.06, 0.46), (2.05, 0.35), (2.02, 0.295), (1.98, 0.275)], 2),
+    cabin=chaikin([(-1.99, 0.86), (-1.945, 1.03), (-1.88, 1.155), (-1.81, 1.25), (-1.72, 1.305), (-1.58, 1.32), (-1.0, 1.34),
+                   (-0.4, 1.35), (-0.14, 1.345), (-0.03, 1.33), (0.05, 1.305), (0.46, 1.065), (0.87, 0.82)], 2),
+    cabin_w=0.85, tumble=0.2, dlo_inset=0.02,
+    pillars=[(-0.40, 0.085), (-1.13, 0.03)],
+    c_pillar=((-1.38, 0.95), (-1.22, 1.32)),
+    dlo_trim='gloss_black',
+    handles=[-0.22, -1.15],
+    windscreen_top=1.34, rear_screen_top=1.3, rear_screen_bottom=1.0,
+    wheel_fn=lambda name, x, y, r, w, M, rim_mat, side, front: wheel_gt(name, x, y, r, w, M, rim_mat, side, front),
+    front=dict(plate=(0.515, '241-D-1976')),
+    rear=dict(plate=(0.66, '241-D-1976')),
+    extras=gt_extras,
+)
+
 bpy.ops.wm.read_factory_settings(use_empty=True)
 # the Garda i40 is built by tools/blender/build_garda.py (one model, livery painted at runtime)
-for spec in (HATCH, COUPE):
+for spec in (HATCH, COUPE, GT):
     if ONLY and spec['name'] not in ONLY:
         continue
     build(spec)
