@@ -1,6 +1,6 @@
 // HUD: street sign, speedo, minimap, toolbar, landmark list, help panel and toasts.
 import { world } from '../world/geo.js';
-import { layoutCanvas } from '../world/ground.js';
+import { layoutCanvas, PPM } from '../world/ground.js';
 import { IS_MOBILE } from '../world/textures.js';
 
 const B = world.bounds;
@@ -134,11 +134,8 @@ export function createHUD({ sites, actions }) {
   map.width = map.height = size * dpr;
   map.style.width = map.style.height = `${size}px`;
   const mctx = map.getContext('2d');
-  // pre-shrunk copy of the layout at 1.5 px per metre
-  const MPP = 1.5;
-  const mini = document.createElement('canvas');
-  mini.width = Math.round(B.w * MPP); mini.height = Math.round(B.h * MPP);
-  mini.getContext('2d').drawImage(layoutCanvas, 0, 0, mini.width, mini.height);
+  // the layout canvas itself (already capped at 4096 px: a second full-map copy would break iPhone canvas limits)
+  const MPP = PPM, mini = layoutCanvas;
   const radiusM = IS_MOBILE ? 150 : 170;
   const siteList = Object.values(sites);
 
