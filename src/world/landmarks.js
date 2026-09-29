@@ -19,6 +19,7 @@ import { placeCCJ } from './ccj.js';
 import { placeBarrowStreet } from './barrowst.js';
 import { placeGrandCanal, gcsColliders } from './gcsquare.js';
 import { buildTowers } from './towers.js';
+import { buildLiffey } from './liffey.js';
 import { LITE } from '../render/quality.js';
 const lawnMat = () => getStreets().grassMat;
 import { buildPark } from './park.js';
@@ -2308,6 +2309,9 @@ export function buildLandmarks(scene) {
   // the Grand Canal Dock towers and the three tallest church spires
   const towers = buildTowers(scene, Builder);
   if (phoenixPark) groups.push(phoenixPark.group);
+  // the Liffey Boardwalk, the Millennium and O'Casey footbridges, the Famine, the Jeanie Johnston and CHQ (liffey.js)
+  const liffey = buildLiffey({ Builder, M, glow, waterGlowSources });
+  groups.push(...liffey.groups);
   for (const g of groups) scene.add(g);
   fourCourts(); // its colliders and statues (the hero is placed below)
   buildStatues(scene); // the statue-kit figures queued by the builders above (loads statues.glb)
@@ -2429,6 +2433,7 @@ export function buildLandmarks(scene) {
       if (gcsHero) gcsHero.setNight(level);
       if (guinnessHero) guinnessHero.setNight(level);
       towers.setNight(level);
+      liffey.setNight(level);
       setStoneNight(level);
       if (phoenixPark) phoenixPark.setNight(level);
     },

@@ -45,6 +45,10 @@ const BLURBS = {
   ccj: 'The courts’ glass drum, at the Parkgate end of the Phoenix Park',
   google: 'Google Docks (the old Montevetro), Gordon House and the skybridge, under the DART',
   bolands: 'The 1830s flour mills, a 1916 garrison, under two new towers on the dock',
+  famine: 'Rowan Gillespie’s gaunt bronze figures walking to the emigrant ships',
+  jeanieJohnston: 'Replica of the 1847 famine ship, moored on Custom House Quay',
+  millenniumBridge: 'The 1999 steel footbridge from Temple Bar to Ormond Quay',
+  ocaseyBridge: 'The 2005 swing footbridge, balanced on two piers in the river',
 };
 
 export function createHUD({ sites, actions }) {

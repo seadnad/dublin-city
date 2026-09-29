@@ -6,6 +6,7 @@ import { bridges, parkPolys, campusPolys, dockPolys } from './ground.js';
 import { monumentSites } from './oconnell.js';
 import tanksData from '../data/guinness-tanks.json';
 import bsLayout from '../data/barrowst.json';
+import * as LQ from './liffeysites.js';
 
 const N = (id) => world.nodes.get(id);
 const wayBetween = (a, b) => world.ways.find((w) => {
@@ -779,6 +780,15 @@ Object.assign(extraSites, {
 const tallFootprints = [sites.libertyHall, sites.collegeSquare, sites.capitalDock, sites.exo, sites.johnsLane, sites.stGeorges, sites.findlaters,
   ...Object.entries(extraSites).filter(([k]) => /^(libertyHallWing|collegeSquareOffice|millenniumTower|altoVetro|gqPlaza\d|capitalDock\d)$/.test(k)).map(([, s]) => s)];
 
+// the Liffey's riverside landmarks (src/world/liffeysites.js, docs/research/liffey-quays.md) join the Places list
+Object.assign(sites, {
+  famine: { name: 'Famine Memorial', ...LQ.FAMINE.site, view: spot('NQ12', 'NQ13', 0.04) },
+  jeanieJohnston: { name: 'Jeanie Johnston', x: LQ.SHIP.x, z: LQ.SHIP.z, rot: LQ.SHIP.rot, w: LQ.SHIP.w, d: LQ.SHIP.d, labelY: 24, water: true, view: spot('NQ13', 'NQ12', 0.12) },
+  millenniumBridge: { name: 'Millennium Bridge', ...LQ.MILLENNIUM, view: spot('SQ4', 'SQ5', 0.72) },
+  ocaseyBridge: { name: "Seán O'Casey Bridge", ...LQ.OCASEY, view: spot('SQ12', 'SQ13', 0.2) },
+});
+extraSites.chq = { ...LQ.CHQ };
+
 // Footprints the filler generator must avoid (landmark buildings; parks/campus handled separately).
 export const reserved = [
   sites.gpo, sites.bankOfIreland, ...Object.entries(extraSites).filter(([k]) => k.startsWith('boi')).map(([, s]) => s), sites.christChurch, sites.stPatricks, extraSites.iveaghPlay, sites.customHouse, sites.trinity, ...grounds,
@@ -846,6 +856,8 @@ export const reserved = [
   // ...and the grounds behind it, out to the park wall (the green's edge, src/data/streets.json) on the west and north
   (extraSites.ccjWest = { x: CCJ.x - 34, z: CCJ.z - 10, rot: 0, w: 18, d: 38 }),
   (extraSites.ccjNorth = { x: CCJ.x - 6, z: CCJ.z - 29, rot: 0, w: 38, d: 8 }),
+  // CHQ on Custom House Quay (src/world/liffey.js)
+  extraSites.chq,
   // the tall buildings (src/world/towers.js)
   ...tallFootprints,
 ].filter(Boolean);
