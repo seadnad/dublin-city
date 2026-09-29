@@ -317,7 +317,7 @@ function paintParliament(g, N) {
 // the walls and columns and fading out above the cornice. One shared uniform; per-fragment it is a height ramp
 // in world space, so no extra vertex data.
 const uplight = { value: 0 };
-function uplit(m, top = 11) {
+export function uplit(m, top = 11) {
   m.onBeforeCompile = (sh) => {
     sh.uniforms.uUplight = uplight;
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying float vUpY;')
@@ -331,7 +331,7 @@ function uplit(m, top = 11) {
 }
 
 // tileable stone: calp rubble (grey, irregular), ashlar courses, slate, brick
-function stoneTile(size, base, courses, jitter, mortar = 'rgba(40,38,36,0.55)', tint = 0.35, joint = 2) {
+export function stoneTile(size, base, courses, jitter, mortar = 'rgba(40,38,36,0.55)', tint = 0.35, joint = 2) {
   const c = document.createElement('canvas'); c.width = c.height = size;
   const g = c.getContext('2d'); g.fillStyle = base; g.fillRect(0, 0, size, size);
   let seed = 11; const r = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);

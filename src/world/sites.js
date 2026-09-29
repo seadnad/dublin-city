@@ -75,6 +75,16 @@ const at = (lat, lon) => project(lat, lon);
 const theatre = { ...at(53.34414, -6.23995), rot: -Math.PI / 2, w: 26, d: 34 };
 const gcSquare = { ...at(53.34408, -6.23897), rot: -Math.PI / 2, w: 28, d: 33 };
 const beckett = bridges.find((b) => b.name === 'Samuel Beckett Bridge');
+// 3Arena (docs/research/three-arena.md): the old Point Depot's front stands on North Wall Quay behind a 2.2 m railed
+// forecourt at the back of the footpath, square to the quay, its east wall just clear of East Wall Road. The hero is
+// placed by the middle of that front (arenaFront; local +x east along the quay, local -z north, u / v in the model);
+// the site box covers u -22.5 .. 21.5 and v -2.2 .. 54 (the forecourt to the north gables).
+const arenaFront = (() => {
+  const A = N('NQ18'), B = N('NQ19'), dir = v2.norm(v2.sub(B, A)), way = wayBetween('NQ18', 'NQ19');
+  const p = v2.lerp(A, B, 0.617), off = way.width / 2 + way.pave + 2.2;
+  return { x: p.x + dir.z * off, z: p.z - dir.x * off, rot: Math.atan2(-dir.z, dir.x) };
+})();
+const arenaAt = (u, v) => ({ x: arenaFront.x + u * Math.cos(arenaFront.rot) - v * Math.sin(arenaFront.rot), z: arenaFront.z - u * Math.sin(arenaFront.rot) - v * Math.cos(arenaFront.rot) });
 
 // Croke Park, placed from OSM (docs/research/croke-park.md 3.2): the stadium frame has its origin at the pitch centre,
 // +a along the pitch towards Hill 16 (N19.3E), +b across towards the Cusack Stand, in real metres; the model is built
@@ -258,7 +268,9 @@ export const sites = {
     view: spot('SQ15', 'NQ15', 0.45), // from the Beckett Bridge, looking across to it
   },
   threeArena: {
-    name: '3Arena', ...beside('NQ18', 'NQ19', 0.5, 1, 70, 46, { gap: 3 }), labelY: 30,
+    name: '3Arena', ...arenaAt(-0.5, 25.9), rot: arenaFront.rot, w: 44, d: 56.2, labelY: 30,
+    front: arenaFront, at: arenaAt,
+    plaza: { ...arenaAt(-0.5, 57), rot: arenaFront.rot, w: 44, d: 6 }, // paved, out to the Luas terminus
     view: spot('NQ17', 'NQ18', 0.45),
   },
   grandCanal: {
@@ -431,7 +443,9 @@ export const reserved = [
   shifted(sites.convention, 0, sites.convention.d / 2 + 6.5, sites.convention.w, 13), // its forecourt
   sites.grandCanalSt, shifted(sites.grandCanalSt, 0, sites.grandCanalSt.d / 2 + 3.25, sites.grandCanalSt.w + 4, 6.5), // its raised forecourt
   shifted(sites.grandCanalSt, sites.grandCanalSt.w / 2 + 9, 3, 18, sites.grandCanalSt.d + 6.5), // open corner to Grattan Street (steps, parking)
-  sites.heuston, sites.guinness, sites.convention, sites.threeArena, sites.grandCanal, sites.grandCanal.square,
+  sites.heuston, sites.guinness, sites.convention, sites.threeArena, sites.threeArena.plaza, sites.grandCanal, sites.grandCanal.square,
+  // the Luas terminus at The Point: both platforms and their shelters, from the end of the track back past the stop
+  (() => { const a = N('PT'), b = N('PTE'), L = v2.len(v2.sub(b, a)), dir = v2.norm(v2.sub(b, a)); return { ...v2.lerp(a, b, 0.5), rot: Math.atan2(dir.x, dir.z), w: 15, d: L + 6 }; })(),
   // Heuston's forecourt, open to the quay
   // Heuston forecourt: the Luas stop, bus bays and lawn in front of the east front, kept open to the road
   { x: heustonFront.x + 16, z: heustonFront.z + 4, rot: 0.14, w: 30, d: 44 },
