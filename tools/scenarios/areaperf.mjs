@@ -8,6 +8,8 @@ export const AREAS = [
   ['christ-church', 53.34320, -6.26880, 250],  // Lord Edward St towards the cathedral
   ['st-patricks', 53.34060, -6.27100, 180],    // Patrick St, south past the park
   ['heuston', 53.34700, -6.28900, 250],        // Victoria Quay towards the station
+  ['croke-park', 53.36040, -6.25352, 18],      // Jones's Road, north under the Hogan Stand (full model)
+  ['croke-far', 53.35425, -6.25680, 28],       // Summerhill at Gardiner St, ~410 m off, facing the stadium (far LOD)
 ];
 export default async function (page, shot, { fps }) {
   await wait(6000);
@@ -20,8 +22,9 @@ export default async function (page, shot, { fps }) {
       while (pending.length && gl.getQueryParameter(pending[0], gl.QUERY_RESULT_AVAILABLE)) d.gpuTimes.push(gl.getQueryParameter(pending.shift(), gl.QUERY_RESULT) / 1e6); };
   });
   const tag = process.env.TAG || 'run';
-  // AREAS='[[slug,lat,lon,hdg],...]' overrides the list
-  for (const [slug, lat, lon, hdg] of (process.env.AREAS ? JSON.parse(process.env.AREAS) : AREAS)) {
+  // AREAS='[[slug,lat,lon,hdg],...]' overrides the list; ONLY=slug,slug picks some
+  const only = process.env.ONLY ? process.env.ONLY.split(',') : null;
+  for (const [slug, lat, lon, hdg] of (process.env.AREAS ? JSON.parse(process.env.AREAS) : AREAS).filter((a) => !only || only.includes(a[0]))) {
     await page.evaluate(async ([lat, lon, hdg]) => {
       const d = window.__dublin, { project } = await import('/src/world/geo.js');
       const p = project(lat, lon), h = (hdg * Math.PI) / 180;

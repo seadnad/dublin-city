@@ -420,7 +420,7 @@ export function buildGround(scene) {
 
   // Park railings, Trinity railings and the dock edges
   group.add(buildRailings([...parkPolys, ...campusPolys, ...dockPolys.filter((dk) => !dk.canal)]));
-  group.add(buildCanals(scene, streets.grassMat, stoneMaterial));
+  group.add(buildCanals(scene, streets.grassMat, stoneMaterial, streets.pavingMat));
   {
     const segs = [];
     for (const { poly } of parkPolys) poly.forEach((a, i) => segs.push([a, poly[(i + 1) % poly.length]]));

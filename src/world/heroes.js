@@ -6,6 +6,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { addReflections } from '../render/reflect.js';
 import { stoneTex } from './ground.js';
+import { LITE } from '../render/quality.js';
 
 const loader = new GLTFLoader();
 loader.setDRACOLoader(new DRACOLoader().setDecoderPath(`${import.meta.env.BASE_URL}draco/`));
@@ -259,4 +260,294 @@ export async function placeParts(scene, file, site, name) {
   }
   scene.add(group);
   return group;
+}
+
+// ---------- Croke Park ----------
+// tools/blender/build_crokepark.py: two roots, 'stadium' (full detail, baked AO) and 'stadium_far' (a ~1.6k-triangle
+// silhouette for beyond LOD_FAR). Its textures are painted here: a tiling texture of 8 horizontal bands (seats,
+// underside, decks, cladding, terrace, ad boards, roof; each repeats along u only), a decal atlas and the pitch.
+// Every stadium material thins its fog (FOG_SCALE) so the roof and the crown of masts still read on the skyline from
+// the city centre; a Low / Battery saver device paints the textures at half size.
+const CP_BANDS = ['seatlo', 'seathi', 'under', 'deck', 'clad', 'terrace', 'ads', 'roof'];
+const CP_DECAL = {
+  lattice: [0, 0, 1024, 64], wordmark: [0, 64, 1024, 128], welcome: [0, 192, 512, 96], museum: [512, 192, 512, 96],
+  hogan: [0, 288, 512, 48], cusack: [0, 336, 512, 48], davin: [0, 384, 512, 48], hill: [0, 432, 512, 48],
+  turnstile: [512, 288, 512, 192], screen: [0, 480, 256, 128], lamps: [256, 480, 128, 64],
+};
+const SEAT = '#5a6980', SEAT_D = '#3a4658', CONC = '#bdb9b0', CONC_D = '#8e8b85';
+const LOD_FAR = 350;
+
+function cpCanvas(w, h, scale, paint) {
+  const c = document.createElement('canvas');
+  c.width = Math.round(w * scale); c.height = Math.round(h * scale);
+  const g = c.getContext('2d');
+  g.scale(scale, scale);
+  paint(g);
+  return c;
+}
+function cpTex(canvas, repeatU = false) {
+  const t = new THREE.CanvasTexture(canvas);
+  t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.anisotropy = 8;
+  if (repeatU) t.wrapS = THREE.RepeatWrapping;
+  return t;
+}
+
+// the tiling texture (1024 x 2048: band k occupies rows 256k .. 256k+255, drawn 8 px into the padding both ways)
+function paintTile(g, emissive) {
+  const W = 1024;
+  g.fillStyle = '#000'; g.fillRect(0, 0, W, 2048);
+  let seed = 5;
+  const r = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (let k = 0; k < 8; k++) {
+    const y0 = k * 256, band = CP_BANDS[k];
+    g.save(); g.beginPath(); g.rect(0, y0, W, 256); g.clip(); g.translate(0, y0 + 8);
+    const H = 240; // content height; the paint runs 8 px past both edges as padding
+    const rows = (n, fill) => { for (let i = -1; i <= n; i++) fill(i, (i * H) / n, H / n); };
+    if (band === 'seatlo' || band === 'seathi') {
+      const n = band === 'seatlo' ? 28 : 24;
+      if (!emissive) {
+        rows(n, (i, y, h) => {
+          g.fillStyle = '#7b7f86'; g.fillRect(0, y, W, h);                 // concrete tread
+          g.fillStyle = SEAT; g.fillRect(0, y + h * 0.18, W, h * 0.62);     // the row of seats
+          g.fillStyle = SEAT_D; g.fillRect(0, y + h * 0.18, W, h * 0.12);   // seat backs in shade
+          g.fillStyle = 'rgba(20,24,30,0.35)'; for (let x = 0; x < W; x += 42) g.fillRect(x, y + h * 0.18, 2, h * 0.62);
+        });
+        // aisles (stepped, lighter), every 6 m
+        for (const ax of [0, 512]) {
+          g.fillStyle = '#9d9c97'; g.fillRect(ax, -8, 34, H + 16);
+          g.fillStyle = 'rgba(60,60,60,0.5)'; for (let y = 0; y < H; y += H / (n * 2)) g.fillRect(ax, y, 34, 1.5);
+        }
+        if (band === 'seatlo') for (const vx of [230, 742]) { // vomitory mouths
+          g.fillStyle = CONC; g.fillRect(vx - 6, H * 0.46, 132, H * 0.3);
+          g.fillStyle = '#16181b'; g.fillRect(vx, H * 0.49, 120, H * 0.27);
+        }
+      } else {
+        g.fillStyle = '#1c2026'; g.fillRect(0, -8, W, H + 16); // floodlit seats catch a little light
+      }
+    } else if (band === 'under') {
+      if (!emissive) {
+        rows(18, (i, y, h) => { g.fillStyle = '#a9a79f'; g.fillRect(0, y, W, h); g.fillStyle = '#77756f'; g.fillRect(0, y + h * 0.62, W, h * 0.38); });
+        for (const bx of [0, 512]) { g.fillStyle = '#8a8882'; g.fillRect(bx, -8, 26, H + 16); g.fillStyle = 'rgba(40,40,40,0.35)'; g.fillRect(bx + 26, -8, 8, H + 16); }
+      } else {
+        g.fillStyle = '#6f7686'; for (let x = 64; x < W; x += 128) for (let y = 30; y < H; y += 60) g.fillRect(x, y, 22, 5);
+      }
+    } else if (band === 'deck') { // four concourse levels: slab edge, railing, the dark deck with strip lights
+      for (let lv = -1; lv <= 4; lv++) {
+        const y = lv * (H / 4), h = H / 4;
+        if (!emissive) {
+          g.fillStyle = CONC; g.fillRect(0, y, W, h * 0.3);
+          g.fillStyle = CONC_D; g.fillRect(0, y + h * 0.27, W, 3);
+          g.fillStyle = '#26292d'; g.fillRect(0, y + h * 0.3, W, h * 0.7);
+          g.fillStyle = '#4a4f55'; g.fillRect(0, y + h * 0.36, W, 3);
+          g.fillStyle = 'rgba(200,205,210,0.55)'; for (let x = 0; x < W; x += 12) g.fillRect(x, y + h * 0.3, 2, h * 0.12); // railing bars
+          g.fillStyle = '#6d747c'; for (let x = 0; x < W; x += 102) g.fillRect(x, y + h * 0.3, 56, 4);
+          g.fillStyle = CONC_D; for (let x = 0; x < W; x += 256) g.fillRect(x + 100, y + h * 0.3, 18, h * 0.7); // columns
+        } else {
+          g.fillStyle = '#e8f0ff'; for (let x = 0; x < W; x += 102) g.fillRect(x, y + h * 0.3, 56, 4);
+          g.fillStyle = '#2a3140'; g.fillRect(0, y + h * 0.38, W, h * 0.55);
+        }
+      }
+    } else if (band === 'clad') { // slate panels, a ribbon of glazing in the middle
+      if (!emissive) {
+        g.fillStyle = '#3c4a5d'; g.fillRect(0, -8, W, H + 16);
+        g.fillStyle = '#2e3a4a'; for (let x = 0; x < W; x += 64) g.fillRect(x, -8, 3, H + 16);
+        g.fillRect(0, H * 0.28, W, 3); g.fillRect(0, H * 0.72, W, 3);
+        g.fillStyle = '#2a3542'; g.fillRect(0, H * 0.31, W, H * 0.4);
+        g.fillStyle = 'rgba(150,170,190,0.25)'; for (let x = 0; x < W; x += 128) g.fillRect(x + 10, H * 0.33, 50, H * 0.36);
+        g.fillStyle = '#1d2530'; for (let x = 0; x < W; x += 32) g.fillRect(x, H * 0.31, 3, H * 0.4);
+      } else {
+        for (let x = 0; x < W; x += 32) { if (r() < 0.38) { g.fillStyle = r() < 0.7 ? '#b89868' : '#c9b89a'; g.fillRect(x + 5, H * 0.34, 22, H * 0.34); } }
+      }
+    } else if (band === 'terrace') { // Hill 16: stepped concrete terrace with white crush barriers
+      if (!emissive) {
+        rows(20, (i, y, h) => { g.fillStyle = '#8c8980'; g.fillRect(0, y, W, h); g.fillStyle = '#5c5a55'; g.fillRect(0, y + h * 0.72, W, h * 0.28); });
+        g.fillStyle = '#d9d7cf';
+        for (let i = 1; i < 20; i += 3) { const y = (i * H) / 20; for (let x = (i * 97) % 200; x < W; x += 200) g.fillRect(x, y - 2, 130, 4); }
+        g.fillStyle = '#b6b3aa'; for (const ax of [0, 512]) g.fillRect(ax, -8, 26, H + 16);
+      } else { g.fillStyle = '#15171a'; g.fillRect(0, -8, W, H + 16); }
+    } else if (band === 'ads') { // LED ribbons (upper half) and pitch-side boards (lower half)
+      const cols = ['#c8322b', '#1f4fa0', '#f2f2f2', '#127a4a', '#1f4fa0', '#e3a51c', '#c8322b', '#f2f2f2'];
+      for (const [ya, yb] of [[-8, H * 0.5], [H * 0.55, H + 8]]) {
+        for (let s = 0; s < 8; s++) {
+          const x = s * 128, c = cols[(s + (ya < 0 ? 0 : 3)) % cols.length];
+          g.fillStyle = c; g.fillRect(x, ya, 128, yb - ya);
+          g.fillStyle = c === '#f2f2f2' ? '#1f4fa0' : '#ffffff';
+          g.font = `bold ${Math.round((yb - ya) * 0.5)}px Arial`; g.textAlign = 'center'; g.textBaseline = 'middle';
+          g.fillText(['GAA', 'CROKE PARK', 'GAA', 'SKYLINE', 'CLG', 'MUSEUM', 'GAA', 'PÁIRC'][s], x + 64, (ya + yb) / 2);
+        }
+        if (emissive) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(0, ya, W, yb - ya); }
+      }
+      if (!emissive) { g.fillStyle = '#20242a'; g.fillRect(0, H * 0.5, W, H * 0.05); }
+    } else if (band === 'roof') { // top sheet with translucent strips (upper half), underside panels (lower half)
+      if (!emissive) {
+        g.fillStyle = '#8d949a'; g.fillRect(0, -8, W, H * 0.5 + 8);
+        g.fillStyle = 'rgba(60,66,72,0.35)'; for (let x = 0; x < W; x += 16) g.fillRect(x, -8, 2, H * 0.5 + 8);
+        g.fillStyle = '#c9ced2'; for (const x of [150, 662]) g.fillRect(x, -8, 90, H * 0.5 + 8);
+        g.fillStyle = '#d8dbd6'; g.fillRect(0, H * 0.5, W, H * 0.5 + 8);
+        g.fillStyle = '#9aa0a3'; for (let x = 0; x < W; x += 128) g.fillRect(x, H * 0.5, 10, H * 0.5 + 8);
+        g.fillStyle = '#b5bab9'; for (let y = H * 0.5; y < H + 8; y += 30) g.fillRect(0, y, W, 4);
+        g.fillStyle = '#eef0ec'; for (const x of [150, 662]) g.fillRect(x, H * 0.5, 90, H * 0.5 + 8);
+      } else {
+        g.fillStyle = '#3a3f4a'; g.fillRect(0, H * 0.5, W, H * 0.5 + 8); // the lit underside
+      }
+    }
+    g.restore();
+  }
+}
+
+function paintCpDecals(g, emissive) {
+  g.clearRect(0, 0, 1024, 1024);
+  if (emissive) { g.fillStyle = '#000'; g.fillRect(0, 0, 1024, 1024); }
+  const text = (s, x, y, size, color, weight = 'bold') => {
+    g.fillStyle = color; g.font = `${weight} ${size}px Arial`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(s, x, y);
+  };
+  { // lattice truss web (Warren truss with verticals), white on transparent; repeats along u
+    const [x, y, w, h] = CP_DECAL.lattice;
+    if (!emissive) {
+      g.strokeStyle = '#eef0f0'; g.lineWidth = 7;
+      g.beginPath();
+      for (let k = 0; k <= 4; k++) { const px = x + (k * w) / 4; g.moveTo(px, y + 4); g.lineTo(px, y + h - 4); }
+      for (let k = 0; k < 4; k++) { const a = x + (k * w) / 4, b = a + w / 8, c = a + w / 4; g.moveTo(a, y + h - 6); g.lineTo(b, y + 6); g.lineTo(c, y + h - 6); }
+      g.stroke();
+      g.fillStyle = '#eef0f0'; g.fillRect(x, y, w, 8); g.fillRect(x, y + h - 8, w, 8);
+    }
+  }
+  { // the wordmark: creative licence (no big lettering is confirmed on the real stand)
+    const [x, y, w, h] = CP_DECAL.wordmark;
+    text('CROKE PARK', x + w / 2, y + h * 0.33, 74, '#f4f6f8', '900');
+    text('PÁIRC AN CHRÓCAIGH', x + w / 2, y + h * 0.78, 40, emissive ? '#cfe4ff' : '#9fc8ea', 'bold');
+  }
+  { const [x, y, w, h] = CP_DECAL.welcome;
+    if (!emissive) { g.fillStyle = '#1b2a44'; g.fillRect(x, y, w, h); g.fillStyle = '#2e98dc'; g.fillRect(x, y + h - 12, w, 12); }
+    text('Welcome to Croke Park', x + w / 2, y + h * 0.32, 34, '#ffffff'); text('Fáilte go Páirc an Chrócaigh', x + w / 2, y + h * 0.66, 26, emissive ? '#9fd0f5' : '#bfe0f7', 'italic bold'); }
+  { const [x, y, w, h] = CP_DECAL.museum;
+    if (!emissive) { g.fillStyle = '#20252c'; g.fillRect(x, y, w, h); }
+    text('GAA MUSEUM', x + w / 2, y + h / 2, 52, '#f2f2f2', '900'); }
+  for (const [k, s] of [['hogan', 'HOGAN STAND'], ['cusack', 'CUSACK STAND'], ['davin', 'DAVIN STAND'], ['hill', 'DINEEN HILL 16']]) {
+    const [x, y, w, h] = CP_DECAL[k];
+    g.fillStyle = emissive ? '#0b2a40' : '#2e98dc'; g.fillRect(x, y, w, h);
+    text(s, x + w / 2, y + h / 2 + 1, 30, '#ffffff');
+  }
+  { // navy turnstile block: panelled, a row of gates
+    const [x, y, w, h] = CP_DECAL.turnstile;
+    if (!emissive) {
+      g.fillStyle = '#2b3b52'; g.fillRect(x, y, w, h);
+      g.fillStyle = '#5d6b7c'; for (let px = x; px < x + w; px += 32) g.fillRect(px, y, 2, h);
+      g.fillRect(x, y + h * 0.18, w, 2);
+      for (let k = 0; k < 6; k++) {
+        const gx = x + 20 + k * 82;
+        g.fillStyle = '#15191f'; g.fillRect(gx, y + h * 0.36, 56, h * 0.64);
+        g.fillStyle = '#8b96a3'; for (let b = 0; b < 5; b++) g.fillRect(gx + 4 + b * 11, y + h * 0.36, 3, h * 0.64);
+        text(`F${k + 1}`, gx + 28, y + h * 0.27, 18, '#e8eef4');
+      }
+    }
+  }
+  { const [x, y, w, h] = CP_DECAL.screen; // the big screen at the Hill 16 end
+    g.fillStyle = emissive ? '#000' : '#f2f2f0'; g.fillRect(x, y, w, h);
+    g.fillStyle = '#0d1a2a'; g.fillRect(x + 8, y + 8, w - 16, h - 16);
+    g.fillStyle = '#2f7a3a'; g.fillRect(x + 12, y + h * 0.55, w - 24, h * 0.35);
+    text('CROKE PARK', x + w / 2, y + h * 0.26, 26, '#ffffff', '900'); text('GAA', x + w / 2, y + h * 0.72, 24, '#f2d24a'); }
+  { const [x, y, w, h] = CP_DECAL.lamps; // floodlight head: a grid of lamps
+    g.fillStyle = emissive ? '#000' : '#2b2f35'; g.fillRect(x, y, w, h);
+    g.fillStyle = emissive ? '#ffffff' : '#dfe6ee';
+    for (let rr = 0; rr < 4; rr++) for (let c = 0; c < 7; c++) { g.beginPath(); g.arc(x + 10 + c * 18, y + 9 + rr * 15, 6, 0, Math.PI * 2); g.fill(); }
+  }
+}
+
+// the pitch: 640 x 1024 over b -50..50 (u) and a 79..-81 (v, the Hill 16 end at the top); 6.4 px per metre
+function paintTurf(g) {
+  const PX = 6.4, X = (b) => (b + 50) * PX, Y = (a) => (79 - a) * PX;
+  g.fillStyle = '#a3533d'; g.fillRect(0, 0, 640, 1024);             // the terracotta surround at the tier fronts
+  g.fillStyle = '#3f7d2e'; g.fillRect(X(-47), Y(76), 94 * PX, 154 * PX);
+  for (let a = -76; a < 76; a += 12) { g.fillStyle = '#4c9138'; g.fillRect(X(-47), Y(a + 6), 94 * PX, 6 * PX); } // mowing stripes
+  g.fillStyle = 'rgba(255,255,255,0.05)'; for (let b = -47; b < 47; b += 12) g.fillRect(X(b), Y(76), 6 * PX, 154 * PX);
+  g.strokeStyle = 'rgba(245,245,240,0.9)'; g.lineWidth = 2;
+  const L = (a0, b0, a1, b1) => { g.beginPath(); g.moveTo(X(b0), Y(a0)); g.lineTo(X(b1), Y(a1)); g.stroke(); };
+  g.strokeRect(X(-42.5), Y(71.5), 85 * PX, 143 * PX);
+  L(0, -42.5, 0, 42.5); L(0, -0.5, 0, 0.5);
+  for (const s of [1, -1]) {
+    for (const d of [13, 20, 45]) L(s * (71.5 - d), -42.5, s * (71.5 - d), 42.5);
+    g.strokeRect(X(-9.5), Y(s > 0 ? 71.5 : -71.5 + 14), 19 * PX, 14 * PX);      // large rectangle 19 x 14
+    g.strokeRect(X(-4.5), Y(s > 0 ? 71.5 : -71.5 + 4.5), 9 * PX, 4.5 * PX);     // small rectangle
+    g.beginPath(); g.arc(X(0), Y(s * 51.5), 13 * PX, s > 0 ? 0 : Math.PI, s > 0 ? Math.PI : 0); g.stroke(); // the D
+  }
+}
+
+let cpMats = null;
+function crokeMaterials() {
+  if (cpMats) return cpMats;
+  const S = LITE ? 0.5 : 1;
+  const tileMap = cpTex(cpCanvas(1024, 2048, S, (g) => paintTile(g, false)), true);
+  const tileEm = cpTex(cpCanvas(1024, 2048, S * 0.5, (g) => paintTile(g, true)), true);
+  const decMap = cpTex(cpCanvas(1024, 1024, S, (g) => paintCpDecals(g, false)), true);
+  const decEm = cpTex(cpCanvas(1024, 1024, S * 0.5, (g) => paintCpDecals(g, true)), true);
+  const turf = cpTex(cpCanvas(640, 1024, S, paintTurf));
+  const std = (o, vc = true) => { const m = new THREE.MeshStandardMaterial(o); m.vertexColors = vc; m.defines = { FOG_SCALE: '0.55' }; return m; };
+  cpMats = {
+    tile: std({ map: tileMap, emissive: 0xffffff, emissiveMap: tileEm, emissiveIntensity: 0, roughness: 0.85 }),
+    concrete: std({ color: 0xbdb9b0, roughness: 0.9 }),
+    white: std({ color: 0xe6e9ea, roughness: 0.45, metalness: 0.1 }),
+    decal: std({ map: decMap, alphaTest: 0.5, side: THREE.DoubleSide, emissive: 0xffffff, emissiveMap: decEm, emissiveIntensity: 0.08, roughness: 0.5 }),
+    turf: std({ map: turf, emissive: 0xffffff, emissiveMap: turf, emissiveIntensity: 0, roughness: 0.95 }),
+    flood: std({ color: 0xf4f7ff, emissive: 0xf4f7ff, emissiveIntensity: 0.05, roughness: 0.3 }, false),
+    whiteFar: std({ color: 0xb4bbc1, roughness: 0.5 }, false),
+  };
+  return cpMats;
+}
+
+// the floodlit bowl's halo above the roof, for the night view from outside
+function haloTexture() {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const g = c.getContext('2d'), gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+  gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.35, 'rgba(255,255,255,0.45)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+export async function placeCrokePark(scene, site) {
+  let gltf;
+  try { gltf = await load('crokepark'); } catch (e) { console.warn('crokepark model failed to load', e); return null; }
+  const mats = crokeMaterials();
+  const near = gltf.scene.getObjectByName('stadium'), far = gltf.scene.getObjectByName('stadium_far');
+  if (!near || !far) return null;
+  for (const [root, isFar] of [[near, false], [far, true]]) {
+    root.traverse((o) => {
+      if (!o.isMesh) return;
+      if (!o.geometry.attributes.color) o.geometry.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(o.geometry.attributes.position.count * 3).fill(1), 3));
+      const col = o.geometry.attributes.color;
+      if (col.normalized && !decoded.has(col)) { // baked AO (sRGB bytes): decode and keep it off black, as for the stone heroes
+        for (let i = 0; i < col.count; i++) for (let c = 0; c < 3; c++) col.setComponent(i, c, 0.35 + 0.65 * Math.pow(col.getComponent(i, c), 1 / 2.2));
+        decoded.add(col); col.needsUpdate = true;
+      }
+      const key = o.material.name.replace(/^cp_/, '');
+      o.material = (isFar && key === 'white' ? mats.whiteFar : mats[key]) || mats.concrete;
+      o.castShadow = !isFar && key !== 'decal' && key !== 'flood' && key !== 'turf';
+      o.receiveShadow = !isFar;
+    });
+    root.removeFromParent();
+    root.position.set(0, 0, 0);
+  }
+  const lod = new THREE.LOD();
+  lod.name = 'Croke Park';
+  lod.addLevel(near, 0, 0.04);
+  lod.addLevel(far, LOD_FAR, 0.04);
+  lod.position.set(site.centre.x, 0, site.centre.z);
+  lod.rotation.y = site.centre.rot;
+  scene.add(lod);
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: haloTexture(), color: 0xdfe8ff, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, fog: false, opacity: 0 }));
+  halo.position.set(site.centre.x, 30, site.centre.z);
+  halo.scale.set(170, 64, 1);
+  halo.visible = false;
+  scene.add(halo);
+  return {
+    root: lod,
+    setNight(l) {
+      mats.flood.emissiveIntensity = 0.05 + l * 3.2;
+      mats.tile.emissiveIntensity = l * 0.8;
+      mats.decal.emissiveIntensity = 0.08 + l * 1.1;
+      mats.turf.emissiveIntensity = l * 0.42;
+      halo.material.opacity = l * 0.42; halo.visible = l > 0.01;
+    },
+  };
 }

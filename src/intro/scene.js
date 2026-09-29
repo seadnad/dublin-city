@@ -56,7 +56,7 @@ export function createIntro(canvas, width, height, dpr) {
         if (r && r.edgeDist < r.way.pave + 3) continue;
         const p = { x, z };
         if (pointInPolygon(p, world.riverPoly) || world.parks.some((k) => pointInPolygon(p, k.poly)) || world.docks.some((k) => pointInPolygon(p, k.poly))) continue;
-        const docks = x > 300 && z < 150;
+        const docks = x > 300 && z < 150 && z > -280; // as buildings.js: the northern ring is terraces, not Docklands
         items.push({ x, z, h: docks ? 16 + rnd() * 26 : 11 + rnd() * 9, c: rnd() });
       }
     }

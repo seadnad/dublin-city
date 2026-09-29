@@ -76,6 +76,29 @@ const theatre = { ...at(53.34414, -6.23995), rot: -Math.PI / 2, w: 26, d: 34 };
 const gcSquare = { ...at(53.34408, -6.23897), rot: -Math.PI / 2, w: 28, d: 33 };
 const beckett = bridges.find((b) => b.name === 'Samuel Beckett Bridge');
 
+// Croke Park, placed from OSM (docs/research/croke-park.md 3.2): the stadium frame has its origin at the pitch centre,
+// +a along the pitch towards Hill 16 (N19.3E), +b across towards the Cusack Stand, in real metres; the model is built
+// in that frame at plan scale 0.5 (tools/blender/build_crokepark.py), so a frame point maps to the map directly.
+const CP_TH = (19.3 * Math.PI) / 180;
+const cpCentre = at(53.360753, -6.25113);
+export const cpAt = (a, b) => {
+  const east = a * Math.sin(CP_TH) + b * Math.cos(CP_TH), north = a * Math.cos(CP_TH) - b * Math.sin(CP_TH);
+  return { x: cpCentre.x + east * 0.5, z: cpCentre.z - north * 0.5 };
+};
+// a rectangle in the frame as a site box (local x = b, local z = -a)
+const cpBox = (a0, a1, b0, b1) => ({ ...cpAt((a0 + a1) / 2, (b0 + b1) / 2), rot: -CP_TH, w: (b1 - b0) * 0.5, d: (a1 - a0) * 0.5 });
+// the stadium's outline at ground level (the stand bases, corners and the Hill 16 rear wall), for collision
+const cpOutline = (() => {
+  const P = [];
+  const arcPts = (cb, ca, r, deg0, deg1) => { for (let k = 0; k <= 12; k++) { const t = ((deg0 + (deg1 - deg0) * (k / 12)) * Math.PI) / 180; P.push([ca + Math.sin(t) * r, cb + Math.cos(t) * r]); } };
+  P.push([54, -84]);
+  arcPts(-38, -68, 46, 180, 270); // SW corner (the base at 34 m + the 12 m tier-front radius)
+  arcPts(38, -68, 46, 270, 360);  // SE corner
+  P.push([47, 84]);
+  for (const [b, a] of [[85, 73], [71, 104], [48, 112], [-26, 100], [-28, 92], [-77, 88], [-96, 71], [-96, 59], [-112, 59], [-112, 54]]) P.push([a, b]);
+  return P.map(([a, b]) => cpAt(a, b));
+})();
+
 export const sites = {
   spire: {
     name: 'The Spire', x: N('OC2').x, z: N('OC2').z, rot: Math.atan2(oc.x, oc.z), w: 3, d: 3, labelY: 128,
@@ -187,11 +210,36 @@ export const sites = {
     name: 'Grand Canal Street', ...beside('GT1', 'GCM', 0.52, -1, 24, 20, { gap: 7 }), plaza: 6.5, labelY: 30,
     view: spot('HOL1', 'GT1', 0.3),
   },
+  crokePark: {
+    // the bowl (tier fronts to the stand bases); the Hogan's rear block, the Cusack's decks, Hill 16 and the Davin's
+    // span over the canal are further boxes below. The model itself is placed at the pitch centre.
+    name: 'Croke Park', ...cpBox(-114, 78, -84, 84), labelY: 45,
+    centre: { ...cpCentre, rot: -CP_TH },
+    outline: cpOutline,
+    // ground-level solids beyond the outline: the Hogan's rear block and turnstiles, the Cusack's deck stacks, the
+    // Davin's stair towers on the canal's south bank (frame coordinates; see build_crokepark.py)
+    solids: [cpBox(-100, 54, -118, -84), cpBox(-68, -43, 84, 111.6), cpBox(4, 44, 84, 111.6), cpBox(-9.5, -2.5, 96.5, 103.5), cpBox(48.5, 55.5, 86.5, 93.5),
+      ...[-34, 34].map((b) => { const a = -121.7 - 0.0201 * (b + 279) - 16.5; return cpBox(a - 3, a + 3, b - 3, b + 3); })],
+    view: spot('RN62', 'KP6', 0.3), // Jones's Road, northbound under the Hogan Stand
+  },
   stephensGreen: {
     name: "St Stephen's Green", ...centroid(sgPark.poly), rot: 0, w: 0, d: 0, labelY: 30, park: sgPark,
     view: spot('GR2', 'SGNW', 0.35),
   },
 };
+
+// A railway bridge over the road at a node (the GSWR, docs/research/croke-park.md 1.2; no trains, so only the deck
+// and a short stub of embankment each side). bearing: the railway's, in degrees from north. The deck spans the road
+// corridor at its crossing angle; the stubs start just beyond the footpaths.
+function railBridge(nodeId, bearing) {
+  const p = N(nodeId), way = world.ways.find((w) => w.nodeIds.includes(nodeId)), i = way.nodeIds.indexOf(nodeId);
+  const a = N(way.nodeIds[Math.max(0, i - 1)]), b = N(way.nodeIds[Math.min(way.nodeIds.length - 1, i + 1)]);
+  const road = v2.norm(v2.sub(b, a)), t = (bearing * Math.PI) / 180, r = { x: Math.sin(t), z: -Math.cos(t) };
+  const sin = Math.max(0.4, Math.abs(r.x * road.z - r.z * road.x));
+  const half = (way.width / 2 + way.pave) / sin + 0.6, rot = Math.PI - t, L = 14;
+  const stub = (s) => ({ x: p.x + r.x * s * (half + L / 2), z: p.z + r.z * s * (half + L / 2), rot, w: 7, d: L });
+  return { x: p.x, z: p.z, rot, w: 6, d: 2 * half + 1.2, half, road: way.name, stubs: [stub(1), stub(-1)] };
+}
 
 // Offset a site's centre along its local axes (local +z faces the street).
 function shifted(site, lx, lz, w, d) {
@@ -262,6 +310,13 @@ export const reserved = [
   (extraSites.jamesGate = { ...beside('TS3', 'JS1', 0.5, 1, 14, 4, { gap: 0.2 }) }),
   // the Synod Hall across Winetavern Street from Christ Church
   sites.christChurch.synod,
+  // Croke Park: the bowl, the Hogan's rear block (trimmed clear of Jones's Road), Hill 16 and the Nally terrace, the
+  // Cusack's deck stacks, the Davin's span over the Royal Canal with its stair towers, and the entrance plaza south of them
+  sites.crokePark,
+  (extraSites.cpHogan = cpBox(-100, 60, -118, -84)), (extraSites.cpHill = cpBox(54, 112, -100, 86)), (extraSites.cpCusack = cpBox(-90, 47, 84, 112)),
+  (extraSites.cpDavin = cpBox(-150, -114, -45, 45)), (extraSites.cpPlaza = cpBox(-176, -150, -40, 40)),
+  // the GSWR embankment either side of its bridges over Jones's Road and Ballybough Road
+  ...(extraSites.railBridges = [railBridge('KP9', 103), railBridge('KP21', 107)]).flatMap((b, i) => b.stubs.map((s, k) => (extraSites[`railStub${i}${k}`] = s))),
 ].filter(Boolean);
 
 export { campusPolys, parkPolys };
