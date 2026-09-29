@@ -21,7 +21,7 @@ export const GCS_ATLAS = {
   louvreback: [768, 0, 64, 64], mesh: [832, 0, 64, 64], clad: [896, 0, 64, 64], dark: [960, 0, 64, 64],
   win0: [0, 64, 128, 128], win1: [128, 64, 128, 128], win2: [256, 64, 128, 128], win3: [384, 64, 128, 128],
   bar: [512, 64, 128, 128], grnd: [640, 64, 128, 256], base: [768, 64, 128, 256], door: [896, 64, 128, 256],
-  name: [0, 448, 1024, 96], marker: [0, 544, 512, 96], gcsign: [512, 544, 512, 96],
+  name: [0, 448, 1024, 96], marker: [0, 544, 512, 96], gcsign: [512, 544, 512, 96], canopy: [0, 192, 64, 64],
 };
 
 // palette (sRGB), docs/research/grand-canal-square.md 3.1-3.3
@@ -82,6 +82,12 @@ function paintLobby(g, lit) {
     gr.addColorStop(0, '#9fbdb4'); gr.addColorStop(0.5, '#5f8a80'); gr.addColorStop(1, '#3e5f57');
     g.fillStyle = gr; g.fillRect(0, 0, 512, 1024);
     for (let i = 0; i < 16; i++) { g.fillStyle = `rgba(255,255,255,${0.04 + r() * 0.06})`; g.fillRect((i % 4) * 128, Math.floor(i / 4) * 256, 128, 256); }
+    // the lobby's balcony tiers behind the glass, every 6 m (the tile's foot and middle): pale fronts over shadow
+    for (const y of [512, 1024]) {
+      g.fillStyle = 'rgba(20,34,32,0.35)'; g.fillRect(0, y - 60, 512, 60);
+      g.fillStyle = 'rgba(232,238,234,0.7)'; g.fillRect(0, y - 110, 512, 50);
+    }
+    g.fillStyle = 'rgba(226,234,230,0.4)'; g.fillRect(0, 0, 512, 12);
   } else {
     g.fillStyle = '#000'; g.fillRect(0, 0, 512, 1024);
     const gr = g.createLinearGradient(0, 0, 0, 1024);
@@ -93,8 +99,10 @@ function paintLobby(g, lit) {
   g.lineWidth = 7; for (let x = 0; x <= 512; x += 128) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 1024); g.stroke(); }
   g.lineWidth = 5; for (let y = 0; y <= 1024; y += 256) { g.beginPath(); g.moveTo(0, y); g.lineTo(512, y); g.stroke(); }
   g.lineWidth = 9; for (let k = -2; k < 3; k++) { g.beginPath(); g.moveTo(k * 256, 1024); g.lineTo(k * 256 + 512, 0); g.stroke(); }
-  if (lit) { // balconies and stairs inside, the odd bright downlight
-    g.fillStyle = 'rgba(60,40,24,0.5)'; for (let y = 180; y < 1024; y += 340) g.fillRect(0, y, 512, 14);
+  if (lit) { // the balcony tiers (every 6 m) and the red-lit walls behind them (ref 16), the odd bright downlight
+    g.fillStyle = 'rgba(214,70,64,0.45)'; for (const y of [300, 812]) g.fillRect(0, y, 512, 90);
+    g.fillStyle = 'rgba(60,40,24,0.7)'; for (const y of [402, 914]) g.fillRect(0, y, 512, 50);
+    g.fillStyle = 'rgba(255,248,232,0.9)'; for (const y of [452, 964]) g.fillRect(0, y, 512, 8);
     for (let i = 0; i < 18; i++) { g.fillStyle = 'rgba(255,250,236,0.9)'; g.beginPath(); g.arc(r() * 512, r() * 1024, 3, 0, 7); g.fill(); }
   }
 }
@@ -124,9 +132,9 @@ function paintAtlas(g, lit) {
   const R = GCS_ATLAS, r = rng(lit ? 3 : 7);
   g.clearRect(0, 0, 1024, 1024);
   const box = (k, col) => { const [x, y, w, h] = R[k]; g.fillStyle = col; g.fillRect(x, y, w, h); };
-  const swatches = { grc: GRC, frame: FRAME, steel: '#c4c8ca', white: '#eceeec', granite: '#8e8d89', paving: '#b3b0a8', lawn: '#5f833b', void: '#101214', soffit: '#6a6e72', greyglass: '#7f898e', roof: '#6f7173', planting: '#7c7a48', louvreback: '#2a2e31', clad: '#b9bdbf', dark: '#1b1d1f' };
+  const swatches = { grc: GRC, frame: FRAME, steel: '#c4c8ca', white: '#eceeec', granite: '#8e8d89', paving: '#b3b0a8', lawn: '#5f833b', void: '#101214', soffit: '#6a6e72', greyglass: '#7f898e', roof: '#6f7173', planting: '#7c7a48', louvreback: '#2a2e31', clad: '#b9bdbf', dark: '#1b1d1f', canopy: '#eceeec' };
   for (const [k, c] of Object.entries(swatches)) box(k, lit ? '#000' : c);
-  if (lit) { box('soffit', '#26221c'); box('greyglass', '#3a4450'); }
+  if (lit) { box('soffit', '#26221c'); box('greyglass', '#3a4450'); box('canopy', '#8a8882'); } // the theatre's canopy soffit is uplit (refs 15, 16)
   if (!lit) { // grit in the GRC and granite, blades in the planting
     for (const k of ['grc', 'granite', 'paving']) { const [x, y, w, h] = R[k]; for (let i = 0; i < 90; i++) { g.fillStyle = `rgba(${r() < 0.5 ? '255,255,255' : '0,0,0'},${0.06 * r()})`; g.fillRect(x + r() * w, y + r() * h, 2, 2); } }
     { const [x, y, w, h] = R.mesh; g.fillStyle = '#9ea3a5'; g.fillRect(x, y, w, h); g.strokeStyle = 'rgba(60,64,66,0.5)'; g.lineWidth = 1; for (let i = -h; i < w; i += 4) { g.beginPath(); g.moveTo(x + i, y); g.lineTo(x + i + h, y + h); g.stroke(); g.beginPath(); g.moveTo(x + i + h, y); g.lineTo(x + i, y + h); g.stroke(); } }

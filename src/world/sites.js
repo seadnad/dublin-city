@@ -79,7 +79,7 @@ const at = (lat, lon) => project(lat, lon);
 const P = (x, z) => ({ x, z });
 export const GCSQ = {
   origin: P(640, 150),                                                           // the hero's origin
-  theatre: [P(619, 157.3), P(657.5, 164), P(651, 189.3), P(619, 175.6)],         // NW, NE, SE (the glass front's foot), SW
+  theatre: [P(614.8, 156.57), P(657.5, 164), P(650.6, 190.8), P(614.8, 173.8)],        // NW, NE, SE (the glass front's foot), SW
   marker: [P(647, 148), P(685.5, 155.4), P(687, 140.8), P(648.5, 133.4)],        // front W, front E, back E, back W
   // 4-5 GCS at street level: the two-storey base, less the entrance notch on Misery Hill (the upper floors oversail it)
   north: [P(641.5, 146.4), P(644, 100), P(621.8, 89.6), P(621.05, 136), P(627, 135.5), P(634, 143.7)],

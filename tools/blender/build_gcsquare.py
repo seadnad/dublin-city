@@ -37,7 +37,7 @@ A = dict(
     louvreback=(768, 0, 64, 64), mesh=(832, 0, 64, 64), clad=(896, 0, 64, 64), dark=(960, 0, 64, 64),
     win0=(0, 64, 128, 128), win1=(128, 64, 128, 128), win2=(256, 64, 128, 128), win3=(384, 64, 128, 128),
     bar=(512, 64, 128, 128), grnd=(640, 64, 128, 256), base=(768, 64, 128, 256), door=(896, 64, 128, 256),
-    name=(0, 448, 1024, 96), marker=(0, 544, 512, 96), gcsign=(512, 544, 512, 96),
+    name=(0, 448, 1024, 96), marker=(0, 544, 512, 96), gcsign=(512, 544, 512, 96), canopy=(0, 192, 64, 64),
 )
 W = 1024.0
 O = (640.0, 150.0)       # game (x, z) of the Blender origin
@@ -274,23 +274,32 @@ for s0, s1 in ((1.0, 13.5), (15.0, 29.4), (34.8, 38.6)):
 mark('marker')
 
 # =====================================================================================================================
-# BORD GAIS ENERGY THEATRE (refs 08, 10, 12-15): a folded crystal. The lobby's glass front leans out over the square
-# (two facets, the white box-section V and lesser diagonals over it) under a white canopy with the name; the roof rises
-# in two planes from the front to the fly tower at the back (west); stainless rainscreen in diagonal courses on the
-# sides; on Misery Hill a louvred mass overhangs the upper west part and a black triangular get-in opening the lower wall.
+# BORD GAIS ENERGY THEATRE (refs 08, 10, 12-17): a folded crystal. The lobby's four-storey glass front in three pleated
+# facets (the north one leaning far out to the canopy, the south one near plumb under a deep white soffit), the white
+# box-section V and diagonals over it, the lobby's balcony tiers behind; a deep white canopy with the name on its
+# fascia, a sharp prow rising at the north-east corner (ref 15) and a white wedge hanging from its south end (refs 08,
+# 14); the roof rising in folded planes from the canopy to a high back edge over the fly tower at the west (refs 12,
+# 17); stainless rainscreen in diagonal courses on the sides; on Misery Hill a louvred mass overhangs the upper west part
+# and a black triangular get-in opening the lower wall.
+#
+# Plan: the OSM footprint at half scale, run west to the Macken Street footpath (4.2 m more depth than the plain
+# projection, where the 2 GCS strip along Macken Street would be) so the roof's rise is less compressed east-west.
+# Heights stay real: glass tops 21.6-24 m, fascia 25.4-27.6 m, the NE prow 30.5 m, the back edge 34-40 m with the
+# fly tower's peak at 43 m (photo estimates from refs 12, 16, 17 against the Marker's 28.7 m and 1 GCS's 23 m).
 # =====================================================================================================================
-T0, T1, T2, T4 = (619.0, 157.3), (657.5, 164.0), (651.0, 189.3), (619.0, 175.6)    # NW, NE, SE, SW (game)
+T0, T1, T2, T4 = (614.8, 156.57), (657.5, 164.0), (650.6, 190.8), (614.8, 173.8)    # NW, NE, SE, SW (game)
 fdir = norm((T2[0] - T1[0], T2[1] - T1[1], 0.0))
 NF = (fdir[1], -fdir[0])                              # front outward normal (game x, z): east-ish
 NF = (NF[0], NF[1]) if NF[0] > 0 else (-NF[0], -NF[1])
-FM = 0.42                                             # the fold between the front's two facets (from the north)
-TM = lerp(T1, T2, FM)
-LEAN = (4.4, 3.2, 2.0)                                # top of the glass: out from the ground line (north, fold, south)
-H_GL = (23.0, 22.0, 20.4)                             # glass top heights
-H_RF = (25.0, 24.3, 22.4)                             # roof edge over the canopy
-CAN = 1.6                                             # canopy projection beyond the glass
-H_NW, H_SW, H_RB = 35.0, 31.0, 40.0                   # the back (west) wall: NW / SW corners, the ridge
-RB = (619.0, 166.8)                                   # the ridge's back end (game)
+FA = (0.0, 0.36, 0.7, 1.0)                            # the pleats' folds along the foot, north to south
+LEAN = (5.0, 3.2, 0.8, 0.2)                           # top of the glass: out from the ground line
+H_GL = (24.0, 23.2, 22.2, 21.6)                       # glass top heights
+CAN = (6.4, 5.6, 6.6, 7.6)                            # the canopy's front edge, out from the ground line
+H_FB = (25.7, 24.8, 24.0, 23.6)                       # fascia bottom (the soffit rises outwards to it)
+H_RF = (27.6, 26.6, 25.8, 25.4)                       # fascia top / roof edge
+H_NW, H_SW, H_RB = 40.0, 34.0, 43.0                   # the back (west) edge: NW / SW corners, the fly tower's peak
+RB = (614.8, 162.6)                                   # the peak, on the back edge (game)
+NFP = len(FA)
 
 
 def gp(p, off, h):
@@ -298,62 +307,96 @@ def gp(p, off, h):
     return G(p[0] + NF[0] * off, p[1] + NF[1] * off, h)
 
 
-gb = [G(*T1), G(*TM), G(*T2)]                                             # glass foot
-gt = [gp(T1, LEAN[0], H_GL[0]), gp(TM, LEAN[1], H_GL[1]), gp(T2, LEAN[2], H_GL[2])]  # glass top
-cb = [gp(T1, LEAN[0] + CAN, H_GL[0]), gp(TM, LEAN[1] + CAN, H_GL[1]), gp(T2, LEAN[2] + CAN, H_GL[2])]  # canopy underside edge
-ct = [gp(T1, LEAN[0] + CAN, H_RF[0]), gp(TM, LEAN[1] + CAN, H_RF[1]), gp(T2, LEAN[2] + CAN, H_RF[2])]  # roof edge
-# the NE prow: the canopy's north end runs on past the north wall
-NN = (0.171, -0.985)                                  # north wall outward normal (game)
-prow_b = G(cb[0][0] + O[0] + NN[0] * 1.8, O[1] - cb[0][1] + NN[1] * 1.8, H_GL[0] + 0.6)
-prow_t = G(ct[0][0] + O[0] + NN[0] * 1.8, O[1] - ct[0][1] + NN[1] * 1.8, H_RF[0] + 0.5)
+FP = [lerp(T1, T2, a) for a in FA]                                        # the foot's fold points (game)
+gb = [G(*p) for p in FP]                                                  # glass foot
+gt = [gp(FP[i], LEAN[i], H_GL[i]) for i in range(NFP)]                    # glass top
+cb = [gp(FP[i], CAN[i], H_FB[i]) for i in range(NFP)]                     # canopy: fascia bottom edge
+ct = [gp(FP[i], CAN[i], H_RF[i]) for i in range(NFP)]                     # fascia top / roof edge
 fo = (NF[0], -NF[1], 0.0)                             # front normal in Blender
-for i in range(2):
-    # each facet as two triangles, one mapping for both
+NN = (0.171, -0.985)                                  # north wall outward normal (game)
+nno = (NN[0], -NN[1], 0.0)                            # ...in Blender
+# the NE prow: the canopy's north end runs on past the north wall and rises to a point (ref 15)
+prow_b = add(cb[0], (nno[0] * 3.4 + fo[0] * 0.8, nno[1] * 3.4 + fo[1] * 0.8, 0.9))
+prow_t = add(ct[0], (nno[0] * 3.4 + fo[0] * 0.8, nno[1] * 3.4 + fo[1] * 0.8, 2.9))
+for i in range(NFP - 1):
+    # each pleat as two triangles, one mapping for both
     pl = kit.newell([gb[i], gb[i + 1], gt[i + 1], gt[i]])
     lobby.tiled([gb[i], gb[i + 1], gt[i + 1]], LTW, LTH, fo, plane=pl)
     lobby.tiled([gb[i], gt[i + 1], gt[i]], LTW, LTH, fo, plane=pl)
-    # canopy soffit (white) and the fascia
-    main.swatch('white', [gt[i], gt[i + 1], cb[i + 1], cb[i]], (0, 0, -1))
-    main.swatch('white', [cb[i], cb[i + 1], ct[i + 1], ct[i]], fo)
-main.swatch('white', [cb[0], prow_b, prow_t, ct[0]], fo)
-main.swatch('white', [gt[0], cb[0], prow_b], (0, 0, -1))
-# the name on the fascia over the north facet (ref 08)
-nb0, nb1 = lerp(cb[0], cb[1], 0.08), lerp(cb[0], cb[1], 0.92)
-nt0, nt1 = lerp(ct[0], ct[1], 0.08), lerp(ct[0], ct[1], 0.92)
+    # the soffit (white, rising outwards) and the fascia
+    main.swatch('canopy', [gt[i], gt[i + 1], cb[i + 1]], (0, 0, -1)); main.swatch('canopy', [gt[i], cb[i + 1], cb[i]], (0, 0, -1))
+    main.swatch('canopy', [cb[i], cb[i + 1], ct[i + 1]], fo); main.swatch('canopy', [cb[i], ct[i + 1], ct[i]], fo)
+    # a dark steel edge along the fascia's top (the roof's gutter line, refs 08, 13)
+    main.swatch('frame', [ct[i], ct[i + 1], add(ct[i + 1], (0, 0, 0.35)), add(ct[i], (0, 0, 0.35))], fo)
+# the prow: its fascia, its white underside, and its back closed against the north wall
+main.swatch('canopy', [cb[0], prow_b, prow_t, ct[0]], add(fo, mul(nno, 0.6)))
+main.swatch('canopy', [gt[0], cb[0], prow_b], (0, 0, -1))
+main.swatch('canopy', [gt[0], prow_b, prow_t], add(mul(nno, 1.0), mul(fo, -0.5)))
+# the canopy runs on CAN_S past the glass's south corner, out over the paving at 21.6-25.4 m, so the front reads as
+# wide as the real one does against the Marker (refs 08, 12); a white wedge hangs from its south end back down to the
+# glass's south corner (refs 08, 14), 0.7 m thick
+sd_ = (fdir[0], -fdir[1], 0.0)                        # south along the front, Blender
+CAN_S = 3.6
+ext = mul(sd_, CAN_S)
+iT = (gt[-1][0], gt[-1][1], H_RF[-1])
+gS, cbS, ctS, iTS = add(gt[-1], ext), add(cb[-1], ext), add(ct[-1], ext), add(iT, ext)
+main.swatch('canopy', [cb[-1], cbS, ctS, ct[-1]], fo)
+main.swatch('frame', [ct[-1], ctS, add(ctS, (0, 0, 0.35)), add(ct[-1], (0, 0, 0.35))], fo)
+main.swatch('canopy', [gt[-1], gS, cbS, cb[-1]], (0, 0, -1))
+clad.tiled([ct[-1], ctS, iTS, iT], CT, CT, (0, 0, 1))
+main.swatch('canopy', [gS, cbS, ctS, iTS], sd_)
+main.swatch('canopy', [gt[-1], gS, iTS, iT], mul(fo, -1))
+w_lo = gp(FP[-1], 0.35, 12.5)
+wf = [cbS, gS, w_lo]
+wn_ = norm(kit.newell(wf))
+if dot(wn_, sd_) < 0: wn_ = mul(wn_, -1)
+wi = [add(p, mul(wn_, -0.7)) for p in wf]
+main.swatch('canopy', wf, wn_)
+main.swatch('canopy', wi, mul(wn_, -1))
+main.swatch('canopy', [cbS, wi[0], wi[2], w_lo], add(fo, (0, 0, -0.8)))
+main.swatch('canopy', [gS, w_lo, wi[2], wi[1]], mul(fo, -1))
+# the name on the fascia over the north pleat (ref 08)
+nb0, nb1 = lerp(cb[0], cb[1], 0.06), lerp(cb[0], cb[1], 0.94)
+nt0, nt1 = lerp(ct[0], ct[1], 0.06), lerp(ct[0], ct[1], 0.94)
 off = mul(fo, 0.04)
-main.decal('name', [add(lerp(nb1, nt1, 0.18), off), add(lerp(nb0, nt0, 0.18), off), add(lerp(nb0, nt0, 0.82), off), add(lerp(nb1, nt1, 0.82), off)], fo)
+main.decal('name', [add(lerp(nb1, nt1, 0.2), off), add(lerp(nb0, nt0, 0.2), off), add(lerp(nb0, nt0, 0.8), off), add(lerp(nb1, nt1, 0.8), off)], fo)
 
 
 def front_pt(a, t, out=0.0):
     """A point on the leaning glass: a 0..1 along the foot from north to south, t 0..1 up, pushed out."""
-    if a <= FM:
-        k = a / FM; b0, b1, t0, t1 = gb[0], gb[1], gt[0], gt[1]
-    else:
-        k = (a - FM) / (1 - FM); b0, b1, t0, t1 = gb[1], gb[2], gt[1], gt[2]
-    p = lerp(lerp(b0, b1, k), lerp(t0, t1, k), t)
+    i = 0
+    while i < NFP - 2 and a > FA[i + 1]:
+        i += 1
+    k = (a - FA[i]) / (FA[i + 1] - FA[i])
+    p = lerp(lerp(gb[i], gb[i + 1], k), lerp(gt[i], gt[i + 1], k), t)
     return add(p, mul(fo, out))
 
 
 def strut(a0, t0, a1, t1, w=0.7, dep=0.45):
-    """A white box-section member lying on the glass from (a0, t0) to (a1, t1)."""
-    p, q = front_pt(a0, t0, 0.05), front_pt(a1, t1, 0.05)
-    d = norm(sub(q, p))
-    side = norm(cross(d, fo))
-    hw = mul(side, w / 2)
-    o = mul(fo, dep)
-    c = [sub(p, hw), add(p, hw), add(q, hw), sub(q, hw)]
-    main.swatch('white', [add(x, o) for x in c], fo)
-    main.swatch('white', [c[1], c[2], add(c[2], o), add(c[1], o)], side)
-    main.swatch('white', [c[0], c[3], add(c[3], o), add(c[0], o)], mul(side, -1))
+    """A white box-section member lying on the glass from (a0, t0) to (a1, t1), in pieces across the pleats."""
+    cuts = [a0] + [f for f in FA[1:-1] if min(a0, a1) < f < max(a0, a1)][:: 1 if a1 > a0 else -1] + [a1]
+    for j in range(len(cuts) - 1):
+        ta = t0 + (t1 - t0) * (cuts[j] - a0) / ((a1 - a0) or 1)
+        tb = t0 + (t1 - t0) * (cuts[j + 1] - a0) / ((a1 - a0) or 1)
+        p, q = front_pt(cuts[j], ta, 0.05), front_pt(cuts[j + 1], tb, 0.05)
+        d = norm(sub(q, p))
+        side = norm(cross(d, fo))
+        hw = mul(side, w / 2)
+        o = mul(fo, dep)
+        c = [sub(p, hw), add(p, hw), add(q, hw), sub(q, hw)]
+        main.swatch('white', [add(x, o) for x in c], fo)
+        main.swatch('white', [c[1], c[2], add(c[2], o), add(c[1], o)], side)
+        main.swatch('white', [c[0], c[3], add(c[3], o), add(c[0], o)], mul(side, -1))
 
 
-for s in ((0.44, 0.0, 0.03, 1.0), (0.44, 0.0, 0.86, 1.0), (0.66, 0.0, 1.0, 0.62), (0.0, 0.28, 0.2, 1.0),
-          (0.2, 0.0, 0.0, 0.2), (0.86, 0.0, 0.99, 0.2)):
-    strut(*s)
-for s in ((0.08, 0.0, 0.34, 1.0), (0.3, 0.0, 0.6, 1.0), (0.56, 0.0, 0.72, 0.55), (0.74, 0.3, 0.95, 1.0)):
-    strut(*s, w=0.32, dep=0.25)
+# the white V (apex low in the middle, ref 08) and the big diagonals rising north (ref 13), then the lesser lattice
+for s in ((0.46, 0.0, 0.04, 1.0), (0.46, 0.0, 0.84, 1.0), (0.7, 0.0, 1.0, 0.66), (0.0, 0.3, 0.2, 1.0),
+          (0.22, 0.0, 0.0, 0.24), (0.88, 0.0, 0.99, 0.22), (0.62, 0.0, 0.3, 1.0)):
+    strut(*s, w=0.85, dep=0.5)
+for s in ((0.1, 0.0, 0.36, 1.0), (0.3, 0.0, 0.6, 1.0), (0.56, 0.0, 0.72, 0.55), (0.76, 0.3, 0.96, 1.0), (1.0, 0.1, 0.8, 1.0)):
+    strut(*s, w=0.34, dep=0.25)
 # glazed doors along the foot of the front (dark bays in the glass)
-for a in (0.3, 0.5, 0.7):
+for a in (0.3, 0.5, 0.74):
     p, q = front_pt(a - 0.05, 0.0, 0.06), front_pt(a + 0.05, 0.0, 0.06)
     main.decal('door', [p, q, add(q, (0, 0, 3.2)), add(p, (0, 0, 3.2))], fo)
 mark('theatre front')
@@ -361,28 +404,30 @@ mark('theatre front')
 # the walls: north (Misery Hill), west (Macken Street), south (against 2 GCS); stainless cladding
 nw0, nw1 = G(*T0), G(*T1)
 sw0, sw1 = G(*T4), G(*T2)
-clad.tiled([nw0, nw1, gt[0], (nw0[0], nw0[1], H_NW)], CT, CT, (NN[0], -NN[1], 0))
-clad.tiled([(nw0[0], nw0[1], H_NW), gt[0], ct[0]], CT, CT, (NN[0], -NN[1], 0.2))
-sn = hnorm(G(*T4), G(*T2))
-clad.tiled([sw1, sw0, (sw0[0], sw0[1], H_SW), gt[2]], CT, CT, sn)
-clad.tiled([gt[2], (sw0[0], sw0[1], H_SW), ct[2]], CT, CT, (sn[0], sn[1], 0.2))
-rbk = G(*RB)
-clad.tiled([nw0, sw0, (sw0[0], sw0[1], H_SW), (rbk[0], rbk[1], H_RB), (nw0[0], nw0[1], H_NW)], CT, CT, (-1, 0, 0))
-# the roof: two planes from the canopy edge up to the ridge at the back
 RN, RS = (nw0[0], nw0[1], H_NW), (sw0[0], sw0[1], H_SW)
+clad.tiled([nw0, nw1, gt[0], RN], CT, CT, nno)
+clad.tiled([RN, gt[0], prow_t], CT, CT, add(nno, (0, 0, 0.2)))
+sn = hnorm(G(*T4), G(*T2))
+clad.tiled([sw1, sw0, RS, gt[-1]], CT, CT, sn)
+clad.tiled([gt[-1], RS, ct[-1]], CT, CT, add(sn, (0, 0, 0.2)))
+clad.tiled([gt[-1], ct[-1], cb[-1]], CT, CT, sn)
+rbk = G(*RB)
 RBt = (rbk[0], rbk[1], H_RB)
-clad.tiled([ct[0], ct[1], RBt], CT, CT, (0, 0, 1)); clad.tiled([ct[0], RBt, RN], CT, CT, (0, 0, 1))
+clad.tiled([nw0, sw0, RS, RBt, RN], CT, CT, (-1, 0, 0))
+# the roof: folded planes from the fascia up to the back edge, the folds running from the pleats' tops to the peak
+clad.tiled([ct[0], RBt, RN], CT, CT, (0, 0, 1)); clad.tiled([ct[0], ct[1], RBt], CT, CT, (0, 0, 1))
 clad.tiled([ct[0], RN, prow_t], CT, CT, (0, 0, 1))
-main.swatch('white', [ct[0], RN, prow_t], (0, 0, -1))
-clad.tiled([ct[1], ct[2], RS], CT, CT, (0, 0, 1)); clad.tiled([ct[1], RS, RBt], CT, CT, (0, 0, 1))
-# a strip of rooflight along the ridge (ref 12)
-rl0, rl1 = lerp(ct[1], RBt, 0.25), lerp(ct[1], RBt, 0.7)
-rw = mul(norm(cross(sub(rl1, rl0), (0, 0, 1))), 0.9)
-main.swatch('dark', [add(sub(rl0, rw), (0, 0, 0.06)), add(add(rl0, rw), (0, 0, 0.06)), add(add(rl1, rw), (0, 0, 0.06)), add(sub(rl1, rw), (0, 0, 0.06))], (0, 0, 1))
+clad.tiled([ct[1], ct[2], RBt], CT, CT, (0, 0, 1))
+clad.tiled([ct[2], ct[3], RS], CT, CT, (0, 0, 1)); clad.tiled([ct[2], RS, RBt], CT, CT, (0, 0, 1))
+# strips of rooflight along the folds (refs 08, 12)
+for a_, b_, f0, f1 in ((ct[1], RBt, 0.2, 0.62), (ct[2], RBt, 0.35, 0.7)):
+    rl0, rl1 = lerp(a_, b_, f0), lerp(a_, b_, f1)
+    rw = mul(norm(cross(sub(rl1, rl0), (0, 0, 1))), 0.8)
+    main.swatch('dark', [add(sub(rl0, rw), (0, 0, 0.06)), add(add(rl0, rw), (0, 0, 0.06)), add(add(rl1, rw), (0, 0, 0.06)), add(sub(rl1, rw), (0, 0, 0.06))], (0, 0, 1))
 
 # Misery Hill side: the louvred mass over the upper west part, overhanging the pavement by 1.6 m
-nwd = norm(sub(nw1, nw0)); nno = (NN[0], -NN[1], 0.0)
-LV_LEN, LV_OUT = 23.0, 1.6
+nwd = norm(sub(nw1, nw0))
+LV_LEN, LV_OUT = 27.0, 1.6
 LN = math.dist(nw0[:2], gt[0][:2])
 top_h = lambda s: H_NW + (H_GL[0] - H_NW) * s / LN
 bot_h = lambda s: 17.0 + 0.28 * s
@@ -398,11 +443,11 @@ while h < top_h(0) - 0.2:
         main.swatch('steel', [WP(0, LV_OUT, h), WP(s1, LV_OUT, h), WP(s1, LV_OUT, h + 0.12), WP(0, LV_OUT, h + 0.12)], nno)
         main.swatch('steel', [WP(0, 0.15, h + 0.12), WP(s1, 0.15, h + 0.12), WP(s1, LV_OUT, h + 0.12), WP(0, LV_OUT, h + 0.12)], (0, 0, 1))
         main.swatch('steel', [WP(0, 0.15, h), WP(s1, 0.15, h), WP(s1, LV_OUT, h), WP(0, LV_OUT, h)], (0, 0, -1))
-    h += 0.55
+    h += 0.6
 # the west end of the louvred mass (on Macken Street) and its slats' ends
 main.swatch('steel', [WP(0, 0, bot_h(0)), WP(0, LV_OUT, bot_h(0)), WP(0, LV_OUT, top_h(0)), WP(0, 0, top_h(0))], mul(nwd, -1))
 # the get-in: a black triangular opening in the lower wall, with a steel edge
-tri_s0, tri_s1, tri_h = 18.0, 30.5, 12.0
+tri_s0, tri_s1, tri_h = 22.2, 34.7, 12.0
 main.swatch('void', [WP(tri_s0, 0.04, 0.0), WP(tri_s1, 0.04, 0.0), WP(tri_s1, 0.04, tri_h)], nno)
 hyp = norm(sub(WP(tri_s1, 0, tri_h), WP(tri_s0, 0, 0)))
 e_up = mul(norm(cross(nno, hyp)), 0.35)
@@ -411,8 +456,9 @@ main.swatch('steel', [WP(tri_s0, 0.08, 0.0), WP(tri_s1, 0.08, tri_h), add(WP(tri
 main.swatch('steel', [WP(tri_s1, 0.08, 0.0), WP(tri_s1 + 0.35, 0.08, 0.0), WP(tri_s1 + 0.35, 0.08, tri_h + 0.4), WP(tri_s1, 0.08, tri_h + 0.4)], nno)
 # a stage door and the theatre's name board on Macken Street (the west wall)
 wn = (-1.0, 0.0, 0.0)
-main.decal('door', [G(618.95, 168.0, 0), G(618.95, 170.5, 0), G(618.95, 170.5, 3.4), G(618.95, 168.0, 3.4)], wn)
-main.decal('name', [G(618.9, 162.0, 5.4), G(618.9, 171.0, 5.4), G(618.9, 171.0, 6.25), G(618.9, 162.0, 6.25)], wn)
+WX = T0[0] - 0.05
+main.decal('door', [G(WX, 168.0, 0), G(WX, 170.5, 0), G(WX, 170.5, 3.4), G(WX, 168.0, 3.4)], wn)
+main.decal('name', [G(WX - 0.05, 160.5, 5.4), G(WX - 0.05, 170.0, 5.4), G(WX - 0.05, 170.0, 6.3), G(WX - 0.05, 160.5, 6.3)], wn)
 mark('theatre')
 
 # the stainless-mesh wedge on the square at the theatre's NE corner (the car park stair, ref 09)

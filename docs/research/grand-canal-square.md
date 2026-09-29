@@ -88,7 +88,9 @@ Commons has **no CC photo of 4-5 GCS's leaning prow on Misery Hill**. The model 
 
 ### 3.2 Bord Gáis Energy Theatre (refs 08, 10, 12-15)
 
-- **Massing:** a folded "crystal". The roof is two big inclined planes meeting at a ridge that rises from the front (east, ≈ 24 m) to the fly tower at the back (west, ≈ 36 m), with eaves falling to ≈ 21 m at the front corners (refs 12, 17). There is a sharp prow at the NE top corner.
+- **Massing:** a folded "crystal". The roof is big inclined planes rising from the canopy at the front (east, fascia ≈ 25-27 m) to a high back edge over the fly tower (west, ≈ 40 m+) (refs 12, 17). A sharp prow rises at the NE top corner (ref 15). Studio Libeskind calls it a "five storey venue" with a "dramatic, four story glass facade, sharply angled roof line" whose glass "tilts back in space in diagonal pleats" ([libeskind.com](https://libeskind.com/work/bord-gais-energy-theatre-and-grand-canal-commercial-development/)). OSM (`way 52201224`) has no `height` or `building:levels`, and no source found gives metres, so the heights are photo estimates (see §5).
+- **Canopy (refs 08, 13, 14, 16):** deep, with a white soffit that rises outwards to the fascia. It runs past the glass at the south end, where a white wedge hangs from it back down to the glass's corner at about half height. At the north end it becomes the prow.
+- **The glass's pleats (refs 13, 14):** near plumb at the south under the deep soffit, and leaning far out at the north to meet the canopy. The four lobby tiers (balcony fronts, ramps, and red walls lit at night, ref 16) show through the glass.
 - **East front (the lobby):** a huge **leaning glass wall**, set back at the foot and leaning out towards the square. Across it run **white box-section diagonals**: two big ones form a V with the apex low in the middle (ref 08), plus a lattice of lesser diagonals. At the top is the white soffit / canopy with **BORD GÁIS ENERGY THEATRE** on the fascia. It is green-tinted glass (`#5f8a80` on the reflections).
 - **North side (Misery Hill) and west side (Macken Street):** stainless-steel rainscreen panels in **diagonal courses** (ref 10, `#c9ccce` sunlit, `#8f9496` shaded), with glazing strips.
   - Owner's screenshot (327d3fcf): the upper west part of the north side is a mass of **fine horizontal louvres** that overhangs the lower silver wall. The lower wall carries a big **black triangular opening** (the get-in / loading bay).
@@ -128,7 +130,7 @@ Commons has **no CC photo of 4-5 GCS's leaning prow on Misery Hill**. The model 
 
 ### The hero: `tools/blender/build_gcsquare.py` → `public/models/gcsquare.glb`
 
-The GLB is 45 KB (Draco) with **3,549 triangles** after the AO subdivision (2,491 built). It has 4 materials, so 4 draw calls, with AO baked into the vertex colours of the opaque parts. It covers five buildings.
+The GLB is 48 KB (Draco) with **3,809 triangles** after the AO subdivision (2,603 built; theatre v2). Before v2 it was 45 KB and 3,549. It has 4 materials, so 4 draw calls, with AO baked into the vertex colours of the opaque parts. It covers five buildings.
 
 **Placement and scale**
 - The model is built straight in game metres from absolute game coordinates: origin at game (640, 150), no rotation.
@@ -145,8 +147,18 @@ The GLB is 45 KB (Draco) with **3,549 triangles** after the AO subdivision (2,49
 - At the front: the black porte-cochère with THE MARKER, and the lawn and planting terrace.
 
 **Bord Gáis Energy Theatre**
-- The leaning lobby glass is in two facets, 4.4 m / 3.2 m / 2.0 m out at the top. It carries a white box-section V and lesser diagonals, doors, and the white canopy with **BORD GÁIS ENERGY THEATRE** on the fascia and a NE prow.
-- The roof is two planes rising from 22-25 m at the front to a 40 m ridge at the fly tower, with a rooflight strip.
+- **v2 (the owner's "looks squashed"; sheet `docs/research/grand-canal-theatre-v2.png`).** What was wrong:
+  - The half-scale plan made the lobby front 26 m wide against real heights. The real front is ≈ 47 m, about 1.9 : 1 wide against its height. The game's was about 1.2 : 1, a near-square box between 2 GCS (33 m) and the Marker.
+  - The canopy was a thin 1.6 m lid, and the whole glass wall leaned out evenly. The front read as a tipped box.
+  - The roof, 43 m back in plan against 77 m real, is edge-on from the square, so only the lid showed.
+- **v2 fixes, for the theatre only:**
+  - The plan runs west to the Macken Street footpath (x 614.8, +4.2 m depth), and the SE corner moves 1.5 m south.
+  - The canopy is deep (5.6-7.6 m out from the glass foot), with a white soffit rising to a 1.8 m fascia. It runs 3.6 m past the glass's south corner, with the hanging white wedge down to 12.5 m. At the north it ends in a prow 3.4 m past the north wall, rising to ≈ 30.5 m. The front now reads ≈ 34 m wide.
+  - The glass is in three pleats: 5.0 / 3.2 / 0.8 / 0.2 m out at the top (north to south), with glass tops at 24-21.6 m.
+  - The white V and diagonals are heavier (0.85 m). The painted lobby tiers are every 6 m, lit, with red walls at night.
+  - The roof is folded planes from the fascia (25.4-27.6 m) to a back edge at 40 m (NW) and 34 m (SW), with the fly tower's peak at 43 m and rooflights along the folds.
+  - The canopy uses its own atlas swatch (`canopy`), uplit at night.
+- The roof's folds and the rooflights are all the roof carries. From the square it stays edge-on, as expected with half-scale plan and real heights. From the dock and above, it now reads as the big pale folded plane of refs 12 and 17.
 - The walls are stainless rainscreen in 1-in-2 diagonal courses (a seamless 16 m tile) with glazing strips.
 - On Misery Hill: a **louvred mass** (30 real slats) overhangs the pavement over the upper west part, and there is a **black triangular get-in** with a steel edge.
 - On Macken Street: a stage door and the name.
@@ -207,7 +219,7 @@ The hero costs **fewer draw calls** than the procedural stand-ins (4 materials a
 
 ## 5. Open questions
 
-1. **Heights.** None are surveyed. The Marker ≈ 29 m is from the storey count and the 6 m ground floor (Irish Building Magazine). The theatre's peak is a photo estimate (refs 12, 17), 36-40 m (built at 40 m), ±15%. 4-5 GCS ≈ 33 m is from "eight floors".
+1. **Heights.** None are surveyed. The Marker ≈ 29 m is from the storey count and the 6 m ground floor (Irish Building Magazine). The theatre has no OSM height or levels, and no published metres were found (Libeskind, ArchDaily and Designboom give only "four story glass facade" and "five storey venue"). Its canopy (≈ 23-25 m at the NE, against the Marker's 28.7 m in ref 16, and 1 GCS's 23 m in ref 17) and its back edge / fly tower peak (≈ 40 m, refs 12, 17) are photo estimates, ±15%. v2 builds the fascia at 25.4-27.6 m, the prow at 30.5 m, and the peak at 43 m. 4-5 GCS ≈ 33 m is from "eight floors".
 2. **Hibernian Road**'s exact line. OSM has no highway for it. The game leaves it as the paved gap between 4-5 GCS and the Marker.
 3. **The louvred mass over Misery Hill**: is it the theatre's fly tower, or the north end of 2 GCS's strip along Macken Street? It is modelled on the theatre.
 4. The theatre's **get-in opening**: its size and position on the north side are from one screenshot.
