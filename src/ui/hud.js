@@ -45,6 +45,10 @@ const BLURBS = {
   ccj: 'The courts’ glass drum, at the Parkgate end of the Phoenix Park',
   google: 'Google Docks (the old Montevetro), Gordon House and the skybridge, under the DART',
   bolands: 'The 1830s flour mills, a 1916 garrison, under two new towers on the dock',
+  clerys: 'The 1922 department store facing the GPO: meet under Clerys clock',
+  rotunda: 'Cassels’ maternity hospital, the Ambassador’s drum and the Gate at the top of O’Connell Street',
+  gardenOfRemembrance: 'The sunken garden and cruciform pool, with Oisín Kelly’s Children of Lir',
+  busaras: 'Michael Scott’s 1953 bus station, its wavy canopy and blue mosaic',
 };
 
 export function createHUD({ sites, actions }) {
