@@ -484,6 +484,7 @@ function buildBridge(br, groundMaterial) {
   const uvScale = body.attributes.uv; for (let i = 0; i < uvScale.count; i++) uvScale.setXY(i, uvScale.getX(i) / 4, uvScale.getY(i) / 4);
   const bodyMesh = new THREE.Mesh(body, bodyMat);
   bodyMesh.castShadow = bodyMesh.receiveShadow = true;
+  bodyMesh.userData.standIn = bodyMesh.userData.dynamic = iron; // kept out of the static batch: hidden when the hero loads
   g.add(bodyMesh);
 
   // deck (world-UV'd so the painted road continues seamlessly)
@@ -502,6 +503,7 @@ function buildBridge(br, groundMaterial) {
     const p = new THREE.Mesh(modern || iron ? new THREE.BoxGeometry(0.25, parH, L + 1.5) : new THREE.BoxGeometry(0.7, parH, L + 1.5), modern ? railMaterial : iron ? ironWhiteMaterial : stoneMaterial);
     p.position.set(side * (W / 2 + 0.35), parH / 2, 0);
     p.castShadow = p.receiveShadow = true;
+    p.userData.standIn = p.userData.dynamic = iron; // Sean Heuston Bridge: hidden when its hero model (heuston.js) loads
     g.add(p);
     // collision (local +x maps to world (dir.z, -dir.x) under rotation.y = angle)
     const n = { x: br.dir.z, z: -br.dir.x };
