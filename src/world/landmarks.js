@@ -1052,6 +1052,140 @@ function grattanOffice(site) {
   return b.build('Grand Canal Street office');
 }
 
+// ---------- O'Connell Bridge House (docs/research/oconnell-bridge-house.md) ----------
+// Its curtain wall: a 1.6 m bay (a slim Portland stone fin and two panes) by a 3.3 m floor (a tall vision pane over a
+// short spandrel pane, white frames). One canvas covers 16 bays x 11 floors so the lit offices at night don't repeat
+// every bay; the same grid in a roughness/metalness map keeps the reflections on the glass and off the stone.
+const OBH_BAYS = 16, OBH_FLOORS = 11;
+function obhGrid(paint, srgb = true) {
+  const bw = 32, fh = 48, r = rng(1965);
+  return canvasTex(OBH_BAYS * bw, OBH_FLOORS * fh, (ctx) => {
+    for (let f = 0; f < OBH_FLOORS; f++) for (let b = 0; b < OBH_BAYS; b++) {
+      const x = b * bw, y = f * fh;
+      for (let p = 0; p < 2; p++) {
+        const px = x + 5 + p * 14, lit = r() < 0.26 ? 0.55 + r() * 0.45 : 0, tone = r();
+        paint(ctx, 'glass', px, y + 1, 13, 32, { lit, tone });
+        paint(ctx, 'spandrel', px, y + 35, 13, 11, { lit: 0, tone });
+      }
+      paint(ctx, 'fin', x, y, 4, fh);
+      paint(ctx, 'frame', x + 4, y, bw - 4, 1); paint(ctx, 'frame', x + 4, y + 33, bw - 4, 2); paint(ctx, 'frame', x + 4, y + 46, bw - 4, 2);
+      paint(ctx, 'frame', x + 4, y, 1, fh); paint(ctx, 'frame', x + 18, y, 1, fh);
+    }
+  }, srgb);
+}
+const obhMap = obhGrid((ctx, kind, x, y, w, h, o = {}) => {
+  if (kind === 'glass') {
+    const g = ctx.createLinearGradient(0, y, 0, y + h);
+    const k = Math.round(o.tone * 14);
+    g.addColorStop(0, `rgb(${70 + k},${88 + k},${100 + k})`); g.addColorStop(1, `rgb(${34 + k},${44 + k},${54 + k})`);
+    ctx.fillStyle = g;
+  } else ctx.fillStyle = { spandrel: '#27323a', fin: '#d3cdc0', frame: '#e4e2dc' }[kind];
+  ctx.fillRect(x, y, w, h);
+});
+// roughness in G, metalness in B
+const obhRM = obhGrid((ctx, kind, x, y, w, h) => {
+  ctx.fillStyle = { glass: 'rgb(0,18,190)', spandrel: 'rgb(0,40,150)', fin: 'rgb(0,230,0)', frame: 'rgb(0,110,90)' }[kind];
+  ctx.fillRect(x, y, w, h);
+}, false);
+// lit offices after dark (the same random draw as the map): the lower three quarters of some vision panes, warm
+const obhLit = obhGrid((ctx, kind, x, y, w, h, o = {}) => {
+  ctx.fillStyle = '#000'; ctx.fillRect(x, y, w, h);
+  if (kind !== 'glass' || !o.lit) return;
+  ctx.fillStyle = `rgb(${Math.round(255 * o.lit)},${Math.round(205 * o.lit)},${Math.round(150 * o.lit)})`;
+  ctx.fillRect(x, y + h * 0.25, w, h * 0.75);
+});
+for (const t of [obhMap, obhRM, obhLit]) t.repeat.set(1 / OBH_BAYS, 1 / OBH_FLOORS);
+// The sign down the pier (34 m of it, from y = 6 to 40): the clock at the top, "Heineken." in green channel letters,
+// the red star at the foot. Painted onto the pier's own stone colour (portlandSmooth is untextured), so the panel is
+// opaque: no alpha test to break the letters up at a distance or on phones. A second canvas with only the letters and
+// the star is the emissive map: they light in their own colours at night and the clock stays dark.
+const OBH_SIGN = { y0: 6, y1: 40, w: 3.3, px: 40 };
+const obhSignCanvas = (lit) => canvasTex(Math.round(OBH_SIGN.w * OBH_SIGN.px), (OBH_SIGN.y1 - OBH_SIGN.y0) * OBH_SIGN.px, (ctx, w, h) => {
+  const Y = (y) => (OBH_SIGN.y1 - y) * OBH_SIGN.px; // game height -> canvas row
+  ctx.fillStyle = lit ? '#000' : '#dcd7ca'; ctx.fillRect(0, 0, w, h);
+  if (!lit) {
+    // clock: twelve bold bars round an open face, and two hands
+    const cy = Y(36.6), R = 1.35 * OBH_SIGN.px;
+    ctx.save(); ctx.translate(w / 2, cy); ctx.fillStyle = '#34383b';
+    for (let i = 0; i < 12; i++) { ctx.save(); ctx.rotate((i / 12) * Math.PI * 2); ctx.fillRect(-4, -R, 8, R * (i % 3 ? 0.26 : 0.34)); ctx.restore(); }
+    ctx.lineCap = 'round'; ctx.strokeStyle = '#34383b'; ctx.lineWidth = 7;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(R * 0.62 * Math.sin(-0.9), -R * 0.62 * Math.cos(-0.9)); ctx.stroke();
+    ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(R * 0.85 * Math.sin(0.55), -R * 0.85 * Math.cos(0.55)); ctx.stroke();
+    ctx.restore();
+  }
+  // the letters, one above the other
+  ctx.fillStyle = '#12b23c'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  ctx.font = `bold ${Math.round(2.35 * OBH_SIGN.px)}px Georgia, "Times New Roman", serif`;
+  const letters = 'Heineken', top = 31.2, step = 2.42;
+  ctx.strokeStyle = '#12b23c'; ctx.lineWidth = 5; ctx.lineJoin = 'round'; // heavier strokes, so they read from the far end of O'Connell St
+  [...letters].forEach((ch, i) => { ctx.fillText(ch, w / 2, Y(top - i * step)); ctx.strokeText(ch, w / 2, Y(top - i * step)); });
+  ctx.beginPath(); ctx.arc(w / 2 + 0.95 * OBH_SIGN.px, Y(top - 7 * step) - 0.12 * OBH_SIGN.px, 0.17 * OBH_SIGN.px, 0, Math.PI * 2); ctx.fill();
+  // the red star
+  ctx.fillStyle = '#e8262b'; ctx.beginPath();
+  const sy = Y(10.3), so = 1.2 * OBH_SIGN.px, si = so * 0.42;
+  for (let i = 0; i < 10; i++) { const a = (i / 10) * Math.PI * 2, rr = i % 2 ? si : so; ctx.lineTo(w / 2 + rr * Math.sin(a), sy - rr * Math.cos(a)); }
+  ctx.closePath(); ctx.fill();
+});
+const obhSignTex = obhSignCanvas(false), obhSignLit = obhSignCanvas(true);
+for (const t of [obhSignTex, obhSignLit]) t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
+Object.assign(M, {
+  obhGlass: addReflections(new THREE.MeshStandardMaterial({
+    map: obhMap, roughnessMap: obhRM, metalnessMap: obhRM, roughness: 1, metalness: 1,
+    emissive: 0xffffff, emissiveMap: obhLit, emissiveIntensity: 0,
+  }), 0.8),
+  obhSign: new THREE.MeshStandardMaterial({ map: obhSignTex, roughness: 0.78, emissive: 0xffffff, emissiveMap: obhSignLit, emissiveIntensity: 0.12 }),
+  // the shopfronts under the tower: dark glass by day, lit (cool white) after dark
+  obhShop: new THREE.MeshStandardMaterial({ color: 0x1d252b, roughness: 0.2, metalness: 0.5, emissive: 0xffe6c4, emissiveIntensity: 0 }),
+});
+neon.push({ m: M.obhGlass, day: 0, night: 1.1 }, { m: M.obhSign, day: 0.12, night: 1.9 }, { m: M.obhShop, day: 0, night: 0.25 });
+
+function oconnellBridgeHouse(site) {
+  // local +z: the front to the river and the bridge; local +x: the D'Olier Street side (see sites.js)
+  const b = new Builder(site);
+  const W = site.w, D = site.d, G = 4.6, FL = 3.3, H = G + OBH_FLOORS * FL, top = H + 0.9;
+  const stone = M.portlandSmooth;
+  // recessed ground floor: shopfronts (the corner bar, the D'Olier St shops) behind stone piers, under a stone fascia
+  b.box(W - 1.2, G, D - 1.2, M.obhShop, {});
+  for (let x = -W / 2 + 0.35; x <= W / 2; x += (W - 0.7) / 4) b.box(0.7, G, 0.7, stone, { x, z: D / 2 - 0.35 });
+  for (let z = -D / 2 + 0.35; z <= D / 2; z += (D - 0.7) / 6) for (const sx of [-1, 1]) b.box(0.7, G, 0.7, stone, { x: sx * (W / 2 - 0.35), z });
+  b.box(W + 0.2, 0.7, D + 0.2, stone, { y: G - 0.7 });
+  // the eleven glazed floors, a stone frame round each face, the parapet
+  b.facade(W, H - G, D, M.obhGlass, M.lead, { y: G }, 1.6, FL);
+  for (const [x, z] of [[-1, -1], [1, -1], [-1, 1]]) b.box(0.6, H - G, 0.6, stone, { x: x * (W / 2 - 0.2), y: G, z: z * (D / 2 - 0.2) });
+  b.box(W + 0.3, 0.9, D + 0.3, stone, { y: H });
+  // the pier at the front's west end: plain Portland stone the full height, carrying the sign
+  const pw = 3.3, pd = 4.2, px = W / 2 - pw / 2 + 0.15, pz = D / 2 - pd / 2 + 0.35;
+  b.box(pw, top + 0.3, pd, stone, { x: px, z: pz });
+  b.add(new THREE.PlaneGeometry(OBH_SIGN.w, OBH_SIGN.y1 - OBH_SIGN.y0), M.obhSign, { x: px, y: (OBH_SIGN.y0 + OBH_SIGN.y1) / 2, z: pz + pd / 2 + 0.06 });
+  // on the roof: the set-back plant floor, the stone service core at the back rising above it, the lattice mast
+  b.box(W - 3, 2.6, D - 5, M.cladGrey, { x: -0.6, y: top, z: 0.5 });
+  b.box(4.6, 5.2, 4, stone, { x: -W / 2 + 2.6, y: top - 0.9, z: -D / 2 + 1.6 });
+  for (const [x, z] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) b.box(0.08, 4.5, 0.08, M.dark, { x: 1 + x * 0.5, y: top + 2.6, z: 2 + z * 0.5, rx: -z * 0.1, rz: x * 0.1 });
+  // the extension: seven storeys down D'Olier Street (glazed shop floor, five floors of the same curtain wall in wider
+  // stone frames, a set-back top floor behind a rail), butting the tower's back
+  const e = site.ext, ez = -D / 2 - e.d / 2, EH = G + 5 * 3.4;
+  b.box(e.w - 1.2, G, e.d, M.obhShop, { x: 0.4, z: ez });
+  for (let z = ez - e.d / 2 + 0.35; z <= ez + e.d / 2; z += (e.d - 0.7) / 3) b.box(0.7, G, 0.7, stone, { x: e.w / 2 + 0.4 - 0.35, z });
+  b.box(e.w, 0.7, e.d, stone, { x: 0.4, y: G - 0.7, z: ez });
+  b.facade(e.w, EH - G, e.d, M.obhGlass, M.lead, { x: 0.4, y: G, z: ez }, 1.6, 3.4);
+  for (let z = ez - e.d / 2; z <= ez + e.d / 2 + 0.01; z += e.d / 3) b.box(0.5, EH - G, 0.5, stone, { x: e.w / 2 + 0.4, y: G, z });
+  b.box(e.w + 0.3, 0.8, e.d + 0.2, stone, { x: 0.4, y: EH, z: ez });
+  b.facade(e.w - 2.4, 3, e.d - 0.6, M.curtain, M.lead, { x: -0.8, y: EH + 0.8, z: ez }, 3, 3.6);
+  b.box(0.06, 1, e.d, M.dark, { x: e.w / 2 + 0.3, y: EH + 0.8, z: ez });
+  b.solid(0, 0, W, D); b.solid(0.4, ez, e.w, e.d);
+  // the lit sign shows in the Liffey after dark: a green streak under the letters and a red one under the star
+  const p = toWorld(site, px, pz + pd / 2);
+  for (let k = 0; k < 60; k++) {
+    const q = { x: p.x, z: p.z - k };
+    if (pointInPolygon(q, world.riverPoly)) {
+      waterGlowSources.push({ x: q.x, z: q.z - 1, y: WATER_Y + 0.05, color: 0x0e9a2c, width: 3.2, length: 55 });
+      waterGlowSources.push({ x: q.x + 0.8, z: q.z - 1, y: WATER_Y + 0.05, color: 0xb01010, width: 1.8, length: 30 });
+      break;
+    }
+  }
+  return b.build("O'Connell Bridge House");
+}
+
 function markerHotel(site) {
   const b = new Builder(site);
   const W = site.w, D = site.d;
@@ -2116,7 +2250,7 @@ export function buildLandmarks(scene) {
     bewleys(extraSites.bewleys), brownThomas(extraSites.brownThomas), weirAndSons(extraSites.weir), stephensGreenCentre(extraSites.sgCentre), graftonDressing(),
     drSteevens(extraSites.steevens), guinness(S.guinness), jamesGate(extraSites.jamesGate), beckettHarp(S.beckett), convention(S.convention),
     threeArena(S.threeArena), grattanOffice(S.grandCanalSt), grandCanalTheatre(S.grandCanal), grandCanalSquare(S.grandCanal.square), markerHotel(extraSites.marker), gcsOffice(extraSites.gcsOffice),
-    railBridges(),
+    railBridges(), oconnellBridgeHouse(S.oconnellBridgeHouse),
     lansdowneCrossing(extraSites.lansdowneXing), shelbournePark(extraSites.shelbournePark),
   ];
   // Phoenix Park: woods, avenue, lamps, walls, heroes and deer (its static meshes join the landmark batch)

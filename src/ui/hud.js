@@ -39,6 +39,7 @@ const BLURBS = {
   grandCanal: 'Libeskind’s theatre and the red light-sticks',
   grandCanalSt: 'Offices between Merrion Square and the docks',
   aviva: 'Lansdowne Road’s louvred glass wave, with the DART crossing at its door',
+  oconnellBridgeHouse: 'The 1965 tower at the end of the bridge, and its Heineken sign',
 };
 
 export function createHUD({ sites, actions }) {

@@ -158,6 +158,27 @@ const lansdowneXing = (() => {
   const podium = { face: way.width / 2 + way.pave + 2.5, top: 4.4, west: -7.5, east: 16, north: 60, portal: [-5, 5], stairs: 7.5 };
   return { x: X.x, z: X.z, road, track, n, north, way, at, atRoad, sAtW, podium, trackRot: Math.atan2(track.x, track.z), roadRot: Math.atan2(-road.z, road.x) };
 })();
+// O'Connell Bridge House (docs/research/oconnell-bridge-house.md): the 12-storey tower on the corner of D'Olier Street
+// and Burgh Quay, its long side on D'Olier St and its short front to the river and O'Connell Bridge, the Heineken sign
+// down the stone pier at the west end of that front. The 7-storey extension continues down D'Olier St behind it.
+// Local +z faces the river (up D'Olier St, towards the bridge), local +x faces D'Olier St. The tower stands square to
+// D'Olier St like the real one, so its front is skewed to the quay and a wedge of pavement opens at the corner.
+const obh = (() => {
+  const A = N('SQ8'), d = v2.norm(v2.sub(N('DO1'), A)), n = { x: d.z, z: -d.x }; // n: away from D'Olier St (NE)
+  const dol = wayBetween('SQ8', 'DO1'), bq = wayBetween('SQ8', 'SQ9'), q = v2.norm(v2.sub(N('SQ9'), A));
+  const south = { x: -q.z, z: q.x }; // off Burgh Quay, towards the building
+  const W = 12.8, D = 20.8, off = dol.width / 2 + dol.pave + 1.2 + W / 2, clear = bq.width / 2 + bq.pave + 1.2;
+  // slide down D'Olier St until the tower's front corner on the quay side (local -x, +z) clears Burgh Quay's footpath
+  let s = 0, c;
+  for (; s < 80; s += 0.1) {
+    c = { x: A.x + d.x * s + n.x * off, z: A.z + d.z * s + n.z * off };
+    const k = { x: c.x + n.x * (W / 2) - d.x * (D / 2), z: c.z + n.z * (W / 2) - d.z * (D / 2) };
+    if (v2.dot(v2.sub(k, A), south) >= clear) break;
+  }
+  const rot = Math.atan2(-d.x, -d.z), E = 15; // E: the extension's length down D'Olier St
+  const at = (lx, lz) => ({ x: c.x + lx * Math.cos(rot) + lz * Math.sin(rot), z: c.z - lx * Math.sin(rot) + lz * Math.cos(rot) });
+  return { ...c, rot, w: W, d: D, ext: { ...at(0.4, -D / 2 - E / 2), rot, w: W + 0.8, d: E }, at };
+})();
 const xingBox = (s0, s1, q0, q1) => ({ ...lansdowneXing.at((s0 + s1) / 2, (q0 + q1) / 2), rot: lansdowneXing.trackRot, w: q1 - q0, d: s1 - s0 });
 const xingRoadBox = (u0, u1, w0, w1) => ({ ...lansdowneXing.atRoad((u0 + u1) / 2, (w0 + w1) / 2), rot: lansdowneXing.roadRot, w: u1 - u0, d: w1 - w0 });
 
@@ -294,6 +315,12 @@ export const sites = {
     outline: avivaLocal(3).map((p) => toWorldRot(avivaCentre, AV_ROT, p)), // the plinth, for collision
     view: spot('AVL2', 'AVLX', 0.2),
   },
+  oconnellBridgeHouse: {
+    // the tower; the extension down D'Olier St is extraSites.obhExtension. View: southbound on O'Connell Street
+    // near the bridge, where the tower and its sign close the view across the river
+    name: "O'Connell Bridge House", x: obh.x, z: obh.z, rot: obh.rot, w: obh.w, d: obh.d, labelY: 48, at: obh.at, ext: obh.ext,
+    view: spot('OC1', 'NQ8', 0.35),
+  },
 };
 
 // A railway bridge over the road at a node (the GSWR, docs/research/croke-park.md 1.2; no trains, so only the deck
@@ -378,6 +405,8 @@ export const extraSites = {
   boiCorner: boiBox(51.85, 55.4, 23.5, 36.8),
   // the Lansdowne Road level crossing and the stadium's west podium over the covered way (see lansdowneXing above)
   lansdowneXing,
+  // O'Connell Bridge House's 7-storey extension down D'Olier Street (the tower is sites.oconnellBridgeHouse)
+  obhExtension: obh.ext,
 };
 // Aviva footprint slabs, the podium over the DART (a strip along the track and its front on Lansdowne Road with the
 // grand stairs), the station's track bed and platforms, and the station building - all kept free of filler
@@ -455,6 +484,9 @@ export const reserved = [
   // Aviva Stadium: its fitted footprint, the west podium over the DART and the Lansdowne Road station
   ...Object.entries(extraSites).filter(([k]) => /^aviva|^lansdowneT|^lansdowneS/.test(k)).map(([, s]) => s),
   (extraSites.shelbournePark = shelbournePark),
+  // O'Connell Bridge House: the tower, its extension, and the wedge of pavement between its front and Burgh Quay
+  sites.oconnellBridgeHouse, extraSites.obhExtension,
+  { ...obh.at(obh.w / 4, obh.d / 2 + 3), rot: obh.rot, w: obh.w / 2, d: 6 },
 ].filter(Boolean);
 
 export { campusPolys, parkPolys };
