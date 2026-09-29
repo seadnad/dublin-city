@@ -16,6 +16,7 @@ import { placeHapenny, placeParts, setStoneNight, placeCrokePark, placeAviva, pl
 import { placeHeuston } from './heuston.js';
 import { placeThreeArena } from './threearena.js';
 import { placeCCJ } from './ccj.js';
+import { placeBarrowStreet } from './barrowst.js';
 import { LITE } from '../render/quality.js';
 const lawnMat = () => getStreets().grassMat;
 import { buildPark } from './park.js';
@@ -2359,6 +2360,17 @@ export function buildLandmarks(scene) {
   // Criminal Courts of Justice (Blender hero): its outline collides whether or not the model loads
   let ccjHero = null;
   placeCCJ(scene, S.ccj, S.ccj.outline).then((h) => { if (h) { ccjHero = h; h.setNight(nightLevel); } });
+  // Barrow Street, the Google campus, Boland's Quay, Alto Vetro and the DART embankment (one Blender hero, lit offices
+  // at night): Google Docks' outline, every building box and the embankment are solid whether or not it loads; the
+  // lit towers show in the inner basin after dark
+  let barrowHero = null;
+  addPolyline(S.google.outline, true);
+  for (const [k, b] of Object.entries(extraSites)) if (k.startsWith('bs_')) addBox(b.x, b.z, b.w / 2, b.d / 2, b.rot);
+  // (on the inner basin, in front of Boland's Quay, the mills, Alto Vetro and Google Docks)
+  for (const [x, z, col, w] of [[712, 316, 0xfff0d8, 9], [708, 338, 0xfff0d8, 9], [714, 300, 0xffc070, 6], [690, 298, 0xfff4e0, 4], [700, 398, 0xe8f0ff, 10]]) {
+    waterGlowSources.push({ x, z, y: WATER_Y + 0.65, color: col, width: w, length: 30 });
+  }
+  placeBarrowStreet(scene).then((h) => { if (h) { barrowHero = h; h.setNight(nightLevel); } });
   // Guinness Storehouse with the Gravity Bar, the Power House stacks and St Patrick's Tower (Blender hero with a far
   // LOD; the old procedural block and chimney if it can't load)
   let guinnessHero = null;
@@ -2399,6 +2411,7 @@ export function buildLandmarks(scene) {
       if (arenaHero) arenaHero.setNight(level);
       if (avivaHero) avivaHero.setNight(level);
       if (ccjHero) ccjHero.setNight(level);
+      if (barrowHero) barrowHero.setNight(level);
       if (guinnessHero) guinnessHero.setNight(level);
       setStoneNight(level);
       if (phoenixPark) phoenixPark.setNight(level);

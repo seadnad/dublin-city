@@ -42,6 +42,8 @@ const BLURBS = {
   aviva: 'Lansdowne Road’s louvred glass wave, with the DART crossing at its door',
   oconnellBridgeHouse: 'The 1965 tower at the end of the bridge, and its Heineken sign',
   ccj: 'The courts’ glass drum, at the Parkgate end of the Phoenix Park',
+  google: 'Google Docks (the old Montevetro), Gordon House and the skybridge, under the DART',
+  bolands: 'The 1830s flour mills, a 1916 garrison, under two new towers on the dock',
 };
 
 export function createHUD({ sites, actions }) {

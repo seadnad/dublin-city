@@ -9,6 +9,14 @@ import { ISLANDS, islandOutline } from './oconnell.js';
 import { parkGrassMaterial } from './park.js';
 import { buildStreets, buildMedian, grassPolygon, greenLand, fieldUniforms, KERB_H } from './roads.js';
 import { buildCanals } from './canals.js';
+import bsLayout from '../data/barrowst.json';
+
+// Quay edges with bollards instead of railings (the Grand Canal Quay promenade and the inner basin's west side,
+// docs/research/barrow-street.md 3.5; the bollards are placed by barrowst.js). They still stop the car.
+export const openQuay = (a, b) => {
+  const x = (a.x + b.x) / 2, z = (a.z + b.z) / 2;
+  return bsLayout.openQuay.some(([x0, z0, x1, z1]) => x > x0 && x < x1 && z > z0 && z < z1);
+};
 
 export const WATER_Y = -2.6;
 const B = world.bounds;
@@ -549,7 +557,7 @@ function buildRailings(polys) {
       if (i) u += v2.len(v2.sub(p, ring[i - 1])) / 0.9;
       pos.push(p.x, KERB_H, p.z, p.x, KERB_H + 1.7, p.z);
       uv.push(u, 0, u, 1);
-      if (i) { const k = base + i * 2; idx.push(k - 2, k, k - 1, k, k + 1, k - 1); }
+      if (i && !openQuay(ring[i - 1], p)) { const k = base + i * 2; idx.push(k - 2, k, k - 1, k, k + 1, k - 1); }
     });
     base += ring.length * 2;
   }

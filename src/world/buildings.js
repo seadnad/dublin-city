@@ -101,6 +101,9 @@ const DOCK_ST = /North Wall|Rogerson|City Quay|Mayor|Commons|Memorial|Lombard|Sa
 // Docklands: east of the Custom House, from Pearse Street up to Sheriff Street. The northern ring beyond it (North
 // Strand, Ballybough, Clonliffe) is terraced housing, not glass towers.
 const inDocks = (x, z) => x > 300 && z < 150 && z > -280;
+// "Silicon Docks": Grand Canal Dock south of Pearse Street, Barrow Street and Grand Canal Quay (docs/research/
+// barrow-street.md): glass and panel offices and apartments of four to eight storeys, the odd brick block
+const inSilicon = (x, z) => x > 600 && x < 830 && z >= 150 && z < 530;
 // Victorian and Edwardian red-brick terraces of the canal ring: two storeys with small front gardens
 const TERRACE_ST = /North Circular|Ballybough|Clonliffe|Jones's|Russell|Summerhill Parade|Poplar|Portland Row|Seville|North Strand|Whitworth|Drumcondra|Prussia|Aughrim|Infirmary|Grove Road|Canal Road|Heytesbury|Clanbrassil Street Upper|South Circular|Lennox|Charlemont Mall|Avenue|Ardilaun|Great Charles|Haddington|Berkeley|Mountjoy Street|Blessington|Long Lane|Camden Row|New Bride|Lansdowne Road|Tritonville|Londonbridge/;
 export const isTerrace = (way) => !!way && TERRACE_ST.test(way.name);
@@ -129,6 +132,7 @@ const breweryFloors = (x, z) => 2 + ((Math.floor(x * 0.37 + z * 0.23) & 3) === 0
 function styleFor(x, z, way) {
   const name = way ? way.name : '';
   if (nearCroke(x, z)) return rand() < 0.85 ? S.BRICK : S.STUCCO;
+  if (inSilicon(x, z)) return rand() < 0.85 ? S.MODERN : S.BRICK;
   if (inDocks(x, z) && !GEORGIAN_ST.test(name)) return S.MODERN;
   if (x > 200 && DOCK_ST.test(name)) return rand() < 0.65 ? S.MODERN : S.BRICK;
   if (TEMPLE_BAR.test(name)) return rand() < 0.75 ? S.TEMPLEBAR : S.BRICK;
@@ -193,6 +197,7 @@ for (const way of ordered) {
         else if (nearCroke(mid.x, mid.z)) spec.floors = way.type === 'primary' ? 3 : rand() < 0.8 ? 2 : 3;
         else if (nearParkgate(mid.x, mid.z)) { const c = v2.add(mid, v2.scale(n, 12)); spec.floors = parkgateFloors(c.x, c.z, way.type === 'primary' || way.type === 'quay'); }
         else if (inBrewery(mid.x, mid.z)) spec.floors = breweryFloors(mid.x, mid.z);
+        else if (inSilicon(mid.x, mid.z) && style === S.MODERN) spec.floors = Math.min(spec.floors, 8);
         const garden = terrace ? 2.2 : 0;
         if (s + spec.w > L + 3) { s += 2; continue; }
         let placed = false;
@@ -217,7 +222,7 @@ for (let z = B.minZ + 10; z < B.maxZ - 10; z += 11) {
     const road = world.nearestRoad(x, z);
     const seg = road ? road.seg : null;
     const rot = seg ? Math.atan2(seg.b.x - seg.a.x, seg.b.z - seg.a.z) : 0;
-    const style = inDocks(x, z) ? S.MODERN : rand() < (nearCroke(x, z) ? 0.85 : 0.5) ? S.BRICK : S.STUCCO;
+    const style = inDocks(x, z) || inSilicon(x, z) ? S.MODERN : rand() < (nearCroke(x, z) ? 0.85 : 0.5) ? S.BRICK : S.STUCCO;
     for (const size of [14, 10, 7]) {
       const o = { x, z, rot, w: size + rand() * 3, d: size + rand() * 3 };
       if (testOBB(o)) {

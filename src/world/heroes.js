@@ -1213,7 +1213,7 @@ function guinnessTextures(S) {
 }
 
 // One mesh per material for a static hero group (fewer draw calls): geometry baked to the root's frame
-function mergeByMaterial(root) {
+export function mergeByMaterial(root) {
   root.updateMatrixWorld(true);
   const inv = root.matrixWorld.clone().invert(), m = new THREE.Matrix4(), by = new Map();
   root.traverse((o) => {

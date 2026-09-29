@@ -5,6 +5,7 @@ import { world, v2, PAVEMENT, pointInPolygon, laneOffset, project } from './geo.
 import { bridges, parkPolys, campusPolys } from './ground.js';
 import { monumentSites } from './oconnell.js';
 import tanksData from '../data/guinness-tanks.json';
+import bsLayout from '../data/barrowst.json';
 
 const N = (id) => world.nodes.get(id);
 const wayBetween = (a, b) => world.ways.find((w) => {
@@ -76,6 +77,25 @@ const at = (lat, lon) => project(lat, lon);
 const theatre = { ...at(53.34414, -6.23995), rot: -Math.PI / 2, w: 26, d: 34 };
 const gcSquare = { ...at(53.34408, -6.23897), rot: -Math.PI / 2, w: 28, d: 33 };
 const beckett = bridges.find((b) => b.name === 'Samuel Beckett Bridge');
+// Barrow Street, the Google campus and Boland's Quay (docs/research/barrow-street.md): the hero's building boxes and
+// the Google Docks outline come from src/data/barrowst.json (game metres, squeezed clear of the roads), shared with
+// the Blender build. The DART embankment runs along the rail line between its bridges (over Grand Canal Quay and the
+// canal's mouth, and over Barrow Street), as boxes along each straight.
+const BS = bsLayout.boxes;
+const bsMontevetro = bsLayout.montevetro.poly.map(([x, z]) => ({ x, z }));
+const bsRail = (() => {
+  const R = bsLayout.rail, line = R.line.map(([x, z]) => ({ x, z })), out = [], ranges = [];
+  let xa = line[0].x;
+  for (const [s0, s1] of R.spans) { ranges.push([xa, s0]); xa = s1; }
+  ranges.push([xa, line[line.length - 1].x]);
+  for (const [lo, hi] of ranges) for (let i = 0; i + 1 < line.length; i++) {
+    const a = line[i], b = line[i + 1], x0 = Math.max(lo, a.x), x1 = Math.min(hi, b.x);
+    if (x1 - x0 < 0.5) continue;
+    const at = (x) => ({ x, z: a.z + ((x - a.x) / (b.x - a.x)) * (b.z - a.z) }), p = at(x0), q = at(x1), d = v2.sub(q, p);
+    out.push({ ...v2.lerp(p, q, 0.5), rot: Math.atan2(d.x, d.z), w: 2 * R.half, d: v2.len(d) });
+  }
+  return out;
+})();
 // 3Arena (docs/research/three-arena.md): the old Point Depot's front stands on North Wall Quay behind a 2.2 m railed
 // forecourt at the back of the footpath, square to the quay, its east wall just clear of East Wall Road. The hero is
 // placed by the middle of that front (arenaFront; local +x east along the quay, local -z north, u / v in the model);
@@ -409,6 +429,17 @@ export const sites = {
     name: "O'Connell Bridge House", x: obh.x, z: obh.z, rot: obh.rot, w: obh.w, d: obh.d, labelY: 48, at: obh.at, ext: obh.ext,
     view: spot('OC1', 'NQ8', 0.35),
   },
+  google: {
+    // Google Docks (the old Montevetro, 2010, 65.6 m): the slab along the north of its outline; the rest of the Barrow
+    // Street campus (Gordon House, Gasworks House, the skybridge) is in extraSites. Seen northbound out of the underpass.
+    name: 'Google (Barrow Street)', x: 727.3, z: 413.1, rot: -0.108, w: 30.3, d: 7.5, labelY: 70, outline: bsMontevetro,
+    view: spot('BWS2', 'BWS3', 0.08),
+  },
+  bolands: {
+    // Boland's Quay: BOL1 behind the restored 1830s mills on Ringsend Road; seen from MacMahon Bridge, eastbound
+    name: "Boland's Quay", ...BS.bol1, labelY: 58,
+    view: spot('PS5', 'RR1', 0.2),
+  },
   ccj: {
     // w x d: the drum and its terrace for the map and the filler; the outline (with the steps, the screen wall, the
     // stair tower and the service wing) is what collides. Viewed from Parkgate Street, westbound towards the park.
@@ -544,6 +575,15 @@ for (const s of [-1, 1]) {
   }
 }
 
+// the rest of the Barrow Street hero: every building box, Google Docks' south-east wedge, the station's stair tower on
+// Barrow Street and the DART embankment pieces (all kept free of filler, and solid)
+Object.assign(extraSites, Object.fromEntries(Object.entries(BS).map(([k, b]) => ['bs_' + k, b])));
+extraSites.bs_mvWedge = { x: 735.5, z: 423.5, rot: -0.108, w: 11, d: 14 };
+extraSites.bs_stairs = { x: 737, z: 434.4, rot: 0, w: 4.4, d: 4.4 };
+bsRail.forEach((b, i) => { extraSites['bs_rail' + i] = b; });
+// Boland's Quay's open plaza on the dock edge, between the mill, the towers and the balconied warehouse (open, not solid)
+extraSites.bsPlaza = bsLayout.plaza;
+
 // the O'Connell Street monuments on their islands down the middle of the street (src/world/oconnell.js)
 Object.assign(extraSites, monumentSites);
 
@@ -601,6 +641,8 @@ export const reserved = [
   { ...obh.at(obh.w / 4, obh.d / 2 + 3), rot: obh.rot, w: obh.w / 2, d: 6 },
   // the Criminal Courts of Justice, and its paved forecourt and plane trees between the drum and Infirmary Road
   sites.ccj,
+  // Barrow Street, Google and Boland's Quay (src/data/barrowst.json)
+  sites.google, extraSites.bsPlaza, ...Object.entries(extraSites).filter(([k]) => k.startsWith('bs_')).map(([, s]) => s),
   (extraSites.ccjForecourt = { x: CCJ.x + 34, z: CCJ.z + 9, rot: 0, w: 14, d: 30 }),
   // ...and the grounds behind it, out to the park wall (the green's edge, src/data/streets.json) on the west and north
   (extraSites.ccjWest = { x: CCJ.x - 34, z: CCJ.z - 10, rot: 0, w: 18, d: 38 }),

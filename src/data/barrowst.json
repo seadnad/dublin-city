@@ -1,0 +1,29 @@
+{
+  "about": "Barrow Street / Boland's Quay / Grand Canal Quay hero layout (docs/research/barrow-street.md). Game metres (x east, z south), plan from OSM squeezed clear of the uncompressed roads; heights in real metres. Shared by tools/blender/build_barrowst.py (geometry) and src/world/sites.js (reserved footprints, colliders). Boxes: centre x, z; w along local x, d along local z; rot as the sites (local +x = (cos, -sin), local +z = (sin, cos)).",
+  "origin": [720, 380],
+  "boxes": {
+    "millw": { "x": 734.5, "z": 297.5, "w": 15, "d": 11, "rot": -0.2, "h": 20.5 },
+    "millr": { "x": 750.5, "z": 300.6, "w": 16, "d": 10, "rot": -0.2, "h": 20.5 },
+    "bol1": { "x": 746, "z": 314.5, "w": 20, "d": 15, "rot": -0.17, "h": 54 },
+    "bol2": { "x": 744, "z": 338.5, "w": 20, "d": 21, "rot": -0.17, "h": 47 },
+    "stonewh": { "x": 727.2, "z": 327, "w": 9, "d": 13, "rot": -0.17, "h": 16.5 },
+    "warehouse": { "x": 728, "z": 359.5, "w": 23, "d": 11.5, "rot": -0.21, "h": 14 },
+    "dockmill": { "x": 732.5, "z": 376.5, "w": 33, "d": 11.5, "rot": -0.2, "h": 17 },
+    "grandmill": { "x": 730.5, "z": 395, "w": 33, "d": 16, "rot": -0.12, "h": 24 },
+    "gordon": { "x": 777, "z": 408, "w": 30, "d": 38, "rot": -0.151, "h": 24 },
+    "gasworks": { "x": 766, "z": 443, "w": 18, "d": 20, "rot": -0.151, "h": 31 },
+    "altovetro": { "x": 683.6, "z": 284.6, "w": 5.2, "d": 10, "rot": 0.12, "h": 51 }
+  },
+  "montevetro": { "poly": [[712.5, 407.6], [742.8, 410.9], [741.0, 431.4], [736.5, 431.0], [721.6, 416.8], [711.7, 415.0]], "shoulder": 8, "h": 65.6, "hs": 48.1 },
+  "waterways": { "x": 691.5, "z": 307, "w": 8, "d": 8, "rot": 0.12 },
+  "rail": {
+    "deck": 6.0,
+    "line": [[636, 368.6], [656.8, 382.4], [671.1, 393], [691.7, 408.5], [733.3, 440.3], [745.6, 450.9], [770.5, 472.6]],
+    "spans": [[648, 676], [736, 757]],
+    "half": 6.5,
+    "station": [690, 734]
+  },
+  "openQuay": [[676, 196, 694, 266], [660, 288, 683, 392]],
+  "plaza": { "x": 728.5, "z": 312, "w": 11, "d": 15, "rot": -0.17 },
+  "skybridge": [[742.2, 417.5], [751.5, 419.5], [760.8, 416.2]]
+}
