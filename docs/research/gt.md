@@ -4,8 +4,8 @@ The fun car. Inspired by the Mk7 / Mk8-era Golf GTI silhouette, but with an orig
 plain round badge: no maker's logos, badges or trademark names on the car or in the UI.
 
 - Model: `public/models/gt.glb`, built by `GT` / `gt_extras` in [`tools/blender/build_cars.py`](../../tools/blender/build_cars.py)
-  (`blender -b --factory-startup -P tools/blender/build_cars.py -- public/models gt`). About 15.7k triangles,
-  160 KB (Draco), against the i30 N's 14.4k and 414 KB.
+  (`blender -b --factory-startup -P tools/blender/build_cars.py -- public/models gt`). About 18k triangles,
+  171 KB (Draco), against the i30 N's 14.4k and 414 KB.
 - Handling: `CAR_PROFILES.gt` in [`src/game/car.js`](../../src/game/car.js). Engine voice: `sport` in
   [`src/game/audio/engine.js`](../../src/game/audio/engine.js). Menu entry, blurb and colours:
   [`src/game/carlist.js`](../../src/game/carlist.js).
@@ -14,14 +14,22 @@ plain round badge: no maker's logos, badges or trademark names on the car or in 
 
 ## What was modelled, from the references
 
-- Proportions: 4.27 m long, 1.80 m wide, 1.44 m tall, 2.63 m wheelbase, short overhangs (0.87 m front, 0.77 m
-  rear), 18-inch wheels (0.644 m tyres) with tight arch gaps for the lowered stance.
-- Side: belt line just above 0.9 m, the long glasshouse ending in a thick forward-leaning C-pillar above the rear
-  wheel, black window surrounds, a small quarter-light divider, a crease under the shoulder, black sill.
+- Proportions: 4.27 m long, 1.82 m wide, 1.45 m tall, 2.63 m wheelbase, 0.88 m front and 0.76 m rear overhang,
+  0.648 m tyres (235/35 R19 size) flush with the arches, about 2.5 cm of arch gap for the lowered stance.
+- Side: belt line (bottom of the side glass) at 1.0 m over the rear axle falling to 0.93 m at the A-pillar, so the
+  glasshouse is shallow; the roof falls gently from 1.45 m to about 1.40 m before the spoiler; the side glass ends
+  in a thick C-pillar that sweeps forward (its rear edge leans forward and the top of the glass falls toward the
+  rear); black window surrounds, a quarter-light divider, a crease under the shoulder, black sill.
+- Glasshouse: strong tumblehome (the roof is about 64 % of the shoulder width); the rear screen leans back about
+  20 degrees and wraps forward at its sides in plan, over a near-vertical tailgate; the cabin takes the body's
+  plan shape at the tail, so there is no ledge between the tailgate and the shoulders.
+- Bonnet: slopes from about 0.97 m at the windscreen to the leading edge, domed between the wings (a crown).
 - Front: a thin honeycomb grille between the headlights with the red line running along its bottom edge and on
   into the headlights; headlights with two projector lenses in chrome rings and an LED wing along the top edge;
-  a wide honeycomb lower intake, side intakes with three fins and a small lamp, a black splitter.
-- Rear: wraparound tail lights (lens, an LED line graphic, a reversing lamp inboard), body-colour roof spoiler
+  a wide honeycomb lower intake, tall gloss-black-framed side intakes with three fins and a small lamp that
+  reach round the bumper corners, a black splitter.
+- Rear: tail lights on the shoulder just under the rear screen, reaching onto the tailgate and wrapping round the
+  corners onto the flanks (lens, an LED line graphic carried round the corner, a reversing lamp inboard), body-colour roof spoiler
   with the high-level brake light under its lip, black diffuser with fins, a chrome tailpipe each side.
 - Wheels: dark gunmetal twin five-spoke alloys with a lip, a brake disc visible through the spokes and red
   calipers. The front calipers steer with the wheel but don't spin (`caliper_front_*` nodes, see `models.js`).
@@ -31,7 +39,19 @@ Builder improvements that came with it (all optional per car; the i30 N and coup
 vertex columns across the width so the nose, tail and windscreen curve in plan; a C-pillar line that ends the
 side glazing; a revolved, open-centred tyre so the brakes show; tapered, dished spokes; hexagonal honeycomb
 grilles with shared walls; quad-strip decals for long thin bands (no dropped slivers); Draco export.
-The outlines are drawn inside the visible surface by the bevel (0.075 m body, 0.09 m cabin), which grows them back.
+The shape pass added: the visible outline is written down directly (GT_BODY / GT_CABIN) and offset inward by the
+bevel (0.075 m body, 0.09 m cabin), which grows it back; a bonnet crown; the cabin following the body's plan shape
+at the ends; the tailgate glass wrapping forward above the belt; a falling top line for the side glass; mirror and
+door-handle placement. All optional, so the other cars still export byte-identical.
+
+### Checking the side profile
+
+Scratch tooling (not committed): an orthographic side render at 300 px/m laid over the side reference
+(`refs/gt/02`) with its wheel centres on the model's (so the 2.63 m wheelbase sets the scale and the photo's tilt
+is levelled). The before / after overlays are the first two panels of [`gt-sheet.png`](gt-sheet.png). In the side
+plane (wheels, arches, belt, glass, pillars, handles, windscreen) the model now sits on the photo. The photo's
+bumpers look about 0.15 m shorter than the model at each end: that is the close-up perspective (the ends are
+further from the camera than the doors); the published 4.27 m length decides the overhangs.
 
 ## Handling (fixed 60 Hz step on the real physics, `handling-compare.mjs`)
 
@@ -75,9 +95,8 @@ Downloaded through the Commons API with a generic User-Agent (`DublinDriveResear
 
 ## Known limits
 
-- The body is still an extruded side profile: flat flanks with a single crease, and the tailgate is narrower than
-  the rear shoulders (a small ledge above the tail lights), so it reads a touch more estate-like side-on than the
-  real thing.
+- The body is still an extruded side profile: flat flanks with a single crease, no sculpted door surfaces or
+  wheel-arch lips.
 - Decals are flat projections: the honeycomb has no depth and the grille line is painted on.
 - The handling numbers above are the physics' own; the in-game feel also depends on the frame rate (the step is
   capped at 50 ms).
