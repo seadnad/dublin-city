@@ -5,6 +5,7 @@ import { world, PAVEMENT, v2, offsetPolyline, resample, pointInPolygon, insetPol
 import { makePuddleTexture, makeStoneTexture, makeWaterNormal, fbm, rng } from './textures.js';
 import { addPolyline, addSegment } from '../game/collision.js';
 import { addReflections } from '../render/reflect.js';
+import { parkGrassMaterial } from './park.js';
 import { buildStreets, buildMedian, grassPolygon, greenLand, fieldUniforms, KERB_H } from './roads.js';
 import { buildCanals } from './canals.js';
 
@@ -322,7 +323,8 @@ export function buildGround(scene) {
   const groundMaterial = streets.asphaltMat;
   group.add(buildMedian(streets));
   for (const pk of [...parkPolys, ...campusPolys]) group.add(grassPolygon(pk.poly, streets.grassMat));
-  group.add(greenLand(world.greens.map((g) => g.poly), streets.grassMat));
+  // Phoenix Park's grass has its own shader (mown verges and lawns, meadow, woodland floor)
+  for (const gr of world.greens) group.add(greenLand([gr.poly], gr.name === 'Phoenix Park' ? parkGrassMaterial(streets.grassMat) : streets.grassMat));
 
   // Ground pieces north and south of the river
   const nb = world.northBank, sb = world.southBank;

@@ -83,6 +83,8 @@ const landmarks = buildLandmarks(scene);
 }
 await step(0.72, 'Lighting the streets…');
 const lamps = buildLamps(scene);
+// the Phoenix Park gas lamps light the ground (baked) and borrow the nearest-lamp point lights like the city's
+if (landmarks.park) lamps.spots.push(...landmarks.park.lampSpots);
 // reflections of quay lamps and the docklands lights on the water after dark
 const nearWater = (x, z) => [[7, 0], [-7, 0], [0, 7], [0, -7]].some(([dx, dz]) => isOverWater(x + dx, z + dz));
 const waterGlow = buildWaterGlow(scene, [
@@ -414,6 +416,7 @@ function frame() {
   camera.getWorldDirection(viewDir); viewDir.y = 0; viewDir.normalize();
   atmosphere.update(dt, time, focus, viewDir);
   landmarks.update(camera);
+  if (landmarks.park) landmarks.park.update(dt, time, car, camera);
   waterGlow.update(camera);
   lamps.update(dt, focus);
   rain.update(dt, time, camera);

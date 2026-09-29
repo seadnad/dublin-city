@@ -11,6 +11,7 @@ import { chunkedInstances } from './chunks.js';
 import { plantTrees } from './trees.js';
 import { KERB_H } from './roads.js';
 import { placeHapenny, placeParts, setStoneNight } from './heroes.js';
+import { buildPark } from './park.js';
 
 const rand = rng(1742);
 
@@ -1771,6 +1772,9 @@ export function buildLandmarks(scene) {
     drSteevens(extraSites.steevens), guinness(S.guinness), jamesGate(extraSites.jamesGate), beckettHarp(S.beckett), convention(S.convention),
     threeArena(S.threeArena), grattanOffice(S.grandCanalSt), grandCanalTheatre(S.grandCanal), grandCanalSquare(S.grandCanal.square), markerHotel(extraSites.marker), gcsOffice(extraSites.gcsOffice),
   ];
+  // Phoenix Park: woods, avenue, lamps, walls, heroes and deer (its static meshes join the landmark batch)
+  const phoenixPark = buildPark(scene);
+  if (phoenixPark) groups.push(phoenixPark.group);
   for (const g of groups) scene.add(g);
   // Heuston Station (Blender hero; the old procedural model if it can't load)
   placeParts(scene, 'heuston', S.heuston, 'Heuston Station').then((g) => { if (!g) scene.add(heuston(S.heuston)); });
@@ -1804,13 +1808,14 @@ export function buildLandmarks(scene) {
   // floating place labels were removed from the 3D view (landmarks are on the map instead)
   const labels = new THREE.Group();
   return {
-    groups, labels, trees,
+    groups, labels, trees, park: phoenixPark,
     setLabels(on) { labels.visible = on; },
     // docklands lighting after dark (0 = day, 1 = night)
     setNight(level) {
       for (const n of neon) n.m.emissiveIntensity = n.day + (n.night - n.day) * level;
       nightLevel = level; if (hapennyHero) hapennyHero.setNight(level);
       setStoneNight(level);
+      if (phoenixPark) phoenixPark.setNight(level);
     },
     update(camera) {
       // hide labels that are far away or behind the camera

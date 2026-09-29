@@ -174,6 +174,9 @@ function build() {
       // access-only (AI avoid it as a through route). oneway: 1 = only in node order, -1 = only against it.
       // surface: 'sett' paves the carriageway with granite setts whatever the access.
       access: w.access || null, oneway: w.oneway || 0, surface: w.surface || (w.type === 'lane' && !w.pedestrian ? 'sett' : null),
+      // lamps: a street-lighting style of its own instead of the city lamps ('gas': the Phoenix Park gas lamps, built
+      // by park.js; 'none': unlit). roundabout: the id of the node at the centre of the ring this way belongs to.
+      lamps: w.lamps || null, roundabout: w.roundabout || null,
     };
     for (const id of w.nodes) nodes.get(id).ways.push(way);
     return way;

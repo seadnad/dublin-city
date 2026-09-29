@@ -15,9 +15,12 @@ function pick(mix, rand) {
   return Object.keys(mix)[0];
 }
 
-// items: { x, y?, z, rot, s (number) }; mix: { plane: 3, lime: 1, ... }
+// items: { x, y?, z, rot, s (number), species?, tint? (THREE.Color: multiplies leaves and bark) }; mix: { plane: 3, ... }
+// A planting whose items carry tints (the Phoenix Park's dark holm oaks, say) gets per-instance colours.
+const WHITE = new THREE.Color(1, 1, 1);
 export function plantTrees(scene, items, mix, rand = Math.random) {
-  const planting = { scene, items: items.map((it) => ({ ...it, species: pick(mix, rand) })), groups: [] };
+  const planting = { scene, items: items.map((it) => ({ ...it, species: it.species || pick(mix, rand) })), groups: [] };
+  planting.colors = items.some((it) => it.tint) ? (it) => it.tint || WHITE : null;
   plantings.push(planting);
   if (models) build(planting);
   else buildFallback(planting);
@@ -30,7 +33,7 @@ function buildFallback(p) {
   const its = p.items.map((it) => ({ ...it, s: it.s }));
   p.groups = [
     chunkedInstances(trunk, new THREE.MeshStandardMaterial({ color: 0x4a3b2c, roughness: 0.9 }), its, { shadow: true, y: it0y(p) }),
-    chunkedInstances(crown, new THREE.MeshStandardMaterial({ color: 0x5b8a3a, roughness: 0.9, flatShading: true }), its, { shadow: true, y: it0y(p) }),
+    chunkedInstances(crown, new THREE.MeshStandardMaterial({ color: 0x5b8a3a, roughness: 0.9, flatShading: true }), its, { shadow: true, y: it0y(p), colors: p.colors }),
   ];
   p.scene.add(...p.groups);
 }
@@ -45,7 +48,7 @@ function build(p) {
     for (const part of ['bark', 'leaves']) {
       const m = models[sp][part];
       if (!m) continue;
-      const g = chunkedInstances(m.geometry, m.material, its, { shadow: true, y: it0y(p) });
+      const g = chunkedInstances(m.geometry, m.material, its, { shadow: true, y: it0y(p), colors: p.colors });
       p.groups.push(g);
       p.scene.add(g);
     }
