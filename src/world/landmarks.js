@@ -15,6 +15,7 @@ import { ISLANDS, CHAIN, along, LENGTH } from './oconnell.js';
 import { placeHapenny, placeParts, setStoneNight, placeCrokePark, placeAviva } from './heroes.js';
 import { placeHeuston } from './heuston.js';
 import { placeThreeArena } from './threearena.js';
+import { placeCCJ } from './ccj.js';
 import { LITE } from '../render/quality.js';
 const lawnMat = () => getStreets().grassMat;
 import { buildPark } from './park.js';
@@ -2308,6 +2309,9 @@ export function buildLandmarks(scene) {
   let avivaHero = null;
   addPolyline(S.aviva.outline, true);
   placeAviva(scene, S.aviva, { lite: LITE }).then((h) => { if (h) { avivaHero = h; h.setNight(nightLevel); } });
+  // Criminal Courts of Justice (Blender hero): its outline collides whether or not the model loads
+  let ccjHero = null;
+  placeCCJ(scene, S.ccj, S.ccj.outline).then((h) => { if (h) { ccjHero = h; h.setNight(nightLevel); } });
   for (const [lat, lon] of [[53.33524, -6.22516], [53.33605, -6.22571], [53.3369, -6.22622]]) waterGlowSources.push({ ...project(lat, lon), y: WATER_Y + 0.65, color: 0xffe3b8, width: 6, length: 45 });
   for (const g of grounds) {
     const c = Math.cos(g.rot), s = Math.sin(g.rot), hx = g.w / 2, hz = g.d / 2;
@@ -2339,6 +2343,7 @@ export function buildLandmarks(scene) {
       if (heustonHero) heustonHero.setNight(level);
       if (arenaHero) arenaHero.setNight(level);
       if (avivaHero) avivaHero.setNight(level);
+      if (ccjHero) ccjHero.setNight(level);
       setStoneNight(level);
       if (phoenixPark) phoenixPark.setNight(level);
     },
