@@ -39,6 +39,7 @@ const BLURBS = {
   grandCanal: 'Libeskind’s theatre and the red light-sticks',
   grandCanalSt: 'Offices between Merrion Square and the docks',
   aviva: 'Lansdowne Road’s louvred glass wave, with the DART crossing at its door',
+  ccj: 'The courts’ glass drum, at the Parkgate end of the Phoenix Park',
 };
 
 export function createHUD({ sites, actions }) {

@@ -109,6 +109,15 @@ export const isTerrace = (way) => !!way && TERRACE_ST.test(way.name);
 // towers over them as it does in the photos
 const CP = sites.crokePark.centre;
 const nearCroke = (x, z) => Math.hypot(x - CP.x, z - CP.z) < 330;
+// Parkgate Street and the north bank by the Criminal Courts: a low Victorian terrace of pubs and shops, three storeys
+// on the main road, and one- and two-storey offices and yards between it and the river (docs/research/
+// criminal-courts.md 1.4), so the courts' drum stands over them as it does from Heuston
+const CJ = sites.ccj;
+const nearParkgate = (x, z) => x < -1170 && z < -30 && z > CJ.z - 60 && Math.hypot(x - CJ.x, z - CJ.z) < 240;
+const riverSide = (x, z) => z > -89 - Math.max(0, -1290 - x) * 0.07; // between Parkgate St / Conyngham Rd and the Liffey
+const parkgateFloors = (x, z, main) => (riverSide(x, z) ? 2 : main ? 3 + (hash01(x, z) < 0.3 ? 1 : 0) : 2 + (hash01(x, z) < 0.3 ? 1 : 0));
+// a position hash in 0..1 (not rand(): an extra draw would reshuffle every building placed after these)
+const hash01 = (x, z) => { const s = Math.sin(x * 12.9898 + z * 78.233) * 43758.5453; return s - Math.floor(s); };
 
 function styleFor(x, z, way) {
   const name = way ? way.name : '';
@@ -175,6 +184,7 @@ for (const way of ordered) {
         const spec = lotSpec(style);
         if (terrace) Object.assign(spec, { w: 2 * spec.bay + 0.5, d: 9 + rand() * 3, floors: rand() < 0.8 ? 2 : 3, fh: 3.2 });
         else if (nearCroke(mid.x, mid.z)) spec.floors = way.type === 'primary' ? 3 : rand() < 0.8 ? 2 : 3;
+        else if (nearParkgate(mid.x, mid.z)) { const c = v2.add(mid, v2.scale(n, 12)); spec.floors = parkgateFloors(c.x, c.z, way.type === 'primary' || way.type === 'quay'); }
         const garden = terrace ? 2.2 : 0;
         if (s + spec.w > L + 3) { s += 2; continue; }
         let placed = false;
@@ -207,6 +217,7 @@ for (let z = B.minZ + 10; z < B.maxZ - 10; z += 11) {
         // block interiors stay lower than the street frontage (keeps Docklands from becoming a wall of towers)
         spec.floors = style === S.MODERN ? 3 + Math.floor(rand() * 4) : nearCroke(x, z) ? 2 : Math.max(3, spec.floors - 1);
         if (road && isTerrace(road.way)) spec.floors = 2; // back returns and mews behind the terraces
+        if (nearParkgate(x, z)) spec.floors = Math.min(spec.floors, parkgateFloors(x, z, false));
         place(o, style, spec, false);
         break;
       }

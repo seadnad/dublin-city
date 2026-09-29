@@ -158,6 +158,27 @@ const lansdowneXing = (() => {
   const podium = { face: way.width / 2 + way.pave + 2.5, top: 4.4, west: -7.5, east: 16, north: 60, portal: [-5, 5], stairs: 7.5 };
   return { x: X.x, z: X.z, road, track, n, north, way, at, atRoad, sAtW, podium, trackRot: Math.atan2(track.x, track.z), roadRot: Math.atan2(-road.z, road.x) };
 })();
+// Criminal Courts of Justice (docs/research/criminal-courts.md): the glass drum on the corner of Parkgate Street and
+// Infirmary Road, at the Phoenix Park end. East of PARK_X, so no east-west squeeze. The OSM circle is centred at
+// 53.348694 / -6.295695; the model (tools/blender/build_ccj.py, plan scale 0.58) is moved north so its south terrace
+// wall clears Conyngham Road's widened carriageway and footpath (the real south face is ~12 m off the kerb).
+export const CCJ = (() => {
+  const c = project(53.348694, -6.295695), a = N('PG1'), b = N('PX01'), way = wayBetween('PG1', 'PX01');
+  const roadZ = a.z + ((c.x - a.x) / (b.x - a.x)) * (b.z - a.z);
+  return { x: c.x, z: Math.min(c.z, roadZ - way.width / 2 - way.pave - 26.5), plan: 0.58 };
+})();
+// the drum's glazing line in real metres at a bearing (degrees clockwise from north), as in build_ccj.py
+const ccjR = (b) => 39.45 - 1.95 * Math.cos((b * Math.PI) / 180);
+// how far things stand out from it: the screen wall, the entrance steps, the terrace wall, the service wing, the stair tower
+const ccjExtra = (b) => (b >= 84 && b <= 123 ? 3.5 : b > 123 && b <= 169 ? 8.2 : b > 169 && b <= 216 ? 3.1 : b >= 276 && b <= 298 ? 8.6 : b >= 4 && b <= 14 ? 8.6 : 1.0);
+export function ccjOutline(pad = 0) {
+  const out = [];
+  for (let d = 0; d < 360; d += 2) {
+    const r = (ccjR(d) + ccjExtra(d)) * CCJ.plan + pad, t = (d * Math.PI) / 180;
+    out.push({ x: CCJ.x + r * Math.sin(t), z: CCJ.z - r * Math.cos(t) });
+  }
+  return out;
+}
 const xingBox = (s0, s1, q0, q1) => ({ ...lansdowneXing.at((s0 + s1) / 2, (q0 + q1) / 2), rot: lansdowneXing.trackRot, w: q1 - q0, d: s1 - s0 });
 const xingRoadBox = (u0, u1, w0, w1) => ({ ...lansdowneXing.atRoad((u0 + u1) / 2, (w0 + w1) / 2), rot: lansdowneXing.roadRot, w: u1 - u0, d: w1 - w0 });
 
@@ -293,6 +314,13 @@ export const sites = {
     name: 'Aviva Stadium', ...avivaCentre, rot: AV_ROT, w: 126, d: 104, labelY: 42,
     outline: avivaLocal(3).map((p) => toWorldRot(avivaCentre, AV_ROT, p)), // the plinth, for collision
     view: spot('AVL2', 'AVLX', 0.2),
+  },
+  ccj: {
+    // w x d: the drum and its terrace for the map and the filler; the outline (with the steps, the screen wall, the
+    // stair tower and the service wing) is what collides. Viewed from Parkgate Street, westbound towards the park.
+    name: 'Criminal Courts of Justice', x: CCJ.x, z: CCJ.z, rot: 0, w: 50, d: 50, labelY: 34,
+    outline: ccjOutline(),
+    view: spot('WT3', 'PG1', 0.35),
   },
 };
 
@@ -455,6 +483,12 @@ export const reserved = [
   // Aviva Stadium: its fitted footprint, the west podium over the DART and the Lansdowne Road station
   ...Object.entries(extraSites).filter(([k]) => /^aviva|^lansdowneT|^lansdowneS/.test(k)).map(([, s]) => s),
   (extraSites.shelbournePark = shelbournePark),
+  // the Criminal Courts of Justice, and its paved forecourt and plane trees between the drum and Infirmary Road
+  sites.ccj,
+  (extraSites.ccjForecourt = { x: CCJ.x + 34, z: CCJ.z + 9, rot: 0, w: 14, d: 30 }),
+  // ...and the grounds behind it, out to the park wall (the green's edge, src/data/streets.json) on the west and north
+  (extraSites.ccjWest = { x: CCJ.x - 34, z: CCJ.z - 10, rot: 0, w: 18, d: 38 }),
+  (extraSites.ccjNorth = { x: CCJ.x - 6, z: CCJ.z - 29, rot: 0, w: 38, d: 8 }),
 ].filter(Boolean);
 
 export { campusPolys, parkPolys };
