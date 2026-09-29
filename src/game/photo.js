@@ -48,7 +48,7 @@ export function createPhotoMode({ camera, canvas, onEnter, onExit, getPad }) {
     if (st.active) return;
     st.active = true; bar.hidden = false;
     // start from wherever the game camera is, orbiting the car
-    target.set(focus.x, 1.2, focus.z);
+    target.set(focus.x, focus.y ?? 1.2, focus.z);
     const off = camera.position.clone().sub(target);
     dist = clamp(off.length(), 2, 600);
     yaw = Math.atan2(off.x, off.z);
@@ -140,7 +140,7 @@ export function createPhotoMode({ camera, canvas, onEnter, onExit, getPad }) {
       const fx = -Math.sin(yaw), fz = -Math.cos(yaw), rx = Math.cos(yaw), rz = -Math.sin(yaw);
       target.x += (fx * f + rx * s) * speed; target.z += (fz * f + rz * s) * speed;
     }
-    target.y = clamp(target.y + lift * speed * 0.6, 0.3, 200);
+    target.y = clamp(target.y + lift * speed * 0.6, 0.3, 320);
     yaw -= orbX * dt * 1.8; pitch = clamp(pitch + orbY * dt * 1.2, -0.2, 1.55);
     if (zoom) dist = clamp(dist * Math.exp(zoom * dt * 1.5), 1.5, 600);
     if (fovIn) { fov = clamp(fov + fovIn * dt * 25, 20, 95); lens.value = Math.round(fov); }

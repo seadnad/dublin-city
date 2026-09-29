@@ -168,8 +168,8 @@ export function createAtmosphere(scene, renderer) {
   // full: 120 m at 2048 px = 5.9 cm per texel; lite (phones, integrated GPUs): 100 m at 1536 px = 6.5 cm per texel.
   const S = LITE ? 1536 : 2048;
   sun.shadow.mapSize.set(S, S);
-  const ext = LITE ? 50 : 60;
-  const texel = (2 * ext) / S;
+  const EXT = LITE ? 50 : 60;
+  let ext = EXT, texel = (2 * ext) / S;
   Object.assign(sun.shadow.camera, { left: -ext, right: ext, top: ext, bottom: -ext, near: 40, far: 420 });
   // biases of about one to two texels: enough to avoid acne on large facades without detaching contact shadows
   sun.shadow.bias = -0.00025;
@@ -225,6 +225,7 @@ export function createAtmosphere(scene, renderer) {
   let envRT = null;
 
   const state = { rain: false, evening: false, values: null };
+  let fogBase = 0.003, fogScale = 1;
 
   function apply(mode) {
     Object.assign(state, mode);
@@ -233,7 +234,7 @@ export function createAtmosphere(scene, renderer) {
     uniforms.top.value.set(p.top); uniforms.horizon.value.set(p.horizon);
     uniforms.cloudA.value.set(p.cloudA); uniforms.cloudB.value.set(p.cloudB);
     uniforms.cover.value = p.cover;
-    scene.fog.color.set(p.fog); scene.fog.density = p.fogDensity * (LITE ? 1.35 : 1); // lite: the 600 m view distance fades into fog
+    scene.fog.color.set(p.fog); fogBase = p.fogDensity * (LITE ? 1.35 : 1); scene.fog.density = fogBase * fogScale; // lite: the 600 m view distance fades into fog
     hemi.color.set(p.hemiSky); hemi.groundColor.set(p.hemiGround); hemi.intensity = p.hemi;
     sun.color.set(p.sun); sun.intensity = p.sunI;
     sunDir.set(...p.sunDir).normalize();
@@ -270,6 +271,20 @@ export function createAtmosphere(scene, renderer) {
 
   return {
     sun, fill, hemi, uniforms, state, apply,
+    // helicopter: thicker haze to hide a longer far plane (1 = the street-level preset)
+    setFogScale(k) { fogScale = k; scene.fog.density = fogBase * k; },
+    get fogDensity() { return fogBase; },
+    // helicopter: the shadowed area grows with altitude (the same map over a wider square: coarser texels up high,
+    // where 6 cm detail can't be seen anyway); e = half-size in metres, at least the street-level one
+    setShadowExtent(e) {
+      e = Math.max(EXT, Math.round(e / 10) * 10);
+      if (e === ext) return;
+      ext = e; texel = (2 * ext) / S;
+      Object.assign(sun.shadow.camera, { left: -ext, right: ext, top: ext, bottom: -ext, far: 420 + Math.max(0, ext - EXT) });
+      sun.shadow.camera.updateProjectionMatrix();
+      sun.shadow.normalBias = texel * 1.4;
+    },
+    get shadowExtent() { return ext; },
     // focus: the player; view: horizontal camera direction (the shadow area is pushed ahead of the player)
     update(dt, time, focus, view) {
       uniforms.time.value = time;

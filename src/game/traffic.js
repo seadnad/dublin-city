@@ -207,7 +207,7 @@ export function createTraffic(scene, { cars = 16, buses = 4, taxis = 4, parked =
         const d = along - me.length / 2 - extra;
         if (d < res.dist) { res.dist = d; res.player = isPlayer; }
       };
-      if (player) test(player.pos.x, player.pos.z, 2.2, true);
+      if (player && !player.airborne) test(player.pos.x, player.pos.z, 2.2, true); // not while the player is flying
       if (!me.ignoreOthers) for (const o of list) if (o !== me) test(o.pos.x, o.pos.z, o.length / 2, false);
       if (tram) for (const c of tram.carriages) test(c.x, c.z, 6, false);
       return res;

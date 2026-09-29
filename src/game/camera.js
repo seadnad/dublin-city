@@ -18,6 +18,38 @@ export class CameraRig {
 
   snap() { this.initialised = false; }
 
+  // Helicopter chase: behind and above, the yaw lagging the heading; C swaps a near and a far view. The camera
+  // looks down a little more the higher it flies, and never dips into the ground or a roof (groundAt: height field).
+  updateHeli(dt, heli, groundAt) {
+    const cam = this.camera;
+    cam.up.set(0, 1, 0);
+    let d = heli.heading - this.yaw;
+    d = Math.atan2(Math.sin(d), Math.cos(d));
+    if (!this.initialised) { this.yaw = heli.heading; d = 0; this.pos.set(heli.pos.x, heli.pos.y, heli.pos.z); }
+    this.yaw += d * Math.min(1, dt * 2.2);
+    const far = this.mode === 'bonnet';
+    const alt = Math.max(0, heli.alt);
+    const dist = (far ? 34 : 17) + Math.min(alt * 0.04, 8);
+    const height = (far ? 12 : 5.2) + Math.min(alt * 0.06, 12);
+    const fx = Math.sin(this.yaw), fz = Math.cos(this.yaw);
+    const tx = heli.pos.x - fx * dist, tz = heli.pos.z - fz * dist;
+    let ty = heli.pos.y + height;
+    if (groundAt) ty = Math.max(ty, groundAt(tx, tz) + 2.5);
+    // a soft follow: the view trails a touch as the helicopter accelerates or climbs
+    const k = this.initialised ? Math.min(1, dt * 6) : 1;
+    this.pos.set(this.pos.x + (tx - this.pos.x) * k, this.pos.y + (ty - this.pos.y) * k, this.pos.z + (tz - this.pos.z) * k);
+    this.initialised = true;
+    cam.position.copy(this.pos);
+    this.shake = Math.max(this.shake * Math.exp(-dt * 6), heli.impact * 0.02);
+    if (this.shake > 0.001) cam.position.add(new THREE.Vector3((Math.random() - 0.5) * this.shake, (Math.random() - 0.5) * this.shake, (Math.random() - 0.5) * this.shake));
+    // look past the helicopter, down toward the city ahead, so it sits in the lower part of the view
+    const ahead = 14 + Math.min(alt, 150) * 0.25;
+    this.look.set(heli.pos.x + Math.sin(this.yaw) * ahead, heli.pos.y + 1.2 - Math.min(alt, 150) * 0.14, heli.pos.z + Math.cos(this.yaw) * ahead);
+    cam.lookAt(this.look);
+    cam.fov += (62 + heli.speed * 0.12 - cam.fov) * Math.min(1, dt * 3);
+    cam.updateProjectionMatrix();
+  }
+
   update(dt, car, carMesh) {
     const cam = this.camera;
     const spd = Math.abs(car.speed);

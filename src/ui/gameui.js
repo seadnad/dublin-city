@@ -8,7 +8,7 @@ export const save = {
 };
 const MEDAL = { gold: '🥇', silver: '🥈', bronze: '🥉' };
 
-export function createGameUI({ onPursuit, onTrial, onFree, onCar, trialInfo, toast, gfx }) {
+export function createGameUI({ onPursuit, onTrial, onFree, onCar, trialInfo, toast, gfx, flying = () => false }) {
   const root = document.getElementById('hud');
   root.insertAdjacentHTML('beforeend', `
     <div class="mission" id="mission" hidden>
@@ -28,13 +28,14 @@ export function createGameUI({ onPursuit, onTrial, onFree, onCar, trialInfo, toa
     const pb = save.get('pursuit.best', null);
     const daily = dailyRoute();
     const routes = [...ROUTES, daily];
-    const car = save.get('car', 'garda');
+    const car = flying() ? 'heli' : save.get('car', 'garda');
     play.innerHTML = `
       <header><h2>Play</h2><button class="close" aria-label="Close">&times;</button></header>
       <div class="cars">Your car:
         <button data-car="garda" class="${car === 'garda' ? 'on' : ''}">Garda i40 patrol</button>
         <button data-car="garda_rp" class="${car === 'garda_rp' ? 'on' : ''}">Roads Policing</button>
         <button data-car="hatch" class="${car === 'hatch' ? 'on' : ''}">i30 N</button>
+        <button data-car="heli" class="${car === 'heli' ? 'on' : ''}" title="Garda Air Support Unit helicopter (L)">🚁 Helicopter</button>
       </div>
       ${gfx ? `<div class="cars gfx">Graphics:
         ${gfx.modes.map((m) => `<button data-gfx="${m}" class="${gfx.get() === m ? 'on' : ''}">${gfx.names[m]}</button>`).join('')}
@@ -58,7 +59,7 @@ export function createGameUI({ onPursuit, onTrial, onFree, onCar, trialInfo, toa
       <button class="card free" data-mode="free"><b>Free roam</b><small>Just drive.</small></button>`;
     q(play, '.close').onclick = () => { play.hidden = true; };
     play.querySelectorAll('[data-gfx]').forEach((b) => b.addEventListener('click', () => { gfx.set(b.dataset.gfx); renderPlay(); }));
-    play.querySelectorAll('[data-car]').forEach((b) => b.addEventListener('click', () => { onCar(b.dataset.car); save.set('car', b.dataset.car); renderPlay(); }));
+    play.querySelectorAll('[data-car]').forEach((b) => b.addEventListener('click', () => { onCar(b.dataset.car); if (b.dataset.car !== 'heli') save.set('car', b.dataset.car); renderPlay(); }));
     play.querySelectorAll('[data-mode], [data-route]').forEach((b) => b.addEventListener('click', () => {
       play.hidden = true;
       if (b.dataset.mode === "pursuit") onPursuit();

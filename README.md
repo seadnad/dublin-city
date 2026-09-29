@@ -15,7 +15,7 @@ A browser driving game set in a stylised, compressed central Dublin. Three.js (W
 | `C` | Chase / bonnet camera |
 | `R` | Rain (wet, reflective roads) |
 | `N` | Evening (lit windows, street lamps, headlights) |
-| `L` | Landmark labels |
+| `L` | Garda helicopter (take off from where the car is) / back to the car on the nearest road |
 | `T`, `1`–`9` | Landmark list / teleport |
 | `H` | Help |
 | `Q` | Graphics quality: low / medium / high |
@@ -25,6 +25,22 @@ A browser driving game set in a stylised, compressed central Dublin. Three.js (W
 | `Backspace` | Put the car back on the road |
 
 On phones, on-screen controls appear automatically: steering on the left, brake, accelerator and handbrake (**HB**) on the right. The toolbar buttons do the same as the keys.
+
+### Flying the Garda helicopter
+
+Press `L` (or pick **Helicopter** in the Play menu, or D-pad right on a controller) to swap the car for the Garda Air Support Unit EC135. The rotor spools up for a couple of seconds before it will lift.
+
+| Key | Action |
+| --- | --- |
+| `Space` / `Shift` | Climb / descend (hands off holds height; descend onto anything flat to land, roofs included) |
+| `W` `S` / `↑` `↓` | Tilt forward / back (it levels itself when you let go) |
+| `A` `D` | Turn (yaw) |
+| `←` `→` | Bank left / right (turns as well at speed) |
+| `X` | Searchlight on / off (on by itself at night; during a Garda Pursuit it follows the suspect) |
+| `C` | Near / far chase camera |
+| `P` | Photo mode works in the air too |
+
+The ceiling is 250 m. Buildings, spires and trees push you away rather than crash you. Phones: a tilt stick on the left; climb, descend and turn buttons on the right. Controller: left stick tilts, right stick turns, RT / LT climb / descend, Y searchlight.
 
 Traffic drives on the **left**.
 
@@ -50,6 +66,12 @@ Bodies are extruded side profiles with wheel arches and tumblehome. Lights, gril
 blender -b --factory-startup -P tools/blender/build_cars.py -- public/models            # all cars (or name some: garda hatch)
 blender -b --factory-startup -P tools/blender/build_trees.py -- public/models tools/shots
 blender -b --factory-startup -P tools/blender/preview.py -- public/models tools/shots     # optional car renders
+```
+
+The **Garda helicopter** (Airbus EC135 style, ~3k triangles) comes from [`tools/blender/build_heli.py`](tools/blender/build_heli.py); its livery is painted onto a side-projected texture at load ([`src/game/heli.js`](src/game/heli.js)). Reference photos and their licences: [`refs/heli/sources.json`](refs/heli/sources.json).
+
+```bash
+blender -b --factory-startup -P tools/blender/build_heli.py -- public/models
 ```
 
 Traffic, buses and parked cars are still generated in code.
