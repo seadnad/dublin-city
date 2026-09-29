@@ -21,7 +21,7 @@ const DISTRICTS = [
   ['BALLSBRIDGE', 'AVSH2', 30], ["HAROLD'S CROSS", 'GXSGR2', 0, 30], ['STONEYBATTER', 'RN63', 0, -20],
 ];
 // short icon glyphs for each landmark
-const GLYPH = { spire: 'S', gpo: 'P', oconnellBridge: 'B', hapenny: 'H', trinity: 'T', bankOfIreland: '£', christChurch: '✚', stPatricks: '✚', customHouse: 'C', stephensGreen: '♣', heuston: 'R', guinness: 'G', beckett: 'B', convention: 'CC', threeArena: '3', grandCanal: 'Th', grandCanalSt: 'O', cityHall: 'H', centralBank: '€', ccj: 'J' };
+const GLYPH = { spire: 'S', gpo: 'P', oconnellBridge: 'B', hapenny: 'H', trinity: 'T', bankOfIreland: '£', christChurch: '✚', stPatricks: '✚', customHouse: 'C', stephensGreen: '♣', heuston: 'R', guinness: 'G', beckett: 'B', convention: 'CC', threeArena: '3', grandCanal: 'Th', marker: 'M', grandCanalSt: 'O', cityHall: 'H', centralBank: '€', ccj: 'J' };
 
 export function createWorldMap({ sites, lots, getLive, onTeleport, onWaypoint }) {
   const root = document.createElement('div');

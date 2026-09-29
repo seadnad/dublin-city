@@ -1,0 +1,176 @@
+{
+  "note": "Reference images for the Grand Canal Square pass (docs/research/grand-canal-square.md). All from Wikimedia Commons, 1000 px thumbnails. Fetched with the generic User-Agent \"DublinDriveResearch/1.0 (hobby game research)\".",
+  "images": [
+    {
+      "file": "01-marker-front-2010.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Grand_Canal_Square_-_Hotel_Still_Unoccupied.jpg",
+      "title": "Grand Canal Square - Hotel Still Unoccupied.jpg",
+      "author": "William Murphy",
+      "licence": "CC BY-SA 2.0",
+      "date": "Taken on 11 October 2010",
+      "shows": "The Marker from the square (before it opened): the chequerboard front, the scalloped soffit over the glazed ground floor, the roofline of fins"
+    },
+    {
+      "file": "02-marker-soffit-2010.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Grand_Canal_Square_-_Hotel_Still_Unoccupied_2.jpg",
+      "title": "Grand Canal Square - Hotel Still Unoccupied 2.jpg",
+      "author": "William Murphy",
+      "licence": "CC BY-SA 2.0",
+      "date": "Taken on 11 October 2010",
+      "shows": "Close-up of the Marker soffit: faceted GRC pyramids over the 6 m glazed ground floor"
+    },
+    {
+      "file": "03-marker-corner-2011.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Manuel_Aires_Mateus%E2%80%99s_luxury_hotel_(not_operational).jpg",
+      "title": "Manuel Aires Mateus’s luxury hotel (not operational).jpg",
+      "author": "William Murphy",
+      "licence": "CC BY-SA 2.0",
+      "date": "Taken on 30 October 2011",
+      "shows": "The Marker from the square across the red sticks, the west end"
+    },
+    {
+      "file": "04-marker-window-detail-2011.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Manuel_Aires_Mateus%E2%80%99s_luxury_hotel_(not_operational)_2.jpg",
+      "title": "Manuel Aires Mateus’s luxury hotel (not operational) 2.jpg",
+      "author": "William Murphy",
+      "licence": "CC BY-SA 2.0",
+      "date": "Taken on 30 October 2011",
+      "shows": "Detail: deep-set windows, dark reveals, panels at the corner"
+    },
+    {
+      "file": "05-marker-sticks-2012.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Grand_Canal_Square_-_panoramio_(3).jpg",
+      "title": "Grand Canal Square - panoramio (3).jpg",
+      "author": "William Murphy",
+      "licence": "CC BY-SA 3.0",
+      "date": "Taken on 11 May 2012",
+      "shows": "The Marker front with the light-sticks, straight on"
+    },
+    {
+      "file": "06-marker-2013.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Marker_Hotel.jpg",
+      "title": "Marker Hotel.jpg",
+      "author": "William Murphy",
+      "licence": "CC BY-SA 2.0",
+      "date": "2013-10-28",
+      "shows": "The Marker open (2013): the front, the soffit and the terrace"
+    },
+    {
+      "file": "07-marker-across-square-2010-geograph.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:The_Grand_Canal_Hotel,_Chimney_Park_-_geograph.org.uk_-_2177530.jpg",
+      "title": "The Grand Canal Hotel, Chimney Park - geograph.org.uk - 2177530.jpg",
+      "author": "Eric Jones",
+      "licence": "CC BY-SA 2.0",
+      "date": "2010-11-13",
+      "shows": "The Marker across the red carpet, the theatre prow at left, Hanover Quay at right"
+    },
+    {
+      "file": "08-theatre-marker-2012.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Grand_Canal_Square_-_Dublin_Docklands_-_panoramio_(2).jpg",
+      "title": "Grand Canal Square - Dublin Docklands - panoramio (2).jpg",
+      "author": "William Murphy",
+      "licence": "CC BY-SA 3.0",
+      "date": "Taken on 22 July 2012",
+      "shows": "The theatre front and the Marker from the square"
+    },
+    {
+      "file": "09-theatre-northeast-side-2012.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Grand_Canal_Square_-_Dublin_Docklands_-_panoramio_(6).jpg",
+      "title": "Grand Canal Square - Dublin Docklands - panoramio (6).jpg",
+      "author": "William Murphy",
+      "licence": "CC BY-SA 3.0",
+      "date": "Taken on 22 July 2012",
+      "shows": "The theatre glass front, a steel-clad kiosk/vent, the lawn and the Marker"
+    },
+    {
+      "file": "10-theatre-from-sjrq-2019.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Bord_G%C3%A1is_Energy_Theatre,_Dublin_from_Sir_John_Rogerson%27s_Quay.jpg",
+      "title": "Bord Gáis Energy Theatre, Dublin from Sir John Rogerson's Quay.jpg",
+      "author": "Metro Centric",
+      "licence": "CC BY 2.0",
+      "date": "2019-06-08 18:18",
+      "shows": "Looking south down Hibernian Road from the quay: the theatre silver north face between 4-5 Grand Canal Square (right, fins) and the Riverside offices"
+    },
+    {
+      "file": "11-view-south-to-theatre-2010-geograph.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:View_south_towards_the_Grand_Canal_Theatre_-_geograph.org.uk_-_2178661.jpg",
+      "title": "View south towards the Grand Canal Theatre - geograph.org.uk - 2178661.jpg",
+      "author": "Eric Jones",
+      "licence": "CC BY-SA 2.0",
+      "date": "2010-11-13",
+      "shows": "The pedestrian street south to the theatre (silver face at the end)"
+    },
+    {
+      "file": "12-theatre-across-dock-2010.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Grand_Canal_Theatre,_Dublin.JPG",
+      "title": "Grand Canal Theatre, Dublin.JPG",
+      "author": "DubhEire",
+      "licence": "CC0",
+      "date": "2010-02-17",
+      "shows": "Across the dock: theatre, the Marker, the square"
+    },
+    {
+      "file": "13-theatre-front-2018.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Bord_G%C3%A1is_Energy_Theatre,_Dublin.jpg",
+      "title": "Bord Gáis Energy Theatre, Dublin.jpg",
+      "author": "Tahir mq",
+      "licence": "CC BY-SA 4.0",
+      "date": "2018-08-11 17:38:58",
+      "shows": "The theatre glass front with its diagonal members and the white canopy"
+    },
+    {
+      "file": "14-theatre-front-close-2026.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Nahaufnahme_Fassade.jpg",
+      "title": "Nahaufnahme Fassade.jpg",
+      "author": "Andreas Wolf 01",
+      "licence": "CC0",
+      "date": "2026-06-22 17:36:57",
+      "shows": "Close-up of the theatre front: leaning glass, white box-section struts, the white soffit overhead"
+    },
+    {
+      "file": "15-theatre-night-2012.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Bord_G%C3%A1is_Energy_Theatre_(8225076312).jpg",
+      "title": "Bord Gáis Energy Theatre (8225076312).jpg",
+      "author": "Miguel Mendez from Malahide, Ireland",
+      "licence": "CC BY 2.0",
+      "date": "2012-11-27 18:16",
+      "shows": "The theatre front at night"
+    },
+    {
+      "file": "16-square-night-2017.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Grand_Canal_Square_-_Dublin,_Ireland_-_August_18,_2017.jpg",
+      "title": "Grand Canal Square - Dublin, Ireland - August 18, 2017.jpg",
+      "author": "Giorgio Galeotti",
+      "licence": "CC BY 4.0",
+      "date": "2017-08-18 22:09:08",
+      "shows": "The square at night: red and green light, the theatre lobby lit, the Marker windows"
+    },
+    {
+      "file": "17-across-dock-2012.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Grand_Canal_Square_-_Dublin_Docklands_-_panoramio.jpg",
+      "title": "Grand Canal Square - Dublin Docklands - panoramio.jpg",
+      "author": "William Murphy",
+      "licence": "CC BY-SA 3.0",
+      "date": "Taken on 22 July 2012",
+      "shows": "From Grand Canal Quay across the basin: 1 Grand Canal Square (left), the theatre (right)"
+    },
+    {
+      "file": "18-marker-hanover-2012.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Grand_Canal_Square_-_panoramio_(15).jpg",
+      "title": "Grand Canal Square - panoramio (15).jpg",
+      "author": "William Murphy",
+      "licence": "CC BY-SA 3.0",
+      "date": "Taken on 11 May 2012",
+      "shows": "The Marker east end and Hanover Quay"
+    },
+    {
+      "file": "19-dock-night-2017.jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:Grand_Canal_Dock_-_Dublin,_Ireland_-_August_18,_2017_01.jpg",
+      "title": "Grand Canal Dock - Dublin, Ireland - August 18, 2017 01.jpg",
+      "author": "Giorgio Galeotti",
+      "licence": "CC BY 4.0",
+      "date": "2017-08-18 22:04:11",
+      "shows": "The dock at night from the east: the theatre, the Marker, reflections"
+    }
+  ]
+}

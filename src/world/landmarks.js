@@ -16,6 +16,7 @@ import { placeHapenny, placeParts, setStoneNight, placeCrokePark, placeAviva, pl
 import { placeHeuston } from './heuston.js';
 import { placeThreeArena } from './threearena.js';
 import { placeCCJ } from './ccj.js';
+import { placeGrandCanal, gcsColliders } from './gcsquare.js';
 import { LITE } from '../render/quality.js';
 const lawnMat = () => getStreets().grassMat;
 import { buildPark } from './park.js';
@@ -2295,7 +2296,7 @@ export function buildLandmarks(scene) {
     merchantsHall(extraSites.merchantsHall), redPub(extraSites.redPub), templeBarSquare(extraSites.tbSquare), templeBarDressing(),
     bewleys(extraSites.bewleys), brownThomas(extraSites.brownThomas), weirAndSons(extraSites.weir), stephensGreenCentre(extraSites.sgCentre), graftonDressing(),
     drSteevens(extraSites.steevens), jamesGate(extraSites.jamesGate), breweryWall(extraSites.breweryWall0), breweryWall(extraSites.breweryWall1), beckettHarp(S.beckett), convention(S.convention),
-    grattanOffice(S.grandCanalSt), grandCanalTheatre(S.grandCanal), grandCanalSquare(S.grandCanal.square), markerHotel(extraSites.marker), gcsOffice(extraSites.gcsOffice),
+    grattanOffice(S.grandCanalSt), grandCanalSquare(S.grandCanal.square),
     railBridges(), oconnellBridgeHouse(S.oconnellBridgeHouse),
     lansdowneCrossing(extraSites.lansdowneXing), shelbournePark(extraSites.shelbournePark),
   ];
@@ -2359,6 +2360,15 @@ export function buildLandmarks(scene) {
   // Criminal Courts of Justice (Blender hero): its outline collides whether or not the model loads
   let ccjHero = null;
   placeCCJ(scene, S.ccj, S.ccj.outline).then((h) => { if (h) { ccjHero = h; h.setNight(nightLevel); } });
+  // Grand Canal Square: the theatre, the Marker, the Libeskind offices and 1 GCS (Blender hero; the old procedural
+  // blocks if it can't load). Solid whether or not the model loads; after dark the lit lobby shows in the dock.
+  let gcsHero = null;
+  gcsColliders();
+  for (const [x, z, w] of [[702, 172, 9], [702, 183, 7]]) waterGlowSources.push({ x, z, y: WATER_Y + 0.65, color: 0xffdcaa, width: w, length: 40 });
+  placeGrandCanal(scene).then((h) => {
+    if (!h) { scene.add(grandCanalTheatre({ ...S.grandCanal, rot: -Math.PI / 2, w: 26, d: 36 }), markerHotel(S.marker), gcsOffice(extraSites.gcsOffice)); return; }
+    gcsHero = h; h.setNight(nightLevel);
+  });
   // Guinness Storehouse with the Gravity Bar, the Power House stacks and St Patrick's Tower (Blender hero with a far
   // LOD; the old procedural block and chimney if it can't load)
   let guinnessHero = null;
@@ -2399,6 +2409,7 @@ export function buildLandmarks(scene) {
       if (arenaHero) arenaHero.setNight(level);
       if (avivaHero) avivaHero.setNight(level);
       if (ccjHero) ccjHero.setNight(level);
+      if (gcsHero) gcsHero.setNight(level);
       if (guinnessHero) guinnessHero.setNight(level);
       setStoneNight(level);
       if (phoenixPark) phoenixPark.setNight(level);

@@ -69,12 +69,37 @@ const heustonFront = (() => {
   const f = project(53.34656, -6.2922), bank = project(53.34692, -6.2922);
   return { x: f.x, z: bank.z + 17.5 };
 })();
-// Grand Canal Square (positions from the OSM footprints): the theatre at the west end with its glass front facing
-// east down the square to the water, the Marker Hotel along the north side, 1 Grand Canal Square to the south.
-// Theatre local +z faces west (Macken Street), so its glass front (local -z) looks east.
 const at = (lat, lon) => project(lat, lon);
-const theatre = { ...at(53.34414, -6.23995), rot: -Math.PI / 2, w: 26, d: 34 };
-const gcSquare = { ...at(53.34408, -6.23897), rot: -Math.PI / 2, w: 28, d: 33 };
+// Grand Canal Square (docs/research/grand-canal-square.md): the theatre at the west end with its glass front facing east
+// down the square to the water, the Marker along the north side on Misery Hill's paved section, 4-5 Grand Canal Square
+// across Misery Hill from the theatre, 2 Grand Canal Square behind (south of) the theatre, 1 Grand Canal Square on the
+// square's south side. Footprints in game (x, z), from the OSM footprints projected and nudged clear of Misery Hill
+// (streets.json MC1-MH1-MH2-MH3-HQ1); the Blender hero (tools/blender/build_gcsquare.py) is built on the same numbers.
+const P = (x, z) => ({ x, z });
+export const GCSQ = {
+  origin: P(640, 150),                                                           // the hero's origin
+  theatre: [P(619, 157.3), P(657.5, 164), P(651, 189.3), P(619, 175.6)],         // NW, NE, SE (the glass front's foot), SW
+  marker: [P(647, 148), P(685.5, 155.4), P(687, 140.8), P(648.5, 133.4)],        // front W, front E, back E, back W
+  // 4-5 GCS at street level: the two-storey base, less the entrance notch on Misery Hill (the upper floors oversail it)
+  north: [P(641.5, 146.4), P(644, 100), P(621.8, 89.6), P(621.05, 136), P(627, 135.5), P(634, 143.7)],
+  south: [P(614, 173.8), P(642, 185.9), P(640.5, 210.5), P(612.5, 207.5)],     // 2 GCS
+  one: [P(649.4, 195.6), P(676.8, 208.1), P(674.3, 227), P(645.8, 223.3)],      // 1 GCS
+  wedge: [P(660.2, 166.8), P(667.5, 168), P(666.4, 173.4), P(659.6, 171.6)],   // the car park stair on the square
+};
+// the smallest box at angle rot (local +z = (sin rot, cos rot)) round a polygon, grown by pad
+function fitBox(poly, rot, pad = 0) {
+  const c = Math.cos(rot), s = Math.sin(rot);
+  const lx = poly.map((p) => p.x * c - p.z * s), lz = poly.map((p) => p.x * s + p.z * c);
+  const x0 = Math.min(...lx) - pad, x1 = Math.max(...lx) + pad, z0 = Math.min(...lz) - pad, z1 = Math.max(...lz) + pad;
+  const mx = (x0 + x1) / 2, mz = (z0 + z1) / 2;
+  return { x: mx * c + mz * s, z: -mx * s + mz * c, rot, w: x1 - x0, d: z1 - z0 };
+}
+// the theatre's box runs along its north wall (Misery Hill); the Marker's along its front, out over the lawn terrace
+const theatre = fitBox(GCSQ.theatre, -Math.atan2(6.7, 38.5));
+const mkRot = -Math.atan2(7.4, 38.5);
+const markerBox = fitBox([...GCSQ.marker, ...GCSQ.marker.slice(0, 2).map((p) => ({ x: p.x + Math.sin(mkRot) * 3.3, z: p.z + Math.cos(mkRot) * 3.3 }))], mkRot);
+// the square: local +z faces the theatre (west), local -z runs out to the water (east), local +x is south
+const gcSquare = { x: 671, z: 179, rot: -Math.PI / 2, w: 24, d: 32 };
 const beckett = bridges.find((b) => b.name === 'Samuel Beckett Bridge');
 // 3Arena (docs/research/three-arena.md): the old Point Depot's front stands on North Wall Quay behind a 2.2 m railed
 // forecourt at the back of the footpath, square to the quay, its east wall just clear of East Wall Road. The hero is
@@ -375,6 +400,11 @@ export const sites = {
     square: gcSquare,
     view: spot('HQM', 'HQ1', 0.55),
   },
+  marker: {
+    // the Marker hotel, with Misery Hill between the theatre and 4-5 Grand Canal Square
+    name: 'The Marker and Misery Hill', ...markerBox, labelY: 30,
+    view: spot('MC1', 'MH1', 0.1),
+  },
   grandCanalSt: {
     // the precast-concrete office block on the corner of Grattan Street (south side), set back behind a raised
     // forecourt with steps up from the footpath
@@ -567,9 +597,16 @@ export const reserved = [
   // Dr Steevens' Hospital (1720s): across St John's Road West from the station, facing north over its lawn
   (extraSites.steevens = { ...at(53.34537, -6.29229), rot: Math.PI, w: 40, d: 30 }),
 
-  // the Marker Hotel on Pearse Street, south side of the square
-  (extraSites.marker = { ...at(53.34454, -6.2391), rot: 0, w: 36, d: 12 }),
-  (extraSites.gcsOffice = { ...at(53.34348, -6.2392), rot: Math.PI, w: 26, d: 26 }),
+  // Grand Canal Square: the Marker on the north side, 4-5 GCS across Misery Hill (its main block and the strip along
+  // Misery Hill, so the box stays off the road), 2 GCS behind the theatre, the car park stair on the square, and 1 GCS
+  sites.marker,
+  (extraSites.gcsNorth = fitBox(GCSQ.north.filter((p) => p.z < 141), -0.02)),
+  (extraSites.gcsNorthS = fitBox([P(621, 139), P(641.5, 146.4), P(641.5, 138), P(621, 131)], -Math.atan2(7.4, 20.5))),
+  (extraSites.gcsSouth = fitBox(GCSQ.south, -0.05)),
+  (extraSites.gcsWedge = fitBox(GCSQ.wedge, -0.16)),
+  // open paving between the theatre, the square and 1 GCS, out to the dock (no filler in front of the theatre)
+  (extraSites.gcsPlaza = { x: 668, z: 194.5, rot: 0, w: 46, d: 7 }),
+  (extraSites.gcsOffice = fitBox(GCSQ.one, -0.13)),
   // St James's Gate, in the brewery wall on James's Street
   (extraSites.jamesGate = { ...beside('TS3', 'JS1', 0.5, 1, 14, 4, { gap: 0.2 }) }),
   // the St James's Gate skyline round the Storehouse (placed with it, src/world/heroes.js placeGuinness): the Power
