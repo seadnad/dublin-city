@@ -12,7 +12,7 @@ import { plantTrees } from './trees.js';
 import { KERB_H, grassPolygon } from './roads.js';
 import { addStatue, buildStatues, placeOConnell } from './statues.js';
 import { ISLANDS, CHAIN, along, LENGTH } from './oconnell.js';
-import { placeHapenny, placeParts, setStoneNight, placeCrokePark, placeAviva } from './heroes.js';
+import { placeHapenny, placeParts, setStoneNight, placeCrokePark, placeAviva, placeGuinness } from './heroes.js';
 import { placeHeuston } from './heuston.js';
 import { LITE } from '../render/quality.js';
 const lawnMat = () => getStreets().grassMat;
@@ -856,6 +856,24 @@ function jamesGate(site) {
   b.add(new THREE.PlaneGeometry(9, 1.1), signMat("ST. JAMES'S GATE", { bg: '#1c2a22', fg: '#e8d9a8' }), { y: 7.4, z: 0.72 });
   b.solid(0, 0, 14, 1.6);
   return b.build("St James's Gate");
+}
+
+// the brewery's Victoria Quay boundary: a brick wall on a granite plinth with granite piers and coping (refs
+// guinness 08, 12), a black GUINNESS gate on the long run. Local +z faces the quay; the wall stands on the road edge.
+function breweryWall(site) {
+  const b = new Builder(site);
+  const W = site.w, z = site.d / 2 - 0.35;
+  // facade() puts the side UVs in metres (the stone texture tiles every 4 m on the granite, 1.2 m on the brick)
+  b.facade(W, 0.7, 0.75, M.granite, M.granite, { z }, 4, 4);
+  b.facade(W, 3.1, 0.55, M.brickChimney, M.brickChimney, { y: 0.7, z }, 1.2, 1.2);
+  b.facade(W, 0.25, 0.75, M.granite, M.granite, { y: 3.8, z }, 4, 4);
+  for (let x = -W / 2 + 0.5; x <= W / 2 - 0.4; x += 9) b.facade(1.0, 4.35, 0.95, M.granite, M.granite, { x, z }, 4, 4);
+  if (site.gate) {
+    b.box(9, 3.6, 0.25, M.dark, { x: 4.5, z: z + 0.3 });
+    b.add(new THREE.PlaneGeometry(5, 0.95), signMat('GUINNESS', { bg: '#101010', fg: '#c9a54a', font: 'bold 40px Georgia' }), { x: 4.5, y: 2.4, z: z + 0.44 });
+  }
+  b.solid(0, z, W, 0.8);
+  return b.build('Brewery wall');
 }
 
 function beckettHarp(site) {
@@ -2114,7 +2132,7 @@ export function buildLandmarks(scene) {
     iveaghPlayCentre(extraSites.iveaghPlay),
     merchantsHall(extraSites.merchantsHall), redPub(extraSites.redPub), templeBarSquare(extraSites.tbSquare), templeBarDressing(),
     bewleys(extraSites.bewleys), brownThomas(extraSites.brownThomas), weirAndSons(extraSites.weir), stephensGreenCentre(extraSites.sgCentre), graftonDressing(),
-    drSteevens(extraSites.steevens), guinness(S.guinness), jamesGate(extraSites.jamesGate), beckettHarp(S.beckett), convention(S.convention),
+    drSteevens(extraSites.steevens), jamesGate(extraSites.jamesGate), breweryWall(extraSites.breweryWall0), breweryWall(extraSites.breweryWall1), beckettHarp(S.beckett), convention(S.convention),
     threeArena(S.threeArena), grattanOffice(S.grandCanalSt), grandCanalTheatre(S.grandCanal), grandCanalSquare(S.grandCanal.square), markerHotel(extraSites.marker), gcsOffice(extraSites.gcsOffice),
     railBridges(),
     lansdowneCrossing(extraSites.lansdowneXing), shelbournePark(extraSites.shelbournePark),
@@ -2159,6 +2177,14 @@ export function buildLandmarks(scene) {
   let avivaHero = null;
   addPolyline(S.aviva.outline, true);
   placeAviva(scene, S.aviva, { lite: LITE }).then((h) => { if (h) { avivaHero = h; h.setNight(nightLevel); } });
+  // Guinness Storehouse with the Gravity Bar, the Power House stacks and St Patrick's Tower (Blender hero with a far
+  // LOD; the old procedural block and chimney if it can't load)
+  let guinnessHero = null;
+  for (const s of [S.guinness, extraSites.gsPower, extraSites.gsTower, extraSites.gs_stack_w, extraSites.gs_stack_e, extraSites.gs_stack_cream, ...S.guinness.tankBanks]) addBox(s.x, s.z, s.w / 2, s.d / 2, s.rot);
+  placeGuinness(scene, S.guinness, { lite: LITE }).then((h) => {
+    if (!h) { scene.add(guinness(S.guinness)); return; }
+    guinnessHero = h; h.setNight(nightLevel);
+  });
   for (const [lat, lon] of [[53.33524, -6.22516], [53.33605, -6.22571], [53.3369, -6.22622]]) waterGlowSources.push({ ...project(lat, lon), y: WATER_Y + 0.65, color: 0xffe3b8, width: 6, length: 45 });
   for (const g of grounds) {
     const c = Math.cos(g.rot), s = Math.sin(g.rot), hx = g.w / 2, hz = g.d / 2;
@@ -2189,6 +2215,7 @@ export function buildLandmarks(scene) {
       if (crokeHero) crokeHero.setNight(level);
       if (heustonHero) heustonHero.setNight(level);
       if (avivaHero) avivaHero.setNight(level);
+      if (guinnessHero) guinnessHero.setNight(level);
       setStoneNight(level);
       if (phoenixPark) phoenixPark.setNight(level);
     },

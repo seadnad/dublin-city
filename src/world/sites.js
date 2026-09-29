@@ -4,6 +4,7 @@
 import { world, v2, PAVEMENT, pointInPolygon, laneOffset, project } from './geo.js';
 import { bridges, parkPolys, campusPolys } from './ground.js';
 import { monumentSites } from './oconnell.js';
+import tanksData from '../data/guinness-tanks.json';
 
 const N = (id) => world.nodes.get(id);
 const wayBetween = (a, b) => world.ways.find((w) => {
@@ -244,10 +245,43 @@ export const sites = {
     view: spot('WT2', 'VQ2', 0.55),
     parts: { station: { x: heustonFront.x, z: heustonFront.z, rot: 0.14 } },
   },
-  guinness: {
-    name: 'Guinness Storehouse', ...beside('BV1', 'MK1', 0.55, -1, 40, 34, { gap: 2 }), labelY: 44,
-    view: spot('MK1', 'BV1', 0.12),
-  },
+  guinness: (() => {
+    // docs/research/guinness.md: the Storehouse on its OSM footprint (way 44597908, 54 x 48 m; the model is plan x0.6,
+    // 32.4 x 28.8), its south front on the Market Street South building line; the Gravity Bar ~11 m in from the east
+    // front. The brewery skyline around it (Power House and its four stacks, St Patrick's Tower) from OSM too.
+    const c = at(53.341851, -6.286735), A = N('BV1'), B = N('MK1'), mk = wayBetween('BV1', 'MK1');
+    const zRoad = A.z + ((B.z - A.z) * (c.x - A.x)) / (B.x - A.x), d = 28.8;
+    const z = zRoad - mk.width / 2 - mk.pave - 0.4 - d / 2;
+    const ph = at(53.34408, -6.28585), phRot = 0.169;
+    // the fermenters and vats (src/data/guinness-tanks.json): plan x0.55, ~4 diameters tall (x0.9), none inside the
+    // Power House; each bank's box keeps the filler out
+    const inPower = (p) => {
+      const dx = p.x - ph.x, dz = p.z - ph.z, c2 = Math.cos(phRot), s2 = Math.sin(phRot);
+      return Math.abs(dx * c2 - dz * s2) < 9.8 && Math.abs(dx * s2 + dz * c2) < 16.4;
+    };
+    let k = 0;
+    const tankBanks = tanksData.groups.map((g) => g.tanks.map(([lat, lon, dia]) => {
+      const p = at(lat, lon), jitter = 1 + 0.12 * Math.sin(++k * 2.39);
+      return { ...p, r: dia * 0.275, h: Math.min(25, Math.max(9, 4 * dia)) * 0.9 * jitter };
+    }).filter((t) => !inPower(t)));
+    return {
+      name: 'Guinness Storehouse', x: c.x, z, rot: 0, w: 32.4, d, labelY: 44,
+      view: spot('MK1', 'BV1', 0.12),
+      bar: { x: c.x + 14.6 * 0.6, y: 40, z }, // the Gravity Bar's drum (build_guinness.py BX; real heights)
+      parts: {
+        powerhouse: { ...ph, rot: phRot },                                   // way 352819252, turned 9.7 degrees
+        stack_w: at(53.3443512, -6.2861451), stack_e: at(53.3443912, -6.2857052), // chimney nodes 2989865725 / 6
+        stack_steel: at(53.3440781, -6.2859364), stack_cream: at(53.3447048, -6.2855102), // 5827403777, 4711077901
+        tower: at(53.344049, -6.284071),                                      // St Patrick's Tower, way 44597921
+      },
+      tanks: tankBanks.flat(),
+      tankBanks: tankBanks.filter((b) => b.length).map((b) => {
+        const x0 = Math.min(...b.map((t) => t.x - t.r)), x1 = Math.max(...b.map((t) => t.x + t.r));
+        const z0 = Math.min(...b.map((t) => t.z - t.r)), z1 = Math.max(...b.map((t) => t.z + t.r));
+        return { x: (x0 + x1) / 2, z: (z0 + z1) / 2, rot: 0, w: x1 - x0 + 1, d: z1 - z0 + 1 };
+      }),
+    };
+  })(),
   beckett: {
     name: 'Samuel Beckett Bridge', x: beckett.centre.x, z: beckett.centre.z, rot: Math.atan2(beckett.dir.x, beckett.dir.z),
     w: beckett.width, d: beckett.length, labelY: 50, bridge: beckett,
@@ -443,6 +477,18 @@ export const reserved = [
   (extraSites.gcsOffice = { ...at(53.34348, -6.2392), rot: Math.PI, w: 26, d: 26 }),
   // St James's Gate, in the brewery wall on James's Street
   (extraSites.jamesGate = { ...beside('TS3', 'JS1', 0.5, 1, 14, 4, { gap: 0.2 }) }),
+  // the St James's Gate skyline round the Storehouse (placed with it, src/world/heroes.js placeGuinness): the Power
+  // House, the stacks that stand clear of it, and St Patrick's Tower
+  (extraSites.gsPower = { ...sites.guinness.parts.powerhouse, w: 18.4, d: 31.7 }),
+  ...['stack_w', 'stack_e', 'stack_cream'].map((k) => (extraSites['gs_' + k] = { ...sites.guinness.parts[k], rot: 0, w: 4.4, d: 4.4 })),
+  (extraSites.gsTower = { ...sites.guinness.parts.tower, rot: 0, w: 11, d: 11 }),
+  ...sites.guinness.tankBanks.map((b, i) => (extraSites['gsTanks' + i] = b)),
+  // the brewery's boundary wall along Victoria Quay and the yard behind it (landmarks.js breweryWall), trimmed clear of
+  // the Watling Street and St John's Road junctions
+  ...[['UI1', 'VQ1', 10, 3], ['VQ1', 'VQ2', 2, 16]].map(([a, b, t0, t1], i) => {
+    const A = N(a), B = N(b), L = Math.hypot(B.x - A.x, B.z - A.z);
+    return (extraSites['breweryWall' + i] = { ...beside(a, b, 0.5, 1, L - t0 - t1, 14, { gap: 0.1, shift: (t0 - t1) / 2 }), gate: i === 0 });
+  }),
   // the Synod Hall across Winetavern Street from Christ Church
   sites.christChurch.synod,
   // Croke Park: the bowl, the Hogan's rear block (trimmed clear of Jones's Road), Hill 16 and the Nally terrace, the

@@ -110,6 +110,13 @@ export const isTerrace = (way) => !!way && TERRACE_ST.test(way.name);
 const CP = sites.crokePark.centre;
 const nearCroke = (x, z) => Math.hypot(x - CP.x, z - CP.z) < 330;
 
+// The St James's Gate brewery north of James's Street, from Victoria Quay back (west of Watling Street): its quay front
+// is a boundary wall (landmarks.js breweryWall) with low sheds and yards behind, over which the fermenters, the Power
+// House stacks and the Storehouse show (docs/research/guinness.md 1.4), so the filler there is one or two storeys
+// (street fronts two or three). No extra rand() calls: the rest of the city's filler is unchanged.
+const inBrewery = (x, z) => z > -25 && z < 200 && x > -1185 && x < -962 - 0.12 * z;
+const breweryFloors = (x, z) => 2 + ((Math.floor(x * 0.37 + z * 0.23) & 3) === 0 ? 1 : 0);
+
 function styleFor(x, z, way) {
   const name = way ? way.name : '';
   if (nearCroke(x, z)) return rand() < 0.85 ? S.BRICK : S.STUCCO;
@@ -175,6 +182,7 @@ for (const way of ordered) {
         const spec = lotSpec(style);
         if (terrace) Object.assign(spec, { w: 2 * spec.bay + 0.5, d: 9 + rand() * 3, floors: rand() < 0.8 ? 2 : 3, fh: 3.2 });
         else if (nearCroke(mid.x, mid.z)) spec.floors = way.type === 'primary' ? 3 : rand() < 0.8 ? 2 : 3;
+        else if (inBrewery(mid.x, mid.z)) spec.floors = breweryFloors(mid.x, mid.z);
         const garden = terrace ? 2.2 : 0;
         if (s + spec.w > L + 3) { s += 2; continue; }
         let placed = false;
@@ -207,6 +215,7 @@ for (let z = B.minZ + 10; z < B.maxZ - 10; z += 11) {
         // block interiors stay lower than the street frontage (keeps Docklands from becoming a wall of towers)
         spec.floors = style === S.MODERN ? 3 + Math.floor(rand() * 4) : nearCroke(x, z) ? 2 : Math.max(3, spec.floors - 1);
         if (road && isTerrace(road.way)) spec.floors = 2; // back returns and mews behind the terraces
+        if (inBrewery(x, z)) spec.floors = breweryFloors(x, z) - 1; // brewery sheds and yards
         place(o, style, spec, false);
         break;
       }
