@@ -56,6 +56,7 @@ The hero cars are modelled after real ones from reference photos by a Blender Py
 - **Garda Hyundai i40 Tourer**, in the standard patrol livery (yellow waist band edged in blue, GARDA on the doors, yellow and orange rear chevrons, roof lightbar)
 - **Garda Roads Policing i40**, with the blue and yellow Battenburg sides and a yellow bonnet
 - **Hyundai i30 N** style hot hatch
+- **Liffey GT**, a hot hatch in the classic mould (short upright five-door, thick C-pillar, honeycomb grilles with a thin red line into the LED headlights, roof spoiler, diffuser and twin tailpipes, dark alloys over red calipers), in Tornado red, white, dark grey or blue. It is the fun one: quicker, faster (about 160 km/h against 120), sharper steering, stronger brakes, and a tail that steps out when you lift off mid-corner. Its engine is a revvier six-speed petrol voice with crackles on the overrun. Pick it, and its colour, in the Play menu (`G`). Original name and a plain badge; references in [`refs/gt/sources.json`](refs/gt/sources.json), notes in [`docs/research/gt.md`](docs/research/gt.md).
 - the pursuit suspect's **coupe**
 
 Bodies are extruded side profiles with wheel arches and tumblehome. Lights, grilles, glazing, livery and lettering are *projected decals*: 2D outlines raycast onto the bodywork so they follow its curves. The same technique can paint livery onto an imported mesh.
@@ -63,7 +64,7 @@ Bodies are extruded side profiles with wheel arches and tumblehome. Lights, gril
 [`tools/blender/build_trees.py`](tools/blender/build_trees.py) grows five tree species (London plane, lime, horse chestnut, silver birch, young street tree) with branching limbs and colour-varied clumped canopies. Parks get a mix; the quays and O'Connell Street get plane trees.
 
 ```bash
-blender -b --factory-startup -P tools/blender/build_cars.py -- public/models            # all cars (or name some: garda hatch)
+blender -b --factory-startup -P tools/blender/build_cars.py -- public/models            # all cars (or name some: hatch coupe gt)
 blender -b --factory-startup -P tools/blender/build_trees.py -- public/models tools/shots
 blender -b --factory-startup -P tools/blender/preview.py -- public/models tools/shots     # optional car renders
 ```

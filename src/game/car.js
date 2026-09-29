@@ -16,6 +16,31 @@ const P = {
   align: 5,            // arcade assist: velocity swings toward the nose
   radius: 1.0,
   axleOffset: 1.3,
+  // response and feel (these defaults are the original tuning, shared by the Garda cars and the i30 N)
+  steerRate: 6,        // how fast the wheel follows the stick (1/s), and returns to centre
+  steerReturn: 9,
+  steerFade: 0.045,    // steering lock falls off with speed: maxSteer / (1 + v * steerFade)
+  turnBase: 6,         // yaw is computed from min(v, turnBase + v * turnGain): less twitchy flat out
+  turnGain: 0.55,
+  yawResp: 8,          // how fast the yaw rate reaches its target (1/s), normally and on the handbrake
+  yawRespHB: 5,
+  hbYaw: 1.9,          // extra rotation on the handbrake
+  hbDrag: 3,           // handbrake deceleration (m/s²)
+  liftOff: 0,          // lift-off / trail-brake rotation: share of the turn the velocity lags the nose by
+  liftGrip: 0,         // ...and the share of lateral grip the rear gives up meanwhile
+  power: 2.2,          // shape of the power fall-off toward maxSpeed
+};
+
+// Per-car overrides. Anything not listed keeps the value above.
+export const CAR_PROFILES = {
+  // the hot hatch: the fun one. Quicker, faster, sharper on the wheel and stronger on the brakes, with more grip,
+  // and a rear that steps out a little when you lift or trail-brake mid-corner (grip gathers it back up)
+  gt: {
+    maxSpeed: 52, accel: 17.5, brake: 36, drag: 0.0026, power: 2.4,
+    maxSteer: 0.56, steerRate: 9.5, steerReturn: 12, steerFade: 0.04, turnBase: 6.5, turnGain: 0.6,
+    grip: 26, driftGrip: 2.3, align: 6, yawResp: 11, yawRespHB: 6, hbYaw: 1.85, hbDrag: 2.6,
+    liftOff: 0.6, liftGrip: 0.85,
+  },
 };
 
 export class Car {
@@ -36,7 +61,12 @@ export class Car {
     this.dynamicObstacles = null; // fn(x, z, r) -> push info
     this.drift = 0;       // seconds spent drifting (for the release boost / scoring)
     this.boost = 0;
+    this.lift = 0;        // 0..1: off the throttle mid-corner (lift-off rotation)
+    this.setProfile();
   }
+
+  // pick the handling for a car model (gt, ...); unknown names get the standard tuning
+  setProfile(name) { this.profile = CAR_PROFILES[name] ? name : 'standard'; this.p = { ...P, ...(CAR_PROFILES[name] || {}) }; }
 
   // stop dead where it is (no creep while the game holds the car: intro, countdowns)
   hold() { this.vel.x = this.vel.z = 0; this.yawRate = 0; this.speed = 0; this.slip = 0; }
@@ -60,6 +90,7 @@ export class Car {
   }
 
   step(dt, input) {
+    const p = this.p;
     const fx = Math.sin(this.heading), fz = Math.cos(this.heading);
     const sx = Math.cos(this.heading), sz = -Math.sin(this.heading);
     let vLong = this.vel.x * fx + this.vel.z * fz;
@@ -85,25 +116,34 @@ export class Car {
     let a = 0;
     const { throttle, brake, handbrake } = input;
     if (throttle > 0) {
-      if (vLong < -0.5) a += P.brake * throttle;
-      else a += P.accel * throttle * Math.max(0, 1 - Math.pow(Math.max(0, vLong) / P.maxSpeed, 2.2));
+      if (vLong < -0.5) a += p.brake * throttle;
+      else a += p.accel * throttle * Math.max(0, 1 - Math.pow(Math.max(0, vLong) / p.maxSpeed, p.power));
     }
     if (brake > 0) {
-      if (vLong > 0.5) a -= P.brake * brake;
-      else if (vLong > -P.reverseMax) a -= P.accel * 0.6 * brake;
+      if (vLong > 0.5) a -= p.brake * brake;
+      else if (vLong > -p.reverseMax) a -= p.accel * 0.6 * brake;
     }
     const offroad = surface === 'road' ? 1 : 1.6;
-    a -= Math.sign(vLong) * P.rolling * offroad;
-    a -= P.drag * vLong * Math.abs(vLong);
-    if (handbrake) a -= Math.sign(vLong) * 3;
+    a -= Math.sign(vLong) * p.rolling * offroad;
+    a -= p.drag * vLong * Math.abs(vLong);
+    if (handbrake) a -= Math.sign(vLong) * p.hbDrag;
     if (this.boost > 0) { a += 9; this.boost -= dt; }
     const nv = vLong + a * dt;
     // don't let rolling resistance flip direction
     vLong = (throttle === 0 && brake === 0 && Math.sign(nv) !== Math.sign(vLong)) ? 0 : nv;
 
+    // lift-off rotation (cars with liftOff > 0): off the throttle (or trail-braking) with the wheel turned at speed,
+    // the rear lets go a little: less grip and assist, the nose tucks in and the velocity lags the heading, so a
+    // slip angle opens up. Back on the power, grip returns quickly and gathers it up.
+    let liftAmt = 0;
+    if (p.liftOff > 0) {
+      const lifting = !handbrake && throttle < 0.05 && vLong > 10 && Math.abs(this.steer) > 0.25;
+      this.lift += ((lifting ? 1 : 0) - this.lift) * Math.min(1, dt * (lifting ? 4 : 7));
+      liftAmt = this.lift * Math.min(1, Math.abs(this.steer) / 0.5);
+    }
     // lateral grip: very high normally, low on the handbrake
     const spd0 = Math.abs(vLong);
-    let grip = handbrake ? P.driftGrip : P.grip;
+    let grip = handbrake ? p.driftGrip : p.grip * (1 - p.liftGrip * liftAmt);
     if (surface !== 'road') grip *= 0.9;
     // arcade assist: bleed sideways speed into forward speed instead of just losing it
     const lost = vLat * (1 - Math.exp(-grip * dt));
@@ -117,14 +157,16 @@ export class Car {
     // steering
     const spd = Math.abs(vLong);
     const steerTarget = input.steer;
-    this.steer += (steerTarget - this.steer) * Math.min(1, dt * (steerTarget === 0 ? 9 : 6));
+    this.steer += (steerTarget - this.steer) * Math.min(1, dt * (steerTarget === 0 ? p.steerReturn : p.steerRate));
     // steering stays useful at speed (arcade), and at low speed you can still turn sharply
-    const maxSteer = P.maxSteer / (1 + spd * 0.045);
+    const maxSteer = p.maxSteer / (1 + spd * p.steerFade);
     const angle = this.steer * maxSteer;
-    const turnSpeed = Math.sign(vLong) * Math.min(spd, 6 + spd * 0.55); // less twitchy flat out
-    let targetYaw = -(turnSpeed * Math.tan(angle)) / P.wheelbase * (spd < 1 ? spd : 1);
-    if (handbrake && spd > 4) targetYaw *= 1.9;
-    this.yawRate += (targetYaw - this.yawRate) * Math.min(1, dt * (handbrake ? 5 : 8));
+    const turnSpeed = Math.sign(vLong) * Math.min(spd, p.turnBase + spd * p.turnGain); // less twitchy flat out
+    let targetYaw = -(turnSpeed * Math.tan(angle)) / p.wheelbase * (spd < 1 ? spd : 1);
+    if (handbrake && spd > 4) targetYaw *= p.hbYaw;
+    const lag = p.liftOff * liftAmt;
+    if (lag > 0) targetYaw *= 1 + lag * 0.3;
+    this.yawRate += (targetYaw - this.yawRate) * Math.min(1, dt * (handbrake ? p.yawRespHB : p.yawResp));
 
     this.heading += this.yawRate * dt;
     // rebuild velocity against the new heading, so the car carries its speed through turns
@@ -134,9 +176,13 @@ export class Car {
       this.vel.z = fz * vLong + sz * vLat;
     } else {
       const nfx = Math.sin(this.heading), nfz = Math.cos(this.heading);
-      const vs = vLat * Math.exp(-P.align * dt);
+      const vs = vLat * Math.exp(-p.align * (1 - 0.8 * liftAmt) * dt);
       this.vel.x = nfx * vLong + nfz * vs;
       this.vel.z = nfz * vLong - nfx * vs;
+      if (lag > 0) { // keep part of the old direction of travel: a slip angle opens up
+        this.vel.x += (fx * vLong + sx * vLat - this.vel.x) * lag;
+        this.vel.z += (fz * vLong + sz * vLat - this.vel.z) * lag;
+      }
     }
     this.speed = vLong;
     this.slip = vLat;
@@ -148,13 +194,14 @@ export class Car {
   }
 
   collide(fx, fz) {
+    const p = this.p;
     for (const k of [1, -1]) {
-      const c = { x: this.pos.x + fx * P.axleOffset * k, z: this.pos.z + fz * P.axleOffset * k };
-      let hit = resolveCircle(c, P.radius);
-      const dyn = this.dynamicObstacles ? this.dynamicObstacles(c, P.radius) : null;
+      const c = { x: this.pos.x + fx * p.axleOffset * k, z: this.pos.z + fz * p.axleOffset * k };
+      let hit = resolveCircle(c, p.radius);
+      const dyn = this.dynamicObstacles ? this.dynamicObstacles(c, p.radius) : null;
       if (dyn && (!hit || dyn.depth > hit.depth)) hit = dyn;
       if (!hit) continue;
-      const dx = c.x - (this.pos.x + fx * P.axleOffset * k), dz = c.z - (this.pos.z + fz * P.axleOffset * k);
+      const dx = c.x - (this.pos.x + fx * p.axleOffset * k), dz = c.z - (this.pos.z + fz * p.axleOffset * k);
       this.pos.x += dx; this.pos.z += dz;
       const vn = this.vel.x * hit.nx + this.vel.z * hit.nz;
       if (vn < 0) {
