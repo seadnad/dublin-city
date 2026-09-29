@@ -6,6 +6,7 @@ import { bridges, parkPolys, campusPolys, dockPolys } from './ground.js';
 import { monumentSites } from './oconnell.js';
 import tanksData from '../data/guinness-tanks.json';
 import bsLayout from '../data/barrowst.json';
+import { pubSites } from './pubsites.js';
 
 const N = (id) => world.nodes.get(id);
 const wayBetween = (a, b) => world.ways.find((w) => {
@@ -539,12 +540,12 @@ export const extraSites = {
   fcPortico: fcBox(-7.7, 7.7, -3.6, 0.3),
   // Iveagh Play Centre, facing St Patrick's Park across Bull Alley
   iveaghPlay: beside('PK1', 'BD3', 0.5, 1, 34, 15, { gap: 0.3 }),
-  // the red pub corner, SE of Temple Bar x Temple Lane South (invented name; the real one is a protected brand)
-  redPub: (() => { const tl = wayBetween('DM1', 'TTL'); return beside('TTL', 'TFO', 0, -1, 16, 13, { shift: tl.width / 2 + tl.pave + 8.2, gap: 0.15 }); })(),
+  // (the Temple Bar pub on the Temple Lane South corner is in src/world/pubsites.js with the other pubs)
   // Temple Bar Square: the flagged square on the south side of Temple Bar, west of Crown Alley
   tbSquare: (() => { const ca = wayBetween('TBQ', 'CCA'); return beside('TBQ', 'TFO', 0, 1, 21, 13, { shift: ca.width / 2 + ca.pave + 10.8, gap: 0.1 }); })(),
-  bewleys: beside('GR1', 'GR2', 0.78, -1, 12, 18, { gap: 0.15 }),
-  brownThomas: beside('GR1', 'GR2', 0.3, -1, 28, 22, { gap: 0.15 }),
+  // (Grafton Street is split at Duke Street, GRD, 0.352 of the way from GR1 to GR2 on the same line: same spots)
+  bewleys: beside('GRD', 'GR2', (0.78 - 0.352) / 0.648, -1, 12, 18, { gap: 0.15 }),
+  brownThomas: beside('GR1', 'GRD', 0.3 / 0.352, -1, 28, 22, { gap: 0.15 }),
   weir: beside('CG3', 'GR1', 0.9, -1, 10, 14, { gap: 0.15 }),
   sgCentre: (() => {
     const W = 56, D = 54, kss = v2.len(v2.sub(N('KSS1'), N('SGNW')));
@@ -779,11 +780,19 @@ Object.assign(extraSites, {
 const tallFootprints = [sites.libertyHall, sites.collegeSquare, sites.capitalDock, sites.exo, sites.johnsLane, sites.stGeorges, sites.findlaters,
   ...Object.entries(extraSites).filter(([k]) => /^(libertyHallWing|collegeSquareOffice|millenniumTower|altoVetro|gqPlaza\d|capitalDock\d)$/.test(k)).map(([, s]) => s)];
 
+// the famous pubs join the Places list (the Temple Bar, the Long Hall, the Bleeding Horse, Copper Face Jacks and
+// O'Donoghue's; Kehoe's, Grogan's, Davy Byrnes, Mulligan's and Flannery's are built but not listed)
+for (const p of Object.values(pubSites)) {
+  if (p.place) sites[p.key] = { name: p.name, x: p.x, z: p.z, rot: p.rot, w: p.w, d: p.d, labelY: 20, view: p.view, blurb: p.blurb };
+}
+
 // Footprints the filler generator must avoid (landmark buildings; parks/campus handled separately).
 export const reserved = [
   sites.gpo, sites.bankOfIreland, ...Object.entries(extraSites).filter(([k]) => k.startsWith('boi')).map(([, s]) => s), sites.christChurch, sites.stPatricks, extraSites.iveaghPlay, sites.customHouse, sites.trinity, ...grounds,
   sites.cityHall, sites.centralBank, extraSites.olympia, extraSites.clockCorner,
-  extraSites.bewleys, extraSites.brownThomas, extraSites.weir, extraSites.sgCentre, extraSites.merchantsHall, extraSites.redPub, extraSites.tbSquare,
+  extraSites.bewleys, extraSites.brownThomas, extraSites.weir, extraSites.sgCentre, extraSites.merchantsHall, extraSites.tbSquare,
+  // the famous pubs (src/world/pubsites.js)
+  ...Object.values(pubSites),
   shifted(extraSites.sgCentre, -extraSites.sgCentre.w / 2 - 8, 0, 16, extraSites.sgCentre.d), // broad footpath facing the Green
   { ...extraSites.castle, w: 44, d: 36, ...shifted(extraSites.castle, 0, -16, 44, 34) },
   shifted(sites.convention, 0, sites.convention.d / 2 + 6.5, sites.convention.w, 13), // its forecourt

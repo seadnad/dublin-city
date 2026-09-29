@@ -68,7 +68,7 @@ export function createHUD({ sites, actions }) {
     <div class="tram-stop" id="tramstop"></div>
     <div class="panel sheet places" id="places" hidden>
       <header><h2>Landmarks</h2><button class="close" data-a="places" aria-label="Close">&times;</button></header>
-      <ol>${Object.entries(sites).map(([k, s], i) => `<li><button data-go="${k}"><kbd>${i + 1}</kbd><span><b>${s.name}</b><small>${BLURBS[k] || ''}</small></span></button></li>`).join('')}</ol>
+      <ol>${Object.entries(sites).map(([k, s], i) => `<li><button data-go="${k}"><kbd>${i + 1}</kbd><span><b>${s.name}</b><small>${BLURBS[k] || s.blurb || ''}</small></span></button></li>`).join('')}</ol>
     </div>
     <div class="panel sheet help" id="help" hidden>
       <header><h2>Dublin Drive</h2><button class="close" data-a="help" aria-label="Close">&times;</button></header>
