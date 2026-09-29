@@ -31,7 +31,7 @@ export function addReflections(material, strength = 1, glassExpr = null) {
   // three keys programs on onBeforeCompile's source text; the wrapper's text is identical for every material,
   // so key on the wrapped function instead (strength is a uniform, so equal base shaders can still share)
   const prevKey = prev ? prev.toString() : '';
-  material.customProgramCacheKey = () => `${prevKey}|refl${glassExpr ? 'G' : ''}`;
+  material.customProgramCacheKey = () => `${prevKey}|refl${glassExpr ? `G:${glassExpr}` : ''}`;
   material.needsUpdate = true;
   return material;
 }

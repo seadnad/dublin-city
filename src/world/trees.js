@@ -3,7 +3,7 @@
 // (or for good if they can't be loaded).
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { chunkedInstances } from './chunks.js';
+import { chunkedInstances, packedInstances, removePack } from './chunks.js';
 
 const SPECIES = ['plane', 'lime', 'chestnut', 'birch', 'young'];
 const plantings = [];
@@ -19,7 +19,7 @@ function pick(mix, rand) {
 export function plantTrees(scene, items, mix, rand = Math.random) {
   const planting = { scene, items: items.map((it) => ({ ...it, species: pick(mix, rand) })), groups: [] };
   plantings.push(planting);
-  if (models) build(planting);
+  if (models) build();
   else buildFallback(planting);
   return planting;
 }
@@ -36,19 +36,21 @@ function buildFallback(p) {
 }
 const it0y = (p) => (p.items[0] && p.items[0].y) || 0;
 
-function build(p) {
-  for (const g of p.groups) { p.scene.remove(g); g.traverse((o) => { if (o.isInstancedMesh) o.dispose(); }); }
-  p.groups = [];
+// The Blender trees are heavy (1-2.5k triangles each): each species is culled tree by tree (see packedInstances),
+// one pack per species for every planting in the city (so a species costs the same draw calls however many parks).
+let packs = [];
+function build() {
+  for (const p of plantings) { for (const g of p.groups) { p.scene.remove(g); g.traverse((o) => { if (o.isInstancedMesh) o.dispose(); }); } p.groups = []; }
+  for (const pk of packs) { removePack(pk); for (const m of pk.meshes) { m.removeFromParent(); m.dispose(); } }
+  packs = [];
+  if (!plantings.length) return;
+  const scene = plantings[0].scene;
   for (const sp of SPECIES) {
-    const its = p.items.filter((it) => it.species === sp);
+    const its = plantings.flatMap((p) => p.items.filter((it) => it.species === sp).map((it) => ({ ...it, y: it.y ?? it0y(p) })));
     if (!its.length || !models[sp]) continue;
-    for (const part of ['bark', 'leaves']) {
-      const m = models[sp][part];
-      if (!m) continue;
-      const g = chunkedInstances(m.geometry, m.material, its, { shadow: true, y: it0y(p) });
-      p.groups.push(g);
-      p.scene.add(g);
-    }
+    const pk = packedInstances(its, ['bark', 'leaves'].map((part) => models[sp][part]).filter(Boolean));
+    packs.push(pk);
+    scene.add(...pk.meshes);
   }
 }
 
@@ -77,7 +79,7 @@ export function loadTrees() {
       }
     }
     models = found;
-    for (const p of plantings) build(p);
+    build();
     return Object.keys(found);
   }).catch((e) => { console.warn('trees.glb failed to load; keeping procedural trees', e); return []; });
 }

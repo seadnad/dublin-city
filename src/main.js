@@ -29,6 +29,7 @@ import { loadCar } from './game/models.js';
 import { loadTrees } from './world/trees.js';
 import { createPipeline } from './render/pipeline.js';
 import { batchStatic } from './render/batch.js';
+import { cullInstances, installShadowOnly } from './world/chunks.js';
 import { profile, LITE, mode as gfxModeNow, setMode as setGfxMode, learn as learnGfx, forget as forgetGfx, MODES as GFX_MODES, MODE_NAMES as GFX_NAMES, GPU, WEAK_GPU } from './render/quality.js';
 import { applyTextureQuality } from './render/texquality.js';
 import { createContactShadows } from './render/contact.js';
@@ -54,6 +55,7 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFShadowMap;
 renderer.shadowMap.autoUpdate = false;
+installShadowOnly(renderer); // shadow-only instanced meshes (trees culled for the shadow map: world/chunks.js)
 // ACES Filmic: filmic highlight roll-off (whites and sky don't clip) and stronger mid-tone contrast.
 // Exposure is set per weather / time-of-day preset in atmosphere.js.
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -404,6 +406,9 @@ function frame() {
   else rig.update(dt, car, carMesh);
   if (flight) applyFlight();
   focus.set(car.pos.x, 0, car.pos.z);
+  // per-instance culling now the camera has moved for this frame: parked cars, and trees (view and shadow map)
+  traffic.cull(camera, focus);
+  cullInstances(camera, atmosphere.sun.shadow.camera);
   ground.update(dt, time);
   // the city gets wet over a few seconds when rain starts and dries more slowly
   if (wetNow !== wetTarget) {

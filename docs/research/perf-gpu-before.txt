@@ -1,0 +1,222 @@
+# GPU baseline before the GPU optimisation pass (commit 0a624b8), 2026-09-28/29, AMD Vega 8 laptop, headless Chrome (ANGLE D3D11)
+# tools/scenarios/areaperf.mjs with PERF=1 (vsync off). Low tier at dpr 1 unless marked; mobile = --mobile (844x390 phone viewport);
+# desktop high = GFX=high (High profile: full counts, 950 m view, post-processing), dpr 1.
+# gpu = median GPU ms per frame (all render() calls of a frame summed); calls / tris = one frame including the shadow pass.
+# NOTE: other agents were running the game headless on the same GPU for much of the session, so GPU ms can swing by
+#       10-50% between runs; draw calls and triangles are deterministic. Each configuration was run twice.
+
+== desktop low run 1
+loaded in 23138 ms
+AREA before hapenny-bridge   40 fps gpu 21.89 ms calls 421 tris 1.50M street "Wellington Quay"
+AREA before temple-bar       34 fps gpu 27.19 ms calls 348 tris 1.32M street "Temple Lane South"
+AREA before christ-church    34 fps gpu 26.27 ms calls 312 tris 1.18M street "Temple Lane South"
+AREA before st-patricks      36 fps gpu 24.36 ms calls 223 tris 0.93M street "Bull Alley Street"
+AREA before heuston          50 fps gpu 15.34 ms calls 197 tris 0.83M street "Victoria Quay"
+== mobile low run 1
+loaded in 22281 ms
+AREA before hapenny-bridge   52 fps gpu 11.78 ms calls 426 tris 1.52M street "Wellington Quay"
+AREA before temple-bar       49 fps gpu 17.37 ms calls 364 tris 1.35M street "Temple Lane South"
+AREA before christ-church    52 fps gpu 11.84 ms calls 331 tris 1.20M street "Temple Lane South"
+AREA before st-patricks      55 fps gpu 11.73 ms calls 235 tris 0.96M street "Bull Alley Street"
+AREA before heuston          70 fps gpu 8.48 ms calls 199 tris 0.83M street "Victoria Quay"
+== desktop high run 1
+loaded in 22532 ms
+AREA before hapenny-bridge   25 fps gpu 35.53 ms calls 564 tris 1.92M street "Wellington Quay"
+AREA before temple-bar       21 fps gpu 43.56 ms calls 430 tris 1.70M street "Temple Lane South"
+AREA before christ-church    21 fps gpu 45.13 ms calls 397 tris 1.53M street "Temple Lane South"
+AREA before st-patricks      22 fps gpu 43.92 ms calls 256 tris 1.28M street "Bull Alley Street"
+AREA before heuston          26 fps gpu 34.58 ms calls 226 tris 1.13M street "Victoria Quay"
+== desktop low run 2
+loaded in 24450 ms
+AREA before hapenny-bridge   34 fps gpu 26.24 ms calls 421 tris 1.50M street "Wellington Quay"
+AREA before temple-bar       29 fps gpu 31.25 ms calls 348 tris 1.32M street "Temple Lane South"
+AREA before christ-church    31 fps gpu 28.97 ms calls 312 tris 1.18M street "Temple Lane South"
+AREA before st-patricks      35 fps gpu 26.29 ms calls 223 tris 0.93M street "Bull Alley Street"
+AREA before heuston          44 fps gpu 18.1 ms calls 197 tris 0.83M street "Victoria Quay"
+== mobile low run 2
+loaded in 25857 ms
+AREA before hapenny-bridge   49 fps gpu 13.64 ms calls 426 tris 1.52M street "Wellington Quay"
+AREA before temple-bar       43 fps gpu 18.46 ms calls 364 tris 1.35M street "Temple Lane South"
+AREA before christ-church    50 fps gpu 12.7 ms calls 331 tris 1.20M street "Temple Lane South"
+AREA before st-patricks      47 fps gpu 13.42 ms calls 235 tris 0.96M street "Bull Alley Street"
+AREA before heuston          61 fps gpu 9.57 ms calls 199 tris 0.83M street "Victoria Quay"
+== desktop high run 2
+loaded in 32091 ms
+AREA before hapenny-bridge   22 fps gpu 36.97 ms calls 564 tris 1.92M street "Wellington Quay"
+AREA before temple-bar       20 fps gpu 44.62 ms calls 430 tris 1.70M street "Temple Lane South"
+AREA before christ-church    19 fps gpu 45.23 ms calls 398 tris 1.53M street "Temple Lane South"
+AREA before st-patricks      17 fps gpu 47.86 ms calls 257 tris 1.28M street "Bull Alley Street"
+AREA before heuston          20 fps gpu 38.61 ms calls 226 tris 1.13M street "Victoria Quay"
+
+## Draw calls by object (tools/scenarios/drawcalls.mjs, Auto profile, counted over two frames)
+SPOT hapenny counted 580 info.calls 388
+      96 mesh:landmarks (batched)
+      70 mesh:Scene
+      22 mesh:Christ Church Cathedral
+      18 mesh:ground
+      18 mesh:St Patrick's Park
+      16 inst:buildings:MeshStandardMaterial:ffffff:24v:1.0x1.0
+      14 mesh:streets
+      14 inst:-:MeshStandardMaterial:ffffff:24v:0.8x1.0
+      14 inst:-:MeshStandardMaterial:9a5a3c:12v:0.2x1.0
+      14 inst:-:MeshStandardMaterial:1f6b3a:353v:0.7x1.5
+      14 inst:-:bark_lime:5e554a:480v:7.4x15.0
+      14 inst:-:leaves_lime:6a943e:396v:12.6x7.0
+      14 inst:-:bark_plane:8d8272:840v:8.0x11.6
+      14 inst:-:leaves_plane:5f8a3a:744v:13.8x8.1
+      12 inst:-:MeshStandardMaterial:1f2723:384v:0.3x0.8
+      12 mesh:St Patrick's Cathedral
+      10 inst:-:MeshStandardMaterial:1f2723:924v:0.5x5.3
+      10 inst:-:MeshStandardMaterial:1c1e20:80v:0.2x1.0
+      10 inst:-:MeshStandardMaterial:1c1e20:48v:0.7x1.2
+      10 inst:-:MeshStandardMaterial:151617:52v:0.1x3.3
+      10 mesh:Ha'penny Bridge
+       8 inst:-:MeshStandardMaterial:7a8086:24v:0.1x0.1
+       8 inst:-:MeshStandardMaterial:7a8086:52v:0.3x7.6
+       8 inst:-:MeshStandardMaterial:f4efe0:24v:0.3x0.1
+       8 inst:-:MeshStandardMaterial:151617:48v:0.5x1.1
+       8 mesh:-:MeshStandardMaterial:b8b4aa:2x0x26
+       8 mesh:-:MeshStandardMaterial:4a4c50:2x0x5
+       8 mesh:-:MeshStandardMaterial:9fb4bf:0x2x5
+SPOT centralBank counted 632 info.calls 398
+     110 mesh:landmarks (batched)
+      70 mesh:Scene
+      22 inst:-:MeshStandardMaterial:1f2723:924v:0.5x5.3
+      20 mesh:-:MeshStandardMaterial:b8b4aa:2x0x26
+      20 mesh:-:MeshStandardMaterial:4a4c50:2x0x5
+      20 mesh:-:MeshStandardMaterial:9fb4bf:0x2x5
+      18 mesh:ground
+      16 inst:buildings:MeshStandardMaterial:ffffff:24v:1.0x1.0
+      14 mesh:streets
+      14 inst:-:MeshStandardMaterial:ffffff:24v:0.8x1.0
+      12 inst:-:MeshStandardMaterial:9a5a3c:12v:0.2x1.0
+      12 inst:-:MeshStandardMaterial:1f6b3a:353v:0.7x1.5
+      10 inst:-:MeshStandardMaterial:7a8086:24v:0.1x0.1
+      10 inst:-:MeshStandardMaterial:7a8086:52v:0.3x7.6
+      10 inst:-:MeshStandardMaterial:f4efe0:24v:0.3x0.1
+      10 inst:-:MeshStandardMaterial:1c1e20:48v:0.7x1.2
+      10 inst:-:MeshStandardMaterial:1c1e20:80v:0.2x1.0
+      10 inst:-:MeshStandardMaterial:151617:48v:0.5x1.1
+      10 inst:-:MeshStandardMaterial:151617:52v:0.1x3.3
+      10 inst:-:bark_plane:8d8272:840v:8.0x11.6
+      10 inst:-:leaves_plane:5f8a3a:744v:13.8x8.1
+       8 inst:-:MeshStandardMaterial:f2e8d4:10v:0.3x0.5
+       8 inst:-:MeshStandardMaterial:a4aab0:144v:3.8x2.5
+       8 inst:-:MeshStandardMaterial:a4aab0:52v:0.1x2.8
+       8 inst:-:MeshStandardMaterial:ffffff:24v:0.4x0.5
+       8 inst:-:MeshStandardMaterial:ffffff:24v:0.0x1.8
+       8 inst:-:bark_chestnut:4f473f:1220v:8.9x9.5
+       8 inst:-:leaves_chestnut:4a7431:1164v:16.0x8.2
+SPOT spire counted 270 info.calls 224
+      70 mesh:Scene
+      26 mesh:landmarks (batched)
+      18 mesh:ground
+      14 mesh:streets
+      10 inst:buildings:MeshStandardMaterial:ffffff:24v:1.0x1.0
+       8 inst:-:MeshStandardMaterial:ffffff:24v:0.8x1.0
+       8 inst:-:MeshStandardMaterial:1c1e20:48v:0.7x1.2
+       8 inst:-:MeshStandardMaterial:1c1e20:80v:0.2x1.0
+       6 inst:-:MeshStandardMaterial:9a5a3c:12v:0.2x1.0
+       6 inst:-:MeshStandardMaterial:a4aab0:52v:0.1x2.8
+       6 inst:-:MeshStandardMaterial:ffffff:24v:0.4x0.5
+       6 inst:-:MeshStandardMaterial:151617:48v:0.5x1.1
+       6 inst:-:MeshStandardMaterial:151617:52v:0.1x3.3
+       6 inst:-:MeshBasicMaterial:000000:4v:1.0x0.0
+       4 inst:ground:MeshStandardMaterial:d8d4cc:24v:1.0x1.0
+       4 inst:-:MeshStandardMaterial:9a9892:24v:1.6x0.3
+       4 inst:-:MeshStandardMaterial:7a8086:24v:0.1x0.1
+       4 inst:-:MeshStandardMaterial:7a8086:52v:0.3x7.6
+       4 inst:-:MeshStandardMaterial:f4efe0:24v:0.3x0.1
+       4 inst:-:MeshStandardMaterial:a4aab0:144v:3.8x2.5
+       4 inst:-:MeshStandardMaterial:ffffff:24v:0.0x1.8
+       4 inst:-:MeshPhysicalMaterial:ffffff:780v:1.8x1.2
+       4 inst:-:bark_plane:8d8272:840v:8.0x11.6
+       4 inst:-:leaves_plane:5f8a3a:744v:13.8x8.1
+       4 inst:-:MeshStandardMaterial:a9c0c8:48v:3.7x2.2
+       2 mesh:-:ShaderMaterial::8000x8000x8000
+       2 mesh:-:MeshStandardMaterial:ffffff:1322x1x1042
+       2 mesh:-:MeshStandardMaterial:1a1b1c:1323x0x1043
+
+## Triangles by category at Temple Bar and Ha'penny Bridge (low tier, day; summed over TWO frames; SH: = shadow pass)
+TRIS temple-bar    768k    8 mesh:streets:MeshStandardMaterial:ffffff
+TRIS temple-bar    265k   32 inst::MeshStandardMaterial:ffffff
+TRIS temple-bar    189k   16 inst:buildings:MeshStandardMaterial:ffffff
+TRIS temple-bar    133k   12 SH:inst::MeshStandardMaterial:ffffff
+TRIS temple-bar    104k   12 inst::leaves_plane:5f8a3a
+TRIS temple-bar     95k   10 SH:inst:buildings:MeshStandardMaterial:ffffff
+TRIS temple-bar     87k    6 SH:inst::leaves_plane:5f8a3a
+TRIS temple-bar     85k    2 inst::MeshBasicMaterial:ffffff
+TRIS temple-bar     78k   16 inst::MeshStandardMaterial:1c1e20
+TRIS temple-bar     75k   12 inst::MeshStandardMaterial:9a5a3c
+TRIS temple-bar     71k   12 inst::bark_plane:8d8272
+TRIS temple-bar     68k   16 inst::MeshStandardMaterial:1f2723
+TRIS temple-bar     67k   10 SH:inst::MeshPhysicalMaterial:ffffff
+TRIS temple-bar     67k   10 inst::MeshPhysicalMaterial:ffffff
+TRIS temple-bar     59k    6 SH:inst::bark_plane:8d8272
+TRIS temple-bar     39k    4 SH:inst:ground:MeshStandardMaterial:d8d4cc
+TRIS temple-bar     39k    4 inst:ground:MeshStandardMaterial:d8d4cc
+TRIS temple-bar     30k    6 SH:inst::MeshStandardMaterial:1f2723
+TRIS temple-bar     20k   16 inst::MeshStandardMaterial:7a8086
+TRIS temple-bar     18k    2 SH:inst::leaves_birch:86a54c
+TRIS temple-bar     18k    2 inst::leaves_birch:86a54c
+TRIS temple-bar     16k    4 inst::leaves_chestnut:4a7431
+TRIS temple-bar     15k   16 inst::MeshStandardMaterial:151617
+TRIS temple-bar     13k   10 inst::leaves_lime:6a943e
+TRIS temple-bar     13k    6 SH:inst::MeshStandardMaterial:7a8086
+TRIS temple-bar     12k    6 mesh:landmarks (batched):MeshStandardMaterial:15181b
+TRIS temple-bar     11k   26 mesh:landmarks (batched):MeshStandardMaterial:ffffff
+TRIS temple-bar     10k   10 inst::bark_lime:5e554a
+TRIS temple-bar     10k    4 inst::bark_chestnut:4f473f
+TRIS temple-bar      9k    4 mesh::MeshStandardMaterial:ffffff
+TRIS temple-bar      9k    2 SH:mesh::MeshStandardMaterial:ffffff
+TRIS temple-bar      9k    2 SH:inst::leaves_young:6b9a42
+TRIS temple-bar      9k    2 inst::leaves_young:6b9a42
+TRIS temple-bar      8k   22 mesh:Christ Church Cathedral:MeshStandardMaterial:ffffff
+TRIS temple-bar      8k   10 mesh:St Patrick's Cathedral:MeshStandardMaterial:ffffff
+TRIS temple-bar      8k    2 SH:mesh:landmarks (batched):MeshStandardMaterial:15181b
+TRIS temple-bar      7k   12 inst::MeshStandardMaterial:1f6b3a
+TRIS temple-bar      7k    8 inst::MeshStandardMaterial:a4aab0
+TRIS temple-bar      7k    4 SH:mesh:Scene:MeshPhysicalMaterial:f4f5f2
+TRIS temple-bar      7k    4 mesh:ground:MeshStandardMaterial:d8d4cc
+TRIS hapenny-bridge    768k    8 mesh:streets:MeshStandardMaterial:ffffff
+TRIS hapenny-bridge    220k   38 inst::MeshStandardMaterial:ffffff
+TRIS hapenny-bridge    146k   14 SH:inst::MeshStandardMaterial:ffffff
+TRIS hapenny-bridge    144k   12 inst::leaves_plane:5f8a3a
+TRIS hapenny-bridge    140k   16 inst:buildings:MeshStandardMaterial:ffffff
+TRIS hapenny-bridge    110k   12 SH:inst:buildings:MeshStandardMaterial:ffffff
+TRIS hapenny-bridge    106k   18 inst::MeshStandardMaterial:1c1e20
+TRIS hapenny-bridge    105k    8 inst::leaves_chestnut:4a7431
+TRIS hapenny-bridge     97k   12 inst::bark_plane:8d8272
+TRIS hapenny-bridge     96k   20 inst::MeshStandardMaterial:1f2723
+TRIS hapenny-bridge     91k   12 inst::MeshStandardMaterial:9a5a3c
+TRIS hapenny-bridge     85k    2 inst::MeshBasicMaterial:ffffff
+TRIS hapenny-bridge     79k    4 SH:inst::leaves_plane:5f8a3a
+TRIS hapenny-bridge     67k   10 SH:inst::MeshPhysicalMaterial:ffffff
+TRIS hapenny-bridge     67k   10 inst::MeshPhysicalMaterial:ffffff
+TRIS hapenny-bridge     66k    8 inst::bark_chestnut:4f473f
+TRIS hapenny-bridge     54k    4 SH:inst::bark_plane:8d8272
+TRIS hapenny-bridge     49k    4 inst::leaves_birch:86a54c
+TRIS hapenny-bridge     39k    4 SH:inst:ground:MeshStandardMaterial:d8d4cc
+TRIS hapenny-bridge     39k    4 inst:ground:MeshStandardMaterial:d8d4cc
+
+## Resolution / shadow sensitivity at the same spots (GPU ms)
+SPLIT temple-bar all                                                          gpu 32.33 calls 347
+SPLIT temple-bar dpr 0.5 (quarter pixels)                                     gpu 16.68 calls 347
+SPLIT temple-bar shadows off                                                  gpu 25.68 calls 258
+SPLIT hapenny-bridge all                                                          gpu 24.3 calls 401
+SPLIT hapenny-bridge dpr 0.5 (quarter pixels)                                     gpu 13.21 calls 400
+SPLIT hapenny-bridge shadows off                                                  gpu 16.15 calls 301
+SPLIT temple-bar all                                                          gpu 19.69 calls 352
+SPLIT temple-bar dpr 0.5 (quarter pixels)                                     gpu 14.46 calls 352
+SPLIT temple-bar shadows off                                                  gpu 21.04 calls 263
+SPLIT hapenny-bridge all                                                          gpu 21.55 calls 424
+SPLIT hapenny-bridge dpr 0.5 (quarter pixels)                                     gpu 11.37 calls 424
+SPLIT hapenny-bridge shadows off                                                  gpu 20.38 calls 328
+
+## Whole-scene inventory (Auto profile on this laptop = lite counts)
+total scene triangles 2163k. Road markings: ONE mesh for the whole city, 347k triangles (694k vertices) drawn every frame
+(kerb double-yellow lines were built from 0.5 m sampling steps, one quad per half metre).
+Trees ~850k triangles (441 Blender trees in 250 m blocks, each block drawn whole in the view and in the shadow pass).
+Parked cars (120 lite / 320 full) live in the moving-car instanced meshes (frustumCulled = false): every parked car in
+the city is drawn every frame, in the main pass and the shadow pass.
+Traffic-signal lenses: one 42k-triangle instanced mesh for the whole city. 977 scene objects, 793 with matrixAutoUpdate.

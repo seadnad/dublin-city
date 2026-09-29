@@ -350,6 +350,30 @@ class Ribbons {
     g.computeVertexNormals();
     return g;
   }
+  // The same quads split into square map blocks (by quad centre), one geometry per block, so the camera culls the
+  // blocks it can't see: road markings over the whole city are ~350k triangles, far too many to draw every frame.
+  chunks(size = 600) {
+    const buckets = new Map(), P = this.pos, C = this.col.length > 0;
+    for (let q = 0; q < P.length / 12; q++) {
+      const o = q * 12, cx = (P[o] + P[o + 6]) / 2, cz = (P[o + 2] + P[o + 8]) / 2;
+      const k = `${Math.floor(cx / size)},${Math.floor(cz / size)}`;
+      if (!buckets.has(k)) buckets.set(k, []);
+      buckets.get(k).push(q);
+    }
+    const out = [];
+    for (const quads of buckets.values()) {
+      const r = new Ribbons();
+      for (const q of quads) {
+        r.pos.push(...P.slice(q * 12, q * 12 + 12));
+        r.uv.push(...this.uv.slice(q * 8, q * 8 + 8));
+        if (C) r.col.push(...this.col.slice(q * 12, q * 12 + 12));
+        const b = (r.idx.length / 6) * 4; // each quad is 4 vertices and 6 indices, in order
+        for (let k = 0; k < 6; k++) r.idx.push(b + this.idx[q * 6 + k] - q * 4);
+      }
+      out.push(r.geometry());
+    }
+    return out;
+  }
 }
 
 function trim(pts, da, db) {
@@ -398,7 +422,14 @@ function clipToOwnRoad(pts, way, margin = 0.15) {
     if (blocked) { if (run.length > 1) out.push(run); run = []; } else run.push(p);
   }
   if (run.length > 1) out.push(run);
-  return out;
+  // the 0.5 m samples are only for the test: drop the ones on a straight stretch again, or every half metre of kerb
+  // line becomes its own quad (most of the ~350k marking triangles were these)
+  return out.map((r) => r.filter((p, i) => {
+    if (i === 0 || i === r.length - 1) return true;
+    const a = r[i - 1], b = r[i + 1];
+    const ux = p.x - a.x, uz = p.z - a.z, wx = b.x - p.x, wz = b.z - p.z;
+    return Math.abs(ux * wz - uz * wx) > 1e-4 * Math.hypot(ux, uz) * Math.hypot(wx, wz);
+  }));
 }
 
 // Text atlas for road text ("LOOK RIGHT" etc.)
@@ -479,10 +510,9 @@ function buildMarkings(mat, textMat) {
       }
     }
   }
-  const lines = new THREE.Mesh(r.geometry(), mat);
-  const words = new THREE.Mesh(text.geometry(), textMat);
-  lines.receiveShadow = words.receiveShadow = true;
-  return [lines, words];
+  const meshes = [...r.chunks().map((g) => new THREE.Mesh(g, mat)), ...text.chunks().map((g) => new THREE.Mesh(g, textMat))];
+  for (const m of meshes) { m.receiveShadow = true; m.matrixAutoUpdate = false; }
+  return meshes;
 }
 
 // ---------------- materials ----------------

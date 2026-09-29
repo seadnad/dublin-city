@@ -24,7 +24,8 @@ export const GROUND_AO_GLSL = /* glsl */ `
 
 // rects: [{ x, z, w, d, rot }] (rot: THREE-style rotation about y)
 export function bakeGroundAO(rects, bounds) {
-  const RES = 1; // metres per texel
+  // metres per texel: 1, or coarser once the map is over 4096 m across (the texture size every phone GPU supports)
+  const RES = Math.max(1, Math.max(bounds.w, bounds.h) / 4096);
   const W = Math.ceil(bounds.w / RES), H = Math.ceil(bounds.h / RES);
   const a = new Float32Array(W * H);
   // rasterise each footprint, grown by 0.3 m so the occlusion starts right at the wall line

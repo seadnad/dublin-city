@@ -709,6 +709,7 @@ export function buildBuildings(scene) {
     im.instanceMatrix.array.set(pick(mats, 16, ids));
     im.castShadow = im.receiveShadow = true;
     im.computeBoundingSphere();
+    im.matrixAutoUpdate = false;
     mesh.add(im);
   }
   scene.add(mesh);

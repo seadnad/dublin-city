@@ -366,6 +366,7 @@ function busGeometry() {
 }
 
 // ---------------- fleet ----------------
+// counts: vehicles per kind, moving and parked (addParked places the parked ones).
 export function createFleet(scene, counts) {
   const total = Object.values(counts).reduce((a, b) => a + (b || 0), 0);
   const contact = createContactShadows(scene, total, { opacity: 0.6 });
@@ -414,6 +415,50 @@ export function createFleet(scene, counts) {
   scene.add(wheels);
   let wheelCursor = 0, busUsed = 0;
 
+  // Parked cars share the moving cars' meshes (no extra draw calls) but only take a slot while they can be seen:
+  // cull() packs the ones in the camera's view, or near enough to the player to cast into the shadow map, in after
+  // the moving vehicles. Drawing every parked car in the city on every frame (twice, with the shadow pass) cost
+  // vertex work that grows with the map.
+  const parked = [];
+  // list: [{ kind, color, x, z, heading }]
+  function addParked(list) {
+    const m = new THREE.Matrix4(), pq = new THREE.Quaternion(), pl = new THREE.Vector3(), ps = new THREE.Vector3();
+    for (const p of list) {
+      const t = TYPES[p.kind];
+      pq.setFromAxisAngle(up, p.heading);
+      const car = { k: kinds[p.kind], x: p.x, z: p.z, m: new Float32Array(16), col: [p.color.r, p.color.g, p.color.b], wheels: new Float32Array(64) };
+      m.compose(P.set(p.x, 0, p.z), pq, one).toArray(car.m);
+      let w = 0;
+      for (const zc of t.wheels) for (const sd of [-1, 1]) {
+        pl.set(sd * (t.W / 2 - 0.13), t.r, zc).applyQuaternion(pq);
+        m.compose(P.set(p.x + pl.x, pl.y, p.z + pl.z), pq, ps.set(0.23, t.r, t.r)).toArray(car.wheels, 16 * w++);
+      }
+      contact.set(contact.alloc(), p.x, 0, p.z, p.heading, t.W + 0.7, t.L + 0.6);
+      parked.push(car);
+    }
+  }
+  const frustum = new THREE.Frustum(), pm = new THREE.Matrix4(), sphere = new THREE.Sphere(new THREE.Vector3(), 4);
+  // camera: the view camera (after this frame's camera update); focus: the player
+  function cull(camera, focus) {
+    if (!parked.length) return;
+    camera.updateMatrixWorld();
+    frustum.setFromProjectionMatrix(pm.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+    for (const k of Object.values(kinds)) k.slot = k.used;
+    let w = wheelCursor;
+    for (const c of parked) {
+      const dx = c.x - focus.x, dz = c.z - focus.z;
+      // the shadow map covers ~100 m around (and ahead of) the player
+      if (dx * dx + dz * dz > 90 * 90) { sphere.center.set(c.x, 1, c.z); if (!frustum.intersectsSphere(sphere)) continue; }
+      const k = c.k;
+      k.mesh.instanceMatrix.array.set(c.m, k.slot * 16);
+      k.mesh.instanceColor.array.set(c.col, k.slot * 3);
+      k.slot++;
+      wheels.instanceMatrix.array.set(c.wheels, w * 16); w += 4;
+    }
+    for (const k of Object.values(kinds)) { k.mesh.count = k.slot; k.mesh.instanceMatrix.needsUpdate = true; k.mesh.instanceColor.needsUpdate = true; }
+    wheels.count = w; wheels.instanceMatrix.needsUpdate = true;
+  }
+
   const vehicles = [];
   function add(kind, color) {
     let h;
@@ -422,7 +467,7 @@ export function createFleet(scene, counts) {
     } else {
       const k = kinds[kind];
       const idx = k.used++;
-      if (color) k.mesh.instanceColor.setXYZ(idx, color.r, color.g, color.b);
+      if (color) { k.mesh.instanceColor.setXYZ(idx, color.r, color.g, color.b); k.mesh.instanceColor.needsUpdate = true; }
       h = { kind, k, idx, L: k.t.L, W: k.t.W, r: k.t.r, H: k.t.H, wheelBase: k.t.wheels, taxiIdx: kind === 'taxi' ? taxiSigns.count++ : -1 };
       k.mesh.count = k.used;
     }
@@ -461,7 +506,7 @@ export function createFleet(scene, counts) {
   }
   function commit() {
     contact.commit(); beams.commit();
-    for (const k of Object.values(kinds)) { k.mesh.instanceMatrix.needsUpdate = true; k.mesh.instanceColor.needsUpdate = true; }
+    for (const k of Object.values(kinds)) k.mesh.instanceMatrix.needsUpdate = true;
     wheels.instanceMatrix.needsUpdate = true;
     if (taxiSigns) taxiSigns.instanceMatrix.needsUpdate = true;
   }
@@ -471,7 +516,7 @@ export function createFleet(scene, counts) {
     for (const m of busMeshes) m.material.emissiveIntensity = 1 + level * 1.2;
     if (taxiSigns) taxiSigns.material.emissiveIntensity = 0.3 + level * 1.5;
   }
-  return { add, set, commit, setLights, vehicles };
+  return { add, addParked, cull, set, commit, setLights, vehicles };
 }
 
 // The player's car: same body and atlas as the fleet, as its own group so it can pitch and roll.

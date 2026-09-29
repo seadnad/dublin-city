@@ -20,11 +20,13 @@ export const LAMP_GLSL = /* glsl */ `
 
 // spots: [{ hx, hz, hy }] lamp head positions
 export function bakeLampLight(spots, bounds) {
-  const W = Math.ceil(bounds.w), H = Math.ceil(bounds.h);
+  // 1 m per texel, or coarser once the map is over 4096 m across (the texture size every phone GPU supports)
+  const RES = Math.max(1, Math.max(bounds.w, bounds.h) / 4096);
+  const W = Math.ceil(bounds.w / RES), H = Math.ceil(bounds.h / RES);
   const a = new Float32Array(W * H);
   for (const s of spots) {
-    const R = s.hy > 6 ? 14 : 10; // tall modern poles throw wider pools than heritage lanterns
-    const ci = s.hx - bounds.minX, cj = s.hz - bounds.minZ;
+    const R = (s.hy > 6 ? 14 : 10) / RES; // tall modern poles throw wider pools than heritage lanterns (in texels)
+    const ci = (s.hx - bounds.minX) / RES, cj = (s.hz - bounds.minZ) / RES;
     for (let j = Math.max(0, Math.floor(cj - R)); j <= Math.min(H - 1, Math.ceil(cj + R)); j++) {
       for (let i = Math.max(0, Math.floor(ci - R)); i <= Math.min(W - 1, Math.ceil(ci + R)); i++) {
         const d = Math.hypot(i + 0.5 - ci, j + 0.5 - cj) / R;
@@ -43,6 +45,6 @@ export function bakeLampLight(spots, bounds) {
   t.needsUpdate = true;
   lampUniforms.uLampMap.value = t;
   lampUniforms.uLampOrigin.value.set(bounds.minX, bounds.minZ);
-  lampUniforms.uLampSize.value.set(W, H);
+  lampUniforms.uLampSize.value.set(W * RES, H * RES);
   return t;
 }
