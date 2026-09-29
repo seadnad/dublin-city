@@ -9,9 +9,10 @@ import * as THREE from 'three';
 
 const TOP = 400, NEAR = 1, FAR = 430; // camera height and depth range: y from TOP - NEAR down to TOP - FAR (-30)
 
-export function captureHeightmap(renderer, scene, bounds, { skip, extra = [] } = {}) {
+// hide: optional (object) => true to leave that object out as well (world/farview.js keeps only the landmarks)
+export function captureHeightmap(renderer, scene, bounds, { skip, extra = [], hide: hideIf = null, size = 2048, quiet = false, readAsync = false } = {}) {
   const t0 = performance.now();
-  const maxSize = Math.min(2048, renderer.capabilities.maxTextureSize);
+  const maxSize = Math.min(size, renderer.capabilities.maxTextureSize);
   const cell = Math.max(bounds.w, bounds.h) / maxSize;
   const W = Math.ceil(bounds.w / cell), H = Math.ceil(bounds.h / cell);
   const cx = bounds.minX + (W * cell) / 2, cz = bounds.minZ + (H * cell) / 2;
@@ -29,7 +30,7 @@ export function captureHeightmap(renderer, scene, bounds, { skip, extra = [] } =
   const hide = (o) => { if (o.visible) { o.visible = false; hidden.push(o); } };
   for (const c of scene.children) if (skip.has(c)) hide(c);
   scene.traverseVisible((o) => {
-    if (o.isLine || o.isPoints || o.isSprite) hide(o);
+    if (o.isLine || o.isPoints || o.isSprite || (hideIf && hideIf(o))) hide(o);
     else if (o.isMesh) {
       const m = Array.isArray(o.material) ? o.material[0] : o.material;
       if (!m || m.transparent || m.depthWrite === false || (o.geometry && o.geometry.parameters && o.geometry.parameters.radius > 1000)) hide(o);
@@ -45,13 +46,23 @@ export function captureHeightmap(renderer, scene, bounds, { skip, extra = [] } =
   renderer.clear();
   renderer.render(scene, cam);
   const px = new Uint8Array(W * H * 4);
-  renderer.readRenderTargetPixels(rt, 0, 0, W, H, px);
+  // readAsync: read back without stalling the frame (WebGL2 fence), resolving to the height field
+  const later = readAsync && renderer.readRenderTargetPixelsAsync;
+  if (!later) renderer.readRenderTargetPixels(rt, 0, 0, W, H, px);
   renderer.setRenderTarget(prevTarget);
   renderer.setClearColor(prevClear, prevAlpha);
   renderer.shadowMap.autoUpdate = prevShadow;
   scene.overrideMaterial = prevOverride; scene.fog = prevFog;
   for (const o of hidden) o.visible = true;
+  if (later) {
+    return renderer.readRenderTargetPixelsAsync(rt, 0, 0, W, H, px)
+      .then(() => { rt.dispose(); mat.dispose(); return unpack(); })
+      .catch(() => { rt.dispose(); mat.dispose(); return null; });
+  }
   rt.dispose(); mat.dispose();
+  return unpack();
+
+  function unpack() {
 
   // unpack (three's packDepthToRGBA) and flip rows so row 0 is the north edge
   const h = new Int16Array(W * H);
@@ -76,7 +87,7 @@ export function captureHeightmap(renderer, scene, bounds, { skip, extra = [] } =
     }
   }
   const ms = Math.round(performance.now() - t0);
-  console.log(`heightmap ${W}x${H} (${cell.toFixed(2)} m cells) captured in ${ms} ms`);
+  if (!quiet) console.log(`heightmap ${W}x${H} (${cell.toFixed(2)} m cells) captured in ${ms} ms`);
 
   const x0 = bounds.minX, z0 = bounds.minZ, inv = 1 / cell;
   const at = (x, z) => {
@@ -85,7 +96,7 @@ export function captureHeightmap(renderer, scene, bounds, { skip, extra = [] } =
     return h[r * W + c] * 0.01;
   };
   return {
-    cell, W, H, ms,
+    cell, W, H, ms, heights: h,
     at,
     // tallest point within a square of half-size `r` around (x, z)
     maxIn(x, z, r) {
@@ -96,4 +107,5 @@ export function captureHeightmap(renderer, scene, bounds, { skip, extra = [] } =
       return m * 0.01;
     },
   };
+  }
 }

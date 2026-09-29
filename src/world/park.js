@@ -495,7 +495,7 @@ export function buildPark(scene) {
 
   console.log(`Phoenix Park: ${trees.length} trees, ${clumps.length} clumps, ${lamps.spots.length} gas lamps, ${deer.count} deer in ${Math.round(performance.now() - t0)} ms`);
   return {
-    group: statics, trees: trees.length, clumps: clumps.length, lampSpots: lamps.spots, heroesReady,
+    group: statics, trees: trees.length, clumps: clumps.length, clumpItems: clumps, lampSpots: lamps.spots, heroesReady,
     setNight(level) { lamps.setLevel(level); },
     update(dt, time, car, camera) {
       if (camera) lod.update(camera);

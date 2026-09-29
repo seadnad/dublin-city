@@ -1,0 +1,164 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-07-24T11:04:51Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "node",
+  "id": 2989914713,
+  "lat": 53.3398886,
+  "lon": -6.1865438,
+  "tags": {
+    "man_made": "chimney"
+  }
+},
+{
+  "type": "node",
+  "id": 2989914714,
+  "lat": 53.3398910,
+  "lon": -6.1861910,
+  "tags": {
+    "man_made": "chimney"
+  }
+},
+{
+  "type": "node",
+  "id": 4056477551,
+  "lat": 53.3397020,
+  "lon": -6.1865403,
+  "tags": {
+    "man_made": "chimney"
+  }
+},
+{
+  "type": "node",
+  "id": 4056477552,
+  "lat": 53.3397044,
+  "lon": -6.1861875,
+  "tags": {
+    "man_made": "chimney"
+  }
+},
+{
+  "type": "node",
+  "id": 4352147370,
+  "lat": 53.3398816,
+  "lon": -6.1925152,
+  "tags": {
+    "man_made": "chimney"
+  }
+},
+{
+  "type": "node",
+  "id": 6617875636,
+  "lat": 53.3393645,
+  "lon": -6.1988695,
+  "tags": {
+    "man_made": "chimney"
+  }
+},
+{
+  "type": "node",
+  "id": 6617875637,
+  "lat": 53.3393325,
+  "lon": -6.1986603,
+  "tags": {
+    "man_made": "chimney"
+  }
+},
+{
+  "type": "node",
+  "id": 6617875638,
+  "lat": 53.3396047,
+  "lon": -6.1985583,
+  "tags": {
+    "man_made": "chimney"
+  }
+},
+{
+  "type": "node",
+  "id": 6617875639,
+  "lat": 53.3396015,
+  "lon": -6.1987729,
+  "tags": {
+    "man_made": "chimney"
+  }
+},
+{
+  "type": "node",
+  "id": 6617875640,
+  "lat": 53.3397809,
+  "lon": -6.1984993,
+  "tags": {
+    "man_made": "chimney"
+  }
+},
+{
+  "type": "node",
+  "id": 12119314999,
+  "lat": 53.3380021,
+  "lon": -6.1854326,
+  "tags": {
+    "man_made": "chimney",
+    "material": "metal"
+  }
+},
+{
+  "type": "way",
+  "id": 231691394,
+  "center": {
+    "lat": 53.3402407,
+    "lon": -6.1887255
+  },
+  "tags": {
+    "building": "chimney",
+    "height": "207.8",
+    "man_made": "chimney",
+    "operational_status": "closed",
+    "year_of_construction": "1984"
+  }
+},
+{
+  "type": "way",
+  "id": 231691395,
+  "center": {
+    "lat": 53.3402323,
+    "lon": -6.1899427
+  },
+  "tags": {
+    "building": "chimney",
+    "height": "207.48",
+    "man_made": "chimney",
+    "operational_status": "closed",
+    "year_of_construction": "1971"
+  }
+},
+{
+  "type": "way",
+  "id": 516597267,
+  "center": {
+    "lat": 53.3395221,
+    "lon": -6.1997102
+  },
+  "tags": {
+    "man_made": "chimney"
+  }
+},
+{
+  "type": "way",
+  "id": 516597268,
+  "center": {
+    "lat": 53.3395131,
+    "lon": -6.1996487
+  },
+  "tags": {
+    "man_made": "chimney"
+  }
+}
+
+  ]
+}

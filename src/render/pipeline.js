@@ -5,7 +5,7 @@
 //  low:    plain forward render with tone mapping (phones)
 import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { Pass } from 'three/addons/postprocessing/Pass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
@@ -36,7 +36,25 @@ const GradeShader = {
 
 export const QUALITIES = ['low', 'medium', 'high'];
 
-export function createPipeline(renderer, scene, camera, { quality = 'high' } = {}) {
+// The scene in two passes: the far view (world/farview.js: the sky, the skyline and, from the air, everything beyond
+// the main far plane) with its own camera, then the city over it with only the depth cleared.
+function drawScene(renderer, scene, camera, far) {
+  const auto = renderer.autoClear;
+  renderer.autoClear = false;
+  renderer.clear();
+  if (far) { renderer.render(far.scene, far.camera); renderer.clearDepth(); }
+  renderer.render(scene, camera);
+  renderer.autoClear = auto;
+}
+class ScenePass extends Pass {
+  constructor(scene, camera, far) { super(); this.scene = scene; this.camera = camera; this.far = far; this.needsSwap = false; }
+  render(renderer, writeBuffer, readBuffer) {
+    renderer.setRenderTarget(this.renderToScreen ? null : readBuffer);
+    drawScene(renderer, this.scene, this.camera, this.far);
+  }
+}
+
+export function createPipeline(renderer, scene, camera, { quality = 'high', far = null } = {}) {
   let composer = null, bloom = null, grade = null, fxaa = null;
   let current = null;
   const size = new THREE.Vector2();
@@ -50,7 +68,7 @@ export function createPipeline(renderer, scene, camera, { quality = 'high' } = {
       type: THREE.HalfFloatType, samples: q === 'high' ? 4 : 0,
     });
     composer = new EffectComposer(renderer, rt);
-    composer.addPass(new RenderPass(scene, camera));
+    composer.addPass(new ScenePass(scene, camera, far));
     bloom = new UnrealBloomPass(new THREE.Vector2(size.x / 2, size.y / 2), 0.12, 0.45, 0.92);
     composer.addPass(bloom);
     composer.addPass(new OutputPass());
@@ -91,7 +109,7 @@ export function createPipeline(renderer, scene, camera, { quality = 'high' } = {
       grade.uniforms.uVignette.value = evening ? 0.38 : 0.28;
     },
     render(dt) {
-      if (!composer) { renderer.render(scene, camera); return; }
+      if (!composer) { renderer.setRenderTarget(null); drawScene(renderer, scene, camera, far); return; }
       grade.uniforms.uTime.value = (grade.uniforms.uTime.value + dt) % 100;
       composer.render(dt);
     },
