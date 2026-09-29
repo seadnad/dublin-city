@@ -2310,7 +2310,7 @@ export function buildLandmarks(scene) {
   const towers = buildTowers(scene, Builder);
   if (phoenixPark) groups.push(phoenixPark.group);
   // the Liffey Boardwalk, the Millennium and O'Casey footbridges, the Famine, the Jeanie Johnston and CHQ (liffey.js)
-  const liffey = buildLiffey({ Builder, M, glow, waterGlowSources });
+  const liffey = buildLiffey({ Builder, M, waterGlowSources });
   groups.push(...liffey.groups);
   for (const g of groups) scene.add(g);
   fourCourts(); // its colliders and statues (the hero is placed below)

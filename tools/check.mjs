@@ -3,6 +3,7 @@
 import { createServer, preview, build } from 'vite';
 import puppeteer from 'puppeteer-core';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -35,10 +36,21 @@ if (remote) {
   url = (server.resolvedUrls && server.resolvedUrls.local[0]) || 'http://localhost:5199/';
 }
 
+// Chrome profile: a named temp dir we delete on exit, and sweep stale ones (runs cut off by a timeout used to leave
+// ~115 MB each behind, which filled the disk). PROFILE_DIR reuses a profile instead (warm shader / HTTP caches).
+const TMP = os.tmpdir();
+for (const d of fs.readdirSync(TMP)) {
+  if (!/^(dublin-check-|puppeteer_dev_chrome_profile-)/.test(d)) continue;
+  try { const f = path.join(TMP, d); if (Date.now() - fs.statSync(f).mtimeMs > 30 * 60e3) fs.rmSync(f, { recursive: true, force: true }); } catch {}
+}
+const profile = process.env.PROFILE_DIR || fs.mkdtempSync(path.join(TMP, 'dublin-check-'));
+const dropProfile = () => { if (!process.env.PROFILE_DIR) try { fs.rmSync(profile, { recursive: true, force: true }); } catch {} };
+process.on('exit', dropProfile);
+for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) process.on(sig, () => process.exit(1));
 const browser = await puppeteer.launch({
   executablePath: CHROME,
   headless: 'new',
-  ...(process.env.PROFILE_DIR ? { userDataDir: process.env.PROFILE_DIR } : {}), // reuse a profile (warm shader / HTTP caches)
+  userDataDir: profile,
   args: ['--ignore-gpu-blocklist', '--enable-gpu', '--use-angle=d3d11', '--window-size=1280,720', ...(process.env.PERF ? ['--disable-gpu-vsync', '--disable-frame-rate-limit'] : [])],
 });
 const page = await browser.newPage();

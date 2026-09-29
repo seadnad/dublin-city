@@ -10,6 +10,7 @@ import { KERB_H } from './roads.js';
 import { addBox } from '../game/collision.js';
 import { addStatue } from './statues.js';
 import { addReflections } from '../render/reflect.js';
+import { LITE } from '../render/quality.js';
 import { bankAt, FAMINE, SHIP, CHQ, MILLENNIUM, OCASEY, BOARDWALK } from './liffeysites.js';
 
 // ---------- textures ----------
@@ -24,14 +25,16 @@ function canvasTex(w, h, draw, { repeat = true, srgb = true } = {}) {
   return t;
 }
 const rnd = (() => { let s = 91; return () => ((s = (s * 16807) % 2147483647) / 2147483647); })();
-// weathered hardwood boards laid across the walk: one tile is 1.2 m of boardwalk (8 boards)
-const plankTex = () => canvasTex(256, 32, (ctx, w, h) => {
+// weathered hardwood boards laid along the walk (refs/liffey-quays 27, 29): one tile is 2.4 m long and 1.2 m across
+// (8 boards), with staggered butt joints
+const plankTex = () => canvasTex(256, 64, (ctx, w, h) => {
   for (let i = 0; i < 8; i++) {
-    const k = 0.86 + rnd() * 0.22;
-    ctx.fillStyle = `rgb(${Math.round(128 * k)},${Math.round(106 * k)},${Math.round(84 * k)})`;
-    ctx.fillRect(i * 32, 0, 32, h);
-    for (let g = 0; g < 6; g++) { ctx.fillStyle = `rgba(60,45,32,${0.08 + rnd() * 0.08})`; ctx.fillRect(i * 32 + rnd() * 30, 0, 1, h); }
-    ctx.fillStyle = 'rgba(30,22,16,0.8)'; ctx.fillRect(i * 32 + 30, 0, 2, h);
+    const k = 0.85 + rnd() * 0.25, y = i * 8;
+    ctx.fillStyle = `rgb(${Math.round(104 * k)},${Math.round(92 * k)},${Math.round(80 * k)})`;
+    ctx.fillRect(0, y, w, 8);
+    for (let g = 0; g < 10; g++) { ctx.fillStyle = `rgba(40,34,28,${0.06 + rnd() * 0.08})`; ctx.fillRect(0, y + 1 + rnd() * 6, w, 1); }
+    ctx.fillStyle = 'rgba(22,18,14,0.85)'; ctx.fillRect(0, y + 7, w, 1);
+    ctx.fillRect(Math.floor(rnd() * w), y, 2, 7);
   }
 });
 // steel mesh infill of a balustrade: a 0.5 m square tile, transparent between the wires (alpha-tested)
@@ -52,6 +55,13 @@ const hullTex = () => canvasTex(64, 128, (ctx, w, h) => {
   for (let i = 0; i < 60; i++) { ctx.fillStyle = `rgba(255,255,255,${rnd() * 0.04})`; ctx.fillRect(rnd() * w, 46 + rnd() * 70, 6, 1); }
 }, { repeat: false });
 const hullTexture = () => { const t = hullTex(); t.wrapS = THREE.RepeatWrapping; return t; };
+// CHQ's lettering on the glass (white, alpha-tested)
+const signTex = () => canvasTex(512, 74, (ctx, w, h) => {
+  ctx.clearRect(0, 0, w, h); ctx.fillStyle = '#f4f4f0'; ctx.textBaseline = 'middle';
+  ctx.font = '600 40px Arial'; ctx.fillText('THE', 8, h / 2);
+  ctx.font = 'bold 60px Arial'; ctx.fillText('chq', 104, h / 2 - 4);
+  ctx.font = '600 40px Arial'; ctx.fillText('BUILDING', 232, h / 2);
+}, { repeat: false });
 // CHQ: yellow-brown brick with round-headed windows, one bay 5 m x 6.5 m (refs/liffey-quays 24-26)
 const chqTex = () => canvasTex(128, 166, (ctx, w, h) => {
   ctx.fillStyle = '#9a7a52'; ctx.fillRect(0, 0, w, h);
@@ -91,33 +101,22 @@ function strip(A, B, us, flip = false) {
 }
 
 // Returns the groups (the caller adds them to the scene and the static batch) and a night hook.
-export function buildLiffey({ Builder, M, glow, waterGlowSources }) {
+export function buildLiffey({ Builder, M, waterGlowSources }) {
+  // Only six materials of its own (the boards, the hull, CHQ's brick, glass and lettering, the balustrade mesh); the rest
+  // shares the landmark set, so it merges into buckets the static batch already draws.
+  const planks = new THREE.MeshStandardMaterial({ map: null, roughness: 0.85, emissive: 0xffc890, emissiveIntensity: 0 });
   const mats = {
-    // (after dark the boards pick up a little of the lamps' warm light: an emissive trace of their own texture)
-    planks: new THREE.MeshStandardMaterial({ map: null, roughness: 0.85, emissive: 0xffc890, emissiveIntensity: 0 }),
-    boardSteel: new THREE.MeshStandardMaterial({ color: 0x6c7276, roughness: 0.5, metalness: 0.6 }),
-    stainless: addReflections(new THREE.MeshStandardMaterial({ color: 0xc9cdcf, roughness: 0.3, metalness: 0.85 }), 0.6),
-    glassRail: new THREE.MeshStandardMaterial({ color: 0xbfd6d4, roughness: 0.05, metalness: 0.1, transparent: true, opacity: 0.22, depthWrite: false, side: THREE.DoubleSide }),
+    planks, // (after dark the boards pick up a little of the lamps' warm light: an emissive trace of their own texture)
     mesh: new THREE.MeshStandardMaterial({ map: meshTex(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.4, metalness: 0.5 }),
-    greySteel: new THREE.MeshStandardMaterial({ color: 0xb4b9bb, roughness: 0.45, metalness: 0.35 }),
-    darkSteel: new THREE.MeshStandardMaterial({ color: 0x4a5055, roughness: 0.55, metalness: 0.4 }),
-    concrete: new THREE.MeshStandardMaterial({ color: 0x9c9a94, roughness: 0.9 }),
-    cable: new THREE.MeshStandardMaterial({ color: 0x5a6064, roughness: 0.5, metalness: 0.6 }),
     hull: new THREE.MeshStandardMaterial({ map: null, roughness: 0.55, side: THREE.DoubleSide, emissive: 0xffffff, emissiveIntensity: 0 }),
-    shipDeck: new THREE.MeshStandardMaterial({ color: 0x9b8262, roughness: 0.85 }),
-    varnish: new THREE.MeshStandardMaterial({ color: 0x74502e, roughness: 0.5 }),
-    spar: new THREE.MeshStandardMaterial({ color: 0xa4855c, roughness: 0.6 }),
-    sail: new THREE.MeshStandardMaterial({ color: 0xe6dfcc, roughness: 0.9 }),
-    pontoon: new THREE.MeshStandardMaterial({ color: 0x7c8084, roughness: 0.8 }),
     chq: new THREE.MeshStandardMaterial({ map: chqTex(), roughness: 0.9 }),
-    chqRoof: new THREE.MeshStandardMaterial({ color: 0x55595d, roughness: 0.6, metalness: 0.2 }),
-    // night lights
-    boardLamp: glow(0xffe0b0, 0.05, 2.6),
-    bridgeLamp: glow(0xdfe8ff, 0.05, 2.4),
-    handLed: glow(0xcfe0ff, 0, 1.4),
-    shipLamp: glow(0xffd08a, 0.05, 2.8),
+    sign: new THREE.MeshStandardMaterial({ map: signTex(), alphaTest: 0.5, roughness: 0.6, emissive: 0xffffff, emissiveIntensity: 0 }),
     // CHQ's glazed front: dark reflective glass by day, the lit hall behind it after dark
     chqGlass: addReflections(new THREE.MeshStandardMaterial({ color: 0x4d6670, roughness: 0.08, metalness: 0.6, emissive: 0xffdcae, emissiveIntensity: 0 }), 0.9),
+    // shared with the other landmarks
+    boardSteel: M.cladDark, darkSteel: M.cladDark, cable: M.cladDark, pontoon: M.cladGrey, greySteel: M.cladGrey,
+    stainless: M.steelMatte, concrete: M.granite, shipDeck: planks, varnish: M.timber, spar: M.timber, sail: M.iron, chqRoof: M.slate,
+    boardLamp: M.lampGlow, bridgeLamp: M.lampGlow, handLed: M.lampGlow, shipLamp: M.lampGlow,
   };
   mats.hull.map = mats.hull.emissiveMap = hullTexture();
   mats.planks.map = mats.planks.emissiveMap = plankTex();
@@ -129,7 +128,6 @@ export function buildLiffey({ Builder, M, glow, waterGlowSources }) {
   {
     const b = new Builder({ x: 0, z: 0, rot: 0 });
     const W = BOARDWALK.W, top = KERB_H - 0.22, face = 0.35; // the deck's top; the parapet's outer face off the bank line
-    const glassPanels = [];
     let lampN = 0;
     for (const [x0, x1] of BOARDWALK.runs) {
       const n = Math.max(2, Math.ceil((x1 - x0) / 1.0));
@@ -137,50 +135,52 @@ export function buildLiffey({ Builder, M, glow, waterGlowSources }) {
       for (let i = 0; i <= n; i++) { const q = bankAt('north', x0 + ((x1 - x0) * i) / n); if (q) P.push(q); }
       if (P.length < 2) continue;
       const at = (q, off, y) => V(q.x + q.n.x * off, y, q.z + q.n.z * off);
-      const us = []; let s = 0;
-      P.forEach((q, i) => { if (i) s += v2.len(v2.sub(q, P[i - 1])); us.push(s / 1.2); });
+      const S = []; let s = 0;
+      P.forEach((q, i) => { if (i) s += v2.len(v2.sub(q, P[i - 1])); S.push(s); });
       const inner = P.map((q) => at(q, face, top)), outer = P.map((q) => at(q, face + W, top));
-      // deck boards (u along the walk), the steel edge beam and the underside
-      const deck = strip(inner, outer, us);
+      // deck boards (running along the walk), the steel edge beam and the underside
+      const deck = strip(inner, outer, S.map((d) => d / 2.4));
       { const uv = deck.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setY(i, uv.getY(i) * W / 1.2); }
       b.add(deck, mats.planks);
-      b.add(strip(outer, P.map((q) => at(q, face + W, top - 0.5)), us), mats.boardSteel);
-      b.add(strip(P.map((q) => at(q, face, top - 0.35)), P.map((q) => at(q, face + W, top - 0.35)), us, true), mats.boardSteel);
-      // glass balustrade on the water side: posts every 1.8 m, a stainless handrail, glass between
-      const rail = P.map((q) => at(q, face + W - 0.08, top + 1.05));
-      for (let i = 1; i < rail.length; i++) b.add(beam(rail[i - 1], rail[i], 0.07, 0.07), mats.stainless);
-      glassPanels.push(strip(P.map((q) => at(q, face + W - 0.08, top + 0.12)), P.map((q) => at(q, face + W - 0.08, top + 0.98)), us));
-      let run = 0;
+      b.add(strip(outer, P.map((q) => at(q, face + W, top - 0.5)), S), mats.boardSteel);
+      b.add(strip(P.map((q) => at(q, face, top - 0.35)), P.map((q) => at(q, face + W, top - 0.35)), S, true), mats.boardSteel);
+      // the river-side balustrade (refs 27, 29): stainless posts leaning out a little, horizontal bars (the mesh
+      // texture turned on its side: its wires become bars 12 cm apart), and a heavy hardwood handrail on top
+      const lean = (q, h) => at(q, face + W - 0.1 + h * 0.12, top + h);
+      const bars = strip(P.map((q) => lean(q, 0.08)), P.map((q) => lean(q, 1.0)), S);
+      { const uv = bars.attributes.uv; for (let i = 0; i < uv.count; i++) { const u = uv.getX(i), v = uv.getY(i); uv.setXY(i, v, u / 0.5); } }
+      b.add(bars, mats.mesh);
+      for (let i = 0; i < P.length; i += 2) {
+        const j = Math.min(P.length - 1, i + 2);
+        b.add(beam(lean(P[i], 0), lean(P[i], 1.08), 0.06, 0.06), mats.stainless);
+        if (j > i) b.add(beam(lean(P[i], 1.12), lean(P[j], 1.12), 0.26, 0.11), M.timber);
+      }
       for (let i = 0; i < P.length; i++) {
-        if (i) run += v2.len(v2.sub(P[i], P[i - 1]));
         const q = P[i], along = Math.atan2(q.t.x, q.t.z);
-        if (i % 2 === 0) b.add(beam(at(q, face + W - 0.08, top), at(q, face + W - 0.08, top + 1.05), 0.06, 0.06), mats.stainless);
         // cantilever brackets down to the quay wall every 3 m
         if (i % 3 === 1) b.add(beam(at(q, face + W - 0.2, top - 0.45), at(q, 0.05, WATER_Y + 1.2), 0.18, 0.12), mats.boardSteel);
-        if (i === 0 || i === P.length - 1) continue;
+        if (i < 3 || i > P.length - 4) continue;
         const k = i % 32;
-        if (k === 8 || k === 24) { // a lamp on the rail every 16 m
-          const base = at(q, face + W - 0.3, top), head = at(q, face + W - 0.3, top + 4.6);
-          b.add(beam(base, head, 0.12, 0.12), mats.boardSteel);
-          b.add(new THREE.CylinderGeometry(0.22, 0.14, 0.42, 8), mats.boardSteel, { x: head.x, y: head.y + 0.02, z: head.z });
-          b.add(new THREE.CylinderGeometry(0.13, 0.13, 0.3, 8), mats.boardLamp, { x: head.x, y: head.y - 0.3, z: head.z });
-          if (lampN++ % 2 === 0) waterGlowSources.push({ x: head.x + q.n.x * 1.2, z: head.z + q.n.z * 1.2, y: WATER_Y + 0.05, color: 0xffd9a8, width: 2.2, length: 24 });
-        } else if (k === 14 || k === 29) { // a bench against the parapet, facing the river
-          const c = at(q, face + 0.55, top);
-          b.box(1.9, 0.07, 0.48, M.timber, { x: c.x, y: top + 0.42, z: c.z, ry: along + Math.PI / 2 });
-          b.box(1.9, 0.42, 0.06, M.timber, { x: c.x - q.n.x * 0.22, y: top + 0.52, z: c.z - q.n.z * 0.22, ry: along + Math.PI / 2 });
-          for (const e of [-0.75, 0.75]) b.box(0.06, 0.42, 0.44, mats.boardSteel, { x: c.x + q.t.x * e, y: top, z: c.z + q.t.z * e, ry: along + Math.PI / 2 });
+        if (k === 8 || k === 24) { // a tall lamp by the parapet every 16 m, its lantern on an arm out over the walk
+          const base = at(q, face + 0.15, top), top6 = at(q, face + 0.15, top + 6.2), head = at(q, face + 1.3, top + 6.0);
+          b.add(beam(base, top6, 0.13, 0.13), mats.boardSteel);
+          b.add(beam(top6, head, 0.07, 0.07), mats.boardSteel);
+          b.add(new THREE.CylinderGeometry(0.2, 0.26, 0.2, 8), mats.boardSteel, { x: head.x, y: head.y, z: head.z });
+          b.add(new THREE.CylinderGeometry(0.16, 0.16, 0.22, 8), mats.boardLamp, { x: head.x, y: head.y - 0.2, z: head.z });
+          if (lampN++ % 2 === 0) waterGlowSources.push({ x: head.x + q.n.x * 3.5, z: head.z + q.n.z * 3.5, y: WATER_Y + 0.05, color: 0xffd9a8, width: 2.2, length: 24 });
+        } else if (k === 14 || k === 29) { // a long timber bench against the parapet, facing the river
+          const c = at(q, face + 0.35, top), o = { ry: along + Math.PI / 2 };
+          b.box(4.4, 0.07, 0.46, M.timber, { ...o, x: c.x, y: top + 0.42, z: c.z });
+          b.box(4.4, 0.4, 0.05, M.timber, { ...o, x: c.x - q.n.x * 0.2, y: top + 0.52, z: c.z - q.n.z * 0.2 });
+          for (const e of [-1.9, 0, 1.9]) b.box(0.06, 0.42, 0.42, mats.boardSteel, { ...o, x: c.x + q.t.x * e, y: top, z: c.z + q.t.z * e });
         } else if (k === 19 || k === 3) { // a steel planter
-          const c = at(q, face + 0.6, top);
-          b.box(1.5, 0.75, 0.75, mats.boardSteel, { x: c.x, y: top, z: c.z, ry: along + Math.PI / 2 });
-          b.add(new THREE.SphereGeometry(0.55, 7, 5), M.planting, { x: c.x, y: top + 0.8, z: c.z, sx: 1.25, sy: 0.55, sz: 0.6, ry: along + Math.PI / 2 });
+          const c = at(q, face + 0.55, top), o = { ry: along + Math.PI / 2 };
+          b.box(1.5, 0.75, 0.75, mats.boardSteel, { ...o, x: c.x, y: top, z: c.z });
+          b.add(new THREE.SphereGeometry(0.55, 7, 5), M.planting, { ...o, x: c.x, y: top + 0.8, z: c.z, sx: 1.25, sy: 0.55, sz: 0.6 });
         }
       }
     }
     const g = b.build('Liffey Boardwalk');
-    const gl = new THREE.Mesh(mergeGeometries(glassPanels), mats.glassRail);
-    gl.renderOrder = 1;
-    g.add(gl);
     groups.push(g);
   }
 
@@ -284,7 +284,7 @@ export function buildLiffey({ Builder, M, glow, waterGlowSources }) {
       b.cyl(dog ? 0.32 : 0.28, dog ? 0.34 : 0.3, 0.035, M.bronze, { x: f.x, y: KERB_H, z: f.z }, 9); // the thin bronze base plates
       addBox(f.x, f.z, dog ? 0.14 : 0.2, dog ? 0.42 : 0.2, f.rot);
       // the in-ground uplighter in front of each figure (they glow after dark)
-      b.cyl(0.1, 0.1, 0.02, mats.boardLamp, { x: f.x + Math.sin(f.rot) * 0.55, y: KERB_H, z: f.z + Math.cos(f.rot) * 0.55 }, 8);
+      b.cyl(0.07, 0.07, 0.02, mats.boardLamp, { x: f.x + Math.sin(f.rot) * 0.55, y: KERB_H, z: f.z + Math.cos(f.rot) * 0.55 }, 8);
     }
     groups.push(b.build('Famine'));
   }
@@ -406,28 +406,68 @@ export function buildLiffey({ Builder, M, glow, waterGlowSources }) {
 
   // ================= the CHQ building (Stack A, 1820) with its glass front on the quay =================
   {
-    const S = CHQ, b = new Builder(S), W = S.w, D = S.d, H = 6.5;
-    // brick and calp walls, three parallel roofs on cast-iron trusses with glazed ridges, the glazed quay front
+    const S = CHQ, b = new Builder(S), W = S.w, D = S.d, H = 7, R = 4, n = 4, sw = W / n;
+    // brick and calp walls under four parallel pitched roofs on cast-iron trusses, glazed along the ridges; the quay end
+    // is the 2000s glazed front, its four gables following the roofs (ref 24: THE chq BUILDING)
     b.facade(W, H, D - 4, mats.chq, mats.chqRoof, { z: -2 }, 5, 6.5);
-    for (let k = 0; k < 3; k++) {
-      const x = -W / 3 + k * (W / 3);
-      b.gable(W / 3, 3.8, D - 4, mats.chqRoof, { x, y: H, z: -2 });
-      b.box(1.2, 0.25, D - 5, glass, { x, y: H + 3.55, z: -2 });
+    for (let k = 0; k < n; k++) {
+      const x = -W / 2 + sw / 2 + k * sw;
+      b.gable(sw, R, D - 4, mats.chqRoof, { x, y: H, z: -2 });
+      b.box(1.1, 0.2, D - 5, glass, { x, y: H + R - 0.25, z: -2 });
+      b.gable(sw, R, 4, mats.chqGlass, { x, y: H, z: D / 2 - 2 });
+      const e = V(x - sw / 2, H, D / 2 + 0.03), r = V(x, H + R, D / 2 + 0.03), f = V(x + sw / 2, H, D / 2 + 0.03);
+      b.add(beam(e, r, 0.16, 0.16), mats.darkSteel); b.add(beam(r, f, 0.16, 0.16), mats.darkSteel);
     }
-    b.box(W, H + 1.5, 4, mats.chqGlass, { z: D / 2 - 2 });                   // the glazed entrance hall across the quay end
-    b.box(W + 0.4, 0.5, 4.4, mats.darkSteel, { y: H + 1.5, z: D / 2 - 2 });
-    for (let x = -W / 2; x <= W / 2 + 1e-3; x += 2.5) b.box(0.12, H + 1.5, 0.12, mats.darkSteel, { x, z: D / 2 + 0.02 });
-    for (const y of [3.4, H + 1.4]) b.box(W, 0.1, 0.12, mats.darkSteel, { y, z: D / 2 + 0.02 });
+    b.box(W, H, 4, mats.chqGlass, { z: D / 2 - 2 });
+    for (let x = -W / 2; x <= W / 2 + 1e-3; x += sw / 3) b.box(0.12, H, 0.12, mats.darkSteel, { x, z: D / 2 + 0.02 });
+    for (const y of [3.2, H - 0.1]) b.box(W, 0.12, 0.12, mats.darkSteel, { y, z: D / 2 + 0.02 });
+    b.add(new THREE.PlaneGeometry(9, 1.3), mats.sign, { x: -W / 4, y: 4.6, z: D / 2 + 0.1 });
     b.solid(0, 0, W, D);
     groups.push(b.build('CHQ'));
-    nightMats.push([mats.chqGlass, 0.75]);
+    nightMats.push([mats.chqGlass, 0.5], [mats.sign, 0.6]);
     waterGlowSources.push({ x: S.x, z: S.front + 18, y: WATER_Y + 0.05, color: 0xffe0b8, width: 8, length: 40 });
   }
 
   return {
-    groups,
+    groups: [mergeByMaterial(groups, 'Liffey quays')],
     setNight(level) { for (const [m, k] of nightMats) m.emissiveIntensity = k * level; },
   };
+}
+
+// The pieces are spread along 800 m of river, across three of the static batch's 400 m cells, and each would add its
+// own bucket per material in each cell. Merged here into one world-space mesh per material first (a few tens of
+// thousands of triangles, drawn whole), the batch folds each into one bucket: fewer draw calls in the main and shadow
+// passes for a little more vertex work. The rigging lines stay a line set of their own.
+function mergeByMaterial(groups, name) {
+  const byMat = new Map(), out = new THREE.Group();
+  out.name = name;
+  const tris = [];
+  for (const g of groups) {
+    g.updateMatrixWorld(true);
+    let n = 0;
+    g.traverse((o) => {
+      if (!o.isMesh && !o.isLineSegments) return;
+      const geo = o.geometry.clone().applyMatrix4(o.matrixWorld);
+      if (o.isMesh) n += (geo.index ? geo.index.count : geo.attributes.position.count) / 3;
+      if (o.isLineSegments || o.material.transparent) {
+        const c = o.isLineSegments ? new THREE.LineSegments(geo, o.material) : new THREE.Mesh(geo, o.material);
+        c.renderOrder = o.renderOrder; c.userData = { ...o.userData };
+        out.add(c);
+        return;
+      }
+      if (!byMat.has(o.material)) byMat.set(o.material, []);
+      byMat.get(o.material).push(geo);
+    });
+    tris.push(`${g.name} ${Math.round(n / 100) / 10}k`);
+  }
+  console.log(`liffey quays: ${tris.join(', ')} triangles; ${byMat.size} materials`);
+  for (const [mat, geos] of byMat) {
+    const m = new THREE.Mesh(mergeGeometries(geos), mat);
+    // Low / Battery saver: none of it casts the sun shadow (as with the street furniture there): a dozen fewer shadow-pass calls
+    m.castShadow = !LITE; m.receiveShadow = true;
+    out.add(m);
+  }
+  return out;
 }
 
 function toWorldS(site, lx, lz) { const c = Math.cos(site.rot), s = Math.sin(site.rot); return { x: site.x + lx * c + lz * s, z: site.z - lx * s + lz * c }; }
