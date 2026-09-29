@@ -19,6 +19,7 @@ import { placeCCJ } from './ccj.js';
 import { placeBarrowStreet } from './barrowst.js';
 import { placeGrandCanal, gcsColliders } from './gcsquare.js';
 import { buildTowers } from './towers.js';
+import { placeNorthCity, northCityColliders } from './northcity.js';
 import { LITE } from '../render/quality.js';
 const lawnMat = () => getStreets().grassMat;
 import { buildPark } from './park.js';
@@ -2334,6 +2335,11 @@ export function buildLandmarks(scene) {
       arenaHero = h; h.setNight(nightLevel);
     });
   }
+  // Clerys, Parnell Square (the Rotunda, the Ambassador, the Gate, the Garden of Remembrance) and Busáras: one Blender
+  // hero, solid whether or not it loads; the stone is floodlit with the rest, the clock and the offices lit at night
+  let northHero = null;
+  northCityColliders();
+  placeNorthCity(scene).then((h) => { if (h) { northHero = h; h.setNight(nightLevel); } });
   // the Four Courts (Blender hero; floodlit through setStoneNight)
   placeParts(scene, 'fourcourts', S.fourCourts, 'Four Courts');
   // St Patrick's Cathedral (Blender hero) and its park dressing
@@ -2428,6 +2434,7 @@ export function buildLandmarks(scene) {
       if (barrowHero) barrowHero.setNight(level);
       if (gcsHero) gcsHero.setNight(level);
       if (guinnessHero) guinnessHero.setNight(level);
+      if (northHero) northHero.setNight(level);
       towers.setNight(level);
       setStoneNight(level);
       if (phoenixPark) phoenixPark.setNight(level);

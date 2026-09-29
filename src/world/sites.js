@@ -3,7 +3,9 @@
 // a label height, and a teleport spot on a nearby road looking at it.
 import { world, v2, PAVEMENT, pointInPolygon, laneOffset, project } from './geo.js';
 import { bridges, parkPolys, campusPolys, dockPolys } from './ground.js';
-import { monumentSites } from './oconnell.js';
+import { monumentSites, along, chainageOf } from './oconnell.js';
+import ncLayout from '../data/northcity.json';
+const { clerys: CLERYS, parnell: PARNELL, busaras: BUSARAS } = ncLayout;
 import tanksData from '../data/guinness-tanks.json';
 import bsLayout from '../data/barrowst.json';
 
@@ -759,6 +761,78 @@ export const tall = (() => {
   }
   return T;
 })();
+// ---------- North city: Clerys, Parnell Square, Busáras (docs/research/north-city.md) ----------
+// One Blender hero (tools/blender/build_northcity.py -> public/models/northcity.glb) with a root per building, each
+// built in game metres in its own front frame: u along the front, v into the building, origin at the middle of the
+// front at ground level. A frame is placed by a point and the direction d of u (the building is to the LEFT of d);
+// three.js rotation.y = atan2(-d.z, d.x), as for the 3Arena. Keep the dimensions here in step with the build script.
+export const NC = (() => {
+  // a frame: origin p, u along d, v to the left of d
+  const frame = (p, d) => {
+    const n = { x: d.z, z: -d.x };
+    const at = (u, v) => ({ x: p.x + d.x * u + n.x * v, z: p.z + d.z * u + n.z * v });
+    const box = (u0, u1, v0, v1) => ({ ...at((u0 + u1) / 2, (v0 + v1) / 2), rot: Math.atan2(-d.z, d.x), w: u1 - u0, d: v1 - v0 });
+    return { x: p.x, z: p.z, rot: Math.atan2(-d.z, d.x), d, n, at, box };
+  };
+  // the road edge (back of the footpath) of a->b, pushed a further `extra` to its left, as a point and direction
+  const edge = (a, b, extra = 0) => {
+    const A = N(a), B = N(b), d = v2.norm(v2.sub(B, A)), way = wayBetween(a, b), off = way.width / 2 + way.pave + extra;
+    return { p: { x: A.x + d.z * off, z: A.z - d.x * off }, d, A, B };
+  };
+  const meet = (e, f) => { // where two edge lines cross
+    const den = e.d.x * f.d.z - e.d.z * f.d.x, t = ((f.p.x - e.p.x) * f.d.z - (f.p.z - e.p.z) * f.d.x) / den;
+    return { x: e.p.x + e.d.x * t, z: e.p.z + e.d.z * t };
+  };
+  const walk = (p, d, s) => ({ x: p.x + d.x * s, z: p.z + d.z * s });
+
+  // Clerys (Robert Atkinson, 1922) on the east side of O'Connell Street Lower, facing the GPO. The front runs
+  // southbound (so the building is on its left); the clock hangs over the main entrance, south of the middle.
+  const bw = wayBetween('OC1', 'OC2');
+  const sClock = chainageOf(project(53.3492209, -6.2596962)); // OSM 1348371011, "Clery's Clock"
+  const cp = along(sClock + CLERYS.clockU, -(bw.width / 2 + bw.pave + 0.2));
+  const clerys = frame(cp, { x: -cp.dir.x, z: -cp.dir.z });
+
+  // Parnell Square: the Rotunda block between Parnell Street, Cavendish Row, Parnell Square East, North and West
+  const pSt = edge('RN01', 'OC4'), cav = edge('OC4', 'RN04'), east = edge('RN04', 'RN03'), north = edge('RN03', 'RN02'), west = edge('RN02', 'RN01');
+  const SW = meet(west, pSt), SE = meet(pSt, cav), KINK = meet(cav, east), NE = meet(east, north), NW = meet(north, west);
+  // the hospital's front stands behind a railed forecourt (ref 02), its main block 26.5 m in from the west corner
+  const rotunda = frame(walk(walk(SW, pSt.d, PARNELL.rotundaS), { x: pSt.d.z, z: -pSt.d.x }, PARNELL.forecourt), pSt.d);
+  // the Ambassador drum sits in the corner facing up O'Connell Street, just clear of both footpaths
+  const R = PARNELL.drumR + 0.6;
+  const drum = meet({ p: walk(pSt.p, { x: pSt.d.z, z: -pSt.d.x }, R), d: pSt.d }, { p: walk(cav.p, { x: cav.d.z, z: -cav.d.x }, R), d: cav.d });
+  // the Gate faces Cavendish Row, its north end at the bend into Parnell Square East
+  const gate = frame(walk(KINK, cav.d, -PARNELL.gateW / 2 - 0.4), cav.d);
+  // the Garden of Remembrance fills the north end, along Parnell Square North, behind its railings
+  // (a trapezoid: its west end runs parallel to Parnell Square West; u runs west, v south into the square)
+  const garden = frame(walk(walk(NE, north.d, 1.5 + PARNELL.gardenW / 2), { x: north.d.z, z: -north.d.x }, 0.6), north.d);
+  const { gardenW: GW, gardenD: GD, gardenKW: GK } = PARNELL;
+  garden.poly = [garden.at(-GW / 2, 0), garden.at(GW / 2, 0), garden.at(GW / 2 - GK * GD, GD), garden.at(-GW / 2, GD)];
+
+  // Busáras (Michael Scott, 1953) between Store Street, Beresford Place and Amiens Street: squared to Store Street,
+  // the concourse and its wavy canopy on the Beresford Place side, the bus yard east of it towards Amiens Street
+  // (left open: the railway comes along Amiens Street and over Store Street to Connolly)
+  const st = edge('ST1', 'BP2'), bp = edge('BP2', 'BP3');
+  const bsw = meet(st, bp);
+  const busaras = frame(walk(walk(bsw, { x: 1, z: 0 }, BUSARAS.w / 2 + 0.3), { x: 0, z: -1 }, 0.4), { x: 1, z: 0 });
+  return { clerys, rotunda, drum, gate, garden, busaras, block: [SW, SE, KINK, NE, NW] };
+})();
+// the Places list and the filler, from the frames above
+Object.assign(sites, {
+  clerys: { name: 'Clerys', ...NC.clerys.box(-CLERYS.w / 2, CLERYS.w / 2, 0, CLERYS.d), labelY: 28, view: spot('OC1', 'OC2', 0.25) },
+  rotunda: { name: 'Parnell Square and the Rotunda', ...NC.rotunda.box(-26, PARNELL.linkU, 0, 14), labelY: 36, view: spot('OC3', 'OC4', 0.4) },
+  gardenOfRemembrance: { name: 'Garden of Remembrance', ...NC.garden.box(-PARNELL.gardenW / 2, PARNELL.gardenW / 2 - PARNELL.gardenKW * PARNELL.gardenD / 2, 0, PARNELL.gardenD / 2), labelY: 14, view: spot('RN02', 'RN03', 0.3) },
+  busaras: { name: 'Busáras', ...NC.busaras.box(-BUSARAS.w / 2, BUSARAS.w / 2, 0, BUSARAS.d), labelY: 32, view: spot('NQ10', 'NQ11', 0.6) },
+});
+Object.assign(extraSites, {
+  // the hospital's rear ranges, the Ambassador (its drum's square), the Gate, and Busáras's open bus yard (not solid)
+  rotundaRear: NC.rotunda.box(-26, 19, 14, 34),
+  ambassador: { x: NC.drum.x, z: NC.drum.z, rot: NC.rotunda.rot, w: PARNELL.drumR * 2, d: PARNELL.drumR * 2 },
+  gate: NC.gate.box(-PARNELL.gateW / 2, PARNELL.gateW / 2, 0, PARNELL.gateD),
+  gardenSouth: NC.garden.box(-PARNELL.gardenW / 2, PARNELL.gardenW / 2 - PARNELL.gardenKW * PARNELL.gardenD, PARNELL.gardenD / 2, PARNELL.gardenD),
+  busarasYard: NC.busaras.box(BUSARAS.w / 2, BUSARAS.w / 2 + 22, 0, BUSARAS.d),
+});
+const northCityFootprints = [sites.clerys, sites.rotunda, sites.gardenOfRemembrance, sites.busaras, extraSites.rotundaRear, extraSites.ambassador, extraSites.gate, extraSites.gardenSouth, extraSites.busarasYard];
+
 // the notable ones join the Places list; every part is kept free of filler and checked by footprints.mjs
 Object.assign(sites, {
   libertyHall: { name: 'Liberty Hall', ...tall.libertyHall, labelY: 62, view: spot('NQ8', 'NQ9', 0.35) },
@@ -848,6 +922,8 @@ export const reserved = [
   (extraSites.ccjNorth = { x: CCJ.x - 6, z: CCJ.z - 29, rot: 0, w: 38, d: 8 }),
   // the tall buildings (src/world/towers.js)
   ...tallFootprints,
+  // Clerys, Parnell Square (the Rotunda, the Ambassador, the Gate, the Garden of Remembrance) and Busáras
+  ...northCityFootprints,
 ].filter(Boolean);
 
 export { campusPolys, parkPolys };
