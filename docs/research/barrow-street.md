@@ -25,14 +25,14 @@ Grand Canal Dock is two basins joined under **MacMahon Bridge** (Pearse Street b
 | **Google BOL1 / BOL2** (Boland's Quay) | ways 1217422779 / 1217422778, Google | 53.34177, -6.23655 / 53.34130, -6.23677 | 749, 306 / 745, 336 | **12 and 11 levels**; Wikipedia list: **Boland's Quay 1, 54 m, 13 floors, 2025, 10th tallest** | New towers of the Boland's Quay scheme (2017-2024). Wikipedia: Google bought the development in **2018**. Off-white panels with a scatter of vertical window slots, copper-red fin cladding on the back and flanks (refs 09, 10, 12). |
 | **Boland's Mills** (stone warehouses) | ways 329106838 / 40 / 42 / 43 | 53.3419-53.3421, -6.2363 to -6.2370 | 726-763, 287-301 | two **six-storey 1830s calp limestone warehouses** (Wikipedia) | Protected structures facing Ringsend Road and the dock. The west block shows **twin gables to the basin** with **BOLANDS / FLOUR MILLS** in big orange-gold letters (refs 09-13). 1916: 3rd Battalion under de Valera. Concrete silos (1940s-60s) demolished 2017-18. |
 | Stone warehouse at the dock edge | way 283083647 | 53.34145, -6.23734 | 725, 325 | ~5-6 storeys (ref 12) | Calp limestone, now apartments with steel balconies (refs 09, 12). |
-| **Alto Vetro** | way 48897785, architect **Shay Cleary** | 53.34226, -6.23873 | 679, 280 | **52 m** OSM, 15 levels; Wikipedia list: **51 m, 16 floors, 2008, 15th tallest** | Slender residential tower on the quay edge just south of MacMahon Bridge; cantilevered black glass balconies alternating up both long sides (ref 15). RIAI Silver Medal for Housing 2007-08. Built by Sisk for Treasury Holdings, like Montevetro. |
+| **Alto Vetro** (built by `towers.js`) | way 48897785, architect **Shay Cleary** | 53.34226, -6.23873 | 679, 280 | **52 m** OSM, 15 levels; Wikipedia list: **51 m, 16 floors, 2008, 15th tallest** | Slender residential tower on the quay edge just south of MacMahon Bridge; cantilevered black glass balconies alternating up both long sides (ref 15). RIAI Silver Medal for Housing 2007-08. Built by Sisk for Treasury Holdings, like Montevetro. |
 | Waterways Ireland Visitor Centre | way 48914525 | 53.34178, -6.23838 | 692, 307 | 2 levels | The white box on stilts **in** the inner basin off Grand Canal Quay, with glass-block walls and a pontoon (refs 10, 15). |
 | The Tower (Tower Design Centre, old sugar refinery) | way 88150333 | 53.34199, -6.23937 | 656, 293 | ~7 storeys (unverified) | Stone and brick, on Grand Canal Quay behind Alto Vetro. |
 | Trinity Innovation Centre, Waterways House, The Malt House N/S, The Malting Tower | 329445776, 102694989, 48951689/88, 48951687 | Grand Canal Quay, 53.3400-53.3415 | 650-675, 330-400 | 3-7 levels | Converted stores and offices along the quay; the old malt stores are stone. |
 | **The Lir** (National Academy of Dramatic Art) | way 102694981 | 53.34223, -6.23920 | 663, 282 | 2 levels | SW corner of Pearse Street and Grand Canal Quay (owner's screenshot). |
 | Gallery Quay (apartments) | way 102694937 | 53.34298, -6.23940 | 657, 240 | 7 levels | NW corner of Pearse St / Grand Canal Quay: the white apartments along the promenade (ref 14; the scaffolded block in the owner's screenshot). Its east face is at x ≈ 673; the water at x ≈ 684-691. |
 | 1 Grand Canal Square | way 102694959 | 53.34339, -6.23925 | 662, 212 | 7 levels | The glass office with gold fins between Gallery Quay and the square (ref 14). *Square brief.* |
-| The Millennium Tower | way 48898702 | 53.34283, -6.23687 | 740, 246 | 63 m (OSM), 13 levels | Charlotte Quay, SE corner of the outer basin. **Not on Wikipedia's list.** Not built here (filler covers it; see §5). |
+| The Millennium Tower | way 48898702 | 53.34283, -6.23687 | 740, 246 | 63 m (OSM), 13 levels | Charlotte Quay, SE corner of the outer basin. Not on Wikipedia's list. Built by `src/world/towers.js` (the tall-buildings brief). |
 | South Bank House, Grand Mill Quay, The Dock Mill, The Warehouse | 48858941, 48894063, 329884926, 228544066 | Barrow St, 53.3404-53.3409 | 715-755, 353-406 | 3-7 | The old stone mill and warehouse range between Boland's and Google Docks along the basin's east edge (ref 02: stone gables, red brick). |
 | Grand Canal Dock station | way 48894059, platforms 402280899 / 1255798817 / 311839244 | 53.33961, -6.23737 | 724, 428 | elevated | Three platforms on the embankment between the canal channel and Barrow Street; steps and lift down to Barrow St. Opened 2001 on the 1834 Dublin & Kingstown line (Wikipedia). |
 | The Bakery (old Treasury Building), Velasco, 1 Grand Canal Plaza | 52205030, 399112486, 110542366 | Grand Canal St Lower | 598-705, 466-490 | 6-8 | Also Google (OSM). Outside the build (filler). |
@@ -47,7 +47,7 @@ Grand Canal Dock is two basins joined under **MacMahon Bridge** (Pearse Street b
 |---|---|---|---|---|---|
 | 4 | **Google Docks** | 65.6 m | 15 | 2010 | Hero |
 | 10 | **Boland's Quay 1** | 54 m | 13 | 2025 | Hero (with BOL2) |
-| 15 | **Alto Vetro** | 51 m | 16 | 2008 | Hero |
+| 15 | **Alto Vetro** | 51 m | 16 | 2008 | `src/world/towers.js` (the tall-buildings brief) |
 | proposed | 1/2 Grand Canal Quay | 64.1 m | 15 | under construction 2023 | Not built (exact site unconfirmed; see §5) |
 
 ### 1.4 The existing game map here, and how it differs
@@ -131,7 +131,7 @@ All from Wikimedia Commons at 1200 px thumbnails. Licences as recorded on Common
 
 - Developer Treasury Holdings; completed c. 2009 (Wikipedia list: 2010); bought by Google in 2011. Architect: **Burdon Craig Dunne Henry** is often given (unverified here; not in the sources fetched).
 - **Form:** a flat-topped dark glass slab, ~15 storeys (floor-to-floor ≈ 4.4 m), long faces N (the dock) and S (the railway). A lower shoulder at the NW end (refs 01, 02). The frame is a **near-black grid** of aluminium mullions and floor bands; each structural bay holds a 2 x 2 grid of blue-green panes (refs 01, 02).
-- **The east end** (onto Barrow Street) and the SE corner carry **yellow-orange spandrel panels**, one per floor, in a vertical strip (refs 01, 05). This is the tower's most recognisable cue from the dock.
+- The Barrow Street (east) elevations carry **yellow and cream spandrel bands**, one per floor (refs 03, 05; ref 01 shows them on an end elevation). This is the tower's most recognisable cue from the street.
 - **Night:** a regular lit grid of office floors, cool white (refs 08, 12).
 
 ### 3.2 Boland's Quay
@@ -171,40 +171,53 @@ All from Wikimedia Commons at 1200 px thumbnails. Licences as recorded on Common
 
 1. From Pearse St at the dock corner: the open promenade running north along the water to the square, the theatre and the Marker's checkerboard at the end (owner's screenshot, ref 14).
 2. From MacMahon Bridge: the mill's twin gables with **BOLANDS FLOUR MILLS**, and two pale towers behind (ref 09).
-3. Over the inner basin: the dark Google Docks slab with its yellow strip (ref 01).
+3. Over the inner basin: the dark Google Docks slab (ref 01); on Barrow St, its yellow spandrel bands (refs 03, 05).
 4. On Barrow St: the skybridge between Gordon House and Google Docks, and the low railway bridge with the yellow-and-black bar (refs 04, 05).
 5. Alto Vetro's thin glass needle by the bridge (ref 15).
 
 ---
 
-## 4. Build brief (prioritised)
+## 4. Build (done in this brief)
 
-### P0: roads and the promenade (`streets.json`, done in this brief)
-See §1.6. Filler kept off the promenade (the way itself plus a reserved strip to the water); trees and bollards along the edge.
+### 4.1 Roads, water and the promenade (`src/data/streets.json`)
+- The street-graph changes are listed in §1.6. `node tools/dupcheck.mjs` is clean. `footprints.mjs` and `bridges.mjs` are both clean (0 and `{}`).
+- **The two basins now meet at MacMahon Bridge.** The outer basin's south edge and the inner basin's north edge are carried up to the edges of Ringsend Road's corridor, so the road crosses between the two waters on its "deck", with the dock railings along both footpaths as the parapets. The filler block that stood between the basins is gone. Outer basin: new points 53.34244/-6.23737 and 53.34258/-6.23845. Inner basin: 53.34208/-6.23737, 53.34222/-6.23848 and 53.34205/-6.23848, which leave room for Alto Vetro.
+- **Promenade:** the pedestrian way PS5 → GQP3, width 8, paved wall to wall and lit by the street lamps. It has a double row of young trees along the water (about 30, trunks solid; `src/world/barrowst.js` `promenadeTrees`) and cast-iron bollards along the quay edge instead of the railings. The quay edge still stops the car. The bollard zones are `openQuay` in `src/data/barrowst.json`, and `ground.js` leaves the railing off there. The same treatment applies along the inner basin's west side (Grand Canal Quay south of Pearse St).
+- **Filler:** a "Silicon Docks" style zone (`buildings.js` `inSilicon`, x 600-830, z 150-530) makes the street fronts 85% modern glass or panel offices, capped at 8 storeys, with brick for the rest. Block interiors are modern.
 
-### P1: the hero GLB (`tools/blender/build_barrowst.py` → `public/models/barrowst.glb`)
-One file of named parts, each built in its own frame (u east, v north, metres in game plan, real heights) and placed from absolute coordinates in `src/world/sites.js` (`barrowParts`), then merged by material:
-- `montevetro` (Google Docks), `gordon` (Gordon House), `gasworks` (Gasworks House), `skybridge`
-- `bol1`, `bol2`, `millw` (the gabled west warehouse), `millr` (the Ringsend Rd range), `stonewh` (the balconied warehouse), `dockmill` (the stone/brick range between Boland's and Google Docks)
-- `altovetro`, `waterways` (the visitor centre on stilts)
-- `railway`: the embankment from the Grand Canal Quay tunnel to Barrow St, platforms and shelters, the Barrow St and Grand Canal Quay rail bridges
+### 4.2 The hero (`tools/blender/build_barrowst.py` → `public/models/barrowst.glb`)
+**1,226 triangles, 18.8 KB (Draco)**, and nine materials, so nine draw calls after `mergeByMaterial`. The layout lives in `src/data/barrowst.json` in game metres, and both the Blender build and `src/world/sites.js` read it. The model is one root placed at the layout origin (720, 380).
+- **Google Docks:** Google Docks' outline (the SW side cut along the railway) at 65.6 m, with a 48 m NW shoulder. A black frame grid with blue-green glass. The Barrow Street (east) elevations carry the yellow and cream spandrel bands (refs 03-05), and a roof plant box and gantry sit on top. Beside it are **Gordon House** (24 m, with its GORDON HOUSE lettering on Barrow St), **Gasworks House** (31 m) and the curved glazed **skybridge** over Barrow Street at 8-12 m.
+- **Boland's Quay:** **BOL1** (54 m) and **BOL2** (47 m) have pale panels with scattered window slots, copper-red fins on the backs, tops that slope 3 m, and a glazed link. **Boland's Mills** comes as the twin-gabled calp warehouse to the basin with the **BOLANDS / FLOUR MILLS** lettering, and the long Ringsend Road range with downpipes. There is also the balconied stone warehouse on the dock edge, and an open plaza (reserved, not solid) between the mill, the towers and that warehouse.
+- **The old stores** between Boland's and Google Docks: The Warehouse and the Dock Mill (calp, gabled to the basin) and Grand Mill Quay (glass).
+- **The Waterways Ireland visitor centre** stands on stilts in the inner basin with its walkway. There is also **a marina**: a 50 m pontoon with finger berths and four narrowboats (ref 22).
+- **The DART:** the calp embankment from west of Grand Canal Quay to past Barrow Street, and **Grand Canal Dock station** (two side platforms, canopies, the blue name boards, the stair and lift tower on Barrow St). There are two bridges: a steel deck over the Grand Canal Quay tunnel and the canal's mouth, and **the low bridge over Barrow Street with the yellow-and-black chevron bar and the 3.67 m roundel**. There are no trains (the game has no heavy rail).
+- **Textures** are painted at load (`src/world/barrowst.js`). Each glass, panel, fin and mill wall is a repeating facade module in true metres (the module sizes are `MOD`, and the Blender build must match them). Each has a night twin painted at half size as its emissive map: offices lit floor by floor, the mill windows, and the lettering lit. Plain calp uses the shared `stoneTile`. A 1024 atlas holds the lettering, signs, chevrons and flat colours. On Low / Battery saver every texture is painted at half size.
+- **Places:** "Google (Barrow Street)" (a teleport northbound out of the underpass) and "Boland's Quay" (eastbound on MacMahon Bridge). Their map glyphs are `Go` and `Bq`.
+- **Collision:** Google Docks' outline and every building box, the stair tower and the embankment pieces are solid (`landmarks.js`). The pontoons and the visitor centre are over water. At night, water glows sit on the inner basin in front of the lit towers.
+- **Alto Vetro and the Millennium Tower** are built by `src/world/towers.js` (the tall-buildings brief). Our inner-basin edit leaves their footprints clear.
 
-Materials painted at load (`src/world/barrowst.js`): repeating facade modules for the glass towers with night twins (random lit offices), calp stone with sash windows, slate, copper fins, and a small atlas for the lettering, the station sign and the chevron bar.
+### 4.3 Frame cost
+`tools/scenarios/areaperf.mjs` measures at the phone default (low tier, dpr 1, headless Chrome on the shared dev GPU). "Before" is main's `src` and `public`, "after" is this branch, same session order.
 
-### P2
-- Filler: modern glass and panel offices in the "Silicon Docks" zone.
-- Places: "Google (Barrow Street)" and "Boland's Quay".
-- The Millennium Tower on Charlotte Quay (63 m) and the offices on Grand Canal Plaza.
+| Spot | Before: GPU median / p10, calls, tris | After |
+|---|---|---|
+| MacMahon Bridge, looking SE | 19.1 / 14.7 ms, 273, 0.87 M | 19.9 / 14.9 ms, 290, 0.88 M |
+| Barrow St, north to the bridge | 23.7 / 23.1 ms, 337, 0.90 M | 22.8 / 17.8 ms, 353, 0.90 M |
+| Pearse St / Grand Canal Quay corner | 21.8 / 20.5 ms, 353, 0.95 M | 21.7 / 17.1 ms, 373, 1.00 M |
+
+The frame cost is within the noise of the shared GPU. There are about 17-20 more draw calls where the hero, the trees and the bollards are in view. `tools/scenarios/barrowperf.mjs` toggles the hero within one session: it adds 1-5 ms at low tier (against empty reserved lots, not the filler that stood there before) and about 1 ms at high tier. The only efficiency-for-looks trade is the half-size textures on Low / Battery saver.
 
 ---
 
 ## 5. Open questions
 
-1. **1/2 Grand Canal Quay** (64.1 m, 15 floors, under construction 2023 per the Wikipedia list): which plot? If it is the Gallery Quay / Pearse St corner (the scaffolding in the owner's screenshot), the promenade stays but the NW corner block would become a tower. Not built.
-2. **Montevetro's architect** (BCDH?) and completion year (2009 vs the list's 2010) are unverified.
-3. **The Millennium Tower** (63 m, OSM) is not on the Wikipedia list. Filler covers it for now. It could share this hero kit later.
-4. The skybridge's third arm: which building it reaches (Gasworks House?) is unclear from ref 06.
-5. The Barrow St underpass is modelled as a narrow two-way way (the game has no alternating signals).
+1. **1/2 Grand Canal Quay** (64.1 m, 15 floors, under construction in 2023 per the Wikipedia list): which plot? If it is the Gallery Quay / Pearse St corner (the scaffolding in the owner's screenshot), the promenade stays but the NW corner block would become a tower. Not built.
+2. **Google Docks' architect** (BCDH?) and completion year (2009 vs the list's 2010) are unverified. Nor is it certain which elevations carry the yellow spandrels: refs 03-05 show them on the Barrow Street side, and ref 01 is ambiguous. The model puts them on the east end.
+3. The skybridge's third arm: which building it reaches (Gasworks House?) is unclear from ref 06. Only the Google Docks to Gordon House span is built.
+4. The Barrow St underpass is modelled as a narrow two-way way (width 5); the game has no alternating signals.
+5. The filler behind the promenade (the Gallery Quay plot) is random modern or brick. A white apartment block there would match ref 14 better.
+6. The pontoon layout in the inner basin is simplified from ref 22 (2012).
 
 ## Sources
 
