@@ -334,14 +334,7 @@ export function buildGround(scene) {
     m.receiveShadow = true;
     group.add(m);
   }
-  // Big dark apron beyond the map so the horizon is not a void
-  const outer = new THREE.Shape([[-3000, 3000], [3000, 3000], [3000, -3000], [-3000, -3000]].map(([x, y]) => new THREE.Vector2(x, y)));
-  outer.holes.push(new THREE.Path([[B.minX, -B.minZ], [B.minX, -B.maxZ], [B.maxX, -B.maxZ], [B.maxX, -B.minZ]].map(([x, y]) => new THREE.Vector2(x, y))));
-  const apronGeo = new THREE.ShapeGeometry(outer);
-  apronGeo.rotateX(-Math.PI / 2);
-  const apron = new THREE.Mesh(apronGeo, new THREE.MeshStandardMaterial({ color: 0x5f5d58, roughness: 1 }));
-  apron.position.y = -0.05;
-  group.add(apron);
+  // (beyond the map edge: the apron and the far view in world/farview.js: the rest of Dublin, the bay, the hills)
 
   // Water
   const waterNormal = makeWaterNormal(256);

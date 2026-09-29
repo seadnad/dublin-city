@@ -78,11 +78,20 @@ export function packedInstances(items, parts, { y = 0, colors = null } = {}) {
   return pack;
 }
 export function removePack(pack) { const i = packs.indexOf(pack); if (i >= 0) packs.splice(i, 1); }
+// the far view (world/farview.js): where every packed item stands (its bounding sphere and tint), and its meshes
+export function packedItems() { return packs.map((p) => ({ spheres: p.spheres, cols: p.cols })); }
+export function packedMeshes() { return packs.flatMap((p) => p.meshes); }
+// view-pass distance cut (Low / Battery saver from the air: beyond it the far view's tree blobs stand in); 0 = none
+let viewCut2 = 0;
+const _cp = new THREE.Vector3();
+export function setViewCut(d) { viewCut2 = d > 0 ? d * d : 0; }
 
 function fill(meshes, pack, frustum, show) {
   const arr = meshes[0].instanceMatrix.array, cols = show && pack.cols ? meshes[0].instanceColor.array : null;
+  const cut = show ? viewCut2 : 0;
   let n = 0;
   pack.spheres.forEach((s, i) => {
+    if (cut && (s.x - _cp.x) ** 2 + (s.y - _cp.y) ** 2 + (s.z - _cp.z) ** 2 > cut) return;
     _sph.center.set(s.x, s.y, s.z); _sph.radius = s.r;
     if (!frustum.intersectsSphere(_sph)) return;
     arr.set(pack.mats.subarray(i * 16, i * 16 + 16), n * 16);
@@ -100,6 +109,7 @@ function fill(meshes, pack, frustum, show) {
 export function cullInstances(camera, shadowCamera) {
   if (!packs.length) return;
   camera.updateMatrixWorld();
+  _cp.setFromMatrixPosition(camera.matrixWorld);
   _f.setFromProjectionMatrix(_pm.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
   for (const p of packs) fill(p.view, p, _f, true);
   // the shadow camera's matrices are last frame's (they are updated inside the shadow pass): it moves a few cm a

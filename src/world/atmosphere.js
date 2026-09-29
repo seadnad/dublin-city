@@ -21,6 +21,23 @@ void main() {
 // Materials without lighting (basic/sprite) just get the height fog. A material can thin its own fog with
 // `defines: { FOG_SCALE: '0.6' }` (part of the program key, so no extra per-frame cost).
 const FOG_HEIGHT = 70.0; // metres over which the haze thins out
+export const FOG_AIR = [30, 160]; // camera heights over which the fog curve turns from exp2 to exponential
+// the fog-curve blend at a camera height (the same smoothstep as the shader)
+export function fogAirBlend(y) { const t = Math.min(1, Math.max(0, (y - FOG_AIR[0]) / (FOG_AIR[1] - FOG_AIR[0]))); return t * t * (3 - 2 * t); }
+// the fog's height term for a point on the ground seen from height y (the shader's mix(1, exp(-h / FOG_HEIGHT), 0.7))
+export function fogHeightTerm(y) { return 0.3 + 0.7 * Math.exp(-(y * 0.5) / FOG_HEIGHT); }
+
+// Shadow edge: the shadowed area is a square round the player (hundreds of metres from the air); instead of a hard
+// line where it stops, shadows fade out over the outer 18 % of it. (PCF, the only type the game uses.)
+{
+  const k = THREE.ShaderChunk.shadowmap_pars_fragment, at = k.indexOf('#if defined( SHADOWMAP_TYPE_PCF )');
+  const ret = 'return mix( 1.0, shadow, shadowIntensity );', r = k.indexOf(ret, at);
+  if (at >= 0 && r > at) {
+    THREE.ShaderChunk.shadowmap_pars_fragment = k.slice(0, r)
+      + 'vec2 shEdge = abs( shadowCoord.xy - 0.5 ) * 2.0;\n\t\t\treturn mix( 1.0, shadow, shadowIntensity * ( 1.0 - smoothstep( 0.82, 1.0, max( shEdge.x, shEdge.y ) ) ) );'
+      + k.slice(r + ret.length);
+  }
+}
 THREE.ShaderChunk.fog_pars_vertex = `
 #ifdef USE_FOG
   varying float vFogDepth; varying vec3 vFogView; varying float vFogY;
@@ -50,7 +67,15 @@ THREE.ShaderChunk.fog_fragment = `
     #ifdef FOG_SCALE
       fogD *= FOG_SCALE; // a material that must read further through the haze (Croke Park on the skyline)
     #endif
-    float fogFactor = 1.0 - exp( - fogD * fogD * fogDist * fogDist );
+    // from the air the haze turns from exp2 (a wall of fog at the view distance, right for the street) to plain
+    // exponential (Beer-Lambert: contrast falls off gently, so the far side of the city still reads); the
+    // helicopter / photo camera sets the density to match (main.js updateView). At street level it is exp2 exactly.
+    float fogX = fogD * fogDist;
+    float fogAir = smoothstep( ${FOG_AIR[0].toFixed(1)}, ${FOG_AIR[1].toFixed(1)}, cameraPosition.y );
+    float fogFactor = 1.0 - exp( - mix( fogX * fogX, fogX, fogAir ) );
+    #ifdef FOG_MAX
+      fogFactor = min( fogFactor, FOG_MAX ); // a skyline landmark that shows through the haze (the Poolbeg chimneys)
+    #endif
   #else
     float fogFactor = smoothstep( fogNear, fogFar, fogDist );
   #endif
@@ -274,7 +299,7 @@ export function createAtmosphere(scene, renderer) {
   apply({ rain: false, evening: false });
 
   return {
-    sun, fill, hemi, uniforms, state, apply,
+    sun, fill, hemi, uniforms, state, apply, sky, sunDir, fillDir,
     // helicopter: thicker haze to hide a longer far plane (1 = the street-level preset)
     setFogScale(k) { fogScale = k; scene.fog.density = fogBase * k; },
     get fogDensity() { return fogBase; },

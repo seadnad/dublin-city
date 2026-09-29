@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { world, v2, laneOffset, pointInPolygon } from './world/geo.js';
 import { buildGround, isOverWater, setWet, WATER_Y, dockPolys } from './world/ground.js';
-import { createAtmosphere } from './world/atmosphere.js';
+import { createAtmosphere, fogAirBlend, fogHeightTerm } from './world/atmosphere.js';
 import { buildBuildings, buildingUniforms } from './world/buildings.js';
 import { buildLandmarks, landmarkMaterials, waterGlowSources } from './world/landmarks.js';
 import { buildWaterGlow } from './render/waterglow.js';
@@ -30,7 +30,8 @@ import { loadCar } from './game/models.js';
 import { loadTrees } from './world/trees.js';
 import { createPipeline } from './render/pipeline.js';
 import { batchStatic } from './render/batch.js';
-import { cullInstances, installShadowOnly } from './world/chunks.js';
+import { cullInstances, installShadowOnly, setViewCut } from './world/chunks.js';
+import { createFarView } from './world/farview.js';
 import { profile, LITE, mode as gfxModeNow, setMode as setGfxMode, learn as learnGfx, forget as forgetGfx, MODES as GFX_MODES, MODE_NAMES as GFX_NAMES, GPU, WEAK_GPU } from './render/quality.js';
 import { applyTextureQuality } from './render/texquality.js';
 import { createContactShadows } from './render/contact.js';
@@ -106,6 +107,11 @@ const furniture = buildFurniture(scene);
 const signals = createSignals(scene);
 console.log('furniture', JSON.stringify(furniture), 'signal heads', signals.count);
 const worldRoots = new Set(scene.children); // the static city (the helicopter's height field is drawn from these)
+// beyond the main far plane: the sky, the Poolbeg chimneys and, from the air, the whole city, the bay and the hills
+const far = createFarView({ renderer, atmosphere, buildings, landmarks, lite: LITE });
+scene.add(far.apron);
+// renderer.info counts every pass of a frame (the far view, the city, post-processing), reset once a frame
+renderer.info.autoReset = false;
 console.log(`world built in ${Math.round(performance.now() - t0)} ms: ${buildings.count} buildings, ${lamps.count} lamps, ${landmarks.trees} trees, ${segmentCount()} collision segments`);
 
 // ---------- player ----------
@@ -153,6 +159,8 @@ const tram = combineTrams(world.luasLines.map((line) => createLuas(scene, line))
 const people = createPeople(scene, { count: LITE ? 110 : 300 });
 // everything added since the world was built moves (player, traffic, trams, people): not part of the height field
 const dynamicRoots = scene.children.filter((c) => !worldRoots.has(c));
+const farSkip = new Set([...dynamicRoots, rain.mesh].filter(Boolean)); // left out of the far view's captures
+far.attach(scene, farSkip, () => pipeline.sceneTarget);
 traffic.setPlayer(car);
 traffic.setTram(tram);
 traffic.setSignals(signals);
@@ -174,6 +182,7 @@ let lastSwitch = 0, wetTarget = 0, wetNow = 0;
 function applyMode() {
   lastSwitch = time;
   atmosphere.apply(mode);
+  far.sync();
   const p = atmosphere.state.values;
   wetTarget = p.wet;
   buildingUniforms.uNight.value = p.windows;
@@ -217,12 +226,12 @@ const hud = createHUD({ sites, actions });
 const hudEl = document.getElementById('hud');
 const photo = createPhotoMode({
   camera, canvas: renderer.domElement, getPad: readPad,
-  onEnter: () => hudEl.classList.add('photo-hidden'),
+  onEnter: () => { hudEl.classList.add('photo-hidden'); far.prepare(); },
   onExit: () => { hudEl.classList.remove('photo-hidden'); carMesh.visible = true; camera.fov = 62; camera.updateProjectionMatrix(); rig.snap(); },
 });
 actions.photo = () => { if (photo.active) photo.exit(); else if (!flight && !worldMap.isOpen) photo.enter(flying ? { x: heli.pos.x, y: heli.pos.y + 1.6, z: heli.pos.z } : car.pos); };
 onKey('p', actions.photo);
-const pipeline = createPipeline(renderer, scene, camera, { quality: profile.tier });
+const pipeline = createPipeline(renderer, scene, camera, { quality: profile.tier, far });
 const failed = { high: false, medium: false };
 let userQuality = gfxModeNow !== 'auto', fpsCap = profile.fpsCap, gfxMode = gfxModeNow;
 // switch graphics mode live (tier and resolution now; crowd counts and shadow size from the next load)
@@ -364,6 +373,7 @@ function setCarBodyVisible(v) { for (const c of carMesh.children) if (!c.isLight
 async function enterHeli() {
   if (flying || heliBusy) return;
   heliBusy = true;
+  far.prepare(); // the far view builds in the background while the rotor spins up
   if (!heliVis) {
     heliVis = await loadHeli();
     if (!heliVis) { heliBusy = false; hud.toast('Helicopter unavailable'); return; }
@@ -386,6 +396,7 @@ async function enterHeli() {
   car.siren = false; audio.setSiren(false);
   heli.place(car.pos.x, heightField.maxIn(car.pos.x, car.pos.z, 1.7), car.pos.z, car.heading);
   scene.add(heliVis.group, heliVis.beam);
+  farSkip.add(heliVis.group); farSkip.add(heliVis.beam);
   setCarBodyVisible(false);
   // the car's headlight becomes the searchlight (one light either way: no shader recompiles)
   heliVis.searchlight.add(headlight, headlight.target);
@@ -409,8 +420,6 @@ function exitHeli() {
   car.pos.x = heli.pos.x; car.pos.z = heli.pos.z; car.heading = heli.heading;
   respawnNearRoad();
   setInputMode('car');
-  camera.far = BASE_FAR; camera.updateProjectionMatrix();
-  atmosphere.setShadowExtent(0); atmosphere.setFogScale(1);
   heliVis.aimBeam(false);
 }
 actions.heli = () => { if (flying) { exitHeli(); hud.toast(CAR_NAMES[save.get('car', 'garda')] || 'Car'); } else enterHeli(); };
@@ -435,17 +444,38 @@ function updateHeliBeam() {
   heliVis.setNight(atmosphere.state.values.lamps);
   headlight.target.position.copy(heliVis.searchlight.worldToLocal(beamTarget.clone()));
 }
-// view distance with altitude: the far plane reaches further (up to +50 % at the ceiling) and the haze thickens
-// just enough that the far edge still melts into it; the shadowed area widens so building shadows don't stop
-// in a square around the helicopter
-const heliTune = { far: 0.5, shadow: LITE ? 0.8 : 1.2 }; // (the perf scenario varies these)
-function updateHeliView() {
-  const alt = THREE.MathUtils.clamp(heli.alt, 0, MAX_ALT);
-  const far = BASE_FAR * (1 + (alt / MAX_ALT) * heliTune.far);
-  if (Math.abs(camera.far - far) > 5) { camera.far = far; camera.updateProjectionMatrix(); }
-  const camY = camera.position.y, hf = 0.3 + 0.7 * Math.exp(-(camY * 0.5) / 70);
-  atmosphere.setFogScale(Math.max(1, 1.7 / (atmosphere.fogDensity * hf * far)));
+// View with height (the helicopter and the photo camera): the detailed city's far plane reaches a little further
+// (up to +50 % at the ceiling) and the far view (world/farview.js) carries on beyond it to the bay and the
+// mountains; the haze thins from the street's wall of fog to a gentle exponential falloff (half-way to the fog
+// colour at `haze` metres from 250 m up), and the shadowed area widens (fading out at its edge).
+const heliTune = { far: 0.5, shadow: LITE ? 0.8 : 1.2, haze: 4500 }; // (the perf scenarios vary these)
+let viewAir = false;
+function updateView() {
+  const camY = camera.position.y;
+  if (!(flying || photo.active) || camY < 12) {
+    if (viewAir) {
+      viewAir = false;
+      camera.far = BASE_FAR; camera.updateProjectionMatrix();
+      atmosphere.setShadowExtent(0); atmosphere.setFogScale(1); setViewCut(0); far.setTreeCut(0);
+    }
+    return;
+  }
+  viewAir = true;
+  const alt = THREE.MathUtils.clamp(camY, 0, MAX_ALT);
+  const farNow = BASE_FAR * (1 + (alt / MAX_ALT) * heliTune.far);
+  if (Math.abs(camera.far - farNow) > 5) { camera.far = farNow; camera.updateProjectionMatrix(); }
+  // fog: the distance at which it is half-way (on the ground below), from the street's to the aerial one; the
+  // density that gives it under the shader's blend of exp2 and exp (atmosphere.js fog_fragment)
+  const hf = fogHeightTerm(camY), a = fogAirBlend(camY), LN2 = Math.LN2;
+  const half0 = Math.sqrt(LN2) / (atmosphere.fogDensity * hf);
+  const haze = heliTune.haze * (0.0024 / atmosphere.state.values.fogDensity) ** 0.7; // thicker in the rain (the presets' own haze)
+  const half = half0 + (Math.max(half0, haze) - half0) * THREE.MathUtils.smoothstep(camY, 12, 220);
+  const x = a >= 0.999 ? LN2 : (-a + Math.sqrt(a * a + 4 * (1 - a) * LN2)) / (2 * (1 - a));
+  atmosphere.setFogScale(x / (half * hf * atmosphere.fogDensity));
   atmosphere.setShadowExtent(60 + alt * heliTune.shadow);
+  // Low / Battery saver: the modelled trees (1-2.5k triangles each) within 400 m, blobs beyond
+  const cut = LITE ? 400 : 0;
+  setViewCut(far.setTreeCut(cut) ? cut : 0);
 }
 onKey('g', actions.play);
 onKey('x', () => {
@@ -536,7 +566,8 @@ function frame() {
   if (photo.active) photo.update(Math.min(rawDt, 0.1));
   else if (flying) rig.updateHeli(dt, heli, groundAt);
   else rig.update(dt, car, carMesh);
-  if (flying) { updateHeliBeam(); updateHeliView(); }
+  if (flying) updateHeliBeam();
+  updateView();
   if (flight) applyFlight();
   focus.set(car.pos.x, 0, car.pos.z);
   // per-instance culling now the camera has moved for this frame: parked cars, and trees (view and shadow map)
@@ -548,6 +579,8 @@ function frame() {
     const rate = wetTarget > wetNow ? 0.35 : 0.12;
     wetNow = wetTarget > wetNow ? Math.min(wetTarget, wetNow + rate * dt) : Math.max(wetTarget, wetNow - rate * dt);
     setWet(wetNow); buildingUniforms.uWet.value = wetNow; lamps.setWet(wetNow);
+    far.setWet(wetNow);
+    if (wetNow === wetTarget) far.wetSettled(); // recapture the ground wet (or dry) once it has settled
   }
   camera.getWorldDirection(viewDir); viewDir.y = 0; viewDir.normalize();
   atmosphere.update(dt, time, focus, viewDir);
@@ -567,6 +600,8 @@ function frame() {
   // the view drifts slowly over it; the only moving shadows are specks)
   frameNo++;
   if (!(flying && heli.alt > 40 && pipeline.quality === 'low' && (frameNo & 1))) renderer.shadowMap.needsUpdate = true;
+  far.update(camera, camera.far);
+  renderer.info.reset();
   pipeline.render(dt);
   // photo snap: re-render this frame at a higher resolution and read it back before the browser presents it
   if (photo.wantsSnap) {
@@ -617,7 +652,7 @@ const tc = performance.now();
 const settle = (p, ms) => Promise.race([p.catch(() => {}), new Promise((r) => setTimeout(r, ms))]);
 settle(Promise.all([carReady, treesReady]), 8000).then(() => {
   renderer.setRenderTarget(pipeline.sceneTarget);
-  return renderer.compileAsync ? renderer.compileAsync(scene, camera) : null;
+  return renderer.compileAsync ? Promise.all([renderer.compileAsync(scene, camera), renderer.compileAsync(far.scene, far.camera)]) : null;
 }).catch(() => {}).then(() => {
   renderer.setRenderTarget(null);
   console.log(`shaders compiled in ${Math.round(performance.now() - tc)} ms`);
@@ -640,7 +675,7 @@ setTimeout(() => hud.toast(IS_MOBILE ? 'Tap ? for help' : 'Press H for controls,
 
 // hooks for the headless smoke test
 window.__dublin = {
-  photo,
+  photo, far,
   ready: false, // set once shaders are compiled and the first frame has drawn
   heli, heliState: () => ({ flying, x: +heli.pos.x.toFixed(1), y: +heli.pos.y.toFixed(1), z: +heli.pos.z.toFixed(1), alt: +heli.alt.toFixed(1), speed: +heli.speed.toFixed(1), heading: +heli.heading.toFixed(2), rpm: +heli.rpm.toFixed(2), landed: heli.landed, floor: +heli.floor.toFixed(1), hm: heightField ? { W: heightField.W, H: heightField.H, cell: +heightField.cell.toFixed(2), ms: heightField.ms } : null, shadowExt: atmosphere.shadowExtent, far: Math.round(camera.far), fog: +scene.fog.density.toFixed(5) }),
   groundAt: (x, z) => groundAt(x, z), heliTune, heliEnv,
