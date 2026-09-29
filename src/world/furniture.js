@@ -10,6 +10,7 @@ import { LITE } from '../render/quality.js';
 import { addBox } from '../game/collision.js';
 import { chunkedInstances } from './chunks.js';
 import { plantTrees } from './trees.js';
+import { FC } from './sites.js';
 
 const rand = rng(1847);
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _up = new THREE.Vector3(0, 1, 0), _p = new THREE.Vector3(), _one = new THREE.Vector3(1, 1, 1);
@@ -216,6 +217,9 @@ export function buildFurniture(scene) {
       const river = { x: -d.z, z: d.x }; // quays run west to east with the river to the south (+z): right side
       for (let s = 6; s < L - 6; s += 11) {
         const p = v2.add(v2.lerp(a, b, s / L), v2.scale(river, way.width / 2 + 1.7));
+        // the view of the Four Courts' portico is kept open across the quay (refs/four-courts 01, 02)
+        const fu = (p.x - FC.x) * FC.d.x + (p.z - FC.z) * FC.d.z, fv = (p.x - FC.x) * FC.n.x + (p.z - FC.z) * FC.n.z;
+        if (Math.abs(fu) < 9 && fv > -30 && fv < 0) continue;
         if (fieldAt(p.x, p.z) > 0.8) trees.push({ ...p, rot: rand() * 6.28, s: new THREE.Vector3(1, 1, 1).multiplyScalar(0.8 + rand() * 0.35) });
       }
     }

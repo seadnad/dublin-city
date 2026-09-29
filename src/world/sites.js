@@ -120,6 +120,21 @@ export function boiAt(u, v) {
 // a footprint given in model metres (u0..u1 along the front, v0..v1 into the building)
 const boiBox = (u0, u1, v0, v1) => ({ ...boiAt((u0 + u1) / 2, (v0 + v1) / 2), rot: BOI.rot, w: (u1 - u0) * BOI.sx, d: (v1 - v0) * BOI.sy });
 
+// The Four Courts (docs/research/four-courts.md): the river front runs parallel to the chord of Inns Quay (NQ0-NQ2),
+// the portico steps just behind the quay's north footpath, the dome axis at its real x. The model
+// (tools/blender/build_fourcourts.py) is built in game metres: u east along the front, v north into the building, the
+// origin on the screens' face on the dome axis (the portico and its steps stand 3.6 m in front of it).
+export const FC = (() => {
+  const A = N('NQ0'), B = N('NQ2'), d = v2.norm(v2.sub(B, A)), n = { x: d.z, z: -d.x }; // n points away from the river
+  const quay = wayBetween('NQ0', 'NQ1'), off = quay.width / 2 + quay.pave + 0.3 + 3.6;
+  const dome = project(53.3459, -6.2735), t = (dome.x - A.x - n.x * off) / d.x;
+  const o = { x: A.x + d.x * t + n.x * off, z: A.z + d.z * t + n.z * off };
+  return { ...o, d, n, rot: Math.atan2(-d.z, d.x), zs: 1.1 }; // zs: the model's height stretch (build_fourcourts.py ZS_)
+})();
+export const fcAt = (u, v) => ({ x: FC.x + FC.d.x * u + FC.n.x * v, z: FC.z + FC.d.z * u + FC.n.z * v });
+// a rectangle in model metres (u0..u1 along the front, v0..v1 into the building) as a site box
+const fcBox = (u0, u1, v0, v1) => ({ ...fcAt((u0 + u1) / 2, (v0 + v1) / 2), rot: FC.rot, w: u1 - u0, d: v1 - v0 });
+
 // Aviva Stadium (docs/research/aviva.md): the model's origin is the pitch centre, turned so its north end points 16
 // degrees west of north (bearing 344), and moved 13.5 m north along that axis: roads are not compressed, and the real
 // south face stands only ~5 m from Lansdowne Road. Plan scale 0.6 across x 0.55 along the axis (build_aviva.py).
@@ -286,6 +301,12 @@ export const sites = {
       parts: { cathedral: { x: x0, z: zAxis, rot: 0 } },
     };
   })(),
+  fourCourts: {
+    // the central block, courtyards, wings and back ranges; the portico and its steps are extraSites.fcPortico
+    name: 'Four Courts', ...fcBox(-42.3, 42.3, -0.3, 49.3), labelY: 36,
+    parts: { fourcourts: { x: FC.x, z: FC.z, rot: FC.rot } },
+    view: spot('SQ2', 'NQ2', 0.25), // off O'Donovan Rossa Bridge, the dome ahead on the left
+  },
   customHouse: {
     name: 'Custom House', ...beside('NQ10', 'NQ11', 1, 1, 100, 24, { gap: 3 }), labelY: 50,
     view: spot('SQ9', 'SQ10', 0.3),
@@ -419,6 +440,8 @@ export const extraSites = {
   // Merchants' Hall (Frederick Darley, 1821): the granite hall on the quay the Merchant's Arch passage runs through,
   // 14 x 14.7 m, with the passage in its west bay lined up with the Ha'penny Bridge (docs/research/temple-bar.md)
   merchantsHall: beside('SQ6', 'HPS', 1, -1, 14, 14, { shift: 4.67, gap: 0.15 }),
+  // the Four Courts' portico and its steps, in front of the screens' line
+  fcPortico: fcBox(-7.7, 7.7, -3.6, 0.3),
   // Iveagh Play Centre, facing St Patrick's Park across Bull Alley
   iveaghPlay: beside('PK1', 'BD3', 0.5, 1, 34, 15, { gap: 0.3 }),
   // the red pub corner, SE of Temple Bar x Temple Lane South (invented name; the real one is a protected brand)
@@ -500,6 +523,7 @@ export const reserved = [
   shifted(sites.convention, 0, sites.convention.d / 2 + 6.5, sites.convention.w, 13), // its forecourt
   sites.grandCanalSt, shifted(sites.grandCanalSt, 0, sites.grandCanalSt.d / 2 + 3.25, sites.grandCanalSt.w + 4, 6.5), // its raised forecourt
   shifted(sites.grandCanalSt, sites.grandCanalSt.w / 2 + 9, 3, 18, sites.grandCanalSt.d + 6.5), // open corner to Grattan Street (steps, parking)
+  sites.fourCourts, extraSites.fcPortico,
   sites.heuston, sites.guinness, sites.convention, sites.threeArena, sites.threeArena.plaza, sites.grandCanal, sites.grandCanal.square,
   // the Luas terminus at The Point: both platforms and their shelters, from the end of the track back past the stop
   (() => { const a = N('PT'), b = N('PTE'), L = v2.len(v2.sub(b, a)), dir = v2.norm(v2.sub(b, a)); return { ...v2.lerp(a, b, 0.5), rot: Math.atan2(dir.x, dir.z), w: 15, d: L + 6 }; })(),

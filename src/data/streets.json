@@ -521,7 +521,12 @@
     "PXR7": [53.360359, -6.326387],
     "SPD": [53.34886, -6.2373],
     "PT": [53.348466, -6.228994],
-    "PTE": [53.348482, -6.22791]
+    "PTE": [53.348482, -6.22791],
+    "FC1": [53.347327, -6.272525],
+    "FCS": [53.347305, -6.273608],
+    "FC2": [53.347283, -6.274692],
+    "CSX": [53.347269, -6.275359],
+    "SMF": [53.347219, -6.277779]
   },
   "ways": [
     { "name": "Arran Quay", "type": "quay", "nodes": ["AQ2", "AQ1", "NQ0"] },
@@ -555,7 +560,7 @@
     { "name": "Mary's Abbey", "type": "secondary", "nodes": ["CA1", "MA1"] },
     { "name": "Chancery Place", "type": "secondary", "nodes": ["MA1", "CH1", "NQ2"] },
     { "name": "Chancery Street", "type": "secondary", "nodes": ["CH1", "CHS1"] },
-    { "name": "Church Street", "type": "secondary", "nodes": ["NQ0", "CHS1"] },
+    { "name": "Church Street", "type": "secondary", "nodes": ["NQ0", "CSX", "CHS1"] },
     { "name": "Liffey Street", "type": "secondary", "nodes": ["NQ6", "AB2", "LS2"] },
     { "name": "Marlborough Street", "type": "secondary", "nodes": ["NQ9", "AB1", "MB2", "MB3"] },
     { "name": "Talbot Street", "type": "secondary", "nodes": ["MB2", "TB1", "AM"] },
@@ -664,6 +669,7 @@
     { "name": "Steevens Lane", "type": "lane", "width": 7, "access": "pedestrian", "nodes": ["SJ1", "SL1"] },
     { "name": "Steevens Lane", "type": "secondary", "width": 7, "nodes": ["SL1", "SL2", "JS3"] },
     { "name": "Benburb Street", "type": "lane", "width": 8, "pave": 2, "access": "pedestrian", "nodes": ["BB0", "BB1", "BB2", "BB3"] },
+    { "name": "Chancery Street", "type": "lane", "width": 8, "pave": 2, "access": "pedestrian", "surface": "sett", "nodes": ["CH1", "FC1", "FCS", "FC2", "CSX"] },
     { "name": "Queen Street", "type": "secondary", "width": 12, "nodes": ["BB0", "QS2"] },
     { "name": "Seán Heuston Bridge", "type": "bridge", "width": 9, "pedestrian": true, "nodes": ["WT3", "HB1"] },
     { "name": "Heuston forecourt", "type": "lane", "width": 6, "access": "pedestrian", "nodes": ["HB1", "HS", "SJ1"] },
@@ -910,7 +916,7 @@
   },
   "luas": {
     "name": "Luas Red Line",
-    "route": ["PTE", "PT", "MU3", "MU2", "SPD", "GS1", "MY2", "MY1", "IF1", "BP3", "BP2", "AB0", "AB1", "OC1", "AB2", "JV0", "CA1", "MA1", "CH1", "NQ2", "NQ1", "NQ0", "AQ1", "AQ2", "BB0", "BB1", "BB2", "BB3", "WT3", "HB1", "HS", "SJ1", "SL1", "SL2", "JS3"],
+    "route": ["PTE", "PT", "MU3", "MU2", "SPD", "GS1", "MY2", "MY1", "IF1", "BP3", "BP2", "AB0", "AB1", "OC1", "AB2", "JV0", "CA1", "MA1", "CH1", "FC1", "FCS", "FC2", "CSX", "SMF", "BB0", "BB1", "BB2", "BB3", "WT3", "HB1", "HS", "SJ1", "SL1", "SL2", "JS3"],
     "stops": {
       "PT": "The Point",
       "SPD": "Spencer Dock",
@@ -918,8 +924,8 @@
       "BP2": "Busáras",
       "AB1": "Abbey Street",
       "JV0": "Jervis",
-      "NQ1": "Four Courts",
-      "AQ1": "Smithfield",
+      "FCS": "Four Courts",
+      "SMF": "Smithfield",
       "BB1": "Museum",
       "HS": "Heuston"
     }

@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { addReflections } from '../render/reflect.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { world, v2, pointInPolygon, insetPolygon, project } from './geo.js';
-import { sites, reserved, grounds, extraSites, cpAt, BOI, boiAt } from './sites.js';
+import { sites, reserved, grounds, extraSites, cpAt, BOI, boiAt, FC, fcAt } from './sites.js';
 import { parkPolys, campusPolys, stoneTex, WATER_Y, paintArea, COLORS, getStreets } from './ground.js';
 import { rng, makeStoneTexture } from './textures.js';
 import { addBox, addSegment, addPolyline } from '../game/collision.js';
@@ -364,6 +364,32 @@ function parliamentColliders() {
   addPolyline([boiAt(53.9, 57.8), boiAt(53.9, 78.8)]);
   for (const s of [sites.bankOfIreland, extraSites.boiFoster, extraSites.boiLords, extraSites.boiCorner]) addBox(s.x, s.z, s.w / 2, s.d / 2, s.rot);
   for (const u of [-16.2, -12.2, 12.2, 16.2]) { const p = boiAt(u, -2.3); addBox(p.x, p.z, 0.4, 0.4, BOI.rot); } // gate piers
+}
+
+// The Four Courts (docs/research/four-courts.md; the hero is tools/blender/build_fourcourts.py, placed by placeParts):
+// collision from the model's frame (sites.js fcAt) and Edward Smyth's five statues from the statue kit - Moses on the
+// pediment's apex, Justice and Mercy on its ends, Wisdom and Authority over the coupled columns at the block's
+// corners (seated in reality; the kit has no seated body, so they stand a little shorter).
+function fourCourts() {
+  const box = (u0, u1, v0, v1) => { const p = fcAt((u0 + u1) / 2, (v0 + v1) / 2); addBox(p.x, p.z, (u1 - u0) / 2, (v1 - v0) / 2, FC.rot); };
+  box(-17.5, 17.5, 0.3, 49);                                  // central block and the range behind it
+  box(-7.7, 7.7, -3.6, 0.3);                                  // the portico platform and steps
+  for (const s of [-1, 1]) {
+    box(...(s < 0 ? [-32, -17.5] : [17.5, 32]), 0, 1.3);     // the arcaded screen (the gateway projects a little)
+    box(...(s < 0 ? [-42, -32] : [32, 42]), 0, 49);           // the pavilion and its wing
+    box(...(s < 0 ? [-32, -17.5] : [17.5, 32]), 22, 49);      // the back range across the courtyard
+  }
+  const fig = (body, u, v, y, height) => { const p = fcAt(u, v); addStatue({ body, x: p.x, z: p.z, y: y * FC.zs, rot: FC.rot, height, finish: 'portland' }); };
+  fig('reader', 0, -2.8, 16.1, 3.2);                          // Moses with the tablets
+  fig('justice', -7.0, -2.8, 13.1, 2.8);                      // Justice
+  fig('allegory', 7.0, -2.8, 13.1, 2.8);                      // Mercy
+  fig('classical', -16.1, 0.4, 13.2, 2.5);                    // Wisdom
+  fig('allegory', 16.1, 0.4, 13.2, 2.5);                      // Authority
+  // after dark the floodlit front lies in the Liffey (ref 11)
+  for (const u of [-28, 0, 28]) {
+    const p = fcAt(u, -34);
+    if (pointInPolygon(p, world.riverPoly)) waterGlowSources.push({ ...p, y: WATER_Y + 0.05, color: 0xffe2b8, width: u ? 5 : 7, length: 26 });
+  }
 }
 
 function bankOfIreland(site) {
@@ -2259,6 +2285,7 @@ export function buildLandmarks(scene) {
   const phoenixPark = buildPark(scene);
   if (phoenixPark) groups.push(phoenixPark.group);
   for (const g of groups) scene.add(g);
+  fourCourts(); // its colliders and statues (the hero is placed below)
   buildStatues(scene); // the statue-kit figures queued by the builders above (loads statues.glb)
   // Parliament House / Bank of Ireland (Blender hero; the old procedural block if it can't load)
   parliamentColliders();
@@ -2283,6 +2310,8 @@ export function buildLandmarks(scene) {
       arenaHero = h; h.setNight(nightLevel);
     });
   }
+  // the Four Courts (Blender hero; floodlit through setStoneNight)
+  placeParts(scene, 'fourcourts', S.fourCourts, 'Four Courts');
   // St Patrick's Cathedral (Blender hero) and its park dressing
   placeParts(scene, 'stpatricks', S.stPatricks, "St Patrick's Cathedral");
   const spPark = parkPolys.find((p) => p.name === "St Patrick's Park");
