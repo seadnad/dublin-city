@@ -10,7 +10,7 @@ import { addBox } from '../game/collision.js';
 
 // ---------- street lamps ----------
 // Heritage lanterns on Georgian streets, the quays, Temple Bar and College Green; modern poles elsewhere.
-const HERITAGE = /Merrion|Stephen's Green|Dawson|Kildare|Harcourt|Leeson|Baggot|Clare|Quay|Bachelors|Temple Bar|Fleet|Essex|Eustace|Crown|Anglesea|Sycamore|Fishamble|College Green|Grafton|Westland|Parliament|Wicklow|Exchequer/;
+const HERITAGE = /Merrion|Stephen's Green|Dawson|Kildare|Harcourt|Leeson|Baggot|Clare|Quay|Bachelors|Temple Bar|Fleet|Essex|Eustace|Crown|Anglesea|Sycamore|Fishamble|College Green|Foster Place|Grafton|Westland|Parliament|Wicklow|Exchequer/;
 
 function lampSpots() {
   const spots = [];

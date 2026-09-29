@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { addReflections } from '../render/reflect.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { world, v2, pointInPolygon, insetPolygon } from './geo.js';
-import { sites, reserved, grounds, extraSites, cpAt } from './sites.js';
+import { sites, reserved, grounds, extraSites, cpAt, BOI, boiAt } from './sites.js';
 import { parkPolys, campusPolys, stoneTex, WATER_Y, paintArea, COLORS } from './ground.js';
 import { rng, makeStoneTexture } from './textures.js';
 import { addBox, addPolyline } from '../game/collision.js';
@@ -345,6 +345,19 @@ function trinity(site) {
   const grp = new THREE.Group();
   grp.add(b.build('Trinity College'), c.build('Campanile'), r.build('Trinity ranges'));
   return grp;
+}
+
+// Parliament House collision, from the hero's model coordinates (sites.js boiAt): the Kennan railings round the
+// quadrants and the piazza, the main block, the porticos. The fallback block below adds its own.
+function parliamentColliders() {
+  const arc = (cx, a0, a1, n, r = 33.7) => Array.from({ length: n + 1 }, (_, i) => { const a = a0 + ((a1 - a0) * i) / n; return boiAt(cx + r * Math.cos(a), 31.4 + r * Math.sin(a)); });
+  const D = Math.PI / 180, bowR = (12.2 ** 2 + 3.1 ** 2) / 6.2;
+  addPolyline([...arc(-23.35, -168 * D, -90 * D, 10), boiAt(-16.2, -2.3)]);
+  addPolyline([boiAt(16.2, -2.3), ...arc(23.35, -90 * D, -12 * D, 10)]);
+  addPolyline(Array.from({ length: 7 }, (_, i) => { const u = -12.2 + (24.4 * i) / 6; return boiAt(u, -5.4 + bowR - Math.sqrt(bowR ** 2 - u * u)); }));
+  addPolyline([boiAt(53.9, 57.8), boiAt(53.9, 78.8)]);
+  for (const s of [sites.bankOfIreland, extraSites.boiFoster, extraSites.boiLords, extraSites.boiCorner]) addBox(s.x, s.z, s.w / 2, s.d / 2, s.rot);
+  for (const u of [-16.2, -12.2, 12.2, 16.2]) { const p = boiAt(u, -2.3); addBox(p.x, p.z, 0.4, 0.4, BOI.rot); } // gate piers
 }
 
 function bankOfIreland(site) {
@@ -1934,14 +1947,18 @@ function buildTrees(scene) {
     const c = world.nodes.get('CGC');
     for (const [dx, dz] of [[16, -4], [20, 8], [15, 14]]) spots.push({ x: c.x + dx, z: c.z + dz, s: 1.1 });
   }
-  // London planes along the south footpath of College Green
+  // London planes on the broad footpath at the west end of the Parliament House's west quadrant (kept to the
+  // Foster Place corner so they don't hide the curve from Dame Street), and two in Foster Place
+  // (docs/research/parliament-house.md, OSM trees 5050667038-43)
   {
-    const a = world.nodes.get('CG0'), c = world.nodes.get('CGT'), way = world.ways.find((w) => w.name === 'College Green');
-    const d = v2.norm(v2.sub(c, a)), L = v2.len(v2.sub(c, a)), off = way.width / 2 + way.pave - 1.8;
-    for (let s = 6; s < L - 12; s += 11) {
-      const p = { x: a.x + d.x * s - d.z * off, z: a.z + d.z * s + d.x * off };
-      spots.push({ ...p, s: 0.95, street: true }); addBox(p.x, p.z, 0.4, 0.4, 0);
+    const street = [];
+    for (const a of [-156, -142]) { const r = (a * Math.PI) / 180; street.push(boiAt(-23.35 + 37.5 * Math.cos(r), 31.4 + 37.5 * Math.sin(r))); }
+    const fp = world.ways.find((w) => w.name === 'Foster Place'), [f0, f1, f2] = fp.pts;
+    for (const [p, q, t] of [[f0, f1, 0.7], [f1, f2, 0.4]]) {
+      const d = v2.norm(v2.sub(q, p)), m = v2.lerp(p, q, t), off = fp.width / 2 + fp.pave - 1; // the west footpath
+      street.push({ x: m.x + d.z * off, z: m.z - d.x * off });
     }
+    for (const p of street) { spots.push({ ...p, s: 0.95, street: true }); addBox(p.x, p.z, 0.4, 0.4, 0); }
   }
   // O'Connell Street: rowans on the islands, Oriental planes along the footpaths
   const oct = oconnellTrees();
@@ -1959,7 +1976,7 @@ export function buildLandmarks(scene) {
   const S = sites;
   const groups = [
     spire(S.spire), gpo(S.gpo), oconnellBridge(S.oconnellBridge), trinity(S.trinity),
-    bankOfIreland(S.bankOfIreland), customHouse(S.customHouse),
+    customHouse(S.customHouse),
     ...oconnellMonument(), fusiliersArch(S.stephensGreen.park),
     smithOBrien(extraSites.smithOBrien), grayMonument(extraSites.gray), larkinMonument(extraSites.larkin),
     fatherMathewMonument(extraSites.fatherMathew), parnellMonument(extraSites.parnell),
@@ -1974,6 +1991,9 @@ export function buildLandmarks(scene) {
   ];
   for (const g of groups) scene.add(g);
   buildStatues(scene); // the statue-kit figures queued by the builders above (loads statues.glb)
+  // Parliament House / Bank of Ireland (Blender hero; the old procedural block if it can't load)
+  parliamentColliders();
+  placeParts(scene, 'parliament', S.bankOfIreland, 'Parliament House').then((g) => { if (!g) scene.add(bankOfIreland(S.bankOfIreland)); });
   // Heuston Station (Blender hero; the old procedural model if it can't load)
   placeParts(scene, 'heuston', S.heuston, 'Heuston Station').then((g) => { if (!g) scene.add(heuston(S.heuston)); });
   // St Patrick's Cathedral (Blender hero) and its park dressing
