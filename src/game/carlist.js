@@ -8,7 +8,7 @@ export const CARS = {
     label: 'Liffey GT', name: 'Liffey GT hot hatch',
     blurb: 'The fun one: quickest off the line, fastest flat out, sharp steering. Lift off mid-corner and the tail comes round.',
     paints: [
-      { id: 'red', label: 'Tornado red', color: '#c3141d', rough: 0.34 },
+      { id: 'red', label: 'Flame red', color: '#c3141d', rough: 0.34 },
       { id: 'white', label: 'Pure white', color: '#e6e6e1', rough: 0.42 },
       { id: 'grey', label: 'Dark grey', color: '#3b3e43', metal: 0.5, rough: 0.3 },
       { id: 'blue', label: 'Deep blue', color: '#1d3f8f', metal: 0.5, rough: 0.3 },
