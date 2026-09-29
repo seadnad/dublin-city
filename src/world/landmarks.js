@@ -3,14 +3,14 @@ import * as THREE from 'three';
 import { addReflections } from '../render/reflect.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { world, v2, pointInPolygon, insetPolygon } from './geo.js';
-import { sites, reserved, grounds, extraSites } from './sites.js';
+import { sites, reserved, grounds, extraSites, cpAt } from './sites.js';
 import { parkPolys, campusPolys, stoneTex, WATER_Y, paintArea, COLORS } from './ground.js';
 import { rng, makeStoneTexture } from './textures.js';
-import { addBox } from '../game/collision.js';
+import { addBox, addPolyline } from '../game/collision.js';
 import { chunkedInstances } from './chunks.js';
 import { plantTrees } from './trees.js';
 import { KERB_H } from './roads.js';
-import { placeHapenny, placeParts, setStoneNight } from './heroes.js';
+import { placeHapenny, placeParts, setStoneNight, placeCrokePark } from './heroes.js';
 
 const rand = rng(1742);
 
@@ -1652,6 +1652,36 @@ function iveaghPlayCentre(site) {
   return b.build('Iveagh Play Centre');
 }
 
+// ---------- the GSWR railway bridges by Croke Park ----------
+// Over Jones's Road and Ballybough Road: a dark riveted girder deck (no trains in the game) between stone-faced stubs
+// of the embankment, which give both roads their gateway into the stadium's streets (docs/research/croke-park.md 1.2)
+function railBridges() {
+  const g = new THREE.Group();
+  g.name = 'railway bridges';
+  const CLEAR = 4.7, DECK = 1.1, GIRDER = 1.6, top = CLEAR + DECK;
+  const box = (mat, x, y, z, sx, sy, sz, rot) => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), mat);
+    m.position.set(x, y, z); m.rotation.y = rot; m.castShadow = m.receiveShadow = true; g.add(m);
+  };
+  for (const b of extraSites.railBridges) {
+    const c = Math.cos(b.rot), s = Math.sin(b.rot);
+    box(M.slate, b.x, CLEAR + DECK / 2, b.z, b.w, DECK, b.d, b.rot);
+    for (const side of [-1, 1]) { // the main girders along both edges, with a line of stiffeners
+      const o = side * (b.w / 2 - 0.25);
+      box(M.slate, b.x + o * c, top + GIRDER / 2, b.z - o * s, 0.5, GIRDER, b.d, b.rot);
+      for (let k = -b.d / 2 + 1; k < b.d / 2 - 0.5; k += 1.6) {
+        box(M.slate, b.x + (o + side * 0.3) * c + k * s, top + GIRDER / 2, b.z - (o + side * 0.3) * s + k * c, 0.12, GIRDER * 0.96, 0.18, b.rot);
+      }
+    }
+    for (const st of b.stubs) {
+      box(M.granite, st.x, top / 2, st.z, st.w, top, st.d, st.rot);
+      for (const side of [-1, 1]) { const o = side * (st.w / 2 - 0.2); box(M.granite, st.x + o * c, top + 0.5, st.z - o * s, 0.4, 1.0, st.d, st.rot); }
+      addBox(st.x, st.z, st.w / 2, st.d / 2, st.rot);
+    }
+  }
+  return g;
+}
+
 // ---------- trees ----------
 // is p inside any reserved landmark footprint (rotated rectangles, 2 m margin)?
 function inAnyFootprint(p) {
@@ -1770,6 +1800,7 @@ export function buildLandmarks(scene) {
     bewleys(extraSites.bewleys), brownThomas(extraSites.brownThomas), weirAndSons(extraSites.weir), stephensGreenCentre(extraSites.sgCentre), graftonDressing(),
     drSteevens(extraSites.steevens), guinness(S.guinness), jamesGate(extraSites.jamesGate), beckettHarp(S.beckett), convention(S.convention),
     threeArena(S.threeArena), grattanOffice(S.grandCanalSt), grandCanalTheatre(S.grandCanal), grandCanalSquare(S.grandCanal.square), markerHotel(extraSites.marker), gcsOffice(extraSites.gcsOffice),
+    railBridges(),
   ];
   for (const g of groups) scene.add(g);
   // Heuston Station (Blender hero; the old procedural model if it can't load)
@@ -1786,6 +1817,16 @@ export function buildLandmarks(scene) {
     if (!h) { scene.add(hapenny(S.hapenny)); return; }
     hapennyHero = h; h.setNight(nightLevel);
   });
+  // Croke Park (Blender hero with a far LOD): its ground-level outline and outlying solids collide whether or not the
+  // model loads; after dark the floodlit stand shows in the canal where it runs out from under the Davin Stand
+  let crokeHero = null;
+  placeCrokePark(scene, S.crokePark).then((h) => { if (h) { crokeHero = h; h.setNight(nightLevel); } });
+  addPolyline(S.crokePark.outline, true);
+  for (const b of S.crokePark.solids) addBox(b.x, b.z, b.w / 2, b.d / 2, b.rot);
+  for (const b of [-90, -58, 58, 88]) {
+    const p = cpAt(-121.7 - 0.0201 * (b + 279), b), pool = world.docks.find((dk) => dk.canal && pointInPolygon(p, dk.poly));
+    if (pool) waterGlowSources.push({ ...p, y: pool.level + 0.05, color: 0xe8eeff, width: 3.5, length: 26 });
+  }
   for (const g of grounds) {
     const c = Math.cos(g.rot), s = Math.sin(g.rot), hx = g.w / 2, hz = g.d / 2;
     paintArea([[-hx, -hz], [hx, -hz], [hx, hz], [-hx, hz]].map(([lx, lz]) => ({ x: g.x + lx * c + lz * s, z: g.z - lx * s + lz * c })), COLORS.lawn);
@@ -1810,6 +1851,7 @@ export function buildLandmarks(scene) {
     setNight(level) {
       for (const n of neon) n.m.emissiveIntensity = n.day + (n.night - n.day) * level;
       nightLevel = level; if (hapennyHero) hapennyHero.setNight(level);
+      if (crokeHero) crokeHero.setNight(level);
       setStoneNight(level);
     },
     update(camera) {

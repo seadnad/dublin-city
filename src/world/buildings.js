@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { world, PAVEMENT, v2 } from './geo.js';
 import { parkPolys, campusPolys, dockPolys } from './ground.js';
 import { canalBankPolys } from './canals.js';
-import { reserved } from './sites.js';
+import { reserved, sites } from './sites.js';
 import { rng, fbmFast } from './textures.js';
 import { addBox, addSegment } from '../game/collision.js';
 import { noiseTexture, KERB_H } from './roads.js';
@@ -98,10 +98,19 @@ const GEORGIAN_ST = /Merrion|Stephen's Green|Dawson|Kildare|Harcourt|Leeson|Bagg
 const TEMPLE_BAR = /Temple Bar|Temple Lane|Fleet|Essex Street|Eustace|Crown Alley|Anglesea|Sycamore|Cope|Fownes|Fishamble|Exchequer|Wicklow/;
 const DOCK_ST = /North Wall|Rogerson|City Quay|Mayor|Commons|Memorial|Lombard|Sandwith|Townsend|Pearse|Store|Amiens|Tara|George's Quay/;
 
+// Docklands: east of the Custom House, from Pearse Street up to Sheriff Street. The northern ring beyond it (North
+// Strand, Ballybough, Clonliffe) is terraced housing, not glass towers.
+const isDocks = (x, z) => x > 300 && z < 150 && z > -280;
+// Croke Park's neighbourhood (Jones's Road, Clonliffe Road, Ballybough, the NCR by Russell Street): red-brick terraces,
+// two storeys on the side streets and three on the main roads (docs/research/croke-park.md 1.3), so the stadium
+// towers over them as it does in the photos
+const CP = sites.crokePark.centre;
+const nearCroke = (x, z) => Math.hypot(x - CP.x, z - CP.z) < 330;
+
 function styleFor(x, z, way) {
   const name = way ? way.name : '';
-  const docks = x > 300 && z < 150; // Docklands: east of the Custom House, north of Pearse Street
-  if (docks && !GEORGIAN_ST.test(name)) return S.MODERN;
+  if (nearCroke(x, z)) return rand() < 0.85 ? S.BRICK : S.STUCCO;
+  if (isDocks(x, z) && !GEORGIAN_ST.test(name)) return S.MODERN;
   if (x > 200 && DOCK_ST.test(name)) return rand() < 0.65 ? S.MODERN : S.BRICK;
   if (TEMPLE_BAR.test(name)) return rand() < 0.75 ? S.TEMPLEBAR : S.BRICK;
   // Dame Street: Victorian red brick and painted stucco, with the odd colourful front
@@ -160,6 +169,7 @@ for (const way of ordered) {
         const mid = v2.add(a, v2.scale(dir, s));
         const style = styleFor(mid.x, mid.z, way);
         const spec = lotSpec(style);
+        if (nearCroke(mid.x, mid.z)) spec.floors = way.type === 'primary' ? 3 : rand() < 0.8 ? 2 : 3;
         if (s + spec.w > L + 3) { s += 2; continue; }
         let placed = false;
         for (const df of [1, 0.7, 0.5]) {
@@ -183,13 +193,13 @@ for (let z = B.minZ + 10; z < B.maxZ - 10; z += 11) {
     const road = world.nearestRoad(x, z);
     const seg = road ? road.seg : null;
     const rot = seg ? Math.atan2(seg.b.x - seg.a.x, seg.b.z - seg.a.z) : 0;
-    const style = x > 300 && z < 150 ? S.MODERN : rand() < 0.5 ? S.BRICK : S.STUCCO;
+    const style = isDocks(x, z) ? S.MODERN : rand() < (nearCroke(x, z) ? 0.85 : 0.5) ? S.BRICK : S.STUCCO;
     for (const size of [14, 10, 7]) {
       const o = { x, z, rot, w: size + rand() * 3, d: size + rand() * 3 };
       if (testOBB(o)) {
         const spec = lotSpec(style);
         // block interiors stay lower than the street frontage (keeps Docklands from becoming a wall of towers)
-        spec.floors = style === S.MODERN ? 3 + Math.floor(rand() * 4) : Math.max(3, spec.floors - 1);
+        spec.floors = style === S.MODERN ? 3 + Math.floor(rand() * 4) : nearCroke(x, z) ? 2 : Math.max(3, spec.floors - 1);
         place(o, style, spec, false);
         break;
       }

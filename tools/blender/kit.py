@@ -172,8 +172,9 @@ def material(name, rgb, rough=0.8):
     return m
 
 
-def bake_ao_vertex(objs, distance=3.0, samples=24):
-    """Bake ambient occlusion into a vertex colour layer on every object (Cycles)."""
+def bake_ao_vertex(objs, distance=3.0, samples=24, subdiv=3.0, skip=()):
+    """Bake ambient occlusion into a vertex colour layer on every object (Cycles). Edges longer than `subdiv` metres
+    are split once first so the AO has vertices to live on (None: no split). Objects in `skip` get no bake."""
     sc = bpy.context.scene
     sc.render.engine = 'CYCLES'
     sc.cycles.device = 'CPU'
@@ -191,12 +192,12 @@ def bake_ao_vertex(objs, distance=3.0, samples=24):
     for o in decals:
         o.hide_render = True
     for ob in objs:
-        if ob in decals:
+        if ob in decals or ob in skip:
             continue
         me = ob.data
         # subdivide big faces a little so the per-vertex AO has somewhere to live
         bm = bmesh.new(); bm.from_mesh(me)
-        long = [e for e in bm.edges if e.calc_length() > 3.0]
+        long = [e for e in bm.edges if e.calc_length() > subdiv] if subdiv else []
         if long:
             bmesh.ops.subdivide_edges(bm, edges=long, cuts=1, use_grid_fill=True)
         bm.to_mesh(me); bm.free()

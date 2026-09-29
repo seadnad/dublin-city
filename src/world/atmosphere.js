@@ -18,7 +18,8 @@ void main() {
 //  - height falloff: denser near the ground, thinner up high, so rooftops and the Spire read against the sky
 //  - aerial perspective: looking toward the sun the haze brightens and warms (Mie forward scatter); the sun's
 //    direction and colour come from the first directional light, which lit materials already receive
-// Materials without lighting (basic/sprite) just get the height fog.
+// Materials without lighting (basic/sprite) just get the height fog. A material can thin its own fog with
+// `defines: { FOG_SCALE: '0.6' }` (part of the program key, so no extra per-frame cost).
 const FOG_HEIGHT = 70.0; // metres over which the haze thins out
 THREE.ShaderChunk.fog_pars_vertex = `
 #ifdef USE_FOG
@@ -46,6 +47,9 @@ THREE.ShaderChunk.fog_fragment = `
   #ifdef FOG_EXP2
     float fogH = max( 0.0, 0.5 * ( vFogY + cameraPosition.y ) );
     float fogD = fogDensity * mix( 1.0, exp( - fogH / ${FOG_HEIGHT.toFixed(1)} ), 0.7 );
+    #ifdef FOG_SCALE
+      fogD *= FOG_SCALE; // a material that must read further through the haze (Croke Park on the skyline)
+    #endif
     float fogFactor = 1.0 - exp( - fogD * fogD * fogDist * fogDist );
   #else
     float fogFactor = smoothstep( fogNear, fogFar, fogDist );

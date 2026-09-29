@@ -276,7 +276,8 @@ function build() {
 // (game metres, not compressed, like the roads) and optional lock positions. Where a road crosses, the water stops
 // short of the carriageway and footpaths: the road runs over on a (flat) bridge, and each stretch of water between
 // two crossings or locks becomes its own pool, stepping down at every lock. Grass banks run along both sides, as
-// wide as the nearby roads allow.
+// wide as the nearby roads allow. `covered` lists [[lat, lon], [lat, lon]] stretches that run under a building (the
+// Royal Canal under Croke Park's Davin Stand): the water carries on, but the banks there are paved and get no trees.
 const CANAL_TOP = -0.75, LOCK_DROP = 0.2, CANAL_MIN = -2.1;
 function buildCanal(name, c, segs, segsNear) {
   const width = c.width ?? 9, verge = c.verge ?? 5;
@@ -328,6 +329,15 @@ function buildCanal(name, c, segs, segsNear) {
     return best;
   });
   for (const s of locks) gaps.push({ s0: s - 0.4, s1: s + 0.4, kind: 'lock' });
+  // stretches that run under a building (the Davin Stand at Croke Park): [[lat, lon], [lat, lon]] ranges -> s ranges
+  const nearestS = (ll) => {
+    const p = project(ll[0], ll[1]);
+    let best = 0, bd = Infinity;
+    for (let i = 0; i < pts.length; i++) { const d = v2.len(v2.sub(pts[i], p)); if (d < bd) { bd = d; best = S[i]; } }
+    return best;
+  };
+  const covered = (c.covered || []).map(([a, b]) => { const s0 = nearestS(a), s1 = nearestS(b); return [Math.min(s0, s1), Math.max(s0, s1)]; });
+  const isCovered = (s) => covered.some(([a, b]) => s >= a && s <= b);
   gaps.sort((p, q) => p.s0 - q.s0);
   // merge overlapping gaps, then the pools are what's left
   const merged = [];
@@ -340,9 +350,10 @@ function buildCanal(name, c, segs, segsNear) {
   let s = 0, level = CANAL_TOP;
   for (const g of [...merged, { s0: total, s1: total }]) {
     if (g.s0 - s > 3) {
-      const run = [];
-      for (let t = s; t < g.s0; t += 2) run.push(at(t));
-      run.push(at(g.s0));
+      const run = [], runS = [];
+      for (let t = s; t < g.s0; t += 2) { run.push(at(t)); runS.push(t); }
+      run.push(at(g.s0)); runS.push(g.s0);
+      const cover = runS.map(isCovered);
       const left = run.map((p) => ({ x: p.x + p.n.x * width / 2, z: p.z + p.n.z * width / 2 }));
       const right = run.map((p) => ({ x: p.x - p.n.x * width / 2, z: p.z - p.n.z * width / 2 }));
       // grass banks: out from each edge as far as the verge width, stopping short of any road corridor
@@ -360,14 +371,14 @@ function buildCanal(name, c, segs, segsNear) {
       pools.push({
         s0: s, s1: g.s0, level, centre: run,
         poly: [...left, ...right.slice().reverse()],
-        banks: [{ inner: left, outer: edge(1, bl), w: bl }, { inner: right, outer: edge(-1, br), w: br }],
+        banks: [{ inner: left, outer: edge(1, bl), w: bl, cover }, { inner: right, outer: edge(-1, br), w: br, cover }],
       });
     }
     if (g.lock) level = Math.max(CANAL_MIN, level - LOCK_DROP);
     s = g.s1;
   }
   const ends = merged.map((g) => ({ ...g, a: at(g.s0), b: at(g.s1) }));
-  return { name, width, pts, total, pools, gaps: ends, locks };
+  return { name, width, pts, total, pools, gaps: ends, locks, covered };
 }
 
 // Intersection of segments ab and cd: the parameter t along ab, or null.

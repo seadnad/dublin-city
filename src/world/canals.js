@@ -47,7 +47,7 @@ function instanced(list, mat) {
   return m;
 }
 
-export function buildCanals(scene, grassMat, stoneMat) {
+export function buildCanals(scene, grassMat, stoneMat, pavingMat = stoneMat) {
   const group = new THREE.Group();
   group.name = 'canals';
   if (!world.canals.length) return group;
@@ -58,12 +58,20 @@ export function buildCanals(scene, grassMat, stoneMat) {
   for (const c of world.canals) {
     for (const pool of c.pools) {
       for (const bank of pool.banks) {
-        group.add(Object.assign(new THREE.Mesh(strip(bank.inner, bank.outer, KERB_H + 0.004), grassMat), { receiveShadow: true }));
-        // a row of trees along each bank, well back from the water
+        // grass banks; where the canal runs under a building (bank.cover) the bank is a paved towpath instead
+        const cover = bank.cover || [];
+        let k0 = 0;
+        for (let k = 1; k <= bank.inner.length; k++) {
+          if (k < bank.inner.length && !!cover[k] === !!cover[k0]) continue;
+          const k1 = Math.min(k, bank.inner.length - 1); // runs share their end point
+          if (k1 > k0) group.add(Object.assign(new THREE.Mesh(strip(bank.inner.slice(k0, k1 + 1), bank.outer.slice(k0, k1 + 1), KERB_H + 0.004), cover[k0] ? pavingMat : grassMat), { receiveShadow: true }));
+          k0 = k1;
+        }
+        // a row of trees along each bank, well back from the water (none where it is covered)
         let acc = rand() * 8;
         for (let i = 1; i < bank.inner.length; i++) {
           acc += v2.len(v2.sub(bank.inner[i], bank.inner[i - 1]));
-          if (acc < 9 || bank.w[i] < 2.5) continue;
+          if (acc < 9 || bank.w[i] < 2.5 || cover[i]) continue;
           acc = rand() * 3;
           const f = 0.55 + rand() * 0.2;
           trees.push({ x: bank.inner[i].x + (bank.outer[i].x - bank.inner[i].x) * f, z: bank.inner[i].z + (bank.outer[i].z - bank.inner[i].z) * f, rot: rand() * 6.28, s: 0.8 + rand() * 0.35 });
