@@ -3,7 +3,8 @@
 Run headless:  blender -b --factory-startup -P tools/blender/build_statues.py -- public/models models [preview.png]
 
 Bodies (statue_bodies.py): cloaked, frock_chest, folded, orator, orator_out, friar, larkin, reader, allegory, justice,
-classical. Each node is named `fig_<body>`, built at a nominal 1.8 m (head top ~1.78 m), feet at the origin, facing
+classical, davis, herald, molly, torchbearer, seahorse_lamp (built at real size: place it with height = NOMINAL).
+Each node is named `fig_<body>`, built at a nominal 1.8 m (head top ~1.78 m), feet at the origin, facing
 Blender -Y (three.js +Z). One material (`st_figure`); the game assigns bronze or stone per statue and paints patina
 into the vertex colours at load (src/world/statues.js). Budget ~1.2k tris per body (one Skin subdivision level).
 """
@@ -17,14 +18,17 @@ OUT = os.path.abspath(ARGS[0] if ARGS else 'public/models')
 SRC = os.path.abspath(ARGS[1] if len(ARGS) > 1 else 'models')
 PREVIEW = ARGS[2] if len(ARGS) > 2 else None
 
-BODIES = ['cloaked', 'frock_chest', 'folded', 'orator', 'orator_out', 'friar', 'larkin', 'reader', 'allegory', 'justice', 'classical']
+BODIES = ['cloaked', 'frock_chest', 'folded', 'orator', 'orator_out', 'friar', 'larkin', 'reader', 'allegory', 'justice', 'classical',
+          'davis', 'herald', 'molly', 'torchbearer', 'seahorse_lamp']
 TARGET = 1400
+# the barrow and the lamp's twined sea-horses need more (docs/research/kildare-street.md)
+TARGETS = dict(molly=2400, seahorse_lamp=1800, herald=1100)
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 mat = kit.material('st_figure', (0.5, 0.5, 0.5), 0.6)
 objs = []
 for i, name in enumerate(BODIES):
-    ob = getattr(B, name)().to_object(f'fig_{name}', mat, target=TARGET)
+    ob = getattr(B, name)().to_object(f'fig_{name}', mat, target=TARGETS.get(name, TARGET))
     ob.location.x = i * 2.2
     objs.append(ob)
     ob.data.calc_loop_triangles()
@@ -38,7 +42,7 @@ if PREVIEW:
     sc.render.engine = 'BLENDER_EEVEE_NEXT' if 'BLENDER_EEVEE_NEXT' in [e.identifier for e in bpy.types.RenderSettings.bl_rna.properties['engine'].enum_items] else 'BLENDER_EEVEE'
     sc.render.resolution_x, sc.render.resolution_y = 1800, 1100
     for i, ob in enumerate(objs):  # preview grid: two rows, the second lifted
-        ob.location = ((i % 6) * 1.5, 0, 0 if i < 6 else 2.4)
+        ob.location = ((i % 6) * 1.5, 0, (i // 6) * 2.6)
         ob.rotation_euler = (0, 0, math.radians(-25))
     w = bpy.data.worlds.get('w') or bpy.data.worlds.new('w'); sc.world = w; w.use_nodes = True
     w.node_tree.nodes['Background'].inputs['Color'].default_value = (0.62, 0.66, 0.7, 1)
@@ -50,8 +54,8 @@ if PREVIEW:
     sun = bpy.data.objects.new('sun', bpy.data.lights.new('sun', 'SUN')); sun.data.energy = 3
     sun.rotation_euler = (math.radians(50), 0, math.radians(-30)); sc.collection.objects.link(sun)
     cam = bpy.data.objects.new('cam', bpy.data.cameras.new('cam')); sc.collection.objects.link(cam)
-    cam.data.type = 'ORTHO'; cam.data.ortho_scale = 8.6
-    cam.location = (3.75, -30, 2.2); cam.rotation_euler = (math.radians(90), 0, 0)
+    cam.data.type = 'ORTHO'; cam.data.ortho_scale = 10.5
+    cam.location = (3.75, -30, 3.9); cam.rotation_euler = (math.radians(90), 0, 0)
     sc.camera = cam
     sc.render.filepath = os.path.abspath(PREVIEW)
     bpy.ops.render.render(write_still=True)

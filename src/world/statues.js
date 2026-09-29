@@ -17,7 +17,8 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { load } from './heroes.js';
 
-export const BODIES = ['cloaked', 'frock_chest', 'folded', 'orator', 'orator_out', 'friar', 'larkin', 'reader', 'allegory', 'justice', 'classical'];
+export const BODIES = ['cloaked', 'frock_chest', 'folded', 'orator', 'orator_out', 'friar', 'larkin', 'reader', 'allegory', 'justice', 'classical',
+  'davis', 'herald', 'molly', 'torchbearer', 'seahorse_lamp']; // seahorse_lamp is built at real size: height = NOMINAL
 const NOMINAL = 1.78; // head top of the kit bodies, metres
 
 // colours from docs/research/monuments.md 3.4 (sampled from the reference photos)
@@ -28,6 +29,9 @@ export const FINISH = {
   darkBronze: { metal: true, base: '#3a3d36', streak: '#5f8b78', amount: 0.08 },  // Parnell, Davis
   portland: { metal: false, base: '#d8d4c9', streak: '#a9a59a', amount: 0.3 },    // Smith O'Brien, Gray, GPO figures
   limestone: { metal: false, base: '#a4a6a1', streak: '#83857f', amount: 0.25 },  // Father Mathew
+  heraldBronze: { metal: true, base: '#4f5f57', streak: '#7d9488', amount: 0.35 }, // the Four Angels: pale grey-green
+  mollyBronze: { metal: true, base: '#3a2e25', streak: '#5a4a3a', amount: 0.1 },   // Molly Malone: brown bronze
+  castIron: { metal: true, base: '#1c1e1f', streak: '#2c3032', amount: 0.05 },     // Grattan's lamp standards
 };
 
 // near-black bronze is a matte, low-metal surface (the old shiny 0.85 metalness read as polished steel)
@@ -104,8 +108,19 @@ export async function buildStatues(scene) {
     const src = bodies[st.body] || (console.warn(`statue body "${st.body}" missing`), fallback);
     const g = clean(src);
     const k = st.height / NOMINAL;
+    // polish: { c: [x, y, z] in the body's own nominal space, r, color } - rubbed bright by hands (Molly's bodice)
+    let mask = null;
+    if (st.polish) {
+      const pp = g.attributes.position, [cx, cy, cz] = st.polish.c;
+      mask = new Float32Array(pp.count);
+      for (let i = 0; i < pp.count; i++) mask[i] = 1 - smooth(st.polish.r * 0.5, st.polish.r, Math.hypot(pp.getX(i) - cx, pp.getY(i) - cy, pp.getZ(i) - cz));
+    }
     g.applyMatrix4(_m.compose(_p.set(st.x, st.y, st.z), _q.setFromAxisAngle(_up, st.rot), _s.setScalar(k)));
     paint(g, st.finish, 1);
+    if (mask) {
+      const col = g.attributes.color; _b.set(st.polish.color);
+      for (let i = 0; i < col.count; i++) { const t = mask[i]; col.setXYZ(i, col.getX(i) + (_b.r - col.getX(i)) * t, col.getY(i) + (_b.g - col.getY(i)) * t, col.getZ(i) + (_b.b - col.getZ(i)) * t); }
+    }
     const metal = (FINISH[st.finish] || FINISH.bronze).metal;
     const key = `${metal ? 'metal' : 'stone'}:${Math.floor(st.x / 600)},${Math.floor(st.z / 600)}`;
     if (!buckets.has(key)) buckets.set(key, []);

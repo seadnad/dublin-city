@@ -19,6 +19,7 @@ import { placeCCJ } from './ccj.js';
 import { placeBarrowStreet } from './barrowst.js';
 import { placeGrandCanal, gcsColliders } from './gcsquare.js';
 import { buildTowers } from './towers.js';
+import { collegeGreen, suffolkStreet, placeKildare, setKildareNight } from './kildare.js';
 import { placeNorthCity, northCityColliders } from './northcity.js';
 import { LITE } from '../render/quality.js';
 const lawnMat = () => getStreets().grassMat;
@@ -1552,18 +1553,6 @@ function clockCorner(site) {
   return b.build('Dame Street clock tower');
 }
 
-function grattanIsland(site) {
-  // Henry Grattan on his granite pedestal, on a kerbed island in the middle of College Green
-  const b = new Builder(site);
-  b.box(3.2, KERB_H, 16, M.granite);
-  b.box(2.8, 0.05, 15.4, M.cobble, { y: KERB_H });
-  b.box(2.2, 3.4, 2.2, M.graniteSmooth, { y: KERB_H });
-  b.box(2.6, 0.4, 2.6, M.graniteSmooth, { y: KERB_H + 3.4 });
-  b.statue(0, KERB_H + 3.8, 0, 1.25, M.bronze);
-  b.solid(0, 0, 3.2, 16);
-  return b.build('Grattan monument');
-}
-
 // ---------- Grafton Street ----------
 // shopfront elevations painted to scale (32 px per metre), used on a plane over the building's street face
 const PXM = 32;
@@ -2294,7 +2283,7 @@ export function buildLandmarks(scene) {
     smithOBrien(extraSites.smithOBrien), grayMonument(extraSites.gray), larkinMonument(extraSites.larkin),
     fatherMathewMonument(extraSites.fatherMathew), parnellMonument(extraSites.parnell),
     cityHall(S.cityHall), dublinCastle(extraSites.castle), centralBank(S.centralBank), olympia(extraSites.olympia),
-    clockCorner(extraSites.clockCorner), grattanIsland(extraSites.grattan),
+    clockCorner(extraSites.clockCorner), collegeGreen({ Builder, M, KERB_H }), ...suffolkStreet({ Builder, M, KERB_H }),
     iveaghPlayCentre(extraSites.iveaghPlay),
     merchantsHall(extraSites.merchantsHall), redPub(extraSites.redPub), templeBarSquare(extraSites.tbSquare), templeBarDressing(),
     bewleys(extraSites.bewleys), brownThomas(extraSites.brownThomas), weirAndSons(extraSites.weir), stephensGreenCentre(extraSites.sgCentre), graftonDressing(),
@@ -2311,6 +2300,8 @@ export function buildLandmarks(scene) {
   if (phoenixPark) groups.push(phoenixPark.group);
   for (const g of groups) scene.add(g);
   fourCourts(); // its colliders and statues (the hero is placed below)
+  // Kildare Street / Merrion Street (Blender hero; its colliders and the Shelbourne's torch-bearers queue first)
+  placeKildare(scene, { Builder, M });
   buildStatues(scene); // the statue-kit figures queued by the builders above (loads statues.glb)
   // Parliament House / Bank of Ireland (Blender hero; the old procedural block if it can't load)
   parliamentColliders();
@@ -2436,6 +2427,7 @@ export function buildLandmarks(scene) {
       if (guinnessHero) guinnessHero.setNight(level);
       if (northHero) northHero.setNight(level);
       towers.setNight(level);
+      setKildareNight(level);
       setStoneNight(level);
       if (phoenixPark) phoenixPark.setNight(level);
     },

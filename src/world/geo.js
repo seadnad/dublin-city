@@ -177,6 +177,8 @@ function build() {
       // lamps: a street-lighting style of its own instead of the city lamps ('gas': the Phoenix Park gas lamps, built
       // by park.js; 'none': unlit). roundabout: the id of the node at the centre of the ring this way belongs to.
       lamps: w.lamps || null, roundabout: w.roundabout || null,
+      // laneOff: the running lanes' distance from the centreline where an island splits the carriageway (College Green)
+      laneOff: w.laneOff || null,
     };
     for (const id of w.nodes) nodes.get(id).ways.push(way);
     return way;
@@ -432,6 +434,7 @@ export function hasParking(way) {
 }
 // Distance of the running lane's centre from the road centreline (traffic keeps left of it).
 export function laneOffset(way) {
+  if (way.laneOff) return way.laneOff;
   if (way.type === 'boulevard') return 7;
   if (hasParking(way)) return 2.6;
   return Math.min(way.width / 4, 3);

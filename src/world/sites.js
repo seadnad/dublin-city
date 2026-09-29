@@ -6,6 +6,8 @@ import { bridges, parkPolys, campusPolys, dockPolys } from './ground.js';
 import { monumentSites, along, chainageOf } from './oconnell.js';
 import ncLayout from '../data/northcity.json';
 const { clerys: CLERYS, parnell: PARNELL, busaras: BUSARAS } = ncLayout;
+import { collegeGreenSites, cgAt, CG_SPOTS, CG_EAST } from './collegegreen.js';
+import { KD_BOXES, KD_OPEN } from './kildarelayout.js';
 import tanksData from '../data/guinness-tanks.json';
 import bsLayout from '../data/barrowst.json';
 
@@ -503,6 +505,8 @@ function shifted(site, lx, lz, w, d) {
 export const grounds = [
 
   shifted(sites.customHouse, 0, -3, 124, 34),
+  // Leinster Lawn, from Leinster House's garden front to Merrion Square West
+  { ...KD_OPEN.lawn, lawn: 1 }, { ...KD_OPEN.lawnEast, lawn: 1 }, { ...KD_OPEN.lawnEast2, lawn: 1 },
   // Lansdowne FC's back pitch, between the stadium's east side and the Dodder
   { ...shifted(sites.aviva, 75.5, -2, 15, 78), lawn: 1 },
   // Lansdowne Lawn Tennis Club, north of it up to Bath Avenue: open courts, so the stadium shows across the Dodder
@@ -556,7 +560,8 @@ export const extraSites = {
   })(),
   // Grattan's statue on its island at the east end of College Green, in front of the east arch pavilion, facing
   // west down Dame Street (the island's east tip stays clear of the Trinity junction)
-  grattan: (() => { const a = N('CGT'), b = N('CG0'), p = v2.lerp(a, b, 0.31), d = v2.norm(v2.sub(b, a)); return { ...p, rot: Math.atan2(d.x, d.z) }; })(),
+  // (docs/research/kildare-street.md: the islands, Davis and the fountain are src/world/collegegreen.js; he faces Trinity)
+  grattan: { ...cgAt(...CG_SPOTS.grattan), rot: CG_EAST },
   // Parliament House outline beyond the main block: the piazza with its arch pavilions, the porticos on Foster
   // Place and Westmoreland Street, the SE corner block
   boiPiazza: boiBox(-23.9, 23.9, -2.4, 17),
@@ -618,6 +623,18 @@ extraSites.bsPlaza = bsLayout.plaza;
 
 // the O'Connell Street monuments on their islands down the middle of the street (src/world/oconnell.js)
 Object.assign(extraSites, monumentSites);
+// College Green's islands (Davis and the Four Angels, Grattan), Molly Malone and St Andrew's Church on Suffolk Street
+Object.assign(extraSites, collegeGreenSites);
+// Kildare Street / Merrion Street (src/world/kildarelayout.js): the Library, Museum, Leinster House and its wings, the
+// Natural History Museum, the Gallery, Government Buildings, the Shelbourne; the forecourt, the lawn, the courtyard
+for (const [k, b] of Object.entries(KD_BOXES)) extraSites['kd_' + k] = b;
+for (const [k, b] of Object.entries(KD_OPEN)) extraSites['kdOpen_' + k] = b;
+Object.assign(sites, {
+  leinsterHouse: { name: 'Leinster House', ...KD_BOXES.leinster, labelY: 26, view: spot('KDK1', 'KDK2', 0.12) },
+  govBuildings: { name: 'Government Buildings', ...KD_BOXES.govCentre, labelY: 40, view: spot('MR1', 'MSSW', 0.12) },
+  shelbourne: { name: 'The Shelbourne', ...KD_BOXES.shelbourne, labelY: 28, view: spot('DS1', 'KS1', 0.45) },
+  mollyMalone: { name: 'Molly Malone', ...collegeGreenSites.molly, labelY: 5, view: spot('CG3', 'KDS1', 0.3) },
+});
 
 // ---------- Dublin's tall buildings (docs/research/tallest-buildings.md; built in src/world/towers.js) ----------
 // Each stands on its OSM centre and is then slid (along a given direction, in 0.25 m steps) until every part of it is
@@ -920,6 +937,8 @@ export const reserved = [
   // ...and the grounds behind it, out to the park wall (the green's edge, src/data/streets.json) on the west and north
   (extraSites.ccjWest = { x: CCJ.x - 34, z: CCJ.z - 10, rot: 0, w: 18, d: 38 }),
   (extraSites.ccjNorth = { x: CCJ.x - 6, z: CCJ.z - 29, rot: 0, w: 38, d: 8 }),
+  // Kildare Street / Merrion Street, the Shelbourne, St Andrew's Church and Molly's corner (not the College Green islands)
+  ...Object.entries(extraSites).filter(([k]) => /^kd_|^kdOpen_|^stAndrews/.test(k)).map(([, s]) => s), sites.mollyMalone,
   // the tall buildings (src/world/towers.js)
   ...tallFootprints,
   // Clerys, Parnell Square (the Rotunda, the Ambassador, the Gate, the Garden of Remembrance) and Busáras
