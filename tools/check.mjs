@@ -55,6 +55,8 @@ const browser = await puppeteer.launch({
   args: ['--ignore-gpu-blocklist', '--enable-gpu', '--use-angle=d3d11', '--window-size=1280,720', ...(process.env.PERF ? ['--disable-gpu-vsync', '--disable-frame-rate-limit'] : [])],
 });
 const page = await browser.newPage();
+// GFX=high/medium/low/saver exercises an explicit profile before quality.js reads localStorage.
+if (process.env.GFX) await page.evaluateOnNewDocument((mode) => localStorage.setItem('dublin.gfx', JSON.stringify(mode)), process.env.GFX);
 if (mobile) await page.emulate({ viewport: { width: 844, height: 390, deviceScaleFactor: 2, isMobile: true, hasTouch: true, isLandscape: true }, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Mobile' });
 else await page.setViewport({ width: 1280, height: 720 });
 

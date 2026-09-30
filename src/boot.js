@@ -3,10 +3,13 @@
 // Safari and Firefox) the intro renders in a worker, so it stays smooth while the main thread builds the city; the
 // title and progress bar are plain HTML on top. Otherwise it renders on the page as before.
 // main.js drives it through window.__intro: progress(), panTo(start), pose(), finish().
-import * as THREE from 'three';
-import { createIntro } from './intro/scene.js';
 import { profile } from './render/quality.js';
 
+// The aerial preview uses a second WebGL context while the full city is built. On the light profile,
+// give the game that GPU/CPU time and memory instead; the existing loading card shows stage progress.
+const lightLoadingText = profile.lite ? document.querySelector('#loading p') : null;
+if (!profile.lite) {
+const [THREE, { createIntro }] = await Promise.all([import('three'), import('./intro/scene.js')]);
 let canvas = document.createElement('canvas');
 canvas.id = 'intro';
 document.body.appendChild(canvas);
@@ -94,6 +97,7 @@ window.__intro = {
 };
 overlay.addEventListener('pointerdown', onSkip);
 addEventListener('keydown', onSkip, { once: true });
+}
 
 // ---- load the game in stages, with a frame between each so the progress text updates
 const nextFrame = () => new Promise((r) => { let done = false; const go = () => { if (!done) { done = true; r(); } }; requestAnimationFrame(go); setTimeout(go, 60); });
@@ -107,11 +111,12 @@ const stages = [
 const bootStart = performance.now();
 (async () => {
   for (let i = 0; i < stages.length; i++) {
-    window.__intro.progress(i / (stages.length + 2), stages[i][0]);
+    if (window.__intro) window.__intro.progress(i / (stages.length + 2), stages[i][0]);
+    else if (lightLoadingText) lightLoadingText.textContent = stages[i][0];
     await nextFrame();
     const started = performance.now();
     await stages[i][1]();
     console.log(`startup ${stages[i][0]}: ${Math.round(performance.now() - started)} ms`);
   }
   console.log(`startup modules and city: ${Math.round(performance.now() - bootStart)} ms`);
-})().catch((e) => { console.error(e); stepEl.textContent = 'Something went wrong loading the city.'; });
+})().catch((e) => { console.error(e); const text = document.querySelector(profile.lite ? '#loading p' : '#intro-ui .step'); if (text) text.textContent = 'Something went wrong loading the city.'; });

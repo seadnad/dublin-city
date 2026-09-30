@@ -27,7 +27,10 @@ function gpuName() {
   } catch { return ''; }
 }
 // integrated graphics that share memory with the CPU, and software renderers
-const WEAK = /Intel\(R\) (HD|UHD|Iris)|Intel.*(HD|UHD|Iris)|AMD Radeon\(TM\)( Vega)? Graphics|Radeon.*Vega [0-9]+|Radeon\(TM\) [0-9]+M|Radeon Graphics|Mali-[GT][0-9]{2}\b|Adreno \(TM\) [3-5][0-9]{2}|PowerVR|SwiftShader|llvmpipe|Microsoft Basic|Mesa Intel/i;
+const WEAK = /Intel\(R\) (HD|UHD|Iris)|Intel.*(HD|UHD|Iris|Xe Graphics)|AMD Radeon\(TM\)( Vega)? Graphics|Radeon.*Vega [0-9]+|Radeon\(TM\) [0-9]+M|Radeon (6|7|8)[0-9]{2}M|Radeon Graphics|Mali-[GT][0-9]{2}\b|Adreno \(TM\) [3-5][0-9]{2}|PowerVR|SwiftShader|llvmpipe|Microsoft Basic|Mesa Intel/i;
+// A masked GPU name gives no evidence that the device can afford the richer starting scene.
+// Explicit desktop GPUs can begin on Medium and Auto still promotes them to High when frames are fast.
+const FAST_GPU = /NVIDIA|GeForce|RTX|GTX|Radeon RX|Radeon Pro|Intel.*Arc|Apple M[1-9]/i;
 
 export const GPU = gpuName();
 export const WEAK_GPU = WEAK.test(GPU);
@@ -47,7 +50,7 @@ function profileFor(m) {
     default: {
       // Auto: phones and integrated / software GPUs start on the phone settings; others on medium. What Auto learned
       // on this device last time wins over the guess (it has measured frames, the guess has only a name).
-      const weak = IS_MOBILE || WEAK_GPU;
+      const weak = IS_MOBILE || WEAK_GPU || !FAST_GPU.test(GPU);
       const base = { tier: weak ? 'low' : 'medium', maxDpr: Math.min(dev, weak ? (IS_MOBILE ? 1.5 : 1.25) : 2), lite: weak, fpsCap: 0 };
       if (learned && ['low', 'medium', 'high'].includes(learned.tier)) {
         base.tier = learned.tier;

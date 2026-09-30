@@ -1,5 +1,71 @@
 # Performance work (30 September 2026)
 
+## Public-device follow-up: 30 September
+
+The goal is a usable first visit on an ordinary WebGL2 phone or laptop, followed by a noticeably
+better experience on capable hardware. A sensible acceptance gate is **playable in under 15 s on
+the reference average laptop and phone**, sustained **30 fps at DPR >= 1** on the light profile,
+and **60 fps at higher DPR with richer scene density** on a reference high-end device. These are
+proposed targets, not results. Test a cold visit with the browser cache cleared, then a warm visit;
+record time to first controllable frame, p95 frame time while driving, DPR, draw calls, GPU model,
+memory, and visible quality. Include an actual Android tablet, an average integrated-GPU laptop,
+and a modern phone/laptop before claiming broad support.
+
+This follow-up makes Auto's initial light choice more conservative: masked desktop GPU names and
+the newer Intel Xe / Radeon 6xxM-8xxM integrated names use the light scene. Recognised desktop
+GPUs use Medium initially and Auto can raise the rendering tier if the game stays fast. Device
+names are only a guess; saved measured quality and the explicit Graphics choice remain available.
+The light scene now displays the static loading card and updates its stage text. It no longer
+creates the aerial preview's second WebGL context while the main scene builds. High/Medium still
+load the aerial intro. `src/boot.js` imports the intro code only on the richer path.
+
+Cold production-bundle browser runs on this development machine:
+
+| Profile | Time to play | City build | Shader preparation | First frame | Indicative FPS | Notes |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| Auto/Low, light loading card | 38.5 s | 8.6 s | 15.1 s | 7.2 s | 37 | 4.2 MB reported resource transfer; 119 shader programs; no console errors |
+| Explicit High, aerial intro | 41.9 s | — | — | — | 29 | Integrated Vega 8 GPU; adaptive DPR reached 0.6; no console errors |
+
+These single headless runs are a regression check, not a reliable before/after speedup claim.
+The dev-server Low run with the same loading change took 37.3 s. The roughly 40 s first play is
+still unacceptable for a public trial. The full city is generated before play (41,839 building
+instances and ~238,000 collision segments), then ~120 shader programs compile. Serving compressed
+files or caching a second visit cannot remove those first-visit CPU/GPU costs.
+
+An experiment compiling only objects within 700 m of the spawn reduced the program count at
+first play to 103 but moved work into the first frame (7.6 s) and increased total load from
+37.3 to 39.0 s. It was reverted. Deferring shaders safely requires actual district streaming
+and a background warm-up before those districts become visible.
+
+### Next build sequence and tradeoffs
+
+1. **Playable district first.** Split the static world into spatial chunks. Build collision,
+   roads, buildings, and relevant landmarks near the starting point first; add the rest as the
+   player approaches. Keep a cheap skyline beyond the loaded district and load the next ring
+   ahead of driving. This is the only likely way to remove much of the current city-build and
+   shader work from first play. Cost: substantial refactor of global lots, collisions, far-view
+   capture, teleporting, and helicopter height sampling. Prevent holes and collision gaps during
+   chunk transitions. Keep High's full distant detail as chunks arrive.
+2. **Consolidate material variants and warm chunks.** Inventory the ~120 first-frame shader
+   programs; share materials/atlases and eliminate variants that have no visible effect on Low.
+   Compile an approaching chunk before making it visible. This should reduce shader startup and
+   driving hitches. Cost: custom building and landmark shaders need careful visual comparison;
+   compiling only nearby objects without streaming was measured to be worse.
+3. **Auto adjusts scene work as well as pixels.** Use rolling frame time and a small memory
+   budget to adjust shadow detail, view distance, decoration density, crowd/traffic, and then DPR.
+   Keep DPR >= 1 as a clarity target for touch devices where possible. Offer a clearly labelled
+   Battery saver for devices that need lower resolution. Cost: more tier combinations to test;
+   counts currently follow the load-time `LITE` constant, so several changes require a reload
+   unless the systems gain live density controls.
+4. **Vehicle work follows measured cost.** The detailed player car's selective shadows already
+   lowered its extra shadow calls; isolated GPU timing was ~0.2 ms in the earlier run. A procedural
+   lookalike should be built only if real low-device measurements show the model matters, while
+   High retains the detailed cars. Cost: maintaining two visual assets and their lighting/liveries.
+5. **Release gate.** Use the local production test (`node tools/check.mjs --build`, optionally
+   `GFX=high`) and real-device cold/warm visits. Retain the footprint and bridge checks after
+   world streaming changes. Ship a public performance claim only after reference devices meet
+   the measured time-to-play and driving targets.
+
 ## Baseline and method
 
 Run `node tools/check.mjs` and `node tools/check.mjs --mobile` from the repository. Set
