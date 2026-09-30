@@ -21,11 +21,7 @@ const DISTRICTS = [
   ['BALLSBRIDGE', 'AVSH2', 30], ["HAROLD'S CROSS", 'GXSGR2', 0, 30], ['STONEYBATTER', 'RN63', 0, -20],
 ];
 // short icon glyphs for each landmark
-<<<<<<< HEAD
-const GLYPH = { spire: 'S', gpo: 'P', oconnellBridge: 'B', hapenny: 'H', trinity: 'T', bankOfIreland: '£', christChurch: '✚', stPatricks: '✚', customHouse: 'C', stephensGreen: '♣', heuston: 'R', guinness: 'G', beckett: 'B', convention: 'CC', threeArena: '3', grandCanal: 'Th', marker: 'M', grandCanalSt: 'O', cityHall: 'H', centralBank: '€', ccj: 'J', google: 'Go', bolands: 'Bq', clerys: 'Cl', rotunda: 'R', gardenOfRemembrance: '♣', busaras: 'Bu', famine: 'F', jeanieJohnston: 'JJ', millenniumBridge: 'M', ocaseyBridge: 'O' };
-=======
-const GLYPH = { spire: 'S', gpo: 'P', oconnellBridge: 'B', hapenny: 'H', trinity: 'T', bankOfIreland: '£', christChurch: '✚', stPatricks: '✚', customHouse: 'C', stephensGreen: '♣', heuston: 'R', guinness: 'G', beckett: 'B', convention: 'CC', threeArena: '3', grandCanal: 'Th', marker: 'M', grandCanalSt: 'O', cityHall: 'H', centralBank: '€', ccj: 'J', google: 'Go', bolands: 'Bq', aras: 'Á', zoo: 'Z' };
->>>>>>> worktree-agent-ad22367e04beb96c5
+const GLYPH = { spire: 'S', gpo: 'P', oconnellBridge: 'B', hapenny: 'H', trinity: 'T', bankOfIreland: '£', christChurch: '✚', stPatricks: '✚', customHouse: 'C', stephensGreen: '♣', heuston: 'R', guinness: 'G', beckett: 'B', convention: 'CC', threeArena: '3', grandCanal: 'Th', marker: 'M', grandCanalSt: 'O', cityHall: 'H', centralBank: '€', ccj: 'J', google: 'Go', bolands: 'Bq', clerys: 'Cl', rotunda: 'R', gardenOfRemembrance: '♣', busaras: 'Bu', famine: 'F', jeanieJohnston: 'JJ', millenniumBridge: 'M', ocaseyBridge: 'O', aras: 'Á', zoo: 'Z' };
 
 export function createWorldMap({ sites, lots, getLive, onTeleport, onWaypoint }) {
   const root = document.createElement('div');
