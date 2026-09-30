@@ -15,15 +15,18 @@ const HERITAGE = /Merrion|Stephen's Green|Dawson|Kildare|Harcourt|Leeson|Baggot|
 function lampSpots() {
   const spots = [];
   const near = (p) => spots.some((q) => (q.x - p.x) ** 2 + (q.z - p.z) ** 2 < 100);
-  for (const way of world.ways) {
+  for (const way of world.ways) for (const pass of way.type === 'boulevard' ? [1, -1] : [1]) {
     if (way.bridge || way.lamps) continue; // ways with a lighting style of their own (park gas lamps) or unlit
     // cobbled lanes (Temple Bar) are lit by lanterns on scroll brackets fixed to the buildings at first-floor
     // height, about every 12 m, alternating sides (docs/research/temple-bar.md A4: ~70% wall-mounted)
     const wall = way.surface === 'sett';
     const heritage = HERITAGE.test(way.name) || way.type === 'lane';
-    const spacing = wall ? 12 : way.type === 'lane' ? 20 : heritage ? 24 : 32;
+    // O'Connell Street: the 2006 plan's tall silver double-arm standards on both kerbs, about every 25 real metres
+    // (OSM street_lamp nodes; docs/research/oconnell-street.md), so every 13 game m a side rather than alternating
+    const iap = way.type === 'boulevard';
+    const spacing = wall ? 12 : way.type === 'lane' ? 20 : heritage ? 24 : iap ? 13 : 32;
     const off = wall ? way.width / 2 + way.pave + 0.05 : way.type === 'lane' ? way.width / 2 - 0.3 : way.width / 2 + 0.6;
-    let side = 1;
+    let side = pass;
     for (let k = 0; k < way.pts.length - 1; k++) {
       const a = way.pts[k], b = way.pts[k + 1];
       const L = v2.len(v2.sub(b, a)), d = v2.norm(v2.sub(b, a));
@@ -33,9 +36,9 @@ function lampSpots() {
         const p = { x: base.x + n.x * off, z: base.z + n.z * off };
         // keep clear of junction mouths: must not be inside another road
         const r = world.nearestRoad(p.x, p.z);
-        if (r && r.way !== way && r.edgeDist < (wall ? r.way.pave + 0.3 : 0.3)) { side = -side; continue; }
-        if (!near(p)) spots.push({ ...p, rot: Math.atan2(-n.x, -n.z), heritage, wall });
-        side = -side;
+        if (r && r.way !== way && r.edgeDist < (wall ? r.way.pave + 0.3 : 0.3)) { if (!iap) side = -side; continue; }
+        if (!near(p)) spots.push({ ...p, rot: Math.atan2(-n.x, -n.z), heritage, wall, iap });
+        if (!iap) side = -side;
       }
     }
   }
@@ -64,7 +67,7 @@ function heritageGeometry() {
 
 export function buildLamps(scene) {
   const spots = lampSpots();
-  const modern = spots.filter((s) => !s.heritage && !s.wall), heritage = spots.filter((s) => s.heritage && !s.wall), walls = spots.filter((s) => s.wall);
+  const modern = spots.filter((s) => !s.heritage && !s.wall && !s.iap), iapSpots = spots.filter((s) => s.iap), heritage = spots.filter((s) => s.heritage && !s.wall), walls = spots.filter((s) => s.wall);
   // Each lamp kind is one mesh with one material (a draw call per map block, not three): the metal and the glowing
   // head / lantern glass are told apart per vertex. Vertex colours carry the paint, and a two-texel lookup (the uv
   // points at texel 0 for metal, texel 1 for glass) carries roughness, metalness and the emissive mask.
@@ -111,6 +114,17 @@ export function buildLamps(scene) {
   const head = new THREE.BoxGeometry(0.34, 0.12, 0.72).translate(0, 7.42, 1.55);
   const H = heritageGeometry();
   for (const s of modern) { s.hx = s.x + Math.sin(s.rot) * 1.55; s.hz = s.z + Math.cos(s.rot) * 1.55; s.hy = 7.3; }
+  // the O'Connell Street standard: a slim tapered silver pole, a long arm high over the road and a short one lower
+  // over the footpath, each with a shallow dish head (refs/monuments 06, 07; refs/oconnell-street 22)
+  const IAP = (() => {
+    const pole = new THREE.CylinderGeometry(0.06, 0.12, 10.4, 8).translate(0, 5.2, 0);
+    const armA = new THREE.CylinderGeometry(0.04, 0.05, 2.0, 5).rotateX(Math.PI / 2 - 0.08).translate(0, 10.0, 1.0);
+    const armB = new THREE.CylinderGeometry(0.035, 0.045, 1.3, 5).rotateX(-Math.PI / 2 + 0.08).translate(0, 7.9, -0.65);
+    const dish = (y, z, r) => [new THREE.CylinderGeometry(r, r * 0.55, 0.14, 12).translate(0, y, z), new THREE.CylinderGeometry(r * 0.5, r * 0.5, 0.03, 10).translate(0, y - 0.08, z)];
+    const [dA, lA] = dish(9.95, 2.0, 0.42), [dB, lB] = dish(7.85, -1.3, 0.32);
+    return { metal: [pole, armA, armB, dA, dB, new THREE.CylinderGeometry(0.16, 0.18, 0.5, 8).translate(0, 0.25, 0)], glow: [lA, lB] };
+  })();
+  for (const s of iapSpots) { s.hx = s.x + Math.sin(s.rot) * 2.0; s.hz = s.z + Math.cos(s.rot) * 2.0; s.hy = 9.8; }
   for (const s of heritage) { s.hx = s.x; s.hz = s.z; s.hy = 4.7; }
   // wall lanterns: local +z points from the wall into the street, the lantern hangs 0.62 m out at 4.5 m
   for (const s of walls) { s.hx = s.x + Math.sin(s.rot) * 0.62; s.hz = s.z + Math.cos(s.rot) * 0.62; s.hy = 4.5; }
@@ -132,6 +146,7 @@ export function buildLamps(scene) {
   // (the lanterns are opaque: at 0.85 opacity the blend was invisible but cost sorting and fill on every lantern)
   const meshes = {
     modern: make(kit([[pole, false, STEEL], [arm, false, STEEL], [head, true, HEAD]]), modernMat, modern, true),
+    iap: make(kit([...IAP.metal.map((g) => [g, false, 0x9aa1a8]), ...IAP.glow.map((g) => [g, true, 0xf4f4ee])]), modernMat, iapSpots, true),
     heritage: make(kit([[H.frame, false, IRON], [H.glass, true, GLASS, true]]), heritageMat, heritage, true),
     wall: make(kit([[W.frame, false, IRON], [W.glass, true, GLASS, true]]), heritageMat, wallItems),
   };

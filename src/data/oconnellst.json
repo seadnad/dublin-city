@@ -1,0 +1,1141 @@
+{
+  "_note": "O'Connell Street frontages (docs/research/oconnell-street.md 4). Each side is a list of runs (the stretches of frontage between side streets and the GPO / Clerys, south to north), each a list of buildings in order. r = real frontage in metres (OSM, data/osm/oconnell-street.json), k = weight when the run is shared out (notables > 1), min = narrowest game width. lv = storeys incl. the ground floor. Shop names are invented except the historic ones (Eason, Savoy, Gresham, the Carlton, the Happy Ring House, Funland, the Confectioner's Hall).",
+  "depth": 15,
+  "corners": [
+    {
+      "id": "eason",
+      "no": "Eason's, 40 Lower",
+      "r": 21,
+      "len": 26,
+      "lv": 5,
+      "mat": "stone",
+      "tint": "#cfcac0",
+      "special": "eason"
+    }
+  ],
+  "E": [
+    [
+      {
+        "id": "e1",
+        "no": "1 Lower",
+        "r": 8,
+        "min": 6,
+        "lv": 5,
+        "mat": "brick",
+        "tint": "#8a4632",
+        "win": "sash2",
+        "trim": [
+          "cornice",
+          "quoins"
+        ],
+        "ad": "corner",
+        "shop": {
+          "t": "shop",
+          "n": "BUREAU DE CHANGE",
+          "c": "#1b2745",
+          "tc": "#f2d27a"
+        }
+      },
+      {
+        "id": "e2",
+        "no": "2-4 Lower",
+        "r": 21,
+        "min": 7,
+        "lv": 5,
+        "mat": "stone",
+        "tint": "#d4cfc3",
+        "win": "case",
+        "trim": [
+          "string",
+          "cornice",
+          "pil"
+        ],
+        "shop": {
+          "t": "bank",
+          "n": "HIBERNIAN BANK",
+          "c": "#2a2d33",
+          "tc": "#e9e4d8"
+        }
+      },
+      {
+        "id": "e5",
+        "no": "5-7 Lower",
+        "r": 21,
+        "min": 6.5,
+        "lv": 5,
+        "mat": "stone",
+        "tint": "#cbc6ba",
+        "win": "case",
+        "trim": [
+          "string",
+          "cornice",
+          "pedim"
+        ],
+        "shops": [
+          {
+            "t": "pharmacy",
+            "n": "PHARMACY",
+            "c": "#17392a",
+            "tc": "#ffffff"
+          },
+          {
+            "t": "bank",
+            "n": "BANK",
+            "c": "#1f3f7a",
+            "tc": "#ffffff"
+          }
+        ]
+      },
+      {
+        "id": "e8",
+        "no": "8-9 Lower",
+        "r": 14,
+        "min": 5,
+        "lv": 5,
+        "mat": "render",
+        "tint": "#d9d0bd",
+        "win": "sash2",
+        "trim": [
+          "cornice"
+        ],
+        "shops": [
+          {
+            "t": "amuse",
+            "n": "AMUSEMENTS",
+            "c": "#5a1a22",
+            "tc": "#ffd84a"
+          },
+          {
+            "t": "cafe",
+            "n": "CAFFÈ LIFFEY",
+            "c": "#1a1a1a",
+            "tc": "#e8e0cc"
+          }
+        ]
+      },
+      {
+        "id": "e10",
+        "no": "10-11 Lower",
+        "r": 10,
+        "min": 5.5,
+        "k": 1.3,
+        "lv": 5,
+        "mat": "stone",
+        "tint": "#c8c2b4",
+        "win": "case",
+        "trim": [
+          "string",
+          "cornice",
+          "giant",
+          "balus"
+        ],
+        "shop": {
+          "t": "pub",
+          "n": "THE CENTRAL BAR",
+          "c": "#123826",
+          "tc": "#e0c070"
+        }
+      }
+    ],
+    [
+      {
+        "id": "e12",
+        "no": "12-17 Lower",
+        "r": 46,
+        "min": 8,
+        "lv": 5,
+        "mat": "stone",
+        "tint": "#d1ccc0",
+        "win": "case",
+        "trim": [
+          "string",
+          "cornice",
+          "pil"
+        ],
+        "shops": [
+          {
+            "t": "bank",
+            "n": "SAVINGS BANK",
+            "c": "#2c4f78",
+            "tc": "#ffffff"
+          },
+          {
+            "t": "food",
+            "n": "NOODLE HOUSE",
+            "c": "#8c1c1c",
+            "tc": "#ffe08a"
+          }
+        ]
+      }
+    ],
+    [
+      {
+        "id": "e28",
+        "no": "28 Lower",
+        "r": 9,
+        "min": 4.5,
+        "lv": 4,
+        "mat": "stone",
+        "tint": "#cfc9bc",
+        "win": "case",
+        "trim": [
+          "cornice"
+        ],
+        "shop": {
+          "t": "shop",
+          "n": "DENTAL",
+          "c": "#e8e0cc",
+          "tc": "#1d5d5d"
+        }
+      },
+      {
+        "id": "e29",
+        "no": "29 Lower",
+        "r": 5,
+        "min": 4.5,
+        "k": 1.3,
+        "lv": 5,
+        "mat": "stone",
+        "tint": "#d8d3c7",
+        "win": "oval",
+        "trim": [
+          "cornice",
+          "giant"
+        ],
+        "shop": {
+          "t": "jewel",
+          "n": "JEWELLERS",
+          "c": "#1a1a1a",
+          "tc": "#d9ae2c"
+        }
+      },
+      {
+        "id": "e30",
+        "no": "30-31 Lower",
+        "r": 14,
+        "min": 6,
+        "lv": 4,
+        "mat": "stone",
+        "tint": "#c9c3b5",
+        "win": "case",
+        "trim": [
+          "string",
+          "cornice"
+        ],
+        "shop": {
+          "t": "shop",
+          "n": "OUTDOOR STORE",
+          "c": "#2f6b4b",
+          "tc": "#ffffff"
+        }
+      },
+      {
+        "id": "e32",
+        "no": "32 Lower",
+        "r": 5,
+        "min": 4,
+        "lv": 4,
+        "mat": "render",
+        "tint": "#b9b5ab",
+        "win": "sash2",
+        "trim": [
+          "cornice"
+        ],
+        "shop": {
+          "t": "cafe",
+          "n": "BAKERY",
+          "c": "#d9ae2c",
+          "tc": "#3b2a20"
+        }
+      },
+      {
+        "id": "e33",
+        "no": "33-34 Lower",
+        "r": 12,
+        "min": 5,
+        "lv": 4,
+        "mat": "stone",
+        "tint": "#cdc7ba",
+        "win": "case",
+        "trim": [
+          "cornice"
+        ],
+        "shops": [
+          {
+            "t": "gift",
+            "n": "IRISH GIFTS",
+            "c": "#1d6b3a",
+            "tc": "#ffffff"
+          },
+          {
+            "t": "shop",
+            "n": "CITY TOURS",
+            "c": "#e3a21a",
+            "tc": "#1a1a1a"
+          }
+        ]
+      },
+      {
+        "id": "u1",
+        "no": "1-2 Upper",
+        "r": 13,
+        "min": 6.5,
+        "lv": 6,
+        "mat": "stone",
+        "tint": "#cfcabd",
+        "win": "case",
+        "trim": [
+          "string",
+          "cornice"
+        ],
+        "shop": {
+          "t": "cafe",
+          "n": "CORNER CAFÉ",
+          "c": "#5a1a22",
+          "tc": "#f2d27a"
+        }
+      },
+      {
+        "id": "u3",
+        "no": "3 Upper",
+        "r": 7,
+        "min": 5,
+        "k": 1.4,
+        "lv": 5,
+        "mat": "brick",
+        "tint": "#a54a32",
+        "win": "sash2",
+        "trim": [
+          "cornice"
+        ],
+        "sign": "happyring",
+        "shop": {
+          "t": "jewel",
+          "n": "JEWELLERS",
+          "c": "#17392a",
+          "tc": "#e9e4d8",
+          "awning": "#1d5a3a"
+        }
+      },
+      {
+        "id": "u4",
+        "no": "4-6 Upper",
+        "r": 18,
+        "min": 6,
+        "lv": 5,
+        "mat": "stone",
+        "tint": "#b8b3a8",
+        "win": "case",
+        "trim": [
+          "string",
+          "cornice"
+        ],
+        "shops": [
+          {
+            "t": "shop",
+            "n": "PHONES",
+            "c": "#1b2745",
+            "tc": "#ffffff"
+          },
+          {
+            "t": "shop",
+            "n": "SOUVENIRS",
+            "c": "#1d6b3a",
+            "tc": "#ffffff"
+          }
+        ]
+      },
+      {
+        "id": "u7",
+        "no": "7-8 Upper",
+        "r": 13,
+        "min": 5,
+        "lv": 5,
+        "mat": "render",
+        "tint": "#e0d9c8",
+        "win": "sash2",
+        "trim": [
+          "cornice"
+        ],
+        "shops": [
+          {
+            "t": "food",
+            "n": "FISH & CHIPS",
+            "c": "#1f3f7a",
+            "tc": "#ffffff"
+          },
+          {
+            "t": "shop",
+            "n": "CONVENIENCE",
+            "c": "#b3191d",
+            "tc": "#ffffff"
+          }
+        ]
+      },
+      {
+        "id": "u11",
+        "no": "Hammam Buildings, 11-13 Upper",
+        "r": 47,
+        "min": 16,
+        "k": 1.2,
+        "lv": 6,
+        "mat": "stone",
+        "tint": "#d6d1c5",
+        "win": "case",
+        "trim": [
+          "string",
+          "cornice",
+          "pil",
+          "attic",
+          "pedim"
+        ],
+        "name": "HAMMAM BUILDINGS",
+        "shops": [
+          {
+            "t": "shop",
+            "n": "TOURIST INFORMATION",
+            "c": "#1d5a3a",
+            "tc": "#ffffff"
+          },
+          {
+            "t": "shop",
+            "n": "CITIZENS INFORMATION",
+            "c": "#1b2745",
+            "tc": "#ffffff"
+          },
+          {
+            "t": "cafe",
+            "n": "COFFEE",
+            "c": "#3b2a20",
+            "tc": "#e8e0cc"
+          }
+        ]
+      },
+      {
+        "id": "u14",
+        "no": "14-15 Upper",
+        "r": 23,
+        "min": 7,
+        "lv": 4,
+        "mat": "stone",
+        "tint": "#c4beb1",
+        "win": "case",
+        "trim": [
+          "string",
+          "cornice"
+        ],
+        "shops": [
+          {
+            "t": "pub",
+            "n": "THE NORTHSIDE",
+            "c": "#123826",
+            "tc": "#e0c070"
+          },
+          {
+            "t": "food",
+            "n": "PIZZA",
+            "c": "#9e2b25",
+            "tc": "#ffffff"
+          }
+        ]
+      },
+      {
+        "id": "savoy",
+        "no": "Savoy, 16-17 Upper",
+        "r": 33,
+        "min": 16,
+        "k": 1.25,
+        "lv": 5,
+        "mat": "stone",
+        "tint": "#d7cfbd",
+        "special": "savoy"
+      },
+      {
+        "id": "u18",
+        "no": "18-19 Upper",
+        "r": 9,
+        "min": 4,
+        "lv": 5,
+        "mat": "render",
+        "tint": "#cdbf9f",
+        "win": "sash2",
+        "trim": [
+          "cornice"
+        ],
+        "shop": {
+          "t": "pub",
+          "n": "PUB",
+          "c": "#1a1a1a",
+          "tc": "#e8e0cc"
+        }
+      },
+      {
+        "id": "gresham",
+        "no": "The Gresham, 20-23 Upper",
+        "r": 52,
+        "min": 26,
+        "k": 1.45,
+        "lv": 6,
+        "mat": "stone",
+        "tint": "#e0dcd2",
+        "special": "gresham"
+      },
+      {
+        "id": "u28",
+        "no": "28-32 Upper",
+        "r": 58,
+        "min": 12,
+        "lv": 6,
+        "mat": "glass",
+        "tint": "#8d949a",
+        "win": "mod",
+        "trim": [],
+        "shops": [
+          {
+            "t": "hotel",
+            "n": "HOTEL",
+            "c": "#1a1a1a",
+            "tc": "#ffffff"
+          },
+          {
+            "t": "cafe",
+            "n": "CAFÉ",
+            "c": "#e8e0cc",
+            "tc": "#1a1a1a"
+          }
+        ]
+      },
+      {
+        "id": "u33",
+        "no": "33-36 Upper",
+        "r": 16,
+        "min": 6,
+        "lv": 4,
+        "mat": "brick",
+        "tint": "#7b4331",
+        "win": "sash2",
+        "trim": [
+          "cornice"
+        ],
+        "shops": [
+          {
+            "t": "pub",
+            "n": "THE ROTUNDA BAR",
+            "c": "#123826",
+            "tc": "#e0c070"
+          },
+          {
+            "t": "shop",
+            "n": "MINI MARKET",
+            "c": "#1f3f7a",
+            "tc": "#ffffff"
+          }
+        ]
+      }
+    ]
+  ],
+  "W": [
+    [
+      {
+        "id": "w56",
+        "no": "55-56 Lower",
+        "r": 12,
+        "min": 6.5,
+        "lv": 5,
+        "mat": "stone",
+        "tint": "#cfc9bc",
+        "win": "case",
+        "trim": [
+          "string",
+          "cornice",
+          "pil"
+        ],
+        "shop": {
+          "t": "jewel",
+          "n": "JEWELLERS",
+          "c": "#1a1a1a",
+          "tc": "#d9ae2c"
+        }
+      },
+      {
+        "id": "w53",
+        "no": "53-54 Lower",
+        "r": 12,
+        "min": 5,
+        "lv": 5,
+        "mat": "stone",
+        "tint": "#c3bdb0",
+        "win": "case",
+        "trim": [
+          "cornice"
+        ],
+        "shop": {
+          "t": "food",
+          "n": "KINGBURGER",
+          "c": "#d8551b",
+          "tc": "#ffffff"
+        }
+      },
+      {
+        "id": "w52",
+        "no": "52 Lower",
+        "r": 7,
+        "min": 4,
+        "lv": 5,
+        "mat": "render",
+        "tint": "#e6e2d8",
+        "win": "sash2",
+        "trim": [
+          "cornice"
+        ],
+        "shop": {
+          "t": "diner",
+          "n": "ROCKET DINER",
+          "c": "#b3191d",
+          "tc": "#ffffff"
+        }
+      },
+      {
+        "id": "w50",
+        "no": "50-51 Lower",
+        "r": 13,
+        "min": 5,
+        "lv": 5,
+        "mat": "stone",
+        "tint": "#cdc7ba",
+        "win": "case",
+        "trim": [
+          "cornice"
+        ],
+        "shop": {
+          "t": "food",
+          "n": "BIG BURGER",
+          "c": "#c8102e",
+          "tc": "#ffc72c"
+        }
+      },
+      {
+        "id": "w49",
+        "no": "49 Lower",
+        "r": 7,
+        "min": 4.5,
+        "k": 1.2,
+        "lv": 5,
+        "mat": "brick",
+        "tint": "#b0654a",
+        "win": "case",
+        "trim": [
+          "cornice"
+        ],
+        "sign": "confect",
+        "shop": {
+          "t": "shop",
+          "n": "SNEAKERS",
+          "c": "#1a1a1a",
+          "tc": "#ffffff"
+        }
+      },
+      {
+        "id": "w45",
+        "no": "45-48 Lower",
+        "r": 24,
+        "min": 5,
+        "lv": 5,
+        "mat": "stone",
+        "tint": "#d0cabd",
+        "win": "case",
+        "trim": [
+          "cornice"
+        ],
+        "shop": {
+          "t": "food",
+          "n": "GALWAY BURGER CO.",
+          "c": "#b3191d",
+          "tc": "#ffd84a"
+        }
+      }
+    ],
+    [
+      {
+        "id": "w69",
+        "no": "69 Upper",
+        "r": 6,
+        "min": 4.5,
+        "lv": 4,
+        "mat": "stone",
+        "tint": "#cbc5b8",
+        "win": "case",
+        "trim": [
+          "cornice"
+        ],
+        "shop": {
+          "t": "shop",
+          "n": "TRAVEL",
+          "c": "#1f3f7a",
+          "tc": "#ffffff"
+        }
+      },
+      {
+        "id": "w67",
+        "no": "67-68 Upper",
+        "r": 13,
+        "min": 5,
+        "k": 1.2,
+        "lv": 4,
+        "mat": "render",
+        "tint": "#d9d0bd",
+        "win": "sash2",
+        "trim": [
+          "cornice"
+        ],
+        "sign": "funland",
+        "shop": {
+          "t": "amuse",
+          "n": "FUNLAND",
+          "c": "#3a1a5a",
+          "tc": "#ffd84a"
+        }
+      },
+      {
+        "id": "w65",
+        "no": "65-66 Upper",
+        "r": 15,
+        "min": 5.5,
+        "lv": 5,
+        "mat": "stone",
+        "tint": "#c9c3b5",
+        "win": "case",
+        "trim": [
+          "string",
+          "cornice"
+        ],
+        "shop": {
+          "t": "shop",
+          "n": "HAIR",
+          "c": "#1a1a1a",
+          "tc": "#e9e4d8"
+        }
+      },
+      {
+        "id": "w63",
+        "no": "63-64 Upper",
+        "r": 14,
+        "min": 5.5,
+        "lv": 5,
+        "mat": "render",
+        "tint": "#b9b5ab",
+        "win": "sash2",
+        "trim": [
+          "cornice"
+        ],
+        "shop": {
+          "t": "shop",
+          "n": "SUPERMARKET",
+          "c": "#14693b",
+          "tc": "#ffffff"
+        }
+      },
+      {
+        "id": "w61",
+        "no": "60-62 Upper",
+        "r": 24,
+        "min": 6.5,
+        "lv": 4,
+        "mat": "stone",
+        "tint": "#e2ddd2",
+        "win": "arch",
+        "trim": [
+          "cornice",
+          "balus"
+        ],
+        "shops": [
+          {
+            "t": "food",
+            "n": "BIG BURGER",
+            "c": "#c8102e",
+            "tc": "#ffc72c"
+          },
+          {
+            "t": "food",
+            "n": "RESTAURANT",
+            "c": "#1a1a1a",
+            "tc": "#e8e0cc"
+          }
+        ]
+      },
+      {
+        "id": "w59",
+        "no": "59 Upper, Dublin Bus",
+        "r": 13,
+        "min": 5.5,
+        "k": 1.1,
+        "lv": 4,
+        "mat": "glass",
+        "tint": "#7f9aac",
+        "win": "mod",
+        "trim": [],
+        "shop": {
+          "t": "office",
+          "n": "BUS ÁTHA CLIATH · DUBLIN BUS",
+          "c": "#1a1a1a",
+          "tc": "#f2c416"
+        }
+      },
+      {
+        "id": "w57",
+        "no": "57-58 Upper",
+        "r": 16,
+        "min": 5.5,
+        "lv": 4,
+        "mat": "brick",
+        "tint": "#7a4a38",
+        "win": "sash6",
+        "trim": [
+          "cornice"
+        ],
+        "shop": {
+          "t": "shop",
+          "n": "TICKETS",
+          "c": "#1b2745",
+          "tc": "#ffffff"
+        }
+      },
+      {
+        "id": "w55",
+        "no": "55-56 Upper",
+        "r": 19,
+        "min": 6,
+        "lv": 4,
+        "mat": "stone",
+        "tint": "#bdb7aa",
+        "win": "case",
+        "trim": [
+          "cornice"
+        ],
+        "shop": {
+          "t": "amuse",
+          "n": "CASINO",
+          "c": "#1a1a1a",
+          "tc": "#ff5a4a"
+        }
+      },
+      {
+        "id": "carlton",
+        "no": "The Carlton, 52-54 Upper",
+        "r": 31,
+        "min": 15,
+        "k": 1.25,
+        "lv": 4,
+        "mat": "stone",
+        "tint": "#d9d3c6",
+        "special": "carlton"
+      },
+      {
+        "id": "w52v",
+        "no": "vacant site, 52 Upper",
+        "r": 17,
+        "min": 5,
+        "special": "hoarding"
+      },
+      {
+        "id": "w47",
+        "no": "47-51 Upper",
+        "r": 32,
+        "min": 9,
+        "lv": 6,
+        "mat": "glass",
+        "tint": "#a3a8ab",
+        "win": "mod",
+        "trim": [],
+        "shops": [
+          {
+            "t": "shop",
+            "n": "PHARMACY",
+            "c": "#17392a",
+            "tc": "#ffffff"
+          },
+          {
+            "t": "shop",
+            "n": "BOOKMAKER",
+            "c": "#1b2745",
+            "tc": "#ffffff"
+          }
+        ]
+      },
+      {
+        "id": "w44",
+        "no": "44-46 Upper",
+        "r": 26,
+        "min": 7,
+        "lv": 5,
+        "mat": "stone",
+        "tint": "#c7c1b3",
+        "win": "case",
+        "trim": [
+          "string",
+          "cornice"
+        ],
+        "shops": [
+          {
+            "t": "food",
+            "n": "DINER",
+            "c": "#e3a21a",
+            "tc": "#1a1a1a"
+          },
+          {
+            "t": "shop",
+            "n": "SUPERMARKET",
+            "c": "#14693b",
+            "tc": "#ffffff"
+          }
+        ]
+      },
+      {
+        "id": "w43",
+        "no": "43 Upper",
+        "r": 11,
+        "min": 4.5,
+        "lv": 4,
+        "mat": "render",
+        "tint": "#cdbf9f",
+        "win": "sash2",
+        "trim": [
+          "cornice"
+        ],
+        "shop": {
+          "t": "amuse",
+          "n": "SPORTS CLUB",
+          "c": "#1a1a1a",
+          "tc": "#7fd14a"
+        }
+      },
+      {
+        "id": "w42",
+        "no": "42 Upper (Cassels, 1752)",
+        "r": 6,
+        "min": 6.5,
+        "k": 1.4,
+        "lv": 4,
+        "mat": "brick",
+        "tint": "#8e4a36",
+        "win": "sash6",
+        "trim": [
+          "cornice"
+        ],
+        "georgian": true
+      },
+      {
+        "id": "w40",
+        "no": "vacant site, 40-41 Upper",
+        "r": 21,
+        "min": 6,
+        "special": "hoarding",
+        "mural": true
+      },
+      {
+        "id": "w37",
+        "no": "37-38 Upper",
+        "r": 27,
+        "min": 8,
+        "lv": 4,
+        "mat": "stone",
+        "tint": "#c1bcb0",
+        "win": "case",
+        "trim": [
+          "string",
+          "cornice",
+          "pil"
+        ],
+        "shop": {
+          "t": "bank",
+          "n": "BANK",
+          "c": "#2c4f78",
+          "tc": "#ffffff"
+        }
+      },
+      {
+        "id": "w33",
+        "no": "33-36 Upper",
+        "r": 31,
+        "min": 8,
+        "lv": 4,
+        "mat": "brick",
+        "tint": "#824836",
+        "win": "sash2",
+        "trim": [
+          "cornice"
+        ],
+        "shops": [
+          {
+            "t": "pub",
+            "n": "THE PARNELL",
+            "c": "#123826",
+            "tc": "#e0c070"
+          },
+          {
+            "t": "food",
+            "n": "SANDWICHES",
+            "c": "#14693b",
+            "tc": "#ffffff"
+          }
+        ]
+      }
+    ]
+  ],
+  "trees": [
+    [53.348979, -6.259708, 7, 12.1],
+    [53.348776, -6.2596, 7, 13.2],
+    [53.348666, -6.259548, 7, 13.3],
+    [53.349747, -6.260036, 3, 13.5],
+    [53.350007, -6.260567, 7, -13],
+    [53.350111, -6.260614, 7, -12.9],
+    [53.350212, -6.260666, 7, -13.4],
+    [53.350322, -6.260705, 7, -12.7],
+    [53.350421, -6.260752, 7, -12.8],
+    [53.350537, -6.2608, 7, -12.5],
+    [53.350752, -6.260883, 7, -11.5],
+    [53.350846, -6.260934, 7, -12.1],
+    [53.350963, -6.260985, 7, -11.9],
+    [53.351067, -6.261036, 7, -12.2],
+    [53.35117, -6.261087, 7, -12.4],
+    [53.351275, -6.261131, 7, -12.2],
+    [53.351379, -6.261184, 7, -12.6],
+    [53.351488, -6.261225, 7, -12],
+    [53.351697, -6.261319, 7, -12],
+    [53.351917, -6.261413, 7, -11.6],
+    [53.352028, -6.261461, 7, -11.5],
+    [53.352226, -6.261551, 3, -11.5],
+    [53.35239, -6.261205, 7, 15.5],
+    [53.35219, -6.261118, 7, 15.3],
+    [53.352287, -6.261157, 7, 15.6],
+    [53.35208, -6.261062, 7, 15.7],
+    [53.351873, -6.260975, 7, 15.2],
+    [53.351759, -6.260925, 5, 15.1],
+    [53.351233, -6.260689, 7, 14.9],
+    [53.351127, -6.260646, 7, 14.6],
+    [53.351335, -6.260732, 7, 15.2],
+    [53.350801, -6.260493, 7, 14.9],
+    [53.350701, -6.260466, 7, 13.7],
+    [53.350597, -6.260415, 7, 14],
+    [53.350492, -6.260368, 7, 13.9],
+    [53.350281, -6.260273, 5, 13.9],
+    [53.350183, -6.26023, 5, 13.7],
+    [53.350072, -6.260186, 5, 13.4],
+    [53.349964, -6.260135, 5, 13.5],
+    [53.351588, -6.261269, 7, -11.9],
+    [53.3489, -6.259842, 3, 1.3],
+    [53.348894, -6.259887, 3, -1.8],
+    [53.350137, -6.260194, 5, 14.7],
+    [53.351793, -6.261357, 7, -11.6],
+    [53.350137, -6.260194, 5, 14.7],
+    [53.350137, -6.260194, 5, 14.7],
+    [53.349756, -6.259967, 3, 18.2],
+    [53.349723, -6.259946, 3, 18.6],
+    [53.349682, -6.259927, 3, 18.6],
+    [53.34964, -6.259913, 3, 18.3],
+    [53.349607, -6.259899, 3, 18.2],
+    [53.349568, -6.259877, 3, 18.4],
+    [53.349527, -6.259864, 3, 18.1],
+    [53.349478, -6.259841, 3, 18.2],
+    [53.349438, -6.259825, 3, 18],
+    [53.349405, -6.259808, 3, 18.2],
+    [53.349372, -6.259798, 3, 17.8],
+    [53.349329, -6.259779, 3, 17.8],
+    [53.349256, -6.259746, 3, 17.8],
+    [53.349219, -6.259731, 3, 17.7],
+    [53.349203, -6.259773, 3, 14.5],
+    [53.350086, -6.26035, 3, 3.2],
+    [53.350246, -6.260421, 3, 3.3],
+    [53.350217, -6.260408, 3, 3.3],
+    [53.350184, -6.260394, 3, 3.3],
+    [53.35015, -6.260379, 3, 3.3],
+    [53.350118, -6.260364, 3, 3.3],
+    [53.350764, -6.260639, 3, 4.5],
+    [53.350735, -6.260626, 3, 4.4],
+    [53.350709, -6.260615, 3, 4.4],
+    [53.350673, -6.260599, 3, 4.4],
+    [53.350647, -6.260588, 3, 4.3],
+    [53.350616, -6.260574, 3, 4.3],
+    [53.351083, -6.260779, 3, 4.8],
+    [53.351056, -6.260766, 3, 4.8],
+    [53.351028, -6.260754, 3, 4.8],
+    [53.350974, -6.260731, 3, 4.7],
+    [53.350948, -6.260719, 3, 4.7],
+    [53.350914, -6.260705, 3, 4.6],
+    [53.351709, -6.261045, 3, 6],
+    [53.351682, -6.261037, 3, 5.7],
+    [53.348585, -6.259509, 7, 13.4],
+    [53.348255, -6.259356, 7, 13.7],
+    [53.348171, -6.259304, 7, 14.5],
+    [53.348065, -6.259265, 7, 13.9],
+    [53.347934, -6.259196, 7, 14.5],
+    [53.347812, -6.25914, 7, 14.6],
+    [53.347744, -6.259582, 7, -15.8],
+    [53.347872, -6.259626, 7, -14.8],
+    [53.347994, -6.25968, 7, -14.7],
+    [53.348098, -6.259716, 7, -14],
+    [53.348202, -6.259766, 7, -14.2],
+    [53.348506, -6.259916, 7, -14.9],
+    [53.348601, -6.259938, 7, -13.6],
+    [53.34871, -6.259985, 7, -13.4],
+    [53.348812, -6.260033, 7, -13.5],
+    [53.348904, -6.260071, 7, -13.3],
+    [53.349145, -6.260192, 3, -14.1],
+    [53.349135, -6.260244, 3, -17.7],
+    [53.349165, -6.260265, 3, -18.2],
+    [53.349638, -6.260466, 3, -17.3],
+    [53.34968, -6.260477, 3, -16.8],
+    [53.34969, -6.260422, 3, -12.9],
+    [53.349743, -6.26049, 5, -15.7],
+    [53.349892, -6.260507, 3, -12.5],
+    [53.351657, -6.261025, 3, 5.7],
+    [53.351606, -6.261001, 3, 5.8],
+    [53.351577, -6.260992, 3, 5.5],
+    [53.351553, -6.26098, 3, 5.6],
+    [53.352081, -6.261221, 3, 5.5],
+    [53.352107, -6.261235, 3, 5.4],
+    [53.352132, -6.261245, 3, 5.5],
+    [53.352191, -6.261269, 3, 5.6],
+    [53.352216, -6.261278, 3, 5.8],
+    [53.352243, -6.261289, 3, 5.9],
+    [53.349724, -6.260189, 5, 3],
+    [53.349715, -6.260244, 5, -0.8],
+    [53.349179, -6.259956, 5, 2.1],
+    [53.349173, -6.260003, 5, -1.1],
+    [53.348874, -6.259831, 3, 1.2],
+    [53.348867, -6.259873, 3, -1.7],
+    [53.348927, -6.259849, 3, 1.6],
+    [53.348918, -6.259897, 3, -1.7],
+    [53.348775, -6.259781, 3, 1.5],
+    [53.348798, -6.259788, 3, 1.7],
+    [53.348819, -6.259802, 3, 1.5],
+    [53.348812, -6.259845, 3, -1.5],
+    [53.348788, -6.259835, 3, -1.5],
+    [53.348766, -6.259823, 3, -1.5],
+    [53.348183, -6.259522, 3, 0.9],
+    [53.348179, -6.259563, 3, -1.9],
+    [53.348156, -6.259554, 3, -1.9],
+    [53.348161, -6.259512, 3, 0.9],
+    [53.347944, -6.25946, 3, -2.1],
+    [53.347948, -6.259421, 3, 0.5],
+    [53.347926, -6.25941, 3, 0.6],
+    [53.347916, -6.259449, 3, -2.2]
+  ],
+  "stops": [
+    [53.350606, -6.260799, "O'Connell Street, Dublin Bus", "747", 0, -10.4],
+    [53.350756, -6.260501, "O'Connell Street, Citizen's Information", "9;33;41;41a;41b;41c", 0, 13.1],
+    [53.351632, -6.261248, "O'Connell St, Cathal Brugha Street", "1;11;16;44;46a;46e", 0, -9.3],
+    [53.351413, -6.260789, "O'Connell Street, Cathal Brugha Street", "123", 0, 13.7],
+    [53.3503, -6.260663, "O'Connell Street Upper", "38;38a;38b;123;140", 0, -10.6],
+    [53.350049, -6.260552, "O'Connell Street, Henry Street", "40;120;122", 0, -10.8],
+    [53.351327, -6.261119, "O'Connell Street, Dublin Bus", "4;7;7a;7d;9;13;116", 0, -9.9],
+    [53.352229, -6.261147, "O'Connell Street, Parnell Street", "4;7;7a;7d;40b;40d;120", 0, 14.5],
+    [53.351495, -6.260825, "Gresham Hotel", "700", 0, 13.8],
+    [53.350532, -6.260402, "O'Connell Street, Cathedral Street", "13;16;40", 0, 12.9],
+    [53.348626, -6.259566, "O'Connell Street, Abbey Street", "1;11;44;122;747", 0, 11],
+    [53.350227, -6.260269, "O'Connell Street, North Earl Street", "7b;7d;38;38a;36b;46a;140", 0, 12.6],
+    [53.351785, -6.261314, "O'Connell Street (Opposite Gresham Hotel)", "700", 0, -9.1],
+    [53.350955, -6.260588, "O'Connell Street", "103;109;109B;109X;111X;NX", 0, 13.3]
+  ],
+  "_trees": "OSM natural=tree nodes on the street (lat, lon, height m, real offset from the centreline: + east); bus stops (lat, lon, name, routes, shelter)"
+}

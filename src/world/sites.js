@@ -4,6 +4,7 @@
 import { world, v2, PAVEMENT, pointInPolygon, laneOffset, project } from './geo.js';
 import { bridges, parkPolys, campusPolys, dockPolys } from './ground.js';
 import { monumentSites, along, chainageOf } from './oconnell.js';
+import { oconnellLayout, footprintOf } from './ocstreet.js';
 import ncLayout from '../data/northcity.json';
 const { clerys: CLERYS, parnell: PARNELL, busaras: BUSARAS } = ncLayout;
 import tanksData from '../data/guinness-tanks.json';
@@ -831,6 +832,13 @@ Object.assign(extraSites, {
   gardenSouth: NC.garden.box(-PARNELL.gardenW / 2, PARNELL.gardenW / 2 - PARNELL.gardenKW * PARNELL.gardenD, PARNELL.gardenD / 2, PARNELL.gardenD),
   busarasYard: NC.busaras.box(BUSARAS.w / 2, BUSARAS.w / 2 + 22, 0, BUSARAS.d),
 });
+// ---------- O'Connell Street's frontages (docs/research/oconnell-street.md; src/world/ocstreet.js, ocfacades.js) ----------
+// every building between the side streets, the GPO and Clerys is reserved (the filler leaves the frontage to them);
+// the Gresham joins the Places list
+export const OCS = oconnellLayout([sites.gpo, sites.clerys]);
+for (const b of OCS.buildings) extraSites['oc_' + b.id] = footprintOf(b);
+if (extraSites.oc_gresham) sites.gresham = { name: 'The Gresham', ...extraSites.oc_gresham, labelY: 30, view: spot('OC3', 'OC4', 0.12) };
+const ocFootprints = OCS.buildings.map((b) => extraSites['oc_' + b.id]);
 const northCityFootprints = [sites.clerys, sites.rotunda, sites.gardenOfRemembrance, sites.busaras, extraSites.rotundaRear, extraSites.ambassador, extraSites.gate, extraSites.gardenSouth, extraSites.busarasYard];
 
 // the notable ones join the Places list; every part is kept free of filler and checked by footprints.mjs
@@ -924,6 +932,8 @@ export const reserved = [
   ...tallFootprints,
   // Clerys, Parnell Square (the Rotunda, the Ambassador, the Gate, the Garden of Remembrance) and Busáras
   ...northCityFootprints,
+  // O'Connell Street's frontages
+  ...ocFootprints,
 ].filter(Boolean);
 
 export { campusPolys, parkPolys };

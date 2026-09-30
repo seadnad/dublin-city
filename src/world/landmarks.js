@@ -20,6 +20,7 @@ import { placeBarrowStreet } from './barrowst.js';
 import { placeGrandCanal, gcsColliders } from './gcsquare.js';
 import { buildTowers } from './towers.js';
 import { placeNorthCity, northCityColliders } from './northcity.js';
+import { buildOConnellStreet, oconnellTrees } from './ocfacades.js';
 import { LITE } from '../render/quality.js';
 const lawnMat = () => getStreets().grassMat;
 import { buildPark } from './park.js';
@@ -664,34 +665,6 @@ function parnellMonument(site) {
   b.box(0.9, 1.0, 0.7, M.bronze, { x: 0.8, y: ISL + 2.55, z: 1.0 }); // the draped table behind him
   b.solid(0, 0.9, 5.0, 3.4); b.solid(0, oz, 3.0, 2.6);
   return b.build('Parnell Monument');
-}
-
-// O'Connell Street trees (2006 IAP): ornamental rowans on the islands, kept clear of the monuments; the big
-// Oriental planes along both footpaths. Returns { rowans, planes } as tree spots.
-function oconnellTrees() {
-  const rowans = [], planes = [];
-  const clear = [[CHAIN.oconnell, 6.2], [CHAIN.smithOBrien, 4.2], [CHAIN.gray, 4.4], [CHAIN.larkin, 3.6], [CHAIN.spire, 6.5], [CHAIN.fatherMathew, 4.4], [CHAIN.parnell, 16]];
-  const free = (s) => clear.every(([c, r]) => Math.abs(s - c) > r);
-  for (const isl of ISLANDS) {
-    if (isl.cobbles) continue;
-    let last = -Infinity;
-    for (let s = isl.from + 2.5; s <= isl.to - 2.5; s += 0.5) {
-      if (s - last < 14 || !free(s)) continue;
-      rowans.push({ ...along(s), s: 1.0 }); last = s;
-    }
-  }
-  const gpo = sites.gpo, portico = toWorld(gpo, 0, gpo.d / 2 + 3);
-  const way = world.ways.find((w) => w.type === 'boulevard'), off = way.width / 2 + 1.4;
-  for (const side of [1, -1]) {
-    for (let s = 14; s < LENGTH - 16; s += 13) {
-      const p = along(s, side * off);
-      if ((p.x - portico.x) ** 2 + (p.z - portico.z) ** 2 < 16 ** 2) continue;
-      const r = world.nearestRoad(p.x, p.z);
-      if (r && r.way !== way && r.edgeDist < 1.5) continue; // not in a side street's mouth
-      planes.push({ x: p.x, z: p.z, s: 1.0 });
-    }
-  }
-  return { rowans, planes };
 }
 
 // the Fusiliers' Arch stands in the Green's railings at the Grafton Street corner; local +z faces Grafton Street
@@ -2273,11 +2246,14 @@ function buildTrees(scene) {
     }
     for (const p of street) { spots.push({ ...p, s: 0.95, street: true }); addBox(p.x, p.z, 0.4, 0.4, 0); }
   }
-  // O'Connell Street: rowans on the islands, Oriental planes along the footpaths
+  // O'Connell Street (src/world/ocfacades.js, from the OSM trees): small rowans in groups on the islands, the big
+  // Oriental planes along the footpaths of the Lower street's south end and the Upper street, young trees in front of
+  // Clerys and the GPO (so their fronts read across the street)
   const oct = oconnellTrees();
   for (const p of oct.planes) { spots.push({ ...p, street: true }); addBox(p.x, p.z, 0.4, 0.4, 0); }
-  for (const p of oct.rowans) addBox(p.x, p.z, 0.25, 0.25, 0);
-  plantTrees(scene, oct.rowans.map((p) => ({ x: p.x, y: 0.16, z: p.z, rot: rand() * 6.28, s: 0.95 + rand() * 0.15 })), { rowan: 1 }, rand);
+  for (const p of [...oct.rowans, ...oct.young]) addBox(p.x, p.z, 0.25, 0.25, 0);
+  plantTrees(scene, [...oct.rowans.map((p) => ({ x: p.x, y: 0.16, z: p.z, rot: rand() * 6.28, s: p.s * (0.92 + rand() * 0.16) })),
+    ...oct.young.map((p) => ({ x: p.x, y: KERB_H, z: p.z, rot: rand() * 6.28, s: p.s * (0.92 + rand() * 0.16) }))], { rowan: 1 }, rand);
   // parks get a mix of species; street trees are London planes
   const item = (p, k) => ({ x: p.x, y: KERB_H, z: p.z, rot: rand() * 6.28, s: p.s * k * (0.9 + rand() * 0.25) });
   plantTrees(scene, spots.filter((p) => !p.street).map((p) => item(p, 0.85)), { plane: 3, lime: 2, chestnut: 3, birch: 2, young: 1 }, rand);
@@ -2340,6 +2316,8 @@ export function buildLandmarks(scene) {
   let northHero = null;
   northCityColliders();
   placeNorthCity(scene).then((h) => { if (h) { northHero = h; h.setNight(nightLevel); } });
+  // O'Connell Street's frontages (the Gresham, the Savoy, the Carlton, Eason's and the rest; src/world/ocfacades.js)
+  const ocStreet = buildOConnellStreet(scene);
   // the Four Courts (Blender hero; floodlit through setStoneNight)
   placeParts(scene, 'fourcourts', S.fourCourts, 'Four Courts');
   // St Patrick's Cathedral (Blender hero) and its park dressing
@@ -2435,6 +2413,7 @@ export function buildLandmarks(scene) {
       if (gcsHero) gcsHero.setNight(level);
       if (guinnessHero) guinnessHero.setNight(level);
       if (northHero) northHero.setNight(level);
+      ocStreet.setNight(level);
       towers.setNight(level);
       setStoneNight(level);
       if (phoenixPark) phoenixPark.setNight(level);
