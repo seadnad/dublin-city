@@ -1,5 +1,52 @@
 # Performance work (30 September 2026)
 
+## Distant landmark loading: 30 September follow-up
+
+On the light profile, `buildLandmarks(scene, { start })` still establishes the road/collision
+world and loads nearby scenery. Three remote Blender landmarks at this spawn (3Arena, Guinness
+Storehouse, Aviva Stadium) get cheap silhouettes and enter a deferred queue. Croke Park uses
+the same distance rule but falls inside the 850 m starting radius here. High follows the old
+full-detail startup path. The queue starts 2.5 s after the first playable frame and picks the
+next site by current distance plus a heading/speed look-ahead, recalculated after every model.
+It loads one model at a time and submits its drawable shaders one per frame. The finished
+model replaces its silhouette only after compilation; a failed model keeps the silhouette.
+Colliders for these three sites are registered outside their async model loaders.
+The far-view LOD list is refreshed when a model arrives, including if photo mode prepared the
+aerial scene earlier. Helicopter entry waits for the queue before capturing roof heights.
+
+The `tools/scenarios/districts.mjs` check waits for the queue, checks that no silhouettes
+remain on a successful load, and records frame gaps. In a production-bundle desktop run,
+first play took 29.9 s and the test's worst post-start frame was 147 ms. A separate production
+mobile-emulated run took 33.4 s to first play; all three models finished 9.8 s later, its
+worst frame gap during that period was 164 ms, and it reported about 42 indicative fps once
+done. Other runs varied: 35.4 s to play in a desktop completion check. The new 500 m Low view
+removed about 25 draw calls in the tested mobile spawn (451 before, 425 after), while preserving
+the inspected street scene. These measurements are headless Chrome on Vega 8, not real device
+acceptance tests. The footprint scenario still found zero road overlaps. The High path reached
+play with no console errors, though that smoke run's browser cleanup hung after reporting its
+results.
+
+Two failed approaches are worth avoiding:
+
+- Dividing the 41,839 filler buildings into 225 m chunks while constructing the rest of the
+  world up front raised shader preparation to 22 s and drove FPS to 14 during the background
+  additions. It was reverted. Chunking must also budget geometry upload and compilation.
+- Deferring a whole landmark's shader compilation in a single call shortened first play but
+  produced several 300-700 ms frames immediately afterwards. Submitting one drawable per
+  frame removed those large spikes in the measured completion check. Waiting for a long
+  `requestIdleCallback` timeout between every drawable took 42 s to finish the three landmarks;
+  scheduling just after each frame finished within about 10 s instead.
+
+The 850 m start radius and 2.5 s pause are current heuristics, not a proof of the requested
+15-25 s travel guarantee. On a slow network or device, the silhouette and collision remain
+usable if the full model has not arrived. The rest of the map's procedural buildings, most
+landmarks, and ~238,000 collision segments are still prepared before play. Reaching the
+under-15 s public target requires spatially staged world generation, with a worker producing
+small immutable chunk data, budgeted GPU uploads, and prewarmed shaders before visibility.
+Keep a playable proxy and collision barrier for every not-yet-detailed chunk, and test fast
+driving, turns, teleporting, helicopter flight and offline/slow-network visits before extending
+the stream beyond the three independent landmark models.
+
 ## Public-device follow-up: 30 September
 
 The goal is a usable first visit on an ordinary WebGL2 phone or laptop, followed by a noticeably

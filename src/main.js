@@ -68,9 +68,9 @@ installShadowOnly(renderer); // shadow-only instanced meshes (trees culled for t
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
 const scene = new THREE.Scene();
-// lite profile: 600 m view distance (a third fewer draw calls on the busy quays; draw-call overhead is what limits
+// lite profile: 500 m view distance (fewer draw calls on the busy quays; draw-call overhead is what limits
 // integrated-GPU laptops, not pixels), with slightly thicker fog so the edge doesn't pop
-const camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 0.4, LITE ? 600 : 950);
+const camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 0.4, LITE ? 500 : 950);
 
 // ---------- world ----------
 // The aerial intro (boot.js) keeps animating while this builds: report progress and give it a frame between steps.
@@ -80,11 +80,12 @@ const step = async (frac, text) => { if (!intro) return; intro.progress(frac, te
 const t0 = performance.now();
 const atmosphere = createAtmosphere(scene, renderer);
 const ground = buildGround(scene);
+const start = laneSpot(world.nodes.get('NQ8').edges.find((e) => e.to.id === 'OC1'), 0.2);
 await step(0.62, 'Raising the buildings…');
 const buildings = buildBuildings(scene);
 { const t = performance.now(); bakeGroundAO([...buildings.lots, ...landmarkFootprints], world.bounds); console.log(`ground AO baked in ${Math.round(performance.now() - t)} ms`); }
 await step(0.68, 'Placing the landmarks…');
-const landmarks = buildLandmarks(scene);
+const landmarks = buildLandmarks(scene, { start });
 {
   const t = performance.now();
   const b = batchStatic(scene, [...landmarks.groups, ...ground.group.children.filter((c) => c.isGroup)], { name: 'landmarks (batched)' });
@@ -125,7 +126,6 @@ function laneSpot(edge, t) {
   const p = v2.lerp(edge.from, edge.to, t);
   return { x: p.x + d.z * off, z: p.z - d.x * off, heading: Math.atan2(d.x, d.z) };
 }
-const start = laneSpot(world.nodes.get('NQ8').edges.find((e) => e.to.id === 'OC1'), 0.2);
 const car = new Car(start.x, start.z, start.heading);
 // the player drives a Garda patrol car
 // (a procedural stand-in until the Blender model has loaded)
@@ -384,6 +384,14 @@ const treesReady = loadTrees().then((s) => console.log('trees loaded:', s.join('
 // position follows the helicopter so traffic recycling, people, the minimap and the pursuit all track the player.
 const heli = new Heli();
 let heliVis = null, heightField = null, flying = false, heliBusy = false, beamPref = null;
+let districtLoading = null;
+function startDistrictStreaming() {
+  if (!LITE) return Promise.resolve();
+  if (!districtLoading) districtLoading = landmarks.streamDistricts(renderer, camera, () => pipeline.sceneTarget,
+    () => ({ x: car.pos.x, z: car.pos.z, heading: car.heading, speed: car.speed }),
+    () => far.refreshHeroes()).catch((e) => console.warn('district streaming stopped', e));
+  return districtLoading;
+}
 const heliEnv = { hm: null, bounds: world.bounds, overWater: isOverWater, waterY: WATER_Y };
 const NO_STICK = { pitch: 0, roll: 0, yaw: 0, lift: 0 };
 const BASE_FAR = camera.far;
@@ -393,6 +401,9 @@ function setCarBodyVisible(v) { for (const c of carMesh.children) if (!c.isLight
 async function enterHeli() {
   if (flying || heliBusy) return;
   heliBusy = true;
+  // The helicopter's height field is captured once from visible buildings. Finish any
+  // queued models first so a late roof cannot appear above that collision surface.
+  if (LITE && landmarks.pendingDistricts) { hud.toast('Preparing the city for flight', 3500); await startDistrictStreaming(); }
   far.prepare(); // the far view builds in the background while the rotor spins up
   if (!heliVis) {
     heliVis = await loadHeli();
@@ -686,6 +697,7 @@ settle(Promise.all([carReady, treesReady]), 8000).then(() => {
   const tf = performance.now();
   frame();
   console.log(`first frame took ${Math.round(performance.now() - tf)} ms`);
+  if (LITE) setTimeout(startDistrictStreaming, 2500);
   document.getElementById('loading').classList.add('gone');
   if (!intro) { window.__dublin.ready = true; return; }
   // the aerial view pans to the start, then the real camera descends from that pose to the chase view

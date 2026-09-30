@@ -637,8 +637,11 @@ export function createFarView({ renderer, atmosphere, buildings, landmarks, lite
   // their geometry and materials, lit by copies of the main lights (the far scene's only standard materials)
   const heroLods = new Set();
   function buildHeroes() {
-    mainScene.traverse((o) => { if (o.isLOD && o.levels.length > 1) heroLods.add(o); });
-    for (const lod of heroLods) {
+    const additions = [];
+    mainScene.traverse((o) => {
+      if (o.isLOD && o.levels.length > 1 && !heroLods.has(o)) { heroLods.add(o); additions.push(o); }
+    });
+    for (const lod of additions) {
       lod.updateMatrixWorld(true);
       const g = new THREE.Group();
       g.name = `${lod.name} (far)`;
@@ -908,6 +911,8 @@ export function createFarView({ renderer, atmosphere, buildings, landmarks, lite
     setWet(w) { U.uWet.value = w; },
     // start building (in the background) before it is needed: on entering the helicopter or photo mode
     prepare() { if (!state.built && !state.building && mainScene) build(); },
+    // A deferred stadium may arrive after photo mode has already prepared the aerial view.
+    refreshHeroes() { if (mainScene) buildHeroes(); state.dirty = true; },
     recapture() { if (state.built) capture(); return state.ms.capture; },
     get captureTexture() { return capRT ? capRT.texture : null; },
     get outerTexture() { return U.uOuter.value; },

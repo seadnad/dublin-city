@@ -2159,8 +2159,26 @@ function buildTrees(scene) {
   return spots.length;
 }
 
-export function buildLandmarks(scene) {
+export function buildLandmarks(scene, { start = null } = {}) {
   const S = sites;
+  const deferred = [];
+  let activeDistrict = 0;
+  // Keep collisions and a cheap silhouette in place. Only distant Blender scenery waits;
+  // models reachable near the start still load during the initial preparation.
+  const hero = (site, task, stadium = false) => {
+    if (!LITE || !start || Math.hypot(site.x - start.x, site.z - start.z) < 850) {
+      task(scene).catch((e) => console.warn('landmark load failed', e));
+      return;
+    }
+    const h = stadium ? 23 : 17;
+    const geometry = stadium ? new THREE.CylinderGeometry(1, 1, 1, 24) : new THREE.BoxGeometry(1, 1, 1);
+    const proxy = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: stadium ? 0x929998 : 0x7a7067, roughness: 0.92 }));
+    proxy.scale.set(stadium ? site.w / 2 : site.w, h, stadium ? site.d / 2 : site.d);
+    proxy.position.set(site.x, h / 2, site.z); proxy.rotation.y = site.rot || 0;
+    proxy.name = `${site.name} loading silhouette`;
+    scene.add(proxy);
+    deferred.push({ site, task, proxy });
+  };
   const groups = [
     spire(S.spire), gpo(S.gpo), oconnellBridge(S.oconnellBridge), trinity(S.trinity),
     customHouse(S.customHouse),
@@ -2231,10 +2249,10 @@ export function buildLandmarks(scene) {
     for (const [u, col, w] of [[-18, 0xd6e2ff, 7], [-6, 0xffd49a, 6], [4, 0xffd49a, 6], [14, 0xffd49a, 6], [10, 0xc9d8ff, 9]]) {
       waterGlowSources.push({ ...at(u, -20), y: WATER_Y + 0.05, color: col, width: w, length: 55 });
     }
-    placeThreeArena(scene, A.front).then((h) => {
-      if (!h) { scene.add(threeArena(A)); return; }
+    hero(A, (target) => placeThreeArena(target, A.front).then((h) => {
+      if (!h) { target.add(threeArena(A)); return; }
       arenaHero = h; h.setNight(nightLevel);
-    });
+    }));
   }
   // Clerys, Parnell Square (the Rotunda, the Ambassador, the Gate, the Garden of Remembrance) and Busáras: one Blender
   // hero, solid whether or not it loads; the stone is floodlit with the rest, the clock and the offices lit at night
@@ -2260,7 +2278,7 @@ export function buildLandmarks(scene) {
   // Croke Park (Blender hero with a far LOD): its ground-level outline and outlying solids collide whether or not the
   // model loads; after dark the floodlit stand shows in the canal where it runs out from under the Davin Stand
   let crokeHero = null;
-  placeCrokePark(scene, S.crokePark).then((h) => { if (h) { crokeHero = h; h.setNight(nightLevel); } });
+  hero(S.crokePark, (target) => placeCrokePark(target, S.crokePark).then((h) => { if (h) { crokeHero = h; h.setNight(nightLevel); } }), true);
   addPolyline(S.crokePark.outline, true);
   for (const b of S.crokePark.solids) addBox(b.x, b.z, b.w / 2, b.d / 2, b.rot);
   for (const b of [-90, -58, 58, 88]) {
@@ -2270,7 +2288,7 @@ export function buildLandmarks(scene) {
   // Aviva Stadium (Blender hero with a far LOD). The plinth is solid; the lit bowl throws light on the Dodder at night.
   let avivaHero = null;
   addPolyline(S.aviva.outline, true);
-  placeAviva(scene, S.aviva, { lite: LITE }).then((h) => { if (h) { avivaHero = h; h.setNight(nightLevel); } });
+  hero(S.aviva, (target) => placeAviva(target, S.aviva, { lite: LITE }).then((h) => { if (h) { avivaHero = h; h.setNight(nightLevel); } }), true);
   // Criminal Courts of Justice (Blender hero): its outline collides whether or not the model loads
   let ccjHero = null;
   placeCCJ(scene, S.ccj, S.ccj.outline).then((h) => { if (h) { ccjHero = h; h.setNight(nightLevel); } });
@@ -2302,10 +2320,10 @@ export function buildLandmarks(scene) {
   // LOD; the old procedural block and chimney if it can't load)
   let guinnessHero = null;
   for (const s of [S.guinness, extraSites.gsPower, extraSites.gsTower, extraSites.gs_stack_w, extraSites.gs_stack_e, extraSites.gs_stack_cream, ...S.guinness.tankBanks]) addBox(s.x, s.z, s.w / 2, s.d / 2, s.rot);
-  placeGuinness(scene, S.guinness, { lite: LITE }).then((h) => {
-    if (!h) { scene.add(guinness(S.guinness)); return; }
+  hero(S.guinness, (target) => placeGuinness(target, S.guinness, { lite: LITE }).then((h) => {
+    if (!h) { target.add(guinness(S.guinness)); return; }
     guinnessHero = h; h.setNight(nightLevel);
-  });
+  }));
   for (const [lat, lon] of [[53.33524, -6.22516], [53.33605, -6.22571], [53.3369, -6.22622]]) waterGlowSources.push({ ...project(lat, lon), y: WATER_Y + 0.65, color: 0xffe3b8, width: 6, length: 45 });
   for (const g of grounds) {
     const c = Math.cos(g.rot), s = Math.sin(g.rot), hx = g.w / 2, hz = g.d / 2;
@@ -2320,6 +2338,62 @@ export function buildLandmarks(scene) {
   const labels = new THREE.Group();
   return {
     groups, labels, trees, park: phoenixPark, towers, pubs, green,
+    get pendingDistricts() { return deferred.length + activeDistrict; },
+    async streamDistricts(renderer, camera, getTarget, getDrive, onReady = () => {}) {
+      while (deferred.length) {
+        // Give active input and rendering a chance between models. Read the car position each
+        // time so a turn, teleport or fast drive changes which district comes next.
+        await new Promise((resolve) => {
+          if (window.requestIdleCallback) requestIdleCallback(resolve, { timeout: 800 });
+          else setTimeout(resolve, 100);
+        });
+        const p = getDrive(), lead = Math.min(400, Math.max(0, p.speed) * 15);
+        const px = p.x + Math.sin(p.heading) * lead, pz = p.z + Math.cos(p.heading) * lead;
+        deferred.sort((a, b) => {
+          const score = (d) => Math.hypot(d.site.x - p.x, d.site.z - p.z) + 0.35 * Math.hypot(d.site.x - px, d.site.z - pz);
+          return score(a) - score(b);
+        });
+        const { site, task, proxy } = deferred.shift();
+        activeDistrict = 1;
+        const stage = new THREE.Group();
+        try {
+          const loadAt = performance.now();
+          await task(stage);
+          const loadedAt = performance.now();
+          if (stage.children.length && renderer.compileAsync) {
+            // Compiling a whole district in one call monopolises the main thread while Three
+            // prepares its materials. Submit one drawable per frame, then await the driver
+            // in parallel before swapping the silhouette for the finished model.
+            const drawables = [];
+            stage.traverse((o) => { if ((o.isMesh || o.isLine || o.isPoints || o.isSprite) && o.material) drawables.push(o); });
+            const compiles = [];
+            let worstSubmit = 0;
+            for (const o of drawables) {
+              // One submission just after a rendered frame. An idle callback with a long
+              // timeout can starve on a busy 30 fps device and delay nearby districts.
+              await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
+              const prev = renderer.getRenderTarget();
+              renderer.setRenderTarget(getTarget());
+              const submitAt = performance.now();
+              try { compiles.push(renderer.compileAsync(o, camera, scene)); }
+              finally { renderer.setRenderTarget(prev); }
+              worstSubmit = Math.max(worstSubmit, performance.now() - submitAt);
+            }
+            await Promise.all(compiles);
+            console.log(`district shader submissions: ${site.name}, ${drawables.length} drawables, worst ${Math.round(worstSubmit)} ms`);
+          }
+          const compiledAt = performance.now();
+          if (stage.children.length) {
+            for (const child of [...stage.children]) scene.add(child);
+            scene.remove(proxy);
+            proxy.geometry.dispose(); proxy.material.dispose();
+            onReady();
+            console.log(`district ready: ${site.name}, model ${Math.round(loadedAt - loadAt)} ms, shaders ${Math.round(compiledAt - loadedAt)} ms`);
+          } else console.warn(`district ${site.name}: keeping silhouette after model load failed`);
+        } catch (e) { console.warn(`district ${site.name} failed to load`, e); }
+        activeDistrict = 0;
+      }
+    },
     setLabels(on) { labels.visible = on; },
     // docklands lighting after dark (0 = day, 1 = night)
     setNight(level) {

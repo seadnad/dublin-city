@@ -1,5 +1,14 @@
 # Change log
 
+## 2026-09-30 - Prioritised distant landmarks
+
+- On Auto/Low, distant 3Arena, Guinness Storehouse and Aviva models now load after the first playable frame. Their collisions remain available; a cheap silhouette stays visible until each finished model and its shaders are ready. The next model is chosen from the player's current position and heading, so a turn or teleport changes priority. High keeps loading the full set before play.
+- Shader preparation for those models is spread across frames. An initial whole-model compilation produced half-second pauses after play; the revised version submits one drawable after each frame and removes the silhouette only when the model is ready.
+- Low's normal ground view reaches 500 m instead of 600 m. The starting O'Connell Street mobile screenshot was inspected after the change; High keeps its 950 m view.
+- Added a browser check that waits for all deferred landmarks and detects any stranded loading silhouettes.
+
+In local production browser checks, Auto/Low reached play in roughly 30-35 seconds (previous single run: 38.5 seconds). The mobile-emulated run prepared all three distant models within 9.8 seconds of play, with no console errors, and reported about 42 indicative fps after streaming. These are variable headless results on the same Vega 8 computer. The full procedural city still builds before play, so the public first-visit target remains unmet; see [docs/performance-work.md](docs/performance-work.md).
+
 ## 2026-09-30 - Public device startup follow-up
 
 - Auto now starts masked GPUs and newer integrated graphics on the light scene. Recognisable desktop GPUs can start on Medium, and Auto can still raise render quality when frame times allow it.
