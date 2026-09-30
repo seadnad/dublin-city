@@ -45,6 +45,9 @@ const BLURBS = {
   ccj: 'The courts’ glass drum, at the Parkgate end of the Phoenix Park',
   google: 'Google Docks (the old Montevetro), Gordon House and the skybridge, under the DART',
   bolands: 'The 1830s flour mills, a 1916 garrison, under two new towers on the dock',
+  kilmainhamGaol: 'The grim 1796 gaol where the 1916 leaders were held and shot; chained serpents over the door',
+  royalHospital: 'Robinson’s 1680s old soldiers’ hospital (now IMMA): arcaded quadrangle, copper spire, formal gardens',
+  richmondTower: 'Johnston’s Gothic gate at the end of the lime avenue, moved here from the quays in 1846',
 };
 
 export function createHUD({ sites, actions }) {

@@ -19,9 +19,10 @@ const DISTRICTS = [
   ['PHOENIX PARK', 'PX17', 0, 60], ['PHIBSBOROUGH', 'RN36', 0, -30], ['DRUMCONDRA', 'RN19', 0, -40], ['CROKE PARK', 'KP8', 60, 40],
   ['MOUNTJOY', 'RN11', 0, -30], ['NORTH STRAND', 'RN27', 40], ['PORTOBELLO', 'GXSRS1', -40], ['RANELAGH', 'GXSCH2', 0, 40],
   ['BALLSBRIDGE', 'AVSH2', 30], ["HAROLD'S CROSS", 'GXSGR2', 0, 30], ['STONEYBATTER', 'RN63', 0, -20],
+  ['KILMAINHAM', 'KHL4', 0, 40],
 ];
 // short icon glyphs for each landmark
-const GLYPH = { spire: 'S', gpo: 'P', oconnellBridge: 'B', hapenny: 'H', trinity: 'T', bankOfIreland: '£', christChurch: '✚', stPatricks: '✚', customHouse: 'C', stephensGreen: '♣', heuston: 'R', guinness: 'G', beckett: 'B', convention: 'CC', threeArena: '3', grandCanal: 'Th', marker: 'M', grandCanalSt: 'O', cityHall: 'H', centralBank: '€', ccj: 'J', google: 'Go', bolands: 'Bq' };
+const GLYPH = { spire: 'S', gpo: 'P', oconnellBridge: 'B', hapenny: 'H', trinity: 'T', bankOfIreland: '£', christChurch: '✚', stPatricks: '✚', customHouse: 'C', stephensGreen: '♣', heuston: 'R', guinness: 'G', beckett: 'B', convention: 'CC', threeArena: '3', grandCanal: 'Th', marker: 'M', grandCanalSt: 'O', cityHall: 'H', centralBank: '€', ccj: 'J', google: 'Go', bolands: 'Bq', kilmainhamGaol: 'KG', royalHospital: 'RH', richmondTower: 'Rt' };
 
 export function createWorldMap({ sites, lots, getLive, onTeleport, onWaypoint }) {
   const root = document.createElement('div');

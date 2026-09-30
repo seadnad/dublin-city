@@ -128,6 +128,12 @@ const hash01 = (x, z) => { const s = Math.sin(x * 12.9898 + z * 78.233) * 43758.
 // (street fronts two or three). No extra rand() calls: the rest of the city's filler is unchanged.
 const inBrewery = (x, z) => z > -25 && z < 200 && x > -1185 && x < -962 - 0.12 * z;
 const breweryFloors = (x, z) => 2 + ((Math.floor(x * 0.37 + z * 0.23) & 3) === 0 ? 1 : 0);
+// Kilmainham (docs/research/kilmainham.md 5.3): south of the river west of Heuston, Victorian and Edwardian terraces of
+// brick and painted render, two storeys on the side streets and three on the main roads (no front gardens there), so
+// the gaol, the Royal Hospital's roofs and spire and the Richmond Tower stand over them; and Heuston South Quarter's
+// six- to eight-storey offices between the Royal Hospital's gardens and Military Road.
+const inKilmainham = (x, z) => x < -1330 && z > 60;
+const inHSQ = (x, z) => x > -1447 && x < -1392 && z > 105 && z < 205;
 
 function styleFor(x, z, way) {
   const name = way ? way.name : '';
@@ -190,15 +196,17 @@ for (const way of ordered) {
       let s = 0;
       while (s < L) {
         const mid = v2.add(a, v2.scale(dir, s));
-        const terrace = isTerrace(way) && !inDocks(mid.x, mid.z);
-        const style = terrace ? (rand() < 0.85 ? S.GEORGIAN : S.STUCCO) : styleFor(mid.x, mid.z, way);
+        const kil = inKilmainham(mid.x, mid.z), hsq = inHSQ(mid.x, mid.z), kilMain = kil && way.width >= 10;
+        const terrace = (isTerrace(way) || kil) && !inDocks(mid.x, mid.z) && !hsq;
+        const style = hsq ? S.MODERN : terrace ? (rand() < 0.85 ? S.GEORGIAN : S.STUCCO) : styleFor(mid.x, mid.z, way);
         const spec = lotSpec(style);
-        if (terrace) Object.assign(spec, { w: 2 * spec.bay + 0.5, d: 9 + rand() * 3, floors: rand() < 0.8 ? 2 : 3, fh: 3.2 });
+        if (terrace) { Object.assign(spec, { w: 2 * spec.bay + 0.5, d: 9 + rand() * 3, floors: rand() < 0.8 ? 2 : 3, fh: 3.2 }); if (kilMain) spec.floors = hash01(mid.x, mid.z) < 0.7 ? 3 : 2; }
+        else if (hsq) spec.floors = 6 + Math.floor(hash01(mid.x, mid.z) * 3);
         else if (nearCroke(mid.x, mid.z)) spec.floors = way.type === 'primary' ? 3 : rand() < 0.8 ? 2 : 3;
         else if (nearParkgate(mid.x, mid.z)) { const c = v2.add(mid, v2.scale(n, 12)); spec.floors = parkgateFloors(c.x, c.z, way.type === 'primary' || way.type === 'quay'); }
         else if (inBrewery(mid.x, mid.z)) spec.floors = breweryFloors(mid.x, mid.z);
         else if (inSilicon(mid.x, mid.z) && style === S.MODERN) spec.floors = Math.min(spec.floors, 8);
-        const garden = terrace ? 2.2 : 0;
+        const garden = terrace && !kilMain ? 2.2 : 0;
         if (s + spec.w > L + 3) { s += 2; continue; }
         let placed = false;
         for (const df of [1, 0.7, 0.5]) {
@@ -222,7 +230,7 @@ for (let z = B.minZ + 10; z < B.maxZ - 10; z += 11) {
     const road = world.nearestRoad(x, z);
     const seg = road ? road.seg : null;
     const rot = seg ? Math.atan2(seg.b.x - seg.a.x, seg.b.z - seg.a.z) : 0;
-    const style = inDocks(x, z) || inSilicon(x, z) ? S.MODERN : rand() < (nearCroke(x, z) ? 0.85 : 0.5) ? S.BRICK : S.STUCCO;
+    const style = inDocks(x, z) || inSilicon(x, z) || inHSQ(x, z) ? S.MODERN : rand() < (nearCroke(x, z) ? 0.85 : 0.5) ? S.BRICK : S.STUCCO;
     for (const size of [14, 10, 7]) {
       const o = { x, z, rot, w: size + rand() * 3, d: size + rand() * 3 };
       if (testOBB(o)) {
@@ -230,6 +238,7 @@ for (let z = B.minZ + 10; z < B.maxZ - 10; z += 11) {
         // block interiors stay lower than the street frontage (keeps Docklands from becoming a wall of towers)
         spec.floors = style === S.MODERN ? 3 + Math.floor(rand() * 4) : nearCroke(x, z) ? 2 : Math.max(3, spec.floors - 1);
         if (road && isTerrace(road.way)) spec.floors = 2; // back returns and mews behind the terraces
+        if (inKilmainham(x, z)) spec.floors = inHSQ(x, z) ? 5 + Math.floor(hash01(x, z) * 3) : 2;
         if (nearParkgate(x, z)) spec.floors = Math.min(spec.floors, parkgateFloors(x, z, false));
         if (inBrewery(x, z)) spec.floors = breweryFloors(x, z) - 1; // brewery sheds and yards
         place(o, style, spec, false);
