@@ -19,6 +19,7 @@ import { placeCCJ } from './ccj.js';
 import { placeBarrowStreet } from './barrowst.js';
 import { placeGrandCanal, gcsColliders } from './gcsquare.js';
 import { buildTowers } from './towers.js';
+import { buildLiffey } from './liffey.js';
 import { buildPubs } from './pubs.js';
 import { collegeGreen, suffolkStreet, placeKildare, setKildareNight } from './kildare.js';
 import { placeNorthCity, northCityColliders } from './northcity.js';
@@ -2238,6 +2239,9 @@ export function buildLandmarks(scene) {
   // Connolly Station's 1844 front on Amiens Street (Blender hero, shared stone materials; lit windows at night)
   { const C = S.connolly; addBox(C.x, C.z, C.w / 2, C.d / 2, C.rot); placeParts(scene, 'connolly', { parts: { connolly: { x: C.x, z: C.z, rot: C.rot } } }, 'Connolly Station'); }
   if (phoenixPark) groups.push(phoenixPark.group);
+  // the Liffey Boardwalk, the Millennium and O'Casey footbridges, the Famine, the Jeanie Johnston and CHQ (liffey.js)
+  const liffey = buildLiffey({ Builder, M, waterGlowSources });
+  groups.push(...liffey.groups);
   for (const g of groups) scene.add(g);
   fourCourts(); // its colliders and statues (the hero is placed below)
   // Kildare Street / Merrion Street (Blender hero; its colliders and the Shelbourne's torch-bearers queue first)
@@ -2359,6 +2363,7 @@ export function buildLandmarks(scene) {
       nightLevel = level; if (hapennyHero) hapennyHero.setNight(level);
       if (crokeHero) crokeHero.setNight(level);
       if (heustonHero) heustonHero.setNight(level);
+      liffey.setNight(level);
       if (arenaHero) arenaHero.setNight(level);
       if (avivaHero) avivaHero.setNight(level);
       if (ccjHero) ccjHero.setNight(level);

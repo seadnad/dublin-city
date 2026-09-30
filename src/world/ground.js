@@ -226,6 +226,7 @@ export function getStreets() { return streets; }
 export const stoneTex = makeStoneTexture(256);
 export const stoneMaterial = new THREE.MeshStandardMaterial({ map: stoneTex, roughness: 0.9, color: 0xd8d4cc });
 export const deckMaterial = new THREE.MeshStandardMaterial({ color: 0xd9dcdc, roughness: 0.55 }); // painted steel / fair-faced concrete
+const smoothConcrete = new THREE.MeshStandardMaterial({ color: 0xbdbdb7, roughness: 0.7 }); // Rosie Hackett Bridge
 const railMaterial = new THREE.MeshStandardMaterial({ color: 0xeef0f0, roughness: 0.35, metalness: 0.2 });
 const ironWhiteMaterial = new THREE.MeshStandardMaterial({ color: 0xdcdcd6, roughness: 0.45 }); // painted cast iron
 
@@ -278,9 +279,23 @@ for (const way of world.ways) {
   bridges.push({ way, name: way.name, p0, p1, dir, width: way.width, length: (span[1] - span[0]) * L, centre: v2.lerp(p0, p1, 0.5) });
 }
 
-// footbridges between two quay nodes: the quay parapet opens at their landings, and the steps block cars
-export const footbridges = [{ name: "Ha'penny Bridge", a: 'NQ6', b: 'HPS', halfGap: 3.9 }].map((f) => {
-  const a = world.nodes.get(f.a), b = world.nodes.get(f.b);
+// footbridges between two quay nodes (or two points on the quay centrelines): the quay parapet opens at their
+// landings, and the steps block cars. The Millennium Bridge lands at Eustace Street and Ormond Quay Lower; the Seán
+// O'Casey Bridge (OSM way 568698970, docs/research/liffey-quays.md) from Custom House Quay to City Quay, on its real
+// line (x 373 north, 368 south), each end taken on the quay road's centreline
+const onQuay = (ids, x) => {
+  for (let i = 0; i + 1 < ids.length; i++) {
+    const A = world.nodes.get(ids[i]), Bn = world.nodes.get(ids[i + 1]);
+    if (x >= Math.min(A.x, Bn.x) && x <= Math.max(A.x, Bn.x)) return v2.lerp(A, Bn, (x - A.x) / (Bn.x - A.x));
+  }
+  return null;
+};
+export const footbridges = [
+  { name: "Ha'penny Bridge", a: 'NQ6', b: 'HPS', halfGap: 3.9 },
+  { name: 'Millennium Bridge', a: 'NQ5', b: 'SQ5', halfGap: 2.9 },
+  { name: "Seán O'Casey Bridge", a: onQuay(['NQ12', 'NQ13'], 373), b: onQuay(['SQ12', 'SQ13'], 368), halfGap: 3.2 },
+].map((f) => {
+  const a = typeof f.a === 'string' ? world.nodes.get(f.a) : f.a, b = typeof f.b === 'string' ? world.nodes.get(f.b) : f.b;
   const span = findRiverSpan(a, b, 4);
   const L = v2.len(v2.sub(b, a));
   const p0 = v2.lerp(a, b, span[0]), p1 = v2.lerp(a, b, span[1]);
@@ -461,9 +476,10 @@ function buildBridge(br, groundMaterial) {
   // steel/concrete decks on piers, no arches at all
   // Frank Sherwin (1982) is a flat three-span concrete deck on slim piers, like the docklands bridges;
   // Sean Heuston Bridge (1828) is a single white cast-iron arch
-  const modern = /Beckett|Tom Clarke|Sherwin/.test(br.name), iron = /Heuston/.test(br.name);
-  const arches = modern ? 0 : /Butt|Talbot|Rory|Heuston/.test(br.name) ? 1 : 3;
-  const bodyMat = modern ? deckMaterial : iron ? ironWhiteMaterial : stoneMaterial;
+  // Rosie Hackett Bridge (2014) is one smooth, very flat concrete span with slim steel railings
+  const modern = /Beckett|Tom Clarke|Sherwin/.test(br.name), iron = /Heuston/.test(br.name), hackett = /Hackett/.test(br.name);
+  const arches = modern ? 0 : /Butt|Talbot|Rory|Heuston|Hackett/.test(br.name) ? 1 : 3;
+  const bodyMat = modern ? deckMaterial : hackett ? smoothConcrete : iron ? ironWhiteMaterial : stoneMaterial;
   // body: arch shape extruded across the width
   const shape = new THREE.Shape();
   const bottom = modern ? -1.7 : WATER_Y - 1.5, top = -0.08;
@@ -503,7 +519,7 @@ function buildBridge(br, groundMaterial) {
   // parapets
   const parH = 1.05;
   for (const side of [-1, 1]) {
-    const p = new THREE.Mesh(modern || iron ? new THREE.BoxGeometry(0.25, parH, L + 1.5) : new THREE.BoxGeometry(0.7, parH, L + 1.5), modern ? railMaterial : iron ? ironWhiteMaterial : stoneMaterial);
+    const p = new THREE.Mesh(modern || iron || hackett ? new THREE.BoxGeometry(0.25, parH, L + 1.5) : new THREE.BoxGeometry(0.7, parH, L + 1.5), modern || hackett ? railMaterial : iron ? ironWhiteMaterial : stoneMaterial);
     p.position.set(side * (W / 2 + 0.35), parH / 2, 0);
     p.castShadow = p.receiveShadow = true;
     p.userData.standIn = p.userData.dynamic = iron; // Sean Heuston Bridge: hidden when its hero model (heuston.js) loads

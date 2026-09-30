@@ -12,6 +12,7 @@ import tanksData from '../data/guinness-tanks.json';
 import bsLayout from '../data/barrowst.json';
 import { spans as railSpans, at as railAt, footprints as railFootprints, pearseFront, fireTower } from './railline.js';
 import { pubSites } from './pubsites.js';
+import * as LQ from './liffeysites.js';
 
 const N = (id) => world.nodes.get(id);
 const wayBetween = (a, b) => world.ways.find((w) => {
@@ -891,6 +892,14 @@ const tallFootprints = [sites.libertyHall, sites.collegeSquare, sites.capitalDoc
 for (const p of Object.values(pubSites)) {
   if (p.place) sites[p.key] = { name: p.name, x: p.x, z: p.z, rot: p.rot, w: p.w, d: p.d, labelY: 20, view: p.view, blurb: p.blurb };
 }
+// the Liffey's riverside landmarks (src/world/liffeysites.js, docs/research/liffey-quays.md) join the Places list
+Object.assign(sites, {
+  famine: { name: 'Famine Memorial', ...LQ.FAMINE.site, view: spot('NQ12', 'NQ13', 0.04) },
+  jeanieJohnston: { name: 'Jeanie Johnston', x: LQ.SHIP.x, z: LQ.SHIP.z, rot: LQ.SHIP.rot, w: LQ.SHIP.w, d: LQ.SHIP.d, labelY: 24, water: true, view: spot('NQ13', 'NQ12', 0.12) },
+  millenniumBridge: { name: 'Millennium Bridge', ...LQ.MILLENNIUM, view: spot('SQ4', 'SQ5', 0.72) },
+  ocaseyBridge: { name: "Seán O'Casey Bridge", ...LQ.OCASEY, view: spot('SQ12', 'SQ13', 0.2) },
+});
+extraSites.chq = { ...LQ.CHQ };
 
 // Footprints the filler generator must avoid (landmark buildings; parks/campus handled separately).
 export const reserved = [
@@ -963,6 +972,8 @@ export const reserved = [
   (extraSites.ccjNorth = { x: CCJ.x - 6, z: CCJ.z - 29, rot: 0, w: 38, d: 8 }),
   // Kildare Street / Merrion Street, the Shelbourne, St Andrew's Church and Molly's corner (not the College Green islands)
   ...Object.entries(extraSites).filter(([k]) => /^kd_|^kdOpen_|^stAndrews/.test(k)).map(([, s]) => s), sites.mollyMalone,
+  // CHQ on Custom House Quay (src/world/liffey.js)
+  extraSites.chq,
   // the tall buildings (src/world/towers.js)
   ...tallFootprints,
   // Clerys, Parnell Square (the Rotunda, the Ambassador, the Gate, the Garden of Remembrance) and Busáras

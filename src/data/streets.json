@@ -581,6 +581,7 @@
     { "name": "O'Donovan Rossa Bridge", "type": "bridge", "width": 13, "nodes": ["NQ2", "SQ2"] },
     { "name": "Grattan Bridge", "type": "bridge", "width": 15, "nodes": ["NQ4", "SQ4"] },
     { "name": "O'Connell Bridge", "type": "bridge", "width": 32, "nodes": ["NQ8", "SQ8"] },
+    { "name": "Rosie Hackett Bridge", "type": "bridge", "width": 18, "access": "destination", "nodes": ["NQ9", "SQ9"] },
     { "name": "Butt Bridge", "type": "bridge", "width": 13, "nodes": ["NQ10", "SQ10"] },
     { "name": "Talbot Memorial Bridge", "type": "bridge", "width": 13, "nodes": ["NQ12", "SQ12"] },
     { "name": "O'Connell Street", "type": "boulevard", "width": 30, "nodes": ["NQ8", "OC1", "OC2", "OC3", "OC4"] },

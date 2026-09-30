@@ -18,7 +18,9 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { load } from './heroes.js';
 
 export const BODIES = ['cloaked', 'frock_chest', 'folded', 'orator', 'orator_out', 'friar', 'larkin', 'reader', 'allegory', 'justice', 'classical',
-  'davis', 'herald', 'molly', 'torchbearer', 'seahorse_lamp']; // seahorse_lamp is built at real size: height = NOMINAL
+  'davis', 'herald', 'molly', 'torchbearer', 'seahorse_lamp', // seahorse_lamp is built at real size: height = NOMINAL
+  // Rowan Gillespie's Famine on Custom House Quay (tools/blender/build_famine.py -> public/models/famine.glb, loaded only when used)
+  'famine_carrier', 'famine_shawl', 'famine_bundle', 'famine_sack', 'famine_dog'];
 const NOMINAL = 1.78; // head top of the kit bodies, metres
 
 // colours from docs/research/monuments.md 3.4 (sampled from the reference photos)
@@ -32,6 +34,7 @@ export const FINISH = {
   heraldBronze: { metal: true, base: '#4f5f57', streak: '#7d9488', amount: 0.35 }, // the Four Angels: pale grey-green
   mollyBronze: { metal: true, base: '#3a2e25', streak: '#5a4a3a', amount: 0.1 },   // Molly Malone: brown bronze
   castIron: { metal: true, base: '#1c1e1f', streak: '#2c3032', amount: 0.05 },     // Grattan's lamp standards
+  famineBronze: { metal: true, base: '#6e5b3b', streak: '#a69a64', amount: 0.32 },  // Gillespie's Famine: brown bronze, ochre-green weathering (refs/liffey-quays 01-05)
 };
 
 // near-black bronze is a matte, low-metal surface (the old shiny 0.85 metalness read as polished steel)
@@ -98,10 +101,12 @@ function proxy() {
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _up = new THREE.Vector3(0, 1, 0), _p = new THREE.Vector3(), _s = new THREE.Vector3();
 export async function buildStatues(scene) {
   const bodies = {};
-  try {
-    const gltf = await load('statues');
-    gltf.scene.traverse((o) => { const m = /^fig_(\w+)$/.exec(o.name); if (m && o.isMesh) bodies[m[1]] = o.geometry; });
-  } catch (e) { console.warn('statues.glb failed to load; using stand-ins', e); }
+  for (const file of ['statues', ...(queue.some((s) => s.body.startsWith('famine_')) ? ['famine'] : [])]) {
+    try {
+      const gltf = await load(file);
+      gltf.scene.traverse((o) => { const m = /^fig_(\w+)$/.exec(o.name); if (m && o.isMesh) bodies[m[1]] = o.geometry; });
+    } catch (e) { console.warn(`${file}.glb failed to load; using stand-ins`, e); }
+  }
   const fallback = proxy();
   const buckets = new Map();
   for (const st of queue) {
