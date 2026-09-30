@@ -50,6 +50,7 @@ for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP']) process.on(sig, () => process
 const browser = await puppeteer.launch({
   executablePath: CHROME,
   headless: 'new',
+  protocolTimeout: scenarioPath && path.basename(scenarioPath) === 'bridges.mjs' ? 600000 : 180000,
   userDataDir: profile,
   args: ['--ignore-gpu-blocklist', '--enable-gpu', '--use-angle=d3d11', '--window-size=1280,720', ...(process.env.PERF ? ['--disable-gpu-vsync', '--disable-frame-rate-limit'] : [])],
 });

@@ -5,6 +5,7 @@
 // main.js drives it through window.__intro: progress(), panTo(start), pose(), finish().
 import * as THREE from 'three';
 import { createIntro } from './intro/scene.js';
+import { profile } from './render/quality.js';
 
 let canvas = document.createElement('canvas');
 canvas.id = 'intro';
@@ -15,17 +16,19 @@ overlay.innerHTML = '<h1>DUBLIN</h1><div class="bar"><i></i></div><p class="step
 document.body.appendChild(overlay);
 const barEl = overlay.querySelector('.bar i'), stepEl = overlay.querySelector('.step');
 const size = () => ({ width: window.innerWidth, height: window.innerHeight });
-canvas.width = Math.round(window.innerWidth * Math.min(window.devicePixelRatio, 1.5));
-canvas.height = Math.round(window.innerHeight * Math.min(window.devicePixelRatio, 1.5));
+const introDpr = Math.min(window.devicePixelRatio, profile.lite ? 1 : 1.5);
+const introFps = profile.lite ? 30 : 60;
+canvas.width = Math.round(window.innerWidth * introDpr);
+canvas.height = Math.round(window.innerHeight * introDpr);
 
 // ---- the renderer: a worker when possible, the page otherwise. Both expose resize / panTo / stop.
 let runner;
-function onPage(cv) { return createIntro(cv, window.innerWidth, window.innerHeight, window.devicePixelRatio); }
+function onPage(cv) { return createIntro(cv, window.innerWidth, window.innerHeight, introDpr, introFps); }
 const offscreen = typeof canvas.transferControlToOffscreen === 'function' && typeof Worker === 'function' && !/[?&]intro=page/.test(location.search);
 if (offscreen) {
   const worker = new Worker(new URL('./intro/worker.js', import.meta.url), { type: 'module' });
   const off = canvas.transferControlToOffscreen();
-  worker.postMessage({ type: 'init', canvas: off, ...size(), dpr: window.devicePixelRatio }, [off]);
+  worker.postMessage({ type: 'init', canvas: off, ...size(), dpr: introDpr, fps: introFps }, [off]);
   let panned = null, ready = false, pending = null;
   // if the worker can't draw (no WebGL in workers, or it fails to load), swap in a fresh canvas and draw on the page
   const fallBack = (why) => {
@@ -101,10 +104,14 @@ const stages = [
   ['Placing the landmarks…', () => import('./world/landmarks.js')],
   ['Waking the city…', () => import('./main.js')],
 ];
+const bootStart = performance.now();
 (async () => {
   for (let i = 0; i < stages.length; i++) {
     window.__intro.progress(i / (stages.length + 2), stages[i][0]);
     await nextFrame();
+    const started = performance.now();
     await stages[i][1]();
+    console.log(`startup ${stages[i][0]}: ${Math.round(performance.now() - started)} ms`);
   }
+  console.log(`startup modules and city: ${Math.round(performance.now() - bootStart)} ms`);
 })().catch((e) => { console.error(e); stepEl.textContent = 'Something went wrong loading the city.'; });

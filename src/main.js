@@ -158,7 +158,9 @@ function respawnNearRoad() {
 
 // ---------- traffic + Luas ----------
 await step(0.8, 'Starting the traffic…');
+const trafficStart = performance.now();
 const traffic = createTraffic(scene, LITE ? { cars: 12, buses: 3, taxis: 3, parked: 120 } : { cars: 26, buses: 6, taxis: 5, parked: 320 });
+console.log(`traffic built in ${Math.round(performance.now() - trafficStart)} ms`);
 const tram = createLuas(scene, world.luasLines);
 tram.camera = camera; // trams out of view draw nothing
 const dart = createDart(scene); // the DART on the Loop Line viaduct (no collision: it runs overhead)
@@ -637,16 +639,22 @@ function frame() {
   // after the intro and after each switch is skipped (shader compiles).
   const settled = !flight && time > 1.5 && time - lastSwitch > 1.0;
   const fdt = Math.min(rawDt, 0.25);
+  // Auto on a light-profile device favours a sharp image at roughly 30 fps over a blurry
+  // image at 45 fps. Explicit profiles keep their existing responsiveness target.
+  const targetFps = !userQuality && LITE ? 30 : 45;
   if (!settled || worldMap.isOpen || photo.active || fpsCap) { /* skip */ }
-  else if (fdt > 1 / 45) { slowTime += fdt * (fdt > 1 / 20 ? 2 : 1); fastTime = 0; }
-  else if (fdt < 1 / 58) { fastTime += fdt; slowTime = Math.max(0, slowTime - fdt); }
+  else if (fdt > 1 / targetFps) { slowTime += fdt * (fdt > 1 / 20 ? 2 : 1); fastTime = 0; }
+  else if (fdt < 1 / (targetFps + 13)) { fastTime += fdt; slowTime = Math.max(0, slowTime - fdt); }
   const setQ = (q) => { pipeline.setQuality(q); pipeline.setMood(mode); lastSwitch = time; slowTime = fastTime = 0; };
   const setDpr = (v) => { dpr = v; renderer.setPixelRatio(dpr); pipeline.setPixelRatio(); lastSwitch = time; slowTime = fastTime = 0; };
   if (slowTime > 0.8) {
     // step down: high -> medium -> low, then resolution (a big step if frames are very slow)
     if (!userQuality && pipeline.quality === 'high') { failed.high = true; setQ('medium'); }
     else if (!userQuality && pipeline.quality === 'medium') { failed.medium = true; setQ('low'); }
-    else if (dpr > 0.6) setDpr(Math.max(0.6, dpr - (fdt > 1 / 20 ? 0.4 : 0.2)));
+    else {
+      const minDpr = !userQuality ? Math.min(maxDpr, IS_MOBILE ? 1 : 0.8) : 0.6;
+      if (dpr > minDpr) setDpr(Math.max(minDpr, dpr - (fdt > 1 / 20 ? 0.4 : 0.2)));
+    }
   } else if (fastTime > 6) {
     if (dpr < maxDpr) setDpr(Math.min(maxDpr, dpr + 0.2));
     else if (!userQuality && pipeline.quality === 'low' && !failed.medium && !LITE) setQ('medium');

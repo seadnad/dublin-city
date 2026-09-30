@@ -51,7 +51,9 @@ function profileFor(m) {
       const base = { tier: weak ? 'low' : 'medium', maxDpr: Math.min(dev, weak ? (IS_MOBILE ? 1.5 : 1.25) : 2), lite: weak, fpsCap: 0 };
       if (learned && ['low', 'medium', 'high'].includes(learned.tier)) {
         base.tier = learned.tier;
-        base.startDpr = Math.min(base.maxDpr, learned.dpr || base.maxDpr);
+        // Older Auto sessions may have learned a sub-CSS-pixel resolution. Keep that memory
+        // from making a tablet blurry immediately on its next visit.
+        base.startDpr = Math.max(Math.min(base.maxDpr, IS_MOBILE ? 1 : 0.8), Math.min(base.maxDpr, learned.dpr || base.maxDpr));
         base.lite = base.lite || learned.tier === 'low';
       }
       return base;

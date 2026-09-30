@@ -59,7 +59,7 @@ export function paintAtlas(t) {
   const S = 1024;
   const mk = () => { const cv = document.createElement('canvas'); cv.width = cv.height = S; return cv; };
   const colC = mk(), mskC = mk(), emiC = mk();
-  const C = colC.getContext('2d'), M = mskC.getContext('2d'), E = emiC.getContext('2d');
+  const C = colC.getContext('2d', { willReadFrequently: true }), M = mskC.getContext('2d', { willReadFrequently: true }), E = emiC.getContext('2d');
   C.fillStyle = '#ffffff'; C.fillRect(0, 0, S, S);
   M.fillStyle = '#ffffff'; M.fillRect(0, 0, S, S);
   E.fillStyle = '#000000'; E.fillRect(0, 0, S, S);
@@ -232,11 +232,16 @@ const BUS = { L: 10.8, W: 2.55, H: 4.35, r: 0.5, wheels: [-2.6, 3.1] };
 const ROUTES = [['16', 'Airport'], ['46A', 'Dún Laoghaire'], ['39A', 'UCD Belfield'], ['145', 'Heuston Stn'], ['C1', 'Adamstown'], ['G2', 'Spencer Dock']];
 // Canvas regions (y down): nearside [0, 0.3), offside [0.3, 0.6), front / back / roof [0.6, 1.0]
 function busAtlas(route) {
-  const S = 2048, c = document.createElement('canvas');
-  c.width = c.height = S;
+  // Paint in 2048-unit design coordinates, directly into the uploaded textures. Painting six
+  // 2048-square pairs and then shrinking them created a large throwaway canvas workload at boot.
+  const S = 2048, size = LITE ? 512 : 1024, glowSize = 512;
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
   const e = document.createElement('canvas');
-  e.width = e.height = S;
+  e.width = e.height = glowSize;
   const g = c.getContext('2d'), eg = e.getContext('2d');
+  g.scale(size / S, size / S);
+  eg.scale(glowSize / S, glowSize / S);
   eg.fillStyle = '#000'; eg.fillRect(0, 0, S, S);
   const { L, H } = BUS;
   const YEL = '#f2c416', NAVY = '#1c2c66', BLUE = '#3f79c2', GLASS = '#151b21';
@@ -324,8 +329,8 @@ function busAtlas(route) {
     }
   }
   g.fillStyle = '#e4e3de'; g.fillRect(S * 0.66, S * 0.6, S * 0.34, S * 0.4);
-  const map = new THREE.CanvasTexture(shrink(c, LITE ? 512 : 1024)); map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 8;
-  const emissiveMap = new THREE.CanvasTexture(shrink(e, 512)); emissiveMap.colorSpace = THREE.SRGBColorSpace;
+  const map = new THREE.CanvasTexture(c); map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 8;
+  const emissiveMap = new THREE.CanvasTexture(e); emissiveMap.colorSpace = THREE.SRGBColorSpace;
   return { map, emissiveMap };
 }
 
