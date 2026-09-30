@@ -13,6 +13,7 @@ import { noiseTexture, KERB_H } from './roads.js';
 import { chunkedInstances } from './chunks.js';
 import { addReflections } from '../render/reflect.js';
 import { lampUniforms, LAMP_GLSL } from '../render/lamplight.js';
+import { SHOPFRONT_NAMES, nameFont, shopfrontAtlas, shopfrontUniforms, SHOPFRONT_GLSL, SHOPFRONT_TILES } from './shopfronts.js';
 
 const B = world.bounds;
 const CELL = 0.5;
@@ -83,6 +84,8 @@ for (const line of world.luasLines) for (const pts of line.tracks) for (let i = 
 
 // ---------- styles ----------
 const S = { GEORGIAN: 0, BRICK: 1, STUCCO: 2, TEMPLEBAR: 3, MODERN: 4 };
+// Temple Bar ground floors are this many upper storeys tall (4.3 m under 3.2 m floors: shopfront plus fascia)
+const TB_GROUND = 1.35;
 const hex = (h) => new THREE.Color(h);
 // Dublin brick is a dark, brownish red with grey-brown neighbours (refs: Dame St, Fitzwilliam St)
 const BRICKS = ['#7b4331', '#6c3a2b', '#85503a', '#5f3a2d', '#744a3a', '#8b5a43', '#6a4636', '#7a6a5c', '#8e6049'].map(hex);
@@ -93,6 +96,15 @@ const FASCIA = ['#17392a', '#1a1a1a', '#5a1a22', '#1b2745', '#e8e0cc', '#d9ae2c'
 const GLASS = ['#5f7887', '#4d5f6a', '#7c93a0', '#6c7f7a'].map(hex);
 const PANELS = ['#c8c8c4', '#3a3d40', '#9aa0a3', '#b9b2a4'].map(hex);
 const pick = (arr) => arr[Math.floor(rand() * arr.length)];
+// Temple Bar (docs/research/temple-bar.md C1, temple-bar-v2.md): dark Dublin brick, Victorian red and buff stock brick or
+// muted render above, the colour on the ground-floor front (TB_FRONTS, painted through the shared shopfront set). About
+// one in five is painted top to bottom, as the Gogarty-yellow and blue fronts are.
+const TB_UPPER = [
+  ['#5e3a2e', 1], ['#6b4436', 1], ['#7a4a38', 1], ['#a3573d', 1], ['#9c8466', 1], ['#b39f7e', 1], ['#8a5a44', 1],
+  ['#e6dfcc', 0], ['#bfc3c6', 0], ['#d6c7a1', 0], ['#c9b27c', 0], ['#e9e4d8', 0],
+  ['#d9b53a', 0], ['#2e4f86', 0], ['#3f8f8a', 0],
+].map(([h, b]) => ({ c: hex(h), brick: b }));
+const TB_FRONTS = ['#b3121b', '#7e1e1e', '#1e4d34', '#255e3d', '#1b2745', '#161616', '#1e3fa0', '#3fa6a0', '#e6c84a', '#ede3c4', '#5a1a22', '#b8521c', '#2c4f78', '#6a3b78'].map(hex);
 
 const GEORGIAN_ST = /Merrion|Stephen's Green|Dawson|Kildare|Harcourt|Leeson|Baggot|Clare|Gardiner|Westland|Cuffe|King Street|Church Street|Merrion Row/;
 const TEMPLE_BAR = /Temple Bar|Temple Lane|Fleet|Essex Street|Eustace|Crown Alley|Anglesea|Sycamore|Cope|Fownes|Fishamble|Exchequer|Wicklow/;
@@ -160,7 +172,7 @@ function colorsFor(style) {
     case S.GEORGIAN: return [pick(BRICKS), pick(DOORS)];
     case S.BRICK: return [pick(BRICKS), pick(FASCIA)];
     case S.STUCCO: return [pick(STUCCO), pick(FASCIA)];
-    case S.TEMPLEBAR: return [pick(VIVID), pick(FASCIA)];
+    case S.TEMPLEBAR: { const up = pick(TB_UPPER); return [up.c, pick(TB_FRONTS), up.brick]; } // same two draws as before
     default: return [pick(GLASS), pick(PANELS)];
   }
 }
@@ -168,12 +180,12 @@ function colorsFor(style) {
 // ---------- lot placement ----------
 const lots = [];
 function place(o, style, spec, frontage) {
-  const [base, trim] = colorsFor(style);
+  const [base, trim, tbBrick = 0] = colorsFor(style);
   const parapet = style === S.MODERN ? 0.6 : 0.9;
-  const h = spec.floors * spec.fh + parapet;
+  const h = spec.floors * spec.fh + parapet + (style === S.TEMPLEBAR ? spec.fh * (TB_GROUND - 1) : 0);
   const nb = Math.max(1, Math.round(o.w / spec.bay));
   const doorBay = rand() < 0.5 ? 0 : nb - 1; // Georgian doors sit at one end of the house
-  lots.push({ ...o, h, style, fh: spec.fh, bay: spec.bay, base, trim, seed: rand(), nb, doorBay, sign: Math.floor(rand() * 64), weather: rand(), frontage });
+  lots.push({ ...o, h, style, fh: spec.fh, bay: spec.bay, base, trim, seed: rand(), nb, doorBay, sign: Math.floor(rand() * 64) + (style === S.TEMPLEBAR ? 64 : 0), weather: rand(), frontage, tbBrick });
   markOBB(o);
 }
 
@@ -239,6 +251,44 @@ for (let z = B.minZ + 10; z < B.maxZ - 10; z += 11) {
   }
 }
 
+// Temple Bar: a side wall that faces open ground (a square, a lane mouth, a street corner) gets windows instead of a
+// blank party wall - the blank slabs facing Temple Bar Square (docs/research/hotspots-green-templebar-dame.md 1.2).
+// Probed against the other buildings and the landmark boxes; the squares (reserved with open: true) count as open.
+// Stored in the frontage flag: 1 + 2 (local -x side open) + 4 (local +x side open).
+export const inTempleBar = (x, z) => x > -420 && x < 10 && z > -10 && z < 170;
+{
+  const C = 16, cells = new Map(), key = (i, j) => i * 100003 + j;
+  lots.forEach((L) => {
+    if (!inTempleBar(L.x, L.z)) return;
+    const r = Math.hypot(L.w, L.d) / 2;
+    for (let i = Math.floor((L.x - r) / C); i <= Math.floor((L.x + r) / C); i++) for (let j = Math.floor((L.z - r) / C); j <= Math.floor((L.z + r) / C); j++) {
+      const k = key(i, j); if (!cells.has(k)) cells.set(k, []); cells.get(k).push(L);
+    }
+  });
+  const inside = (o, x, z) => {
+    const c = Math.cos(o.rot), s = Math.sin(o.rot), dx = x - o.x, dz = z - o.z;
+    return Math.abs(dx * c - dz * s) <= o.w / 2 && Math.abs(dx * s + dz * c) <= o.d / 2;
+  };
+  const solid = reserved.filter((r) => !r.open && r.w && r.d && inTempleBar(r.x, r.z));
+  for (const L of lots) {
+    if (!L.frontage || !inTempleBar(L.x, L.z)) continue;
+    const c = Math.cos(L.rot), s = Math.sin(L.rot);
+    let flags = 0;
+    for (const [bit, sx] of [[2, -1], [4, 1]]) {
+      let open = true;
+      for (const lz of [L.d / 2 - 1.2, 0, -L.d / 2 + 1.5]) {
+        const lx = sx * (L.w / 2 + 1.5), x = L.x + lx * c + lz * s, z = L.z - lx * s + lz * c;
+        if ((cells.get(key(Math.floor(x / C), Math.floor(z / C))) || []).some((o) => o !== L && inside(o, x, z)) || solid.some((o) => inside(o, x, z))) { open = false; break; }
+      }
+      if (open) flags |= bit;
+    }
+    L.frontage = 1 + flags;
+  }
+}
+
+// The Temple Bar fronts (street-facing TEMPLEBAR lots) for what hangs off them: signs, flags, baskets (templebar.js)
+export const templeBarFronts = () => lots.filter((L) => L.style === S.TEMPLEBAR && L.frontage).map((L) => ({ ...L, tbGround: TB_GROUND }));
+
 // ---------- textures ----------
 // Flemish-bond brick, 1.8 m tile. R: brick tone, G: hue variation, B: mortar mask (1 = mortar).
 function brickTexture() {
@@ -290,21 +340,29 @@ const SHOP_NAMES = [
   'DORAN CAFÉ', 'MULLIGAN STATIONERS', 'BARRY PHOTO', 'THE OLD STAND', "GAVIN'S", 'NUGENT OPTICIANS', 'PHELAN TAILORS', "LAWLOR'S",
   'THE STONE BOWL', 'COYLE BOOKS', "REDMOND'S", 'THE RAG TRADE', 'MOLONEY HATS', 'CAHILL & CO.', "HYNES'S", 'THE BLUE DOOR',
 ];
+// Cells 0-63: the filler names above; cells 64-127: Temple Bar's pubs, cafés and shops (shopfronts.js), each suited to
+// the shopfront tile it goes with. One channel (the lettering mask), 2 columns x 64 rows of 512 x 64 px.
 function signAtlas() {
   const c = document.createElement('canvas');
-  c.width = 1024; c.height = 2048;
-  const ctx = c.getContext('2d');
+  c.width = 1024; c.height = 4096;
+  const ctx = c.getContext('2d', { willReadFrequently: true });
   ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  SHOP_NAMES.forEach((name, i) => {
+  const draw = (name, i, font) => {
     const col = i % 2, row = Math.floor(i / 2);
-    const serif = /'S$|BAR|INN|THE /.test(name) || i % 3 === 0;
-    ctx.font = serif ? 'bold 44px Georgia, "Times New Roman", serif' : 'bold 40px "Arial Narrow", Arial, sans-serif';
-    let w = ctx.measureText(name).width;
-    const sx = Math.min(1, 470 / w);
+    ctx.font = font;
+    const w = ctx.measureText(name).width, sx = Math.min(1, 470 / w);
     ctx.save(); ctx.translate(col * 512 + 256, row * 64 + 33); ctx.scale(sx, 1); ctx.fillText(name, 0, 0); ctx.restore();
+  };
+  SHOP_NAMES.forEach((name, i) => {
+    const serif = /'S$|BAR|INN|THE /.test(name) || i % 3 === 0;
+    draw(name, i, serif ? 'bold 44px Georgia, "Times New Roman", serif' : 'bold 40px "Arial Narrow", Arial, sans-serif');
   });
-  const t = new THREE.CanvasTexture(c);
-  t.anisotropy = 8;
+  SHOPFRONT_NAMES.forEach((name, i) => draw(name, 64 + i, nameFont(i) === 'script' ? 'italic bold 46px Georgia, "Times New Roman", serif' : 'bold 44px Georgia, "Times New Roman", serif'));
+  const src = ctx.getImageData(0, 0, c.width, c.height).data, a = new Uint8Array(c.width * c.height);
+  for (let k = 0; k < a.length; k++) a[k] = src[k * 4 + 3];
+  const t = new THREE.DataTexture(a, c.width, c.height, THREE.RedFormat, THREE.UnsignedByteType);
+  t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.generateMipmaps = true;
+  t.unpackAlignment = 1; t.anisotropy = 8; t.needsUpdate = true;
   return t;
 }
 
@@ -367,9 +425,10 @@ function makeMaterial() {
   buildingUniforms.uBrick.value = brickTexture();
   buildingUniforms.uSigns.value = signAtlas();
   buildingUniforms.uNoise.value = noiseTexture;
+  shopfrontAtlas();
   const mat = new THREE.MeshStandardMaterial({ roughness: 0.9, metalness: 0.0 });
   mat.onBeforeCompile = (sh) => {
-    Object.assign(sh.uniforms, buildingUniforms, lampUniforms);
+    Object.assign(sh.uniforms, buildingUniforms, lampUniforms, shopfrontUniforms);
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', `#include <common>
         attribute vec3 aBase; attribute vec3 aTrim; attribute vec4 aStyle; attribute vec4 aExtra;
@@ -380,12 +439,12 @@ function makeMaterial() {
         float uu = abs(normal.x) > 0.5 ? (normal.x > 0.0 ? 0.5 - position.z : position.z + 0.5) * sc.z
                                        : (normal.z > 0.0 ? position.x + 0.5 : 0.5 - position.x) * sc.x;
         vFacade = vec4(uu, position.y * sc.y, abs(normal.x) > 0.5 ? sc.z : sc.x, sc.y);
-        vFace = normal.y > 0.5 ? 0.0 : normal.z > 0.5 ? 1.0 : normal.z < -0.5 ? 2.0 : 3.0;
+        vFace = normal.y > 0.5 ? 0.0 : normal.z > 0.5 ? 1.0 : normal.z < -0.5 ? 2.0 : normal.x < 0.0 ? 3.0 : 4.0; // sides: 3 = -x, 4 = +x
         vBase = aBase; vTrim = aTrim; vStyle = aStyle; vExtra = aExtra;
         vWPos = (modelMatrix * instanceMatrix * vec4(position, 1.0)).xyz;
         vFN = normalize(mat3(modelMatrix) * (mat3(instanceMatrix) * normal));`);
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', `#include <common>\n${FACADE_GLSL}\n${LAMP_GLSL}`)
+      .replace('#include <common>', `#include <common>\n${FACADE_GLSL}\n${LAMP_GLSL}\n${SHOPFRONT_GLSL}`)
       .replace('#include <color_fragment>', `#include <color_fragment>
         {
           float style = vStyle.x, fh = vStyle.y, bw = vStyle.z, seed = vStyle.w;
@@ -400,15 +459,28 @@ function makeMaterial() {
           vec4 nzF = texture2D(uNoise, vec2(u, v) * 0.35 + seed);
           float nb = max(1.0, floor(W / bw + 0.5));
           float bayW = W / nb;
-          float nfl = max(1.0, floor((H - 0.5) / fh));
+          // Temple Bar (style 3; 3.25 = brick above): a taller ground floor holding a shopfront from the shared set
+          // (shopfronts.js), tiled along the front; the window grid above runs on vw, v less the extra height
+          bool tb = style > 2.5 && style < 3.5;
+          float tbG = fh * ${TB_GROUND.toFixed(2)};
+          float vw = tb ? (v < tbG ? v * fh / tbG : v - (tbG - fh)) : v;
+          float Hw = tb ? H - (tbG - fh) : H;
+          float nfl = max(1.0, floor((Hw - 0.5) / fh));
+          float tbRepW = W / max(1.0, floor(W / 5.6 + 0.35)); // one front per ~6 m of frontage
+          float tbRep = floor(u / tbRepW);
+          vec2 tbT = vec2(u / tbRepW, v / tbG);
+          vec2 tbGx = dFdx(tbT), tbGy = dFdy(tbT);          // taken here, in uniform control flow
           vec2 signUv; {
-            float cell = mod(signIdx, 64.0);
-            float sw = min(W * 0.8, fh * 0.18 * 8.0); // keep the 8:1 lettering aspect
-            float sx = clamp((u - (W - sw) * 0.5) / sw, 0.0, 1.0);
-            float sy = clamp((v - fh * 0.765) / (fh * 0.18), 0.0, 1.0);
-            signUv = vec2((mod(cell, 2.0) + sx) * 0.5, 1.0 - (floor(cell / 2.0) + 1.0 - sy) / 32.0);
+            float cell = tb ? 64.0 + mod(mod(signIdx, 64.0) + tbRep * 5.0, 64.0) : mod(signIdx, 64.0);
+            // plain shopfronts: centred on the building, fh-proportioned; Temple Bar: centred in each front's fascia
+            float sw = tb ? min(tbRepW * 0.74, 4.6) : min(W * 0.8, fh * 0.18 * 8.0); // keep the 8:1 lettering aspect
+            float x0 = tb ? tbRep * tbRepW + (tbRepW - sw) * 0.5 : (W - sw) * 0.5;
+            float y0 = tb ? tbG * 0.857 - sw / 16.0 : fh * 0.765;
+            float sx = clamp((u - x0) / sw, 0.0, 1.0);
+            float sy = clamp((v - y0) / (sw / 8.0), 0.0, 1.0);
+            signUv = vec2((mod(cell, 2.0) + sx) * 0.5, (floor(cell / 2.0) + 1.0 - sy) / 64.0);
           }
-          float signA = texture2D(uSigns, signUv).a;
+          float signA = texture2D(uSigns, signUv).r;
 
           vec3 V = normalize(vWPos - cameraPosition);
           vec3 T = normalize(cross(vec3(0.0, 1.0, 0.0), vFN) + vec3(1e-5, 0.0, 0.0));
@@ -422,7 +494,7 @@ function makeMaterial() {
           // relief fades out by ~7 mm per pixel (a few metres away on a phone) and is fully off beyond that.
           gBump = 1.0 - smoothstep(0.0025, 0.007, fw);
 
-          bool brick = style < 1.5;
+          bool brick = style < 1.5 || (tb && fract(style) > 0.1);
           vec3 wall;
           if (brick) {
             vec3 b = vBase * (0.7 + 0.55 * bt.r);
@@ -453,17 +525,19 @@ function makeMaterial() {
             gH = 0.5;
           } else if (lod < 0.97) {
             float bi = floor(u / bayW), fx = u - bi * bayW - bayW * 0.5; // metres from bay centre
-            float fl = floor(v / fh), fy = v - fl * fh;
+            float fl = floor(vw / fh), fy = vw - fl * fh;
             bool front = vFace > 0.5 && vFace < 1.5;
             bool side = vFace > 2.5;
+            // a side wall facing open ground (frontage flags 2: -x side, 4: +x side) keeps its windows
+            bool openSide = side && mod(floor(frontage / (vFace < 3.5 ? 2.0 : 4.0)), 2.0) > 0.5;
             float roomSeed = bi * 13.1 + fl * 7.7 + seed * 91.0 + vFace * 3.0;
             float lit = step(0.62, bh(vec2(roomSeed, 4.1))) * uNight;
             vec3 white = vec3(0.82, 0.81, 0.77);
 
-            if (v > nfl * fh) {
+            if (vw > nfl * fh) {
               // parapet with stone coping; stucco gets a cornice
               if (v > H - 0.18) { col = vec3(0.7, 0.68, 0.64) * (0.9 + 0.2 * nzF.r); gRough = 0.82; }
-              else if (!brick && v < nfl * fh + 0.25) col = wall * 1.08;
+              else if (!brick && vw < nfl * fh + 0.25) col = wall * 1.08;
             } else if (style > 3.5) {
               // curtain wall: mullions, spandrel band at each slab, offices behind
               float cellW = 1.6;
@@ -492,7 +566,33 @@ function makeMaterial() {
                 gRough = g.r < 0.7 ? 0.8 : 0.62; // granite / painted stucco rustication
                 gH = 1.0 - joint;
               }
-              if (shopfront) {
+              if (shopfront && tb) {
+                // Temple Bar: a period front from the shared shopfront set, recoloured for this building (shopfronts.js):
+                // glass / paint (the front's colour) / fascia board / fixed-colour classes, blended by the atlas alpha
+                float tileI = mod(mod(signIdx, 64.0) + tbRep * 5.0, 16.0);
+                vec4 sf = shopfrontTile(vec2(fract(tbT.x), tbT.y), tileI, tbGx, tbGy);
+                float a3 = sf.a * 3.0;
+                float wGl = clamp(1.0 - a3, 0.0, 1.0), wP = clamp(1.0 - abs(a3 - 1.0), 0.0, 1.0);
+                float wF = clamp(1.0 - abs(a3 - 2.0), 0.0, 1.0), wX = clamp(a3 - 2.0, 0.0, 1.0);
+                float h5 = bh(vec2(seed, 5.0 + tbRep));
+                // fascia boards: mostly black, then navy, bottle green, cream, or a deep shade of the front itself
+                vec3 fCol = h5 < 0.38 ? vec3(0.008) : h5 < 0.52 ? vec3(0.008, 0.014, 0.045) : h5 < 0.64 ? vec3(0.008, 0.04, 0.018)
+                          : h5 < 0.74 ? vec3(0.78, 0.72, 0.56) : vTrim * 0.3;
+                float sh = sf.r * 2.0;
+                col = wP * vTrim * sh + wF * fCol * sh + wX * pow(sf.rgb, vec3(2.2));
+                vec3 txt = h5 >= 0.64 && h5 < 0.74 ? vec3(0.03, 0.12, 0.06) : vec3(0.72, 0.5, 0.16); // gilt (dark on cream)
+                col = mix(col, txt, signA * wF);
+                gRough = mix(0.34, 0.6, wX);
+                gH = 0.35 + 0.3 * sh * (1.0 - wGl);
+                float isPub = mod(floor(${SHOPFRONT_TILES.reduce((m, t, i) => m + (t.kind === 'pub' ? 2 ** i : 0), 0)}.0 / exp2(tileI)), 2.0);
+                // pubs are lit after dark, and most shops and cafés; pubs glow warmer and brighter
+                float shopLit = uNight * max(isPub, step(0.35, bh(vec2(seed, 6.0 + tbRep))));
+                vec3 inside = room(vec2(mod(u, tbRepW) - tbRepW * 0.5, v), rdRoom, seed * 31.0 + tbRep, tbG, shopLit, 1.0, 0.0);
+                inside *= 1.0 + isPub * uNight * 0.8;
+                col = mix(col, vec3(0.02), wGl);
+                gGlass = wGl;
+                gEmit = inside * wGl + signA * wF * uNight * txt * 0.7;
+              } else if (shopfront) {
                 // pilasters, fascia with the shop name, display window, stall riser
                 float edge = min(u, W - u);
                 bool pilaster = edge < 0.35;
@@ -542,7 +642,7 @@ function makeMaterial() {
                   col = mix(fan, white, bars); gGlass = 1.0 - bars;
                   gEmit = (1.0 - bars) * uNight * vec3(1.0, 0.75, 0.45) * 0.8 * step(0.3, bh(vec2(seed, 8.0)));
                 }
-              } else if (!(side && W < 11.0)) {
+              } else if (!(side && W < 11.0 && !openSide)) {
                 // sash window in a recessed opening; Georgian windows diminish as you go up
                 vec2 hw = vec2(0.52, fh * 0.3);
                 float y0 = fh * 0.24;
@@ -573,7 +673,7 @@ function makeMaterial() {
                     bars *= 1.0 - smoothstep(0.03, 0.08, fw);
                     float solid = max(frame, max(meet, bars));
                     gRough = mix(gRough, 0.42, solid); // painted sash frames
-                    vec3 frameCol = style > 2.5 && bh(vec2(seed, 2.0)) > 0.6 ? vTrim : white;
+                    vec3 frameCol = style > 2.5 && bh(vec2(seed, 2.0)) > (tb ? 0.88 : 0.6) ? vTrim : white;
                     // curtains and blinds just behind the glass
                     float cw = 0.12 + 0.3 * bh(vec2(roomSeed, 5.5));
                     float curtain = (step(w.x, cw) + step(1.0 - cw, w.x)) * step(0.35, bh(vec2(roomSeed, 6.6)));
@@ -600,6 +700,8 @@ function makeMaterial() {
           if (vFace > 0.5) {
             // far away: average colour so the window grid does not shimmer
             vec3 avg = mix(wall, vec3(0.05, 0.06, 0.07), style > 3.5 ? 0.7 : 0.28);
+            // Temple Bar fronts keep their colour in the distance (the painted ground floor under muted walls)
+            if (tb && v < tbG && vFace > 0.5 && vFace < 1.5 && frontage > 0.5) avg = vTrim * 0.55;
             // far away the lit windows average out; keep it faint so night facades stay dark with a warm speckle
             float litAvg = uNight * 0.1;
             col = mix(col, avg, lod);
@@ -714,8 +816,8 @@ export function buildBuildings(scene) {
     m4.toArray(mats, i * 16);
     aBase.set([L.base.r, L.base.g, L.base.b], i * 3);
     aTrim.set([L.trim.r, L.trim.g, L.trim.b], i * 3);
-    aStyle.set([L.style, L.fh, L.bay, L.seed], i * 4);
-    aExtra.set([L.doorBay, L.sign, L.weather, L.frontage ? 1 : 0], i * 4);
+    aStyle.set([L.style + (L.tbBrick ? 0.25 : 0), L.fh, L.bay, L.seed], i * 4); // Temple Bar: .25 = brick upper floors
+    aExtra.set([L.doorBay, L.sign, L.weather, L.frontage ? +L.frontage : 0], i * 4);
     addBox(L.x, L.z, L.w / 2, L.d / 2, L.rot);
     if (L.style === S.GEORGIAN || L.style === S.BRICK) {
       // chimney stacks on the party walls, each with a row of clay pots

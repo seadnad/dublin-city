@@ -69,7 +69,7 @@ export const PUB_SPECS = [
     // The Temple Bar, 47-48 Temple Bar, SE corner of Temple Lane South: the red corner with the gilt fascia, three
     // storeys of dark brick over it, the painted wall name, hanging baskets and scroll lanterns everywhere, and the
     // Irish-named second house to the east (OSM way 294962764)
-    key: 'templeBar', name: 'The Temple Bar', place: true, hand: -1, a: 'TTL', b: 'TFO', at: [53.345461, -6.264059], corner: 'DM1', w: 16, d: 13,
+    key: 'templeBar', name: 'The Temple Bar', place: true, hand: -1, a: 'TTL', b: 'TFO', at: [53.345461, -6.264059], corner: 'TBTE', w: 16, d: 13,
     blurb: 'The red corner pub on Temple Lane South, est. 1840',
     front: [
       {

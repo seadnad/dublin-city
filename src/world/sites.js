@@ -298,7 +298,7 @@ export const sites = {
   hapenny: {
     name: "Ha'penny Bridge", x: (hp0.x + hp1.x) / 2, z: (hp0.z + hp1.z) / 2, rot: Math.atan2(hpDir.x, hpDir.z),
     w: 3.2, d: v2.len(v2.sub(hp1, hp0)) + 2, labelY: 16,
-    view: spot('SQ7', 'HPS', 0.2),
+    view: spot('SQ7', 'TBQB', 0.5),
   },
   trinity: {
     name: 'Trinity College', ...trinityFront, labelY: 36, campanile,
@@ -564,7 +564,22 @@ export const extraSites = {
   iveaghPlay: beside('PK1', 'BD3', 0.5, 1, 34, 15, { gap: 0.3 }),
   // (the Temple Bar pub on the Temple Lane South corner is in src/world/pubsites.js with the other pubs)
   // Temple Bar Square: the flagged square on the south side of Temple Bar, west of Crown Alley
-  tbSquare: (() => { const ca = wayBetween('TBQ', 'CCA'); return beside('TBQ', 'TFO', 0, 1, 21, 13, { shift: ca.width / 2 + ca.pave + 10.8, gap: 0.1 }); })(),
+  tbSquare: (() => { const ca = wayBetween('TBQ', 'CCA'); return { ...beside('TBQ', 'TFO', 0, 1, 21, 13, { shift: ca.width / 2 + ca.pave + 10.8, gap: 0.1 }), open: true }; })(),
+  // Meeting House Square (docs/research/temple-bar-v2.md), the enclosed square behind Eustace Street (real ~25 x 30 m,
+  // 14 x 16 here between the Eustace and Sycamore Street fronts): The Ark (children's culture centre) and the Irish
+  // Film Institute front Eustace Street and back onto it, with a 2 m passage between them; the Gallery of Photography
+  // closes the south side. Local +z faces Eustace Street (Ark, IFI) or the square (the gallery).
+  ...(() => {
+    const a = N('TBEC'), b = N('TEU'), eu = wayBetween('TBEC', 'TEU'), off = eu.width / 2 + eu.pave + 0.15;
+    const ex = (z) => a.x + ((b.x - a.x) * (z - a.z)) / (b.z - a.z) - off; // Eustace Street's west building line
+    const zE = a.z, back = ex(zE - 10) - 10.2;
+    return {
+      mhArk: { x: ex(zE - 15.3) - 5, z: zE - 15.3, rot: Math.PI / 2, w: 10, d: 10 },
+      mhIfi: { x: ex(zE - 5) - 5, z: zE - 5, rot: Math.PI / 2, w: 7, d: 10 },
+      meetingHouse: { x: back - 7, z: zE - 10.8, rot: 0, w: 14, d: 16, open: true },
+      mhGallery: { x: back - 7, z: zE + 1.7, rot: Math.PI, w: 14, d: 9 },
+    };
+  })(),
   // (Grafton Street is split at Duke Street, GRD, 0.352 of the way from GR1 to GR2 on the same line: same spots)
   bewleys: beside('GRD', 'GR2', (0.78 - 0.352) / 0.648, -1, 12, 18, { gap: 0.15 }),
   brownThomas: beside('GR1', 'GRD', 0.3 / 0.352, -1, 28, 22, { gap: 0.15 }),
@@ -907,6 +922,7 @@ export const reserved = [
   sites.gpo, sites.bankOfIreland, ...Object.entries(extraSites).filter(([k]) => k.startsWith('boi')).map(([, s]) => s), sites.christChurch, sites.stPatricks, extraSites.iveaghPlay, sites.customHouse, sites.trinity, ...grounds,
   sites.cityHall, sites.centralBank, extraSites.olympia, extraSites.clockCorner,
   extraSites.bewleys, extraSites.brownThomas, extraSites.weir, extraSites.sgCentre, extraSites.merchantsHall, extraSites.tbSquare,
+  extraSites.meetingHouse, extraSites.mhArk, extraSites.mhIfi, extraSites.mhGallery,
   // the famous pubs (src/world/pubsites.js)
   ...Object.values(pubSites),
   shifted(extraSites.sgCentre, -extraSites.sgCentre.w / 2 - 8, 0, 16, extraSites.sgCentre.d), // broad footpath facing the Green

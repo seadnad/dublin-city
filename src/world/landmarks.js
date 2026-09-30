@@ -21,6 +21,8 @@ import { placeGrandCanal, gcsColliders } from './gcsquare.js';
 import { buildTowers } from './towers.js';
 import { buildLiffey } from './liffey.js';
 import { buildPubs } from './pubs.js';
+import { buildTempleBar } from './templebar.js';
+import { buildMeetingHouse } from './meetinghouse.js';
 import { collegeGreen, suffolkStreet, placeKildare, setKildareNight } from './kildare.js';
 import { placeNorthCity, northCityColliders } from './northcity.js';
 import { buildRailway, placeLoopline } from './railway.js';
@@ -1706,14 +1708,21 @@ function merchantsHall(site) {
   // sashes in Portland ashlar above, a cornice and parapet. The passage runs right through, vaulted.
   const b = new Builder(site);
   const W = site.w, D = site.d, G = 4.8, H = 13, bay = W / 3, pw = 2.8;
-  const E = -1; // west is -x
+  // The site faces north across the quay (rot = pi), so local +x is world WEST: E = +1 puts the passage in the west
+  // bay, on the Merchant's Arch lane (HPS-TBMA). (It was -1, which opened the east bay onto nothing and left a glazed
+  // window - reflecting the sky as a flat blue-grey fill - where the passage should be.)
+  const E = Math.sign(-Math.cos(site.rot)) || 1;
   const px = E * bay; // passage centre (west bay)
   for (let k = 0; k < 3; k++) b.archWall(bay, G, 0.7, k === 2 ? pw : 2.4, 4.1, M.granite, { x: E * (-bay + k * bay), z: D / 2 - 0.35 });
   // ground-floor mass behind the front wall, split round the passage
   b.box(W - bay - (bay - pw) / 2 + 0.01, G, D - 0.7, M.granite, { x: E * (-(W / 2) + (W - bay - (bay - pw) / 2) / 2), z: -0.35 });
   b.box((bay - pw) / 2, G, D - 0.7, M.granite, { x: E * (W / 2 - (bay - pw) / 4), z: -0.35 });
-  b.box(bay, G, 0.7, M.granite, { x: px, z: -D / 2 + 0.35, sx: 1, sy: 1, sz: 1 }); // rear wall piece above the passage mouth
-  b.box(pw + 0.02, 0.4, D, M.granite, { x: px, y: 3.9 }); // vault soffit
+  // the passage's south mouth: an arched rear wall like the front, open through to the lane and Temple Bar Square
+  b.archWall(pw + 0.02, G, 0.7, pw - 0.3, 4.1, M.granite, { x: px, z: -D / 2 + 0.35 });
+  b.box(pw + 0.02, 0.5, D - 1.3, M.granite, { x: px, y: 4.1 }); // vault soffit between the two arches
+  // a lantern on a scroll bracket halfway through (glows with the festoons after dark)
+  b.box(0.5, 0.05, 0.05, M.dark, { x: px - E * (pw / 2 - 0.25), y: 3.3, z: 0 });
+  b.box(0.26, 0.4, 0.26, M.festoon, { x: px - E * (pw / 2 - 0.45), y: 2.85, z: 0 });
   // door and window in the other two openings
   b.box(2.2, 3.4, 0.1, M.dark, { x: 0, z: D / 2 - 0.45 });
   b.box(2.2, 3.2, 0.1, M.glass, { x: -E * bay, y: 0.6, z: D / 2 - 0.45 });
@@ -1950,28 +1959,23 @@ function templeBarSquare(sq) {
 }
 
 function templeBarDressing() {
-  // festoon bulbs strung across the pedestrian lanes, hanging baskets along the cobbled streets
+  // festoon bulbs strung across the pedestrian lanes (the hanging baskets are on the fronts now: templebar.js)
   const b = new Builder({ x: 0, z: 0, rot: 0 });
-  const r = rng(1840);
   for (const way of world.ways) {
     if (way.surface !== 'sett' && way.surface !== 'flags') continue;
-    if (!/Temple Bar|Temple Lane|Fleet|Essex Street|Eustace|Crown Alley|Anglesea|Sycamore|Cope|Fownes|Merchant/.test(way.name)) continue;
+    if (!/Temple Bar|Temple Lane|Fleet|Essex Street|Eustace|Crown Alley|Anglesea|Sycamore|Cope|Fownes|Merchant|Cecilia|Crow Street|Curved|Asdill|Bedford Row|Aston Place|Price's/.test(way.name)) continue;
     const festoon = way.access === 'pedestrian' || way.pedestrian;
     const half = way.width / 2 + way.pave;
     let acc = 0;
     for (let k = 0; k < way.pts.length - 1; k++) {
       const a = way.pts[k], c = way.pts[k + 1], L = v2.len(v2.sub(c, a)), d = v2.norm(v2.sub(c, a)), n = { x: -d.z, z: d.x };
+      if (way.name === "Merchant's Arch" && k === 0) { acc = (acc + L) % 5; continue; } // through the hall's passage
       for (let s = 5 - acc; s < L - 2; s += 5) {
         const p = v2.add(a, v2.scale(d, s)), idx = Math.round((acc + s) / 5);
         if (festoon && idx % 2 === 0) {
           const ry = Math.atan2(n.x, n.z);
           b.box(0.03, 0.03, half * 2, M.dark, { x: p.x, y: 5.6, z: p.z, ry });
           for (let t = -half + 0.5; t < half; t += 0.7) b.add(new THREE.OctahedronGeometry(0.07, 0), M.festoon, { x: p.x + n.x * t, y: 5.5 - 0.25 * Math.cos((t / half) * Math.PI / 2), z: p.z + n.z * t });
-        }
-        if (r() < 0.55) {
-          const side = idx % 2 ? 1 : -1, q = v2.add(p, v2.scale(n, side * (half - 0.35)));
-          b.add(new THREE.IcosahedronGeometry(0.34, 0), M.basket, { x: q.x, y: 3.4, z: q.z });
-          b.add(new THREE.IcosahedronGeometry(0.24, 0), M.basketFlowers, { x: q.x, y: 3.6, z: q.z });
         }
       }
       acc = (acc + L) % 5;
@@ -2232,6 +2236,14 @@ export function buildLandmarks(scene) {
   // the famous pubs (src/world/pubs.js): one atlas, one material; their groups join the landmark batch
   const pubs = buildPubs(Builder);
   groups.push(...pubs.groups);
+  // Temple Bar's fronts: hanging boards, neon blades, flags, baskets, lanterns, people with pints, buskers (templebar.js),
+  // and Meeting House Square with The Ark, the IFI and the Gallery of Photography (meetinghouse.js)
+  const templeBar = buildTempleBar(Builder);
+  groups.push(...templeBar.groups);
+  const meetingHouse = buildMeetingHouse({ Builder, M });
+  groups.push(...meetingHouse.groups);
+  // (the market stalls / furled umbrellas, meetingHouse.dynamic, are not added: with them in the scene the ground
+  // around Eustace Street rendered black - see docs/research/temple-bar-v2.md, Status)
   // the DART line (src/world/railway.js): viaduct, street bridges, track, overhead line, stations; joins the batch
   const railway = buildRailway();
   groups.push(railway.group);
@@ -2355,7 +2367,7 @@ export function buildLandmarks(scene) {
   // floating place labels were removed from the 3D view (landmarks are on the map instead)
   const labels = new THREE.Group();
   return {
-    groups, labels, trees, park: phoenixPark, towers, pubs,
+    groups, labels, trees, park: phoenixPark, towers, pubs, templeBar,
     setLabels(on) { labels.visible = on; },
     // docklands lighting after dark (0 = day, 1 = night)
     setNight(level) {
@@ -2372,6 +2384,8 @@ export function buildLandmarks(scene) {
       if (guinnessHero) guinnessHero.setNight(level);
       if (northHero) northHero.setNight(level);
       pubs.setNight(level);
+      templeBar.setNight(level);
+      meetingHouse.setNight(level);
       towers.setNight(level);
       setKildareNight(level);
       railway.setNight(level);

@@ -63,12 +63,19 @@ function painter(ctx, job, glow) {
   const on = (day, night) => (glow ? night : day);
   const P = {
     k, glow,
-    rect(x, y, w, h, day, night) { const c = on(day, night); if (!c) return; ctx.fillStyle = c; ctx.fillRect(ox + x * k, oy + y * k, Math.max(1, w * k), Math.max(1, h * k)); },
+    rect(x, y, w, h, day, night) {
+      const c = on(day, night); if (!c) return; ctx.fillStyle = c;
+      // job.round: whole-pixel edges (no anti-aliased blends, for atlases whose colours are keys: shopfronts.js)
+      if (job.round) { const x0 = Math.round(ox + x * k), y0 = Math.round(oy + y * k); ctx.fillRect(x0, y0, Math.max(1, Math.round(ox + (x + w) * k) - x0), Math.max(1, Math.round(oy + (y + h) * k) - y0)); return; }
+      ctx.fillRect(ox + x * k, oy + y * k, Math.max(1, w * k), Math.max(1, h * k));
+    },
     grad(x, y, w, h, stops, glowStops) {
       const st = on(stops, glowStops); if (!st) return;
       const g = ctx.createLinearGradient(0, oy + y * k, 0, oy + (y + h) * k);
       st.forEach((c, i) => g.addColorStop(i / (st.length - 1), c));
-      ctx.fillStyle = g; ctx.fillRect(ox + x * k, oy + y * k, w * k, h * k);
+      ctx.fillStyle = g;
+      if (job.round) { const x0 = Math.round(ox + x * k), y0 = Math.round(oy + y * k); ctx.fillRect(x0, y0, Math.round(ox + (x + w) * k) - x0, Math.round(oy + (y + h) * k) - y0); return; }
+      ctx.fillRect(ox + x * k, oy + y * k, w * k, h * k);
     },
     path(fn, day, night, stroke = 0) {
       const c = on(day, night); if (!c) return;
@@ -242,7 +249,7 @@ function paintShop(P, W, G, s, layout, reversed) {
   for (const b of layout) {
     const x = b.x0, w = b.x1 - b.x0;
     if (b.i > 0 && !s.georgian) P.rect(x - 0.16, fB, 0.16, G - fB, s.trim);          // mullion pilaster
-    const glass = s.frosted ? ['#8d8a7e', '#6d6a60'] : ['#3a2418', '#1c120c'];
+    const glass = s.glass || (s.frosted ? ['#8d8a7e', '#6d6a60'] : ['#3a2418', '#1c120c']);
     const glow = ['rgba(255,200,120,1)', 'rgba(230,140,60,1)'];
     const frame = s.whiteFrames ? '#f2efe6' : shade(s.paint, 0.75);
     switch (b.t) {
@@ -274,7 +281,7 @@ function paintShop(P, W, G, s, layout, reversed) {
       case 'archwin': case 'archdoor': {
         const door = b.t === 'archdoor', r = w / 2, y0 = top + r;
         P.path((m, k) => { const [cx, cy] = m(x + r, y0); _ctx.moveTo(cx - r * k, oyOf(m, G - (door ? 0 : stall))); _ctx.arc(cx, cy, r * k, Math.PI, 0); _ctx.lineTo(cx + r * k, oyOf(m, G - (door ? 0 : stall))); _ctx.closePath(); }, '#111');
-        P.path((m, k) => { const [cx, cy] = m(x + r, y0); _ctx.moveTo(cx - (r - 0.08) * k, oyOf(m, G - (door ? 0.05 : stall + 0.05))); _ctx.arc(cx, cy, (r - 0.08) * k, Math.PI, 0); _ctx.lineTo(cx + (r - 0.08) * k, oyOf(m, G - (door ? 0.05 : stall + 0.05))); _ctx.closePath(); }, door ? s.door : '#2a1a12', door ? 'rgba(255,190,110,0.35)' : lit);
+        P.path((m, k) => { const [cx, cy] = m(x + r, y0); _ctx.moveTo(cx - (r - 0.08) * k, oyOf(m, G - (door ? 0.05 : stall + 0.05))); _ctx.arc(cx, cy, (r - 0.08) * k, Math.PI, 0); _ctx.lineTo(cx + (r - 0.08) * k, oyOf(m, G - (door ? 0.05 : stall + 0.05))); _ctx.closePath(); }, door ? s.door : (s.glass ? s.glass[0] : '#2a1a12'), door ? 'rgba(255,190,110,0.35)' : lit);
         if (door) { P.rect(x + 0.2, top + r + 0.4, w - 0.4, 0.9, 'rgba(255,200,120,0.25)', 'rgba(255,200,120,0.9)'); P.rect(x + 0.2, G - 1.1, w - 0.4, 0.05, shade(s.door, 0.7)); }
         else P.rect(x, G - stall, w, stall, '#161616');
         break;
@@ -320,6 +327,14 @@ function paintShop(P, W, G, s, layout, reversed) {
     }
   }
 }
+// Paint one shopfront with the kit's shop painter into any 2D canvas (the shared shopfront set, shopfronts.js, builds
+// its atlas this way): (x, y) the top-left in pixels, k pixels per metre, W x G metres, shop a spec as in PUB_SPECS.
+export function paintShopfront(ctx, x, y, k, W, G, shop, { round = false } = {}) {
+  _ctx = ctx; ctx.save();
+  ctx.beginPath(); ctx.rect(x, y, Math.ceil(W * k), Math.ceil(G * k)); ctx.clip();
+  paintShop(painter(ctx, { k, x, y, round }, false), W, G, shop, shopLayout(shop, W), false);
+  ctx.restore();
+}
 // raw canvas y of a metre y through a painter's mapping
 const oyOf = (m, y) => m(0, y)[1];
 
@@ -334,14 +349,14 @@ function paintAwning(P, style, text) {
 
 // ---------- geometry ----------
 // a quad from bl, br, tr, tl (each [x, y, z]) textured with atlas rect r ({ u0, v0, u1, v1 }), optionally a sub-rect
-function quad(out, bl, br, tr, tl, r) {
+export function quad(out, bl, br, tr, tl, r) {
   const e1 = new THREE.Vector3(...br).sub(new THREE.Vector3(...bl)), e2 = new THREE.Vector3(...tl).sub(new THREE.Vector3(...bl));
   const n = e1.cross(e2).normalize();
   const P = [bl, br, tr, bl, tr, tl], U = [[r.u0, r.v0], [r.u1, r.v0], [r.u1, r.v1], [r.u0, r.v0], [r.u1, r.v1], [r.u0, r.v1]];
   for (let i = 0; i < 6; i++) { out.p.push(...P[i]); out.n.push(n.x, n.y, n.z); out.uv.push(...U[i]); }
 }
 // a box (centre x, y0 bottom, z; size sx, sy, sz) with every face on one patch
-function boxPatch(out, x, y0, z, sx, sy, sz, r) {
+export function boxPatch(out, x, y0, z, sx, sy, sz, r) {
   const X0 = x - sx / 2, X1 = x + sx / 2, Y0 = y0, Y1 = y0 + sy, Z0 = z - sz / 2, Z1 = z + sz / 2;
   quad(out, [X0, Y0, Z1], [X1, Y0, Z1], [X1, Y1, Z1], [X0, Y1, Z1], r);
   quad(out, [X1, Y0, Z0], [X0, Y0, Z0], [X0, Y1, Z0], [X1, Y1, Z0], r);
@@ -350,7 +365,7 @@ function boxPatch(out, x, y0, z, sx, sy, sz, r) {
   quad(out, [X0, Y1, Z1], [X1, Y1, Z1], [X1, Y1, Z0], [X0, Y1, Z0], r);
 }
 // any three.js geometry, every vertex mapped into a patch (u spread by position for a mottled look)
-function meshPatch(out, geo, x, y, z, r, s = 1, ownUV = false) {
+export function meshPatch(out, geo, x, y, z, r, s = 1, ownUV = false) {
   const g = geo.index ? geo.toNonIndexed() : geo;
   g.computeVertexNormals();
   const pos = g.attributes.position, nor = g.attributes.normal, guv = g.attributes.uv;
@@ -366,7 +381,7 @@ function meshPatch(out, geo, x, y, z, r, s = 1, ownUV = false) {
     out.uv.push(r.u0 + (r.u1 - r.u0) * (0.15 + 0.7 * h), r.v0 + (r.v1 - r.v0) * (0.15 + 0.7 * hash(f, h)));
   }
 }
-function toGeometry(out) {
+export function toGeometry(out) {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(out.p, 3));
   g.setAttribute('normal', new THREE.Float32BufferAttribute(out.n, 3));
