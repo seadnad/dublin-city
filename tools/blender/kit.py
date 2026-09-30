@@ -17,6 +17,8 @@ DECAL = dict(
     louvre=(896, 0, 128, 384), cren=(0, 384, 512, 64), clock=(512, 384, 128, 128), door=(640, 256, 128, 256),
     oculus=(768, 256, 128, 128), sash=(896, 384, 128, 192), portal=(0, 448, 256, 320),
     attic=(512, 576, 512, 128), arcade=(256, 448, 256, 256),
+    # Dublin Castle / the George's Street Arcade (build_dublincastle.py)
+    tracery=(0, 768, 256, 256), shop=(256, 704, 256, 160), mosaic=(512, 704, 256, 192), gate=(768, 704, 256, 320),
 )
 
 

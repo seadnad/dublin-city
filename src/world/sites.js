@@ -548,8 +548,6 @@ export const shelbournePark = (() => {
 
 // Smaller landmarks that are modelled but not in the teleport list
 export const extraSites = {
-  // the Cork Hill gate of Dublin Castle, on Lord Edward Street (the Upper Yard sits behind it)
-  castle: beside('DM3', 'LE1', 0.55, 1, 40, 2, { gap: 0.5 }),
   // 72 Dame Street, on the Temple Bar side like the Central Bank
   olympia: beside('DSY', 'DM3', 0.2, -1, 12, 16, { gap: 0.15 }),
   clockCorner: beside('CG0', 'DAN', 0.4, 1, 16, 16, { gap: 0.15 }),
@@ -893,6 +891,49 @@ const tallFootprints = [sites.libertyHall, sites.collegeSquare, sites.capitalDoc
 for (const p of Object.values(pubSites)) {
   if (p.place) sites[p.key] = { name: p.name, x: p.x, z: p.z, rot: p.rot, w: p.w, d: p.d, labelY: 20, view: p.view, blurb: p.blurb };
 }
+// Dublin Castle, the George's Street Arcade and the Stag's Head mosaic (tools/blender/build_dublincastle.py; docs/research/
+// dublin-castle.md). The castle is built in game metres round DCO with no rotation, so the numbers here are the model's:
+// the Upper Yard x -421..-362, z 221..240 (pedestrian: the gates are bollarded), the Bedford Tower between the Gate
+// of Fortitude and the Gate of Justice on its north side, the Justice gate facing Cork Hill (DC1-DC2) over a cobbled
+// forecourt; the Record Tower and the Chapel Royal at its SE corner; Dubh Linn Garden south of the State Apartments.
+export const DCO = { x: -380, z: 250 };
+const dcBox = (x0, x1, z0, z1) => ({ x: (x0 + x1) / 2, z: (z0 + z1) / 2, rot: 0, w: x1 - x0, d: z1 - z0 });
+// the arcade: its front on George's Street's building line (the street runs within 2.5 degrees of north-south there),
+// the block 36 m deep to the east, 33.5 m from Exchequer Street's footpath to Fade Street's
+export const ARCADE = { x: -259.25, z: 281.5, w: 36, d: 33.5 };
+// solid building boxes (colliders): the ranges, the gates, the towers, the chapel, the Chester Beatty, the Coach House
+export const DC_SOLIDS = [
+  dcBox(-436, -421, 216, 240), dcBox(-397, -362, 217.4, 221), dcBox(-362, -354, 217.4, 240), dcBox(-436, -354, 238, 252),
+  dcBox(-414.5, -403.5, 212.5, 223.6), dcBox(-421, -414.5, 212.6, 221.4), dcBox(-403.5, -393.4, 212.6, 221.4),
+  { x: -352, z: 244.5, rot: 0, w: 12, d: 12 }, { x: -437.5, z: 249, rot: 0, w: 8.4, d: 8.4 },
+  dcBox(-346.5, -321.2, 234, 246), dcBox(-357, -327, 201.2, 209), dcBox(-318, -302, 246, 300), dcBox(-330, -318, 236, 246),
+  dcBox(-410, -393.8, 254.5, 290.2), dcBox(-373, -343, 298, 307), dcBox(-318, -302, 205, 232),
+];
+Object.assign(extraSites, {
+  dcNorth: dcBox(-400, -301, 201.2, 254), dcWest: dcBox(-436, -400, 216.5, 254), dcGates: dcBox(-421, -400, 211, 216.5),
+  dcGarden: dcBox(-400, -322, 254, 300), dcGardenS: dcBox(-380, -322, 300, 313), dcEast: dcBox(-322, -301, 254, 314),
+  // the castle wall along Ship Street Great and Stephen Street Upper (no filler between it and the street)
+  dcShip: (() => { const a = N('DC8'), b = N('DC7'), d = v2.norm(v2.sub(b, a)), L = v2.len(v2.sub(b, a)), m = v2.lerp(a, b, 0.5), n = { x: -d.z, z: d.x };
+    const k = v2.dot(n, v2.sub(DCO, m)) > 0 ? 1 : -1; return { x: m.x + n.x * k * 11.5, z: m.z + n.z * k * 11.5, rot: Math.atan2(-d.z, d.x), w: L - 8, d: 12 }; })(),
+  dcStephen: (() => { const a = N('DC7'), b = N('DC6'), d = v2.norm(v2.sub(b, a)), L = v2.len(v2.sub(b, a)), m = v2.lerp(a, b, 0.5), n = { x: -d.z, z: d.x };
+    const k = v2.dot(n, v2.sub(DCO, m)) > 0 ? 1 : -1; return { x: m.x + n.x * k * 12, z: m.z + n.z * k * 12, rot: Math.atan2(-d.z, d.x), w: L - 6, d: 12 }; })(),
+  arcade: { x: ARCADE.x + ARCADE.w / 2 - 1, z: ARCADE.z, rot: 0, w: ARCADE.w + 2, d: ARCADE.d },
+});
+const DC_RESERVED = ['dcNorth', 'dcWest', 'dcGates', 'dcGarden', 'dcGardenS', 'dcEast', 'dcShip', 'dcStephen', 'arcade'].map((k) => extraSites[k]);
+Object.assign(sites, {
+  dublinCastle: {
+    name: 'Dublin Castle', ...dcBox(-436, -322, 216.5, 252), labelY: 32, blurb: 'Bedford Tower, the Record Tower, the Chapel Royal and Dubh Linn Garden',
+    parts: { castle: { ...DCO, rot: 0 }, arcade: { x: ARCADE.x, z: ARCADE.z, rot: 0 },
+      // the Stag's Head mosaic in the Dame Street footpath at Dame Court's mouth, the words facing the passer-by on Dame St
+      mosaic: (() => { const d = N('DC14'), way = wayBetween('DFU', 'DC14'); return { x: d.x, z: d.z + way.width / 2 + way.pave * 0.55, rot: Math.PI }; })() },
+    view: spot('DC1', 'DC2', 0.05), // down Cork Hill, the Justice gate ahead and the Upper Yard through it
+  },
+  georgesArcade: {
+    name: "George's Street Arcade", ...extraSites.arcade, labelY: 22, blurb: 'The 1881 red-brick market block, through to Drury Street',
+    view: spot('DC11', 'SGG1', 0.2),
+  },
+});
+
 // the Liffey's riverside landmarks (src/world/liffeysites.js, docs/research/liffey-quays.md) join the Places list
 Object.assign(sites, {
   famine: { name: 'Famine Memorial', ...LQ.FAMINE.site, view: spot('NQ12', 'NQ13', 0.04) },
@@ -910,7 +951,8 @@ export const reserved = [
   // the famous pubs (src/world/pubsites.js)
   ...Object.values(pubSites),
   shifted(extraSites.sgCentre, -extraSites.sgCentre.w / 2 - 8, 0, 16, extraSites.sgCentre.d), // broad footpath facing the Green
-  { ...extraSites.castle, w: 44, d: 36, ...shifted(extraSites.castle, 0, -16, 44, 34) },
+  // Dublin Castle and the George's Street Arcade
+  ...DC_RESERVED,
   shifted(sites.convention, 0, sites.convention.d / 2 + 6.5, sites.convention.w, 13), // its forecourt
   sites.grandCanalSt, shifted(sites.grandCanalSt, 0, sites.grandCanalSt.d / 2 + 3.25, sites.grandCanalSt.w + 4, 6.5), // its raised forecourt
   shifted(sites.grandCanalSt, sites.grandCanalSt.w / 2 + 9, 3, 18, sites.grandCanalSt.d + 6.5), // open corner to Grattan Street (steps, parking)

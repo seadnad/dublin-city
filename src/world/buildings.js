@@ -95,8 +95,9 @@ const PANELS = ['#c8c8c4', '#3a3d40', '#9aa0a3', '#b9b2a4'].map(hex);
 const pick = (arr) => arr[Math.floor(rand() * arr.length)];
 
 const GEORGIAN_ST = /Merrion|Stephen's Green|Dawson|Kildare|Harcourt|Leeson|Baggot|Clare|Gardiner|Westland|Cuffe|King Street|Church Street|Merrion Row/;
-const TEMPLE_BAR = /Temple Bar|Temple Lane|Fleet|Essex Street|Eustace|Crown Alley|Anglesea|Sycamore|Cope|Fownes|Fishamble|Exchequer|Wicklow/;
-const DOCK_ST = /North Wall|Rogerson|City Quay|Mayor|Commons|Memorial|Lombard|Sandwith|Townsend|Pearse|Store|Amiens|Tara|George's Quay/;
+const TEMPLE_BAR = /Temple Bar|Temple Lane|Fleet|Essex Street|Eustace|Crown Alley|Anglesea|Sycamore|Cope|Fownes|Fishamble|Wicklow/;
+const VICTORIAN_ST = /South Great George's|Exchequer|Dame Lane|Dame Court|Fade Street|Castle Street|Cork Hill|Ship Street|Stephen Street|Golden Lane|Palace Street|Drury/;
+const DOCK_ST =/North Wall|Rogerson|City Quay|Mayor|Commons|Memorial|Lombard|Sandwith|Townsend|Pearse|Store|Amiens|Tara|George's Quay/;
 
 // Docklands: east of the Custom House, from Pearse Street up to Sheriff Street. The northern ring beyond it (North
 // Strand, Ballybough, Clonliffe) is terraced housing, not glass towers.
@@ -136,6 +137,9 @@ function styleFor(x, z, way) {
   if (inDocks(x, z) && !GEORGIAN_ST.test(name)) return S.MODERN;
   if (x > 200 && DOCK_ST.test(name)) return rand() < 0.65 ? S.MODERN : S.BRICK;
   if (TEMPLE_BAR.test(name)) return rand() < 0.75 ? S.TEMPLEBAR : S.BRICK;
+  // George's Street and the lanes round the Castle and the markets: Victorian red brick with some render, not
+  // Temple Bar colour (docs/research/hotspots-green-templebar-dame.md 1.3; Exchequer St was painted Temple Bar)
+  if (VICTORIAN_ST.test(name)) return rand() < 0.78 ? S.BRICK : S.STUCCO;
   // Dame Street: Victorian red brick and painted stucco, with the odd colourful front
   if (/Dame|College Green|Lord Edward/.test(name)) { const r = rand(); return r < 0.5 ? S.BRICK : r < 0.85 ? S.STUCCO : S.TEMPLEBAR; }
   if (GEORGIAN_ST.test(name)) return rand() < 0.88 ? S.GEORGIAN : S.BRICK;

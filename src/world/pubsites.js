@@ -99,7 +99,7 @@ export const PUB_SPECS = [
     // The Long Hall, 51 South Great George's Street (1766, the front of 1881): a narrow two-bay house of orange-red brick
     // with white stucco window surrounds and red-and-white striped window blinds, over a deep maroon front with the
     // cream fascia and the name in script, blinds over both doors
-    key: 'longHall', name: 'The Long Hall', place: true, hand: -1, a: 'SGG1', b: 'SGGS', at: [53.341856, -6.265315], w: 7.2, d: 14,
+    key: 'longHall', name: 'The Long Hall', place: true, hand: -1, a: 'SGG1', b: 'DC16', at: [53.341856, -6.265315], w: 7.2, d: 14,
     blurb: 'Victorian red-and-gold bar on George’s Street, 1881 front',
     front: [{
       w: 7.2, floors: 3, fh: 3.3, G: 4.4,
@@ -236,6 +236,26 @@ export const PUB_SPECS = [
         bays: ['door', 'bigwin', 'door'], door: '#141414', whiteFrames: true, consoles: true },
     }],
     lanterns: { front: [3.2], y: 0.35 },
+  },
+  {
+    // The Stag's Head, 1 Dame Court (1895, J. J. O'Callaghan): red brick and stone over a front of polished pink granite
+    // columns with carved capitals, mahogany and stained glass, THE STAG'S HEAD in gilt, a stag's head on each corner;
+    // the pub runs back along Dame Lane. Its sign is the mosaic in the Dame Street footpath at the mouth of Dame Court
+    // (tools/blender/build_dublincastle.py 'mosaic'). refs/dame-castle-audit/stag-s-head-dublin-1.jpg, stagsheadmosaic.jpg
+    key: 'stagsHead', name: "The Stag's Head", place: true, hand: 1, a: 'DC12', b: 'DC15', at: [53.34382, -6.2635], corner: 'DC13', w: 7, d: 15,
+    blurb: 'Victorian mahogany and stained glass in Dame Court, 1895',
+    front: [{
+      w: 7, floors: 2, fh: 3.4, G: 4.8, attic: 0.8,
+      upper: { wall: 'brick', color: '#8e4431', bays: 2, win: 'surround', frame: '#d9d2c4', parapet: '#7a3a2a', cornice: '#cfc7b6' },
+      shop: { paint: '#4b2618', trim: '#9a7a70', fascia: '#2b170e', text: "THE STAG'S HEAD", letter: GOLD, font: 'serif', nums: '1',
+        bays: ['win', 'door', 'win'], door: '#5a2e1a', frosted: true, consoles: true },
+    }],
+    side: { upper: { wall: 'brick', color: '#8e4431', bays: 4, win: 'sash', frame: '#e6e1d6', parapet: '#7a3a2a' },
+      shop: { paint: '#4b2618', trim: '#9a7a70', fascia: '#2b170e', text: "THE STAG'S HEAD", letter: GOLD, font: 'serif',
+        bays: ['win', 'win', 'door', 'win', 'win'], door: '#5a2e1a', frosted: true } },
+    lanterns: { front: [0.4, 6.6], side: [4, 10], y: 0.4 },
+    blades: [{ face: 'side', u: 1.6, y: 4.2, w: 1.1, h: 0.9, bg: '#2b170e', lines: ['THE', "STAG'S", 'HEAD'], color: GOLD, lit: true }],
+    barrels: { front: [0.9, 6.1] },
   },
 ];
 
