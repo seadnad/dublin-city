@@ -681,9 +681,9 @@ console.log('texture quality', JSON.stringify(applyTextureQuality(scene, rendere
 // compiling ~100 of them synchronously inside the first render froze the page for 15+ s on a cold cache.
 // compileAsync hands them to the driver in parallel (KHR_parallel_shader_compile) and keeps the page responsive
 // behind the loading screen; if it isn't available the first frame simply compiles as before.
-const loadingText = document.querySelector('#loading p');
-if (loadingText) loadingText.textContent = 'Preparing shaders…';
-if (intro) intro.progress(0.86, 'Preparing shaders…');
+const loadingText = document.querySelector('#loading .loading-step');
+if (loadingText) loadingText.textContent = 'Bringing the city into focus…';
+if (intro) intro.progress(0.86, 'Bringing the city into focus…');
 const tc = performance.now();
 // wait (briefly) for the player's car and the trees too, so their shaders join the batch instead of stalling a
 // frame just after the loading screen lifts
@@ -699,9 +699,10 @@ settle(Promise.all([carReady, treesReady]), 8000).then(() => {
   console.log(`first frame took ${Math.round(performance.now() - tf)} ms`);
   if (LITE) setTimeout(startDistrictStreaming, 2500);
   document.getElementById('loading').classList.add('gone');
+  document.getElementById('loading').setAttribute('aria-hidden', 'true');
   if (!intro) { window.__dublin.ready = true; return; }
   // the aerial view pans to the start, then the real camera descends from that pose to the chase view
-  intro.progress(1, 'Ready');
+  intro.progress(1, 'Your drive is ready');
   frozen = true;
   document.getElementById('hud').classList.add('intro-hidden');
   intro.panTo({ x: car.pos.x, z: car.pos.z, heading: car.heading }).then(() => {

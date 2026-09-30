@@ -1,5 +1,13 @@
 # Change log
 
+## 2026-09-30 - First-visit loading screen
+
+- Replaced the plain Low/Auto loading card with a lightweight Dublin illustration, a clear welcome, honest first-visit timing guidance, and stage text tied to the actual loading sequence. The illustration uses CSS and adds no image download or second rendering context.
+- Gave the High aerial intro the same expectation-setting copy. The plain card now stays visible until the aerial renderer reports ready. Tapping before the game is ready can still skip the flyover, but no longer hides the loading message early.
+- Kept the performance log labels separate from the player-facing stage wording so later measurements remain comparable.
+
+The page was visually checked at desktop, tablet landscape and phone portrait sizes. Production browser checks reached play on Auto/Low and High with no console errors. These checks do not establish smooth driving on real low-end hardware or reduce the existing load time.
+
 ## 2026-09-30 - Shared vehicle assets
 
 - Procedural traffic and the temporary player car now share each design's atlas and body geometry, plus the wheel geometry and rim texture. Their appearance and the detailed Blender car remain the same.

@@ -7,15 +7,17 @@ import { profile } from './render/quality.js';
 
 // The aerial preview uses a second WebGL context while the full city is built. On the light profile,
 // give the game that GPU/CPU time and memory instead; the existing loading card shows stage progress.
-const lightLoadingText = profile.lite ? document.querySelector('#loading p') : null;
+const lightLoadingText = profile.lite ? document.querySelector('#loading .loading-step') : null;
 if (!profile.lite) {
+const loading = document.getElementById('loading');
+const showIntro = () => requestAnimationFrame(() => { loading?.classList.add('gone'); loading?.setAttribute('aria-hidden', 'true'); });
 const [THREE, { createIntro }] = await Promise.all([import('three'), import('./intro/scene.js')]);
 let canvas = document.createElement('canvas');
 canvas.id = 'intro';
 document.body.appendChild(canvas);
 const overlay = document.createElement('div');
 overlay.id = 'intro-ui';
-overlay.innerHTML = '<h1>DUBLIN</h1><div class="bar"><i></i></div><p class="step">Surveying the city…</p><p class="skip">Tap to skip</p>';
+overlay.innerHTML = '<span class="kicker">A city in your browser</span><h1>DUBLIN <span>DRIVE</span></h1><p class="intro-line">Your streets are taking shape. Your drive starts as soon as the city is ready.</p><div class="bar"><i></i></div><p class="step" role="status" aria-live="polite">Getting the city ready…</p><p class="wait">The first visit may take 30 seconds or longer, especially on older devices. Keep this tab open.</p><p class="skip">Tap to skip the flyover</p>';
 document.body.appendChild(overlay);
 const barEl = overlay.querySelector('.bar i'), stepEl = overlay.querySelector('.step');
 const size = () => ({ width: window.innerWidth, height: window.innerHeight });
@@ -42,10 +44,11 @@ if (offscreen) {
     canvas.replaceWith(cv); canvas = cv;
     const page = onPage(cv);
     runner = { ...page, page: true };
+    showIntro();
     if (pending) { const [start, o, done] = pending; pending = null; page.panTo(start, o).then(done); }
   };
   worker.onmessage = (e) => {
-    if (e.data.type === 'ready') ready = true;
+    if (e.data.type === 'ready') { ready = true; showIntro(); }
     else if (e.data.type === 'failed') fallBack(e.data.error);
     else if (e.data.type === 'panned' && panned) { panned(e.data.pose); panned = null; }
   };
@@ -61,15 +64,14 @@ if (offscreen) {
   };
 } else {
   runner = onPage(canvas);
+  showIntro();
 }
 addEventListener('resize', () => runner.resize(window.innerWidth, window.innerHeight));
-// the plain loading card underneath is no longer needed once this draws
-const loading = document.getElementById('loading');
-if (loading) loading.classList.add('gone');
+// Keep the loading card visible until the aerial renderer is ready to draw.
 
 // automated tests (webdriver) and anyone who has seen it can skip straight in
 let skip = !!navigator.webdriver && !/[?&]intro/.test(location.search);
-const onSkip = () => { skip = true; overlay.classList.add('skipping'); };
+const onSkip = () => { skip = true; if (overlay.classList.contains('ready')) overlay.classList.add('skipping'); };
 let lastPose = null;
 
 window.__intro = {
@@ -81,6 +83,7 @@ window.__intro = {
   // pan to a pose above and behind the car; resolves when there (at once when skipped)
   async panTo(start) {
     overlay.classList.add('ready');
+    if (skip) overlay.classList.add('skipping');
     lastPose = await runner.panTo({ x: start.x, z: start.z, heading: start.heading }, { skip });
     window.__introStats = { ...lastPose.stats, renderer: offscreen ? 'worker' : 'page' };
     console.log('intro frames', JSON.stringify(window.__introStats));
@@ -102,21 +105,21 @@ addEventListener('keydown', onSkip, { once: true });
 // ---- load the game in stages, with a frame between each so the progress text updates
 const nextFrame = () => new Promise((r) => { let done = false; const go = () => { if (!done) { done = true; r(); } }; requestAnimationFrame(go); setTimeout(go, 60); });
 const stages = [
-  ['Laying the streets…', () => import('./world/roads.js')],
-  ['Filling the Liffey…', () => import('./world/ground.js')],
-  ['Raising the buildings…', () => import('./world/buildings.js')],
-  ['Placing the landmarks…', () => import('./world/landmarks.js')],
-  ['Waking the city…', () => import('./main.js')],
+  ['Laying the streets…', 'Mapping the streets…', () => import('./world/roads.js')],
+  ['Filling the Liffey…', 'Drawing the river…', () => import('./world/ground.js')],
+  ['Raising the buildings…', 'Raising the buildings…', () => import('./world/buildings.js')],
+  ['Placing the landmarks…', 'Placing the landmarks…', () => import('./world/landmarks.js')],
+  ['Waking the city…', 'Getting your drive ready…', () => import('./main.js')],
 ];
 const bootStart = performance.now();
 (async () => {
   for (let i = 0; i < stages.length; i++) {
-    if (window.__intro) window.__intro.progress(i / (stages.length + 2), stages[i][0]);
-    else if (lightLoadingText) lightLoadingText.textContent = stages[i][0];
+    if (window.__intro) window.__intro.progress(i / (stages.length + 2), stages[i][1]);
+    else if (lightLoadingText) lightLoadingText.textContent = stages[i][1];
     await nextFrame();
     const started = performance.now();
-    await stages[i][1]();
+    await stages[i][2]();
     console.log(`startup ${stages[i][0]}: ${Math.round(performance.now() - started)} ms`);
   }
   console.log(`startup modules and city: ${Math.round(performance.now() - bootStart)} ms`);
-})().catch((e) => { console.error(e); const text = document.querySelector(profile.lite ? '#loading p' : '#intro-ui .step'); if (text) text.textContent = 'Something went wrong loading the city.'; });
+})().catch((e) => { console.error(e); const text = document.querySelector(profile.lite ? '#loading .loading-step' : '#intro-ui .step'); if (text) text.textContent = 'Something went wrong loading the city. Please refresh to try again.'; });
