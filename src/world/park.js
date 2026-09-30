@@ -6,7 +6,8 @@
 //  - Victorian gas lamps both sides of Chesterfield Avenue, low black railings behind its footpaths;
 //  - the calp boundary wall along Conyngham Road and the Cabra side, the People's Flower Garden beds;
 //  - the heroes from tools/blender/build_phoenixpark.py (Wellington Monument, Phoenix column, Papal Cross, the
-//    Parkgate piers and lodge, the NCR gate screens and the Áras gates);
+//    Parkgate piers and lodge, the NCR gate screens and the Áras gates); Áras an Uachtaráin itself and Dublin Zoo
+//    (src/world/aras-zoo.js: the house down its vista from Chesterfield Avenue, the zoo's lakes, plains and animals);
 //  - a few herds of fallow deer that graze, look up and trot away from the car.
 // Trees and the canopy clumps are instanced and chunked; the lamps, railings and deer are one or two draws each.
 import * as THREE from 'three';
@@ -20,6 +21,8 @@ import { placeParts } from './heroes.js';
 import { addBox, addPolyline } from '../game/collision.js';
 import { addReflections } from '../render/reflect.js';
 import { LITE } from '../render/quality.js';
+import { batchStatic } from '../render/batch.js';
+import { aras, arasOpen, arasFrameTrees, vistaLawn, zooSouthPoly, zooOpen, islandClumps, buildZooGround, buildAnimals, zooParts, addHeroCollision } from './aras-zoo.js';
 
 const DATA = rawData.parkFeatures && rawData.parkFeatures['Phoenix Park'];
 const GREEN = world.greens.find((g) => g.name === 'Phoenix Park');
@@ -233,7 +236,7 @@ function parkMask() {
   const m = buildMask();
   const L = layout();
   for (const w of L.woodPolys) m.fill(w, m.r, 1);
-  m.fill(L.zooPoly, m.r, 0.55);
+  for (const z of L.zooPolys) m.fill(z, m.r, 0.55);
   for (const b of L.beltPolys) m.fill(b, m.r, 1);
   for (const lawn of L.lawns) m.fill(lawn, m.g, 1);
   // soften the edges (two box-blur passes)
@@ -264,7 +267,7 @@ let layoutCache = null;
 function layout() {
   if (layoutCache) return layoutCache;
   const woodPolys = park.woods;
-  const zooPoly = park.zoo;
+  const zooPolys = [park.zoo, zooSouthPoly];
   // the belts hiding the map's cut edges: everything within D of the west or north edge of the map
   const D = 70;
   const beltPolys = [
@@ -275,9 +278,9 @@ function layout() {
   const circle = (c, r, n = 20) => Array.from({ length: n }, (_, k) => ({ x: c.x + Math.cos((k / n) * 6.283) * r, z: c.z + Math.sin((k / n) * 6.283) * r }));
   const pond = ponds[0];
   const pondC = pond ? pond.reduce((a, p) => ({ x: a.x + p.x / pond.length, z: a.z + p.z / pond.length }), { x: 0, z: 0 }) : null;
-  const lawns = [circle(park.wellington, 48), circle(park.papalCross, 22), park.demesne];
+  const lawns = [circle(park.wellington, 48), circle(park.papalCross, 22), park.demesne, vistaLawn()];
   if (pondC) lawns.push(circle({ x: pondC.x + 22, z: pondC.z + 6 }, 62));
-  layoutCache = { woodPolys, zooPoly, beltPolys, lawns, pondC };
+  layoutCache = { woodPolys, zooPolys, beltPolys, lawns, pondC };
   return layoutCache;
 }
 
@@ -353,8 +356,11 @@ export function buildPark(scene) {
     }
   }
   // 3. the zoo: its trees behind the fence
-  fillClumps(insetPolygon(L.zooPoly, 4), 11 * dense, { s0: 0.8, s1: 1.2 });
-  fringe(L.zooPoly, 12, 6);
+  for (const z of L.zooPolys) {
+    fillClumps(insetPolygon(z, 4), 11 * dense, { s0: 0.8, s1: 1.2 });
+    fringe(z, 12, 6);
+  }
+  for (const p of islandClumps(rand)) addClump(p, 0.75 + rand() * 0.3);
   // 4. the Áras demesne: a belt of trees inside the ha-ha, open lawns in the middle
   {
     const dm = park.demesne, inner = insetPolygon(dm, 16);
@@ -404,7 +410,7 @@ export function buildPark(scene) {
     }
   }
   // 7. roundels (clumps of 4-9 trees ringed round a centre) and single specimen trees on the open plains
-  const openPlain = (p, clear) => ground(p, clear) && !kept(p, 8) && !inAny(p, L.woodPolys) && !pointInPolygon(p, L.zooPoly) && !pointInPolygon(p, park.demesne) && !inBelt(p);
+  const openPlain = (p, clear) => ground(p, clear) && !kept(p, 8) && !inAny(p, L.woodPolys) && !inAny(p, L.zooPolys) && !pointInPolygon(p, park.demesne) && !inBelt(p);
   const bb = bboxOf(park.poly);
   const rp = () => ({ x: bb.x0 + rand() * (bb.x1 - bb.x0), z: bb.z0 + rand() * (bb.z1 - bb.z0) });
   let roundels = 0, singles = 0;
@@ -434,6 +440,12 @@ export function buildPark(scene) {
     }
   }
 
+  // keep the Áras, its forecourt and its vista open, and the zoo's lakes, plains, houses and animals
+  const open = (p) => arasOpen(p) || (inAny(p, L.zooPolys) && zooOpen(p));
+  const prune = (list) => { let k = 0; for (const t of list) if (!open(t)) list[k++] = t; list.length = k; };
+  prune(trees); prune(clumps);
+  for (const t of arasFrameTrees()) addTree(t, t.s, t.species, t.dark ? HOLM : null);
+
   // --- plant them ---
   const item = (t) => ({ x: t.x, y: KERB_H, z: t.z, rot: rand() * 6.28, s: t.s, species: t.species, tint: t.tint });
   const planting = plantTrees(scene, trees.map(item), { chestnut: 1.2, lime: 4, plane: 1.5, birch: 0.6, young: 1 }, rand);
@@ -461,15 +473,16 @@ export function buildPark(scene) {
     }
   }
   // the zoo's railing (with a hedge behind it) and the Áras ha-ha railing (white near the gates)
-  const zooRing = [...L.zooPoly, L.zooPoly[0]];
-  rail.along(zooRing, { h: 1.9, step: 2.6, ok: (p) => ground(p, 1.5) });
+  const gateGap = (p) => (p.x - zooParts.zooentrance.x) ** 2 + (p.z - zooParts.zooentrance.z) ** 2 > 20 * 20;
+  const zooRings = L.zooPolys.map((z) => [...z, z[0]]);
+  for (const ring of zooRings) rail.along(ring, { h: 1.9, step: 2.6, ok: (p) => ground(p, 1.5) && gateGap(p) });
   const dmRing = [...park.demesne, park.demesne[0]];
   const nearArasGate = (p) => (p.x - park.arasGate.x) ** 2 + (p.z - park.arasGate.z) ** 2 < 50 * 50;
   rail.along(dmRing, { h: 1.2, step: 2.6, ok: (p) => ground(p, 1.5) && !nearArasGate(p) });
   const whiteRail = railingBuilder();
   whiteRail.along(dmRing, { h: 1.3, step: 2.2, ok: (p) => ground(p, 1.5) && nearArasGate(p) && (p.x - park.arasGate.x) ** 2 + (p.z - park.arasGate.z) ** 2 > 9 * 9 });
   scene.add(...rail.meshes(iron), ...whiteRail.meshes(whiteIron));
-  statics.add(hedge(zooRing, (p) => ground(p, 2.5)));
+  for (const ring of zooRings) statics.add(hedge(ring, (p) => ground(p, 2.5) && gateGap(p)));
   // the ha-ha's sunk wall: a low stone face under the railing
   const calp = new THREE.MeshStandardMaterial({ map: calpTexture(), roughness: 0.92 });
   const coping = new THREE.MeshStandardMaterial({ color: 0x9a9890, roughness: 0.85 });
@@ -489,13 +502,19 @@ export function buildPark(scene) {
   const heroSite = { parts: heroParts() };
   const heroesReady = placeParts(scene, 'phoenixpark', heroSite, 'Phoenix Park heroes');
   for (const b of heroSolids(heroSite.parts)) addBox(b.x, b.z, b.hx, b.hz, b.rot);
+  // Áras an Uachtaráin and the zoo's buildings (tools/blender/build_aras.py), batched by material: ~20 draws for all
+  const arasSite = { parts: { aras: { x: aras.x, z: aras.z, rot: aras.rot }, ...zooParts } };
+  const arasReady = placeParts(scene, 'aras', arasSite, 'Áras an Uachtaráin and Dublin Zoo').then((g) => g && batchStatic(scene, [g], { name: 'Áras and zoo (batched)' }));
+  addHeroCollision(zooParts);
+  const zooGround = buildZooGround(scene);
+  const animals = buildAnimals(scene);
 
   // --- deer ---
   const deer = buildDeer(scene, herds, ground);
 
-  console.log(`Phoenix Park: ${trees.length} trees, ${clumps.length} clumps, ${lamps.spots.length} gas lamps, ${deer.count} deer in ${Math.round(performance.now() - t0)} ms`);
+  console.log(`Phoenix Park: ${trees.length} trees, ${clumps.length} clumps, ${lamps.spots.length} gas lamps, ${deer.count} deer, ${animals.count} zoo animals (${animals.triangles} tris), ${zooGround.rocks} rocks in ${Math.round(performance.now() - t0)} ms`);
   return {
-    group: statics, trees: trees.length, clumps: clumps.length, clumpItems: clumps, lampSpots: lamps.spots, heroesReady,
+    group: statics, trees: trees.length, clumps: clumps.length, clumpItems: clumps, lampSpots: lamps.spots, heroesReady, arasReady,
     setNight(level) { lamps.setLevel(level); },
     update(dt, time, car, camera) {
       if (camera) lod.update(camera);
@@ -882,7 +901,7 @@ function herdSites(pk, L) {
     let best = null;
     for (let r = 0; r < 120 && !best; r += 8) for (let a = 0; a < 6.28 && !best; a += 0.5) {
       const p = { x: w.x + Math.cos(a) * r, z: w.z + Math.sin(a) * r };
-      if (pointInPolygon(p, pk.poly) && fieldAt(p.x, p.z) > 26 && !L.woodPolys.some((poly) => pointInPolygon(p, poly)) && !pointInPolygon(p, pk.demesne) && !pointInPolygon(p, L.zooPoly)) best = p;
+      if (pointInPolygon(p, pk.poly) && fieldAt(p.x, p.z) > 26 && !L.woodPolys.some((poly) => pointInPolygon(p, poly)) && !pointInPolygon(p, pk.demesne) && !L.zooPolys.some((z) => pointInPolygon(p, z))) best = p;
     }
     if (best) out.push({ ...best, n: w.n, r: 22 });
   }

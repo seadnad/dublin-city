@@ -45,6 +45,8 @@ const BLURBS = {
   ccj: 'The courts’ glass drum, at the Parkgate end of the Phoenix Park',
   google: 'Google Docks (the old Montevetro), Gordon House and the skybridge, under the DART',
   bolands: 'The 1830s flour mills, a 1916 garrison, under two new towers on the dock',
+  aras: 'The President’s house: its Ionic portico across the lawn from Chesterfield Avenue',
+  zoo: 'Lakes, islands and the African Plains, since 1831, by the Hollow',
 };
 
 export function createHUD({ sites, actions }) {

@@ -6,6 +6,7 @@ import { bridges, parkPolys, campusPolys, dockPolys } from './ground.js';
 import { monumentSites } from './oconnell.js';
 import tanksData from '../data/guinness-tanks.json';
 import bsLayout from '../data/barrowst.json';
+import { aras, zooSite } from './aras-zoo.js';
 
 const N = (id) => world.nodes.get(id);
 const wayBetween = (a, b) => world.ways.find((w) => {
@@ -476,6 +477,17 @@ export const sites = {
     name: 'Criminal Courts of Justice', x: CCJ.x, z: CCJ.z, rot: 0, w: 50, d: 50, labelY: 34,
     outline: ccjOutline(),
     view: spot('WT3', 'PG1', 0.35),
+  },
+  aras: {
+    // Áras an Uachtaráin (src/world/aras-zoo.js): the main range and its terrace, set back behind its lawn and the
+    // ha-ha. The view is on Chesterfield Avenue where the house's vista meets it, facing up the lawn to the portico.
+    name: 'Áras an Uachtaráin', x: aras.x + aras.f.x * -5.2, z: aras.z + aras.f.z * -5.2, rot: aras.rot, w: 49.6, d: 17, labelY: 18,
+    view: aras.view,
+  },
+  zoo: {
+    // Dublin Zoo's entrance building on the Hollow (the lettered wall faces the park); seen from the road across the Hollow
+    name: 'Dublin Zoo', x: zooSite.x + Math.sin(zooSite.rot) * -2.9, z: zooSite.z + Math.cos(zooSite.rot) * -2.9, rot: zooSite.rot, w: 28, d: 6, labelY: 8,
+    view: zooSite.view,
   },
 };
 

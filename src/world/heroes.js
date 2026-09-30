@@ -514,6 +514,15 @@ function paintPark(g) {
     for (const s of [-1, 1]) { g.fillStyle = '#a9a498'; g.beginPath(); g.ellipse(x + w / 2 + s * 70, y + 64, 18, 40, 0, 0, 6.29); g.fill(); }
   }
 }
+// clipped yew: dense small leaves, dark green with lighter tips (the hedges and topiary at the Áras)
+function leafTile() {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const g = c.getContext('2d'); g.fillStyle = '#2b4424'; g.fillRect(0, 0, 128, 128);
+  let seed = 23; const r = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < 1400; i++) { const l = 16 + r() * 22; g.fillStyle = `hsl(${95 + r() * 30}, ${30 + r() * 20}%, ${l}%)`; g.beginPath(); g.ellipse(r() * 128, r() * 128, 1 + r() * 2.2, 0.8 + r() * 1.2, r() * 3.14, 0, 6.29); g.fill(); }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  return t;
+}
 let parkMats = null;
 function parkMaterials() {
   if (parkMats) return parkMats;
@@ -534,6 +543,20 @@ function parkMaterials() {
     sett: std({ map: stoneTile(128, '#7a7a7b', 14, 0.05, 'rgba(40,40,40,0.55)'), roughness: 0.8, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }), // over the island's grass (which is offset itself)
     dark: stoneMaterials().dark,
     decal: stoneMaterials().decal,
+    // Áras an Uachtaráin (tools/blender/build_aras.py): white-painted stucco, floodlit after dark; the lamp in the window
+    stucco: floodlit(std({ map: stoneTile(256, '#eeebe3', 5, 0.08, 'rgba(150,146,138,0.2)', 0.04), roughness: 0.78 })),
+    candle: std({ color: 0x3b342b, emissive: 0xffb45a, emissiveIntensity: 0, roughness: 0.25 }),
+    hedge: std({ map: leafTile(), roughness: 0.95 }),
+    gravel: std({ map: stoneTile(128, '#bcb2a1', 30, 0.8, 'rgba(96,90,80,0.3)', 0.35), roughness: 0.95 }),
+    flaggreen: std({ color: 0x169b62, roughness: 0.8 }),
+    flagorange: std({ color: 0xff883e, roughness: 0.8 }),
+    // Dublin Zoo: the entrance building's pale granite and glazing (lit after dark), the timber, the thatch, the cladding
+    zgranite: uplit(std({ map: stoneTile(256, '#e4e1da', 4, 0.12, 'rgba(118,116,110,0.3)', 0.06), roughness: 0.8 }), 4),
+    zglass: std({ color: 0x9aa9ab, roughness: 0.18, metalness: 0.15, emissive: 0xffd49a, emissiveIntensity: 0.06 }),
+    timber: std({ color: 0x7a5634, roughness: 0.8 }),
+    fascia: std({ color: 0x5f6366, roughness: 0.5, metalness: 0.3 }),
+    thatch: std({ map: stoneTile(128, '#72603f', 14, 0.9, 'rgba(40,30,20,0.45)', 0.4), roughness: 1 }),
+    clad: std({ color: 0xd6cfbd, roughness: 0.8 }),
   };
   parkMats.sett.map.repeat.set(3, 3);
   return parkMats;
@@ -559,7 +582,10 @@ function prepare(root) {
 let stoneNight = 0; // remembered so a model that loads after dark comes up lit
 export function setStoneNight(level) {
   stoneNight = level;
-  if (parkMats) { parkMats.lantern.emissiveIntensity = 0.04 + level * 2.6; parkMats.portland.emissiveIntensity = level * 0.14; }
+  if (parkMats) {
+    parkMats.lantern.emissiveIntensity = 0.04 + level * 2.6; parkMats.portland.emissiveIntensity = level * 0.14;
+    parkMats.candle.emissiveIntensity = level * 3.2; parkMats.zglass.emissiveIntensity = 0.06 + level * 0.4;
+  }
   if (!stoneMats) return;
   stoneMats.decal.emissiveIntensity = level * 0.9;
   stoneMats.plamp.emissiveIntensity = 0.15 + level * 3.2;
