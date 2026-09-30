@@ -17,7 +17,7 @@ const DAME = [
   ['dame-mid', 'DM1', 'DM2', 0.3],
   ['dame-west', 'DM2', 'DM3', 0.4],
   ['city-hall', 'SQ4', 'PARL', 0.3],
-  ['lord-edward', 'LE1', 'DM3', 0.2],
+  ['lord-edward', 'LE1', 'DC1', 0.2],
 ];
 const VIEWS = process.env.SET === 'grafton' ? GRAFTON : DAME;
 export default async function (page, shot) {

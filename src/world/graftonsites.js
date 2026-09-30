@@ -265,5 +265,6 @@ const landmarks = [
     lanterns: { front: [16, 18], y: -0.3 } },
 ];
 
-export const GQ_SPECS = [...graftonWest, ...graftonEast, ...sidePubs, ...landmarks];
+// the George's Street Arcade itself is the Dublin Castle hero's (build_dublincastle.py): its front kit spec is kept but not built
+export const GQ_SPECS = [...graftonWest, ...graftonEast, ...sidePubs, ...landmarks].filter((p) => p.key !== 'georgesArcade');
 export const gqSites = Object.fromEntries(GQ_SPECS.map((p) => [p.key, place(p)]));

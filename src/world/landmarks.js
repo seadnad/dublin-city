@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { addReflections } from '../render/reflect.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { world, v2, pointInPolygon, insetPolygon, project } from './geo.js';
-import { sites, reserved, grounds, extraSites, cpAt, BOI, boiAt, FC, fcAt, KH } from './sites.js';
+import { sites, reserved, grounds, extraSites, cpAt, BOI, boiAt, FC, fcAt, KH, DC_SOLIDS } from './sites.js';
 import { parkPolys, campusPolys, stoneTex, WATER_Y, paintArea, COLORS, getStreets } from './ground.js';
 import { rng, makeStoneTexture } from './textures.js';
 import { addBox, addSegment, addPolyline } from '../game/collision.js';
@@ -1410,7 +1410,6 @@ Object.assign(M, {
   portlandSmooth: new THREE.MeshStandardMaterial({ color: 0xdcd7ca, roughness: 0.78 }),
   graniteSmooth: new THREE.MeshStandardMaterial({ color: 0x9a978f, roughness: 0.7 }),
   stucco: new THREE.MeshStandardMaterial({ map: stuccoTex, roughness: 0.85 }),
-  castleBrick: new THREE.MeshStandardMaterial({ map: warehouseTex, color: 0xd88a70, roughness: 0.9 }),
   cobble: new THREE.MeshStandardMaterial({ color: 0x8e877b, map: stoneT, roughness: 0.9 }),
   gold: addReflections(new THREE.MeshStandardMaterial({ color: 0xd4a53c, roughness: 0.3, metalness: 1 }), 0.8),
   olympiaRed: new THREE.MeshStandardMaterial({ color: 0x9b1b26, roughness: 0.5 }),
@@ -1452,25 +1451,18 @@ function cityHall(site) {
   return b.build('City Hall');
 }
 
-function dublinCastle(site) {
-  // the Cork Hill gate into the Upper Castle Yard (Justice on top) and the red-brick Georgian range behind it
-  const b = new Builder(site);
-  b.archWall(8, 8.5, 1.6, 4, 6, M.portland);
-  b.box(8.6, 0.8, 2, M.portland, { y: 8.5 });
-  b.figure('justice', 0, 9.3, 0, { h: 2.6, ry: Math.PI, finish: 'darkBronze' }); // Justice turns her back on the city
-  b.box(3.8, 5, 0.1, M.dark, { z: -0.3 });
-  railings(b, -18, -4.4, 0.3); railings(b, 4.4, 18, 0.3);
-  for (const x of [-18, 18]) b.box(1.2, 2.6, 1.2, M.portland, { x });
-  // Upper Yard: red brick, three storeys with a stone cornice, and the Bedford Tower over the far range
-  b.facade(40, 13, 12, M.castleBrick, M.slate, { z: -24 }, 4, 4.3);
-  b.box(40.5, 0.8, 12.5, M.portland, { y: 13, z: -24 });
-  b.facade(7, 18, 7, M.portland, M.lead, { z: -18 });
-  b.cyl(2.4, 2.8, 5, M.portland, { y: 18, z: -18 }, 12);
-  b.dome(2.5, M.copper, { y: 23, z: -18 });
-  b.box(40, 0.05, 20, M.cobble, { y: KERB_H, z: -10 }); // cobbled yard
-  b.solid(-9, 0, 2, 1.8); b.solid(9, 0, 2, 1.8); b.solid(-11, 0.3, 14, 0.4); b.solid(11, 0.3, 14, 0.4);
-  b.solid(0, -24, 40, 12); b.solid(0, -18, 7, 7);
-  return b.build('Dublin Castle');
+// Dublin Castle's colliders and the statue-kit figures on its gates (the model: tools/blender/build_dublincastle.py)
+function dublinCastle(scene) {
+  for (const b of DC_SOLIDS) addBox(b.x, b.z, b.w / 2, b.d / 2, b.rot);
+  const A = extraSites.arcade; addBox(A.x, A.z, A.w / 2 - 1, A.d / 2, 0);
+  addBox(-322, 201.7, 4.6, 0.4, 0); // the Palace Street gate, shut
+  for (const w of [[[-442, 221.5], [-442, 262], [-436, 265.4], [-433.5, 265.5], [-369.5, 340.5]], [[-375.5, 338.5], [-329.5, 315.5], [-318.5, 315.5], [-318.5, 300.5]],
+    [[-436, 216.4], [-442, 221.5]], [[-316.7, 201.7], [-301, 201.7], [-301, 246]], [[-357, 201.5], [-367, 201.5], [-367, 216.8]]]) addPolyline(w.map(([x, z]) => ({ x, z })));
+  // Justice (Cork Hill gate) and Fortitude (Castle Street gate) on their plinths, both facing into the yard (lead,
+  // painted: Van Nost the Younger, 1753); Justice famously turns her back on the city
+  addStatue({ body: 'justice', x: -400.25, z: 217, y: 9.1, rot: 0, height: 2.3, finish: 'darkBronze' });
+  addStatue({ body: 'allegory', x: -417.75, z: 217, y: 9.1, rot: 0, height: 2.3, finish: 'darkBronze' });
+  placeParts(scene, 'dublincastle', sites.dublinCastle, 'Dublin Castle');
 }
 
 function centralBank(site) {
@@ -2193,7 +2185,7 @@ export function buildLandmarks(scene) {
     ...oconnellMonument(), fusiliersArch(S.stephensGreen.park),
     smithOBrien(extraSites.smithOBrien), grayMonument(extraSites.gray), larkinMonument(extraSites.larkin),
     fatherMathewMonument(extraSites.fatherMathew), parnellMonument(extraSites.parnell),
-    cityHall(S.cityHall), dublinCastle(extraSites.castle), centralBank(S.centralBank), olympia(extraSites.olympia),
+    cityHall(S.cityHall), centralBank(S.centralBank), olympia(extraSites.olympia),
     clockCorner(extraSites.clockCorner), collegeGreen({ Builder, M, KERB_H }), ...suffolkStreet({ Builder, M, KERB_H }),
     iveaghPlayCentre(extraSites.iveaghPlay),
     merchantsHall(extraSites.merchantsHall), templeBarSquare(extraSites.tbSquare), templeBarDressing(),
@@ -2228,6 +2220,10 @@ export function buildLandmarks(scene) {
   groups.push(...liffey.groups);
   for (const g of groups) scene.add(g);
   fourCourts(); // its colliders and statues (the hero is placed below)
+  // Dublin Castle, the George's Street Arcade and the Stag's Head mosaic (one Blender hero; the castle's stone and brick
+  // are floodlit through setStoneNight). Solid whether or not it loads; the Upper Yard's gates are bollarded (walkers
+  // only), the Palace Street gate is shut, and the precinct walls run along Ship Street and Stephen Street Upper.
+  dublinCastle(scene);
   // Kildare Street / Merrion Street (Blender hero; its colliders and the Shelbourne's torch-bearers queue first)
   placeKildare(scene, { Builder, M });
   buildStatues(scene); // the statue-kit figures queued by the builders above (loads statues.glb)

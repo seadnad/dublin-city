@@ -121,6 +121,8 @@ const DECAL = {
   louvre: [896, 0, 128, 384], cren: [0, 384, 512, 64], clock: [512, 384, 128, 128], door: [640, 256, 128, 256],
   oculus: [768, 256, 128, 128], sash: [896, 384, 128, 192], portal: [0, 448, 256, 320],
   attic: [512, 576, 512, 128], arcade: [256, 448, 256, 256],
+  // Dublin Castle and the George's Street Arcade (tools/blender/build_dublincastle.py)
+  tracery: [0, 768, 256, 256], shop: [256, 704, 256, 160], mosaic: [512, 704, 256, 192], gate: [768, 704, 256, 320],
 };
 const GLASS = '#1c2126', DRESS = '#d9c9a0', STONE_D = '#6e6b6c';
 function paintDecals(g, N) {
@@ -180,6 +182,62 @@ function paintDecals(g, N) {
     g.fillStyle = '#2a3136'; arch(x + 56, y + 40, w - 112, h - 40, false); g.fill();
     g.strokeStyle = '#e6e3da'; g.lineWidth = 4; g.beginPath(); g.moveTo(x + w / 2, y + 90); g.lineTo(x + w / 2, y + h); g.stroke(); }
   { const [x, y, , h] = DECAL.cren; g.fillStyle = STONE_D; for (let k = 0; k < 8; k++) g.fillRect(x + k * 64, y, 40, h); }
+  { // the Chapel Royal's windows: a pointed arch of three lights, trefoils and a quatrefoil in the head, grey dressings
+    const [x, y, w, h] = DECAL.tracery, LIME = '#bdb9b0';
+    g.fillStyle = LIME; arch(x + 14, y + 4, w - 28, h - 4, true); g.fill();
+    g.fillStyle = '#233040'; arch(x + 30, y + 20, w - 60, h - 20, true); g.fill();
+    g.fillStyle = 'rgba(120,70,90,0.35)'; for (let k = 0; k < 18; k++) g.fillRect(x + 36 + ((k * 53) % (w - 80)), y + 90 + ((k * 37) % (h - 110)), 10, 14); // stained glass
+    g.strokeStyle = LIME; g.lineWidth = 7;
+    const lw = (w - 60) / 3;
+    for (let k = 1; k < 3; k++) { g.beginPath(); g.moveTo(x + 30 + k * lw, y + 118); g.lineTo(x + 30 + k * lw, y + h); g.stroke(); }
+    for (let k = 0; k < 3; k++) { g.beginPath(); g.arc(x + 30 + (k + 0.5) * lw, y + 118, lw / 2 - 3, Math.PI, 0); g.stroke(); }
+    g.beginPath(); g.arc(x + w / 2, y + 70, 22, 0, Math.PI * 2); g.stroke();
+    for (let k = 0; k < 4; k++) { const a = (k / 4) * Math.PI * 2 + Math.PI / 4; g.beginPath(); g.arc(x + w / 2 + Math.cos(a) * 11, y + 70 + Math.sin(a) * 11, 9, 0, Math.PI * 2); g.stroke(); }
+    g.lineWidth = 4; g.beginPath(); g.moveTo(x + 30, y + h * 0.62); g.lineTo(x + w - 30, y + h * 0.62); g.stroke(); // transom
+  }
+  { // a Victorian shopfront: black pilasters and fascia with gilt lettering, plate glass lit from within, a door
+    const [x, y, w, h] = DECAL.shop;
+    g.fillStyle = '#16201b'; g.fillRect(x, y, w, h);
+    g.fillStyle = '#c9a44a'; g.fillRect(x + 8, y + 10, w - 16, 3); g.fillRect(x + 8, y + 36, w - 16, 3);
+    g.fillStyle = '#d8c48a'; for (let k = 0; k < 9; k++) g.fillRect(x + 40 + k * 20, y + 18, 12, 12);
+    const gl = g.createLinearGradient(0, y + 46, 0, y + h - 8); gl.addColorStop(0, '#f1c98a'); gl.addColorStop(1, '#8d6a44');
+    g.fillStyle = gl; g.fillRect(x + 14, y + 46, 150, h - 58); g.fillRect(x + 208, y + 46, 34, h - 58);
+    g.fillStyle = 'rgba(30,36,40,0.55)'; g.fillRect(x + 14, y + 46, 150, h - 58);
+    g.fillStyle = '#3a2a20'; g.fillRect(x + 172, y + 50, 30, h - 54);
+    g.fillStyle = '#16201b'; g.fillRect(x + 87, y + 46, 5, h - 58);
+    g.fillStyle = 'rgba(255,255,255,0.18)'; g.fillRect(x + 20, y + 50, 40, h - 70);
+  }
+  { // the Stag's Head mosaic: a blue border, cream tesserae, the stag's head and the name in black
+    const [x, y, w, h] = DECAL.mosaic;
+    g.fillStyle = '#2d5aa8'; g.fillRect(x, y, w, h);
+    g.fillStyle = '#ece4d0'; g.fillRect(x + 14, y + 14, w - 28, h - 28);
+    g.strokeStyle = '#2a2622'; g.lineWidth = 3; g.strokeRect(x + 22, y + 22, w - 44, h - 44);
+    g.strokeStyle = 'rgba(120,110,95,0.25)'; g.lineWidth = 1;
+    for (let yy = y + 26; yy < y + h - 24; yy += 5) { g.beginPath(); g.moveTo(x + 24, yy); g.lineTo(x + w - 24, yy); g.stroke(); }
+    const cx = x + w / 2, cy = y + h / 2 + 8;
+    g.fillStyle = '#b97a2e'; g.beginPath(); g.ellipse(cx, cy + 6, 20, 30, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#d49a45'; g.beginPath(); g.ellipse(cx + 8, cy - 4, 16, 12, 0.4, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = '#8a6a4a'; g.lineWidth = 4;
+    for (const s of [-1, 1]) { g.beginPath(); g.moveTo(cx + s * 8, cy - 18); g.lineTo(cx + s * 26, cy - 46); g.lineTo(cx + s * 42, cy - 52); g.moveTo(cx + s * 20, cy - 36); g.lineTo(cx + s * 34, cy - 34); g.stroke(); }
+    g.fillStyle = '#2a2622'; g.font = 'bold 26px Georgia'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText("STAG'S", x + 62, cy + 6); g.fillText('HEAD', x + w - 58, cy + 6);
+    g.font = 'bold 18px Georgia'; g.fillText('THE', cx + 30, y + 44);
+  }
+  { // the George's Street Arcade's entrance: a double round arch in terracotta, the lit arcade seen through it
+    const [x, y, w, h] = DECAL.gate, TERRA = '#c7775a';
+    g.fillStyle = TERRA; g.fillRect(x, y, w, h);
+    g.fillStyle = 'rgba(90,40,25,0.35)'; for (let yy = y + 12; yy < y + h; yy += 14) g.fillRect(x, yy, w, 2);
+    for (const ax of [x + 14, x + w / 2 + 6]) {
+      const aw = w / 2 - 20;
+      g.fillStyle = '#e2b89a'; arch(ax - 6, y + 40, aw + 12, h - 40, false); g.fill();
+      const gl = g.createLinearGradient(0, y + 60, 0, y + h); gl.addColorStop(0, '#6d5a44'); gl.addColorStop(0.5, '#e9c07e'); gl.addColorStop(1, '#5b4636');
+      g.fillStyle = gl; arch(ax, y + 50, aw, h - 50, false); g.fill();
+      g.fillStyle = 'rgba(20,20,22,0.5)'; g.fillRect(ax, y + h * 0.55, aw, h * 0.45);
+      g.fillStyle = '#ffe3a8'; g.beginPath(); g.arc(ax + aw / 2, y + 120, 8, 0, Math.PI * 2); g.fill(); // the hanging lamp inside
+    }
+    g.fillStyle = '#e2d2b8'; g.font = 'bold 20px Georgia'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText("GEORGE'S STREET ARCADE", x + w / 2, y + 22);
+  }
 }
 // ---------- Parliament House (Bank of Ireland): its own small decal atlas ----------
 // regions, px in 512 (must match tools/blender/build_parliament.py PDECAL)
@@ -399,9 +457,22 @@ function stoneMaterials() {
     pgranite: uplit(std({ map: stoneTile(256, GRAN, 7, 0.2, 'rgba(90,88,84,0.45)', 0.18), roughness: 0.82 })),
     prustic: uplit(std({ map: stoneTile(256, '#a39d93', 5, 0.1, 'rgba(70,68,63,0.6)', 0.18, 5), roughness: 0.88 })),
     lead: std({ color: 0x6b7075, roughness: 0.6, metalness: 0.3 }),
+    // Dublin Castle (floodlit after dark) and the George's Street Arcade (tools/blender/build_dublincastle.py)
+    kbrick: floodlit(std({ map: stoneTile(128, '#8a4533', 16, 0.03, 'rgba(205,195,180,0.45)', 0.25), roughness: 0.9 })),
+    kcalp: floodlit(std({ map: stoneTile(256, '#77736c', 11, 0.6, 'rgba(40,38,36,0.55)', 0.45), roughness: 0.92 })),
+    klime: floodlit(std({ map: stoneTile(256, '#a6a39c', 7, 0.2, 'rgba(80,78,74,0.45)', 0.2), roughness: 0.85 })),
+    kport: floodlit(std({ map: stoneTile(256, '#d9d5cb', 6, 0.15, 'rgba(120,114,104,0.35)', 0.1), roughness: 0.75 })),
+    krender: floodlit(std({ map: stoneTile(256, '#d2cdc0', 4, 0.1, 'rgba(150,144,134,0.25)', 0.08), roughness: 0.88 })),
+    cobble: std({ map: stoneTile(128, '#7d776e', 16, 0.05, 'rgba(40,38,36,0.6)', 0.4), roughness: 0.85 }),
+    lawn: std({ color: 0x4f7236, roughness: 0.95 }),
+    gravel: std({ map: stoneTile(128, '#aaa294', 10, 0.3, 'rgba(90,86,80,0.2)', 0.25), roughness: 0.95 }),
+    abrick: std({ map: stoneTile(128, '#b0503a', 16, 0.02, 'rgba(225,200,180,0.45)', 0.2), roughness: 0.88 }),
+    aterra: std({ map: stoneTile(128, '#c98a66', 6, 0.1, 'rgba(120,70,50,0.35)', 0.15), roughness: 0.8 }),
+    agreen: std({ color: 0x2f6b3c, roughness: 0.7, side: THREE.DoubleSide }),
     plamp: std({ color: 0xfff1d6, emissive: 0xffc98a, emissiveIntensity: 0.15, roughness: 0.3 }),
   };
   const pat = atlas(512, paintParliament);
+  stoneMats.mosaic = std({ map: decal, roughness: 0.55, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
   stoneMats.pdecal = uplit(std({ map: pat, alphaTest: 0.5, roughness: 0.7 }));
   stoneMats.pcut = uplit(std({ map: pat, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6 })); // railings, balusters, capitals
   // the Four Courts (tools/blender/build_fourcourts.py): Portland dressings on a warmer granite, all floodlit at night
@@ -575,7 +646,8 @@ function prepare(root) {
     }
     o.material = byName(o.material.name);
     const m = stoneMaterials();
-    o.castShadow = o.material !== m.decal && o.material !== m.pdecal && o.material !== m.pcut && o.material !== m.fcut; // cut-outs would cast solid quads
+    // cut-outs would cast solid quads; flat ground surfaces (setts, gravel, lawn, the mosaic) have nothing to cast
+    o.castShadow = ![m.decal, m.pdecal, m.pcut, m.fcut, m.mosaic, m.cobble, m.gravel, m.lawn].includes(o.material);
     o.receiveShadow = true;
   });
 }
