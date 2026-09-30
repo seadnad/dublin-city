@@ -20,6 +20,7 @@ import { createLuas, buildLuasStops } from './game/luas.js';
 import { setStopNight } from './game/luasStop.js';
 import { createDart } from './game/dart.js';
 import { createPeople } from './game/people.js';
+import { graftonPeople } from './world/graftonquarter.js';
 import { audio } from './game/audio.js';
 import { createHUD } from './ui/hud.js';
 import { createWorldMap } from './ui/worldmap.js';
@@ -161,7 +162,8 @@ const traffic = createTraffic(scene, LITE ? { cars: 12, buses: 3, taxis: 3, park
 const tram = createLuas(scene, world.luasLines);
 tram.camera = camera; // trams out of view draw nothing
 const dart = createDart(scene); // the DART on the Loop Line viaduct (no collision: it runs overhead)
-const people = createPeople(scene, { count: LITE ? 110 : 300 });
+// (plus the Grafton quarter's buskers, their crowds, the flower sellers and the café tables, who stay put)
+const people = createPeople(scene, { count: LITE ? 110 : 300, fixed: graftonPeople() });
 // everything added since the world was built moves (player, traffic, trams, people): not part of the height field
 const dynamicRoots = scene.children.filter((c) => !worldRoots.has(c));
 const farSkip = new Set([...dynamicRoots, rain.mesh].filter(Boolean)); // left out of the far view's captures

@@ -21,7 +21,9 @@ import { placeBarrowStreet } from './barrowst.js';
 import { placeGrandCanal, gcsColliders } from './gcsquare.js';
 import { buildTowers } from './towers.js';
 import { buildLiffey } from './liffey.js';
-import { buildPubs } from './pubs.js';
+import { buildPubs, buildFronts } from './pubs.js';
+import { GQ_SPECS, gqSites } from './graftonsites.js';
+import { buildGraftonQuarter } from './graftonquarter.js';
 import { collegeGreen, suffolkStreet, placeKildare, setKildareNight } from './kildare.js';
 import { placeNorthCity, northCityColliders } from './northcity.js';
 import { buildRailway, placeLoopline } from './railway.js';
@@ -1772,7 +1774,7 @@ function stephensGreenCentre(site) {
 // Christmas lights strung across Grafton Street, and the wooden planters at its top end
 function graftonDressing() {
   const b = new Builder({ x: 0, z: 0, rot: 0 });
-  const way = world.ways.find((w) => w.pedestrian);
+  const way = world.ways.find((w) => w.pedestrian && w.name === 'Grafton Street');
   const pts = way.pts, half = way.width / 2 + way.pave;
   let acc = 0;
   for (let k = 0; k < pts.length - 1; k++) {
@@ -2233,6 +2235,11 @@ export function buildLandmarks(scene) {
   // the famous pubs (src/world/pubs.js): one atlas, one material; their groups join the landmark batch
   const pubs = buildPubs(Builder);
   groups.push(...pubs.groups);
+  // the Grafton quarter's fronts, pubs and landmarks (src/world/graftonsites.js): the same kit, its own atlas pages
+  const grafton = buildFronts(Builder, GQ_SPECS, gqSites, 'grafton quarter', { scale: 0.75 });
+  groups.push(...grafton.groups);
+  const gqDressing = buildGraftonQuarter(scene); // stalls, buskers' gear, café tables, bikes, Phil Lynott
+  console.log(`grafton quarter: dressing ${gqDressing.tris} tris in ${gqDressing.ms} ms; ${GQ_SPECS.length} fronts, atlas ${grafton.atlas}, ${grafton.ms} ms (paint ${grafton.paintMs})`);
   // the DART line (src/world/railway.js): viaduct, street bridges, track, overhead line, stations; joins the batch
   const railway = buildRailway();
   groups.push(railway.group);
@@ -2378,6 +2385,7 @@ export function buildLandmarks(scene) {
       if (guinnessHero) guinnessHero.setNight(level);
       if (northHero) northHero.setNight(level);
       pubs.setNight(level);
+      grafton.setNight(level);
       towers.setNight(level);
       setKildareNight(level);
       railway.setNight(level);

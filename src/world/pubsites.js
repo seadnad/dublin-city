@@ -13,11 +13,12 @@ const wayBetween = (a, b) => world.ways.find((w) => {
   return i >= 0 && j >= 0 && Math.abs(i - j) === 1;
 });
 
-function place(p) {
+export function place(p) {
   const A = N(p.a), B = N(p.b), way = wayBetween(p.a, p.b);
   if (!A || !B || !way) throw new Error(`pub ${p.key}: no road ${p.a}-${p.b}`);
   const L = v2.len(v2.sub(B, A)), dir = v2.norm(v2.sub(B, A)), left = { x: dir.z, z: -dir.x };
-  const P = project(p.at[0], p.at[1]), rel = v2.sub(P, A);
+  // either the real position `at` (projected onto the road) or `s`, metres from a (rows of fronts, graftonsites.js)
+  const P = p.at ? project(p.at[0], p.at[1]) : v2.add(A, v2.scale(dir, p.s)), rel = v2.sub(P, A);
   const side = p.hand || (v2.dot(rel, left) >= 0 ? 1 : -1);
   const n = { x: left.x * side, z: left.z * side }; // away from the road
   let s = Math.max(0, Math.min(L, v2.dot(rel, dir)));
@@ -99,7 +100,7 @@ export const PUB_SPECS = [
     // The Long Hall, 51 South Great George's Street (1766, the front of 1881): a narrow two-bay house of orange-red brick
     // with white stucco window surrounds and red-and-white striped window blinds, over a deep maroon front with the
     // cream fascia and the name in script, blinds over both doors
-    key: 'longHall', name: 'The Long Hall', place: true, hand: -1, a: 'SGG1', b: 'SGGS', at: [53.341856, -6.265315], w: 7.2, d: 14,
+    key: 'longHall', name: 'The Long Hall', place: true, hand: -1, a: 'GFFA', b: 'SGGS', at: [53.341856, -6.265315], w: 7.2, d: 14,
     blurb: 'Victorian red-and-gold bar on George’s Street, 1881 front',
     front: [{
       w: 7.2, floors: 3, fh: 3.3, G: 4.4,
@@ -126,7 +127,7 @@ export const PUB_SPECS = [
     // J. Grogan's Castle Lounge, 15 South William Street at Castle Market: four storeys of brick with the rendered ochre
     // gable along Castle Market carrying CASTLE LOUNGE in tall painted letters; red front, black fascias with gilt
     // lettering, green awnings, a box sign on the corner
-    key: 'grogans', name: "Grogan's", hand: -1, a: 'SW1', b: 'SW2', at: [53.342251, -6.262723], corner: 'CM1', w: 6.8, d: 13,
+    key: 'grogans', name: "Grogan's", hand: -1, a: 'SW1', b: 'GFCR', at: [53.342251, -6.262723], corner: 'CM1', w: 6.8, d: 13,
     front: [{
       w: 6.8, floors: 3, fh: 3.1, G: 4.2,
       upper: { wall: 'brick', color: '#8c4b36', bays: 2, win: 'sash', frame: '#e7e2d6', parapet: '#7a3f2e' },
