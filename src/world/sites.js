@@ -865,7 +865,9 @@ Object.assign(extraSites, {
   ambassador: { x: NC.drum.x, z: NC.drum.z, rot: NC.rotunda.rot, w: PARNELL.drumR * 2, d: PARNELL.drumR * 2 },
   gate: NC.gate.box(-PARNELL.gateW / 2, PARNELL.gateW / 2, 0, PARNELL.gateD),
   gardenSouth: NC.garden.box(-PARNELL.gardenW / 2, PARNELL.gardenW / 2 - PARNELL.gardenKW * PARNELL.gardenD, PARNELL.gardenD / 2, PARNELL.gardenD),
-  busarasYard: NC.busaras.box(BUSARAS.w / 2, BUSARAS.w / 2 + 22, 0, BUSARAS.d),
+  // (open out to Amiens Street: the yard runs through to it, so no filler stands side-on in front of the building
+  // seen from the east; docs/research/oconnell-street.md 5)
+  busarasYard: NC.busaras.box(BUSARAS.w / 2, BUSARAS.w / 2 + 29, 0, BUSARAS.d),
 });
 // ---------- O'Connell Street's frontages (docs/research/oconnell-street.md; src/world/ocstreet.js, ocfacades.js) ----------
 // every building between the side streets, the GPO and Clerys is reserved (the filler leaves the frontage to them);

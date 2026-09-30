@@ -548,7 +548,9 @@ def busaras():
         c = U0 + 3.5 + k * (W - 7) / 5
         mt.box(c - 2.0, c + 2.0, SV0 + 2.5, D - 1.5, TOP + 0.6, TOP + 3.1, top=False)
         dec.wall('conc', WF(0, SV0 + 2.5, 0, -1), c - 1.9, c + 1.9, TOP + 0.7, TOP + 3.0, d=0.02, crop=(0, 0.5, 0.3, 1))
-        cc.box(c - 2.6, c + 2.6, SV0 + 1.6, D - 1.0, TOP + 3.1, TOP + 3.45, bottom=True)
+        cc.box(c - 2.9, c + 2.9, SV0 + 1.2, D - 0.6, TOP + 3.1, TOP + 3.5, bottom=True)
+    # the tall Portland stone chimney stack rising from the west end wall (ref 12)
+    st.box(U0 - 0.2, U0 + 1.4, SV0 + 3.0, SV0 + 6.2, TOP + 0.6, TOP + 8.5)
     quad_uv(dec, 'rail', [(U0 + 0.2, SV0 + 0.1, TOP + 0.6), (U1 - 0.2, SV0 + 0.1, TOP + 0.6), (U1 - 0.2, SV0 + 0.1, TOP + 1.7), (U0 + 0.2, SV0 + 0.1, TOP + 1.7)], n=(0, -1, 0))
     # the ground floor under the slab, north of the concourse: glazed to the bus yard
     dec.wall('conc', WF(U1, 0, 1, 0), SV0, D - 0.4, 0.0, GF - 0.2, d=0.02)
@@ -578,7 +580,8 @@ def busaras():
     kit.lathe(dec, BX, CV0, [(BR + 0.02, 2.2), (BR + 0.02, 3.0)], sides=8, a0=math.pi, a1=2 * math.pi, region='tri')
     kit.lathe(cc, BX, CV0, [(BR, CH - 0.3), (BR, CH), (0, CH)], sides=8, a0=math.pi, a1=2 * math.pi)
     # the wavy canopy: a folded concrete slab whose edge rises and falls, along the south front and the bus-yard side
-    def canopy(p0, p1, depth, wl=3.4, amp=0.55, z=6.0):
+    # (a folded plate: the folds run from the wall out to the edge, rising towards the edge; white concrete, refs 08, 14)
+    def canopy(p0, p1, depth, wl=3.6, amp=0.95, z=6.2, t=0.4):
         L_ = math.hypot(p1[0] - p0[0], p1[1] - p0[1]); dx, dy = (p1[0] - p0[0]) / L_, (p1[1] - p0[1]) / L_
         nx, ny = dy, -dx                                     # out, to the right of the run
         n = max(4, int(L_ / (wl / 6)))
@@ -589,16 +592,18 @@ def busaras():
             pts.append(((p0[0] + dx * s, p0[1] + dy * s), h))
         for k in range(n):
             (a, ha), (b, hb) = pts[k], pts[k + 1]
-            A0, B0 = (a[0], a[1], z - 0.2), (b[0], b[1], z - 0.2)
+            ia, ib = z - 0.6 + (ha - z) * 0.45, z - 0.6 + (hb - z) * 0.45     # the folds, shallower at the wall
+            A0, B0 = (a[0], a[1], ia), (b[0], b[1], ib)
             A1, B1 = (a[0] + nx * depth, a[1] + ny * depth, ha), (b[0] + nx * depth, b[1] + ny * depth, hb)
-            cu.facen([A0, B0, (B1[0], B1[1], B1[2] + 0.22), (A1[0], A1[1], A1[2] + 0.22)], (0, 0, 1))      # the top, green
+            cc.facen([(A0[0], A0[1], A0[2] + t), (B0[0], B0[1], B0[2] + t), (B1[0], B1[1], B1[2] + t), (A1[0], A1[1], A1[2] + t)], (0, 0, 1))  # the top
             cc.facen([A0, B0, B1, A1], (0, 0, -1))                                                           # the soffit
-            cc.facen([A1, B1, (B1[0], B1[1], B1[2] + 0.22), (A1[0], A1[1], A1[2] + 0.22)], (nx, ny, 0))      # the edge
+            cc.facen([A1, B1, (B1[0], B1[1], B1[2] + t), (A1[0], A1[1], A1[2] + t)], (nx, ny, 0))            # the edge
+            cu.facen([(A1[0], A1[1], A1[2] + t), (B1[0], B1[1], B1[2] + t), (B1[0] - nx * 0.25, B1[1] - ny * 0.25, B1[2] + t + 0.02), (A1[0] - nx * 0.25, A1[1] - ny * 0.25, A1[2] + t + 0.02)], (0, 0, 1))  # the lip's flashing
         return pts
     canopy((WU1 - 0.5, CV0), (U1 + 5.5, CV0), CV0 - 0.4)
     canopy((U1, CV0), (U1, SV0 - 1), 5.5)
     for k in range(5):   # slim columns under the outer edge
-        cc.box(WU1 + 3 + k * 6.5 - 0.15, WU1 + 3 + k * 6.5 + 0.15, 1.2, 1.5, 0, 5.7)
+        cc.box(WU1 + 3 + k * 6.5 - 0.15, WU1 + 3 + k * 6.5 + 0.15, 1.2, 1.5, 0, 5.4)
     # the bus yard: paving, three raised boarding islands
     YU1 = U1 + 22
     pv.facen([(U1, 0, 0.06), (YU1, 0, 0.06), (YU1, D, 0.06), (U1, D, 0.06)], (0, 0, 1))

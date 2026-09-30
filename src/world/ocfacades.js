@@ -144,14 +144,14 @@ function paintAtlas(g, lit, signs) {
     // inner(x, y, w, h): the goods / interior, drawn over the glass
     if (lit) { const gr = g.createLinearGradient(0, y, 0, y + h); gr.addColorStop(0, '#fff4dc'); gr.addColorStop(1, '#e0b070'); g.fillStyle = gr; g.globalAlpha = bright; g.fillRect(x, y, w, h); g.globalAlpha = 1; }
     else glassDay(x, y, w, h, 1);
-    g.globalAlpha = lit ? 0.55 : 0.8; inner(x, y, w, h); g.globalAlpha = 1;
+    g.globalAlpha = lit ? 0.5 : 0.55; inner(x, y, w, h); g.globalAlpha = 1;
     const c = lit ? 'rgba(0,0,0,0.8)' : '#1c1c1a';
     g.fillStyle = c; for (let i = 0; i <= mull; i++) g.fillRect(x + (i * (w - 4)) / mull, y, 4, h);
     if (door) { g.fillStyle = lit ? 'rgba(255,240,210,0.9)' : '#2c3238'; g.fillRect(x + w * 0.7, y + 6, w * 0.2, h - 6); g.fillStyle = c; g.fillRect(x + w * 0.7, y + 6, 3, h - 6); g.fillRect(x + w * 0.9 - 3, y + 6, 3, h - 6); }
   };
   const shelves = (x, y, w, h, cols) => { for (let j = 0; j < 4; j++) for (let i = 0; i < 18; i++) { g.fillStyle = cols[(i + j * 3) % cols.length]; g.fillRect(x + 6 + i * (w - 12) / 18, y + 20 + j * 24, (w - 12) / 18 - 2, 18); } };
   const people = (x, y, w, h) => { for (let i = 0; i < 4; i++) { const px = x + 20 + r() * (w - 40); g.fillStyle = `hsl(${r() * 360},35%,30%)`; g.fillRect(px, y + h - 50, 12, 50); g.beginPath(); g.arc(px + 6, y + h - 56, 6, 0, 7); g.fill(); } };
-  disp('shop', (x, y, w, h) => shopWin(x, y, w, h, () => { for (let i = 0; i < 6; i++) { g.fillStyle = `hsl(${(i * 67) % 360},45%,55%)`; g.fillRect(x + 12 + i * 38, y + 50 + (i % 2) * 10, 24, 60); } }));
+  disp('shop', (x, y, w, h) => shopWin(x, y, w, h, () => { for (let i = 0; i < 6; i++) { g.fillStyle = `hsl(${(i * 67) % 360},25%,50%)`; g.fillRect(x + 12 + i * 38, y + 50 + (i % 2) * 10, 24, 60); } }));
   disp('bank', (x, y, w, h) => shopWin(x, y, w, h, () => { rect(x, y, w, h * 0.5, 'rgba(40,44,50,0.8)'); rect(x + 30, y + 60, 26, 36, '#1f3f7a'); rect(x + 34, y + 64, 18, 12, '#8fd0ff'); }, { bright: 0.6 }));
   disp('food', (x, y, w, h) => shopWin(x, y, w, h, () => { rect(x, y + 8, w, 26, '#c8102e'); for (let i = 0; i < 4; i++) { rect(x + 10 + i * 60, y + 12, 50, 18, '#ffc72c'); } rect(x, y + 80, w, 48, 'rgba(200,120,60,0.6)'); people(x, y, w, h); }, { bright: 1.1 }));
   disp('diner', (x, y, w, h) => shopWin(x, y, w, h, () => { for (let i = 0; i < 12; i++) rect(x + i * 22, y + 96, 11, 32, i % 2 ? '#fff' : '#111'); rect(x, y + 14, w, 10, '#ff3a3a'); people(x, y, w, h); }, { bright: 1.1 }));
@@ -770,7 +770,7 @@ function materials() {
   const tile = (t) => { t.repeat.set(1, 1); return t; };
   const std = (o) => new THREE.MeshStandardMaterial({ vertexColors: true, ...o });
   return {
-    stone: uplit(std({ map: tile(stoneTile(256, '#e6e2d8', 6, 0.15, 'rgba(120,114,104,0.32)', 0.12)), roughness: 0.8 }), 6),
+    stone: uplit(std({ map: tile(stoneTile(256, '#f2f0ea', 6, 0.15, 'rgba(120,114,104,0.16)', 0.07, 1)), roughness: 0.8 }), 6),
     brick: std({ map: tile(stoneTile(128, '#c9c1b6', 14, 0.02, 'rgba(235,228,215,0.55)', 0.3)), roughness: 0.9 }),
     render: uplit(std({ map: tile(stoneTile(128, '#e8e4dc', 2, 0.1, 'rgba(160,156,150,0.12)', 0.05)), roughness: 0.88 }), 6),
     roof: std({ map: tile(stoneTile(128, '#7c7f82', 4, 0.1, 'rgba(40,42,44,0.4)', 0.2)), roughness: 0.85 }),
