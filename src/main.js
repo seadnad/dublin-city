@@ -16,7 +16,7 @@ import { input, updateInput, onKey, buildTouchControls, pad, readPad, setInputMo
 import { createPhotoMode } from './game/photo.js';
 import { CameraRig } from './game/camera.js';
 import { createTraffic } from './game/traffic.js';
-import { createLuas, combineTrams } from './game/luas.js';
+import { createLuas, buildLuasStops } from './game/luas.js';
 import { setStopNight } from './game/luasStop.js';
 import { createDart } from './game/dart.js';
 import { createPeople } from './game/people.js';
@@ -106,6 +106,7 @@ const waterGlow = buildWaterGlow(scene, [
 await step(0.76, 'Setting out the furniture…');
 const rain = buildRain(scene);
 const furniture = buildFurniture(scene);
+buildLuasStops(scene, world.luasLines); // the Luas stops belong to the static city (height field, far view)
 const signals = createSignals(scene);
 console.log('furniture', JSON.stringify(furniture), 'signal heads', signals.count);
 const worldRoots = new Set(scene.children); // the static city (the helicopter's height field is drawn from these)
@@ -157,7 +158,8 @@ function respawnNearRoad() {
 // ---------- traffic + Luas ----------
 await step(0.8, 'Starting the traffic…');
 const traffic = createTraffic(scene, LITE ? { cars: 12, buses: 3, taxis: 3, parked: 120 } : { cars: 26, buses: 6, taxis: 5, parked: 320 });
-const tram = combineTrams(world.luasLines.map((line) => createLuas(scene, line)));
+const tram = createLuas(scene, world.luasLines);
+tram.camera = camera; // trams out of view draw nothing
 const dart = createDart(scene); // the DART on the Loop Line viaduct (no collision: it runs overhead)
 const people = createPeople(scene, { count: LITE ? 110 : 300 });
 // everything added since the world was built moves (player, traffic, trams, people): not part of the height field

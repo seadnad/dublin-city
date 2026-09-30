@@ -121,11 +121,17 @@ function drawLayout() {
   for (const isl of ISLANDS) fillPoly(ctx, islandOutline(isl), COLORS.pavement);
 
   // Luas track bed + rails
-  for (const { pts: lp } of world.luasLines) {
-    ctx.strokeStyle = '#4a4a4c'; ctx.lineWidth = 7.4 * PPM; strokePts(ctx, lp); ctx.stroke();
-    ctx.strokeStyle = '#8d8e90'; ctx.lineWidth = Math.max(1, 0.14 * PPM);
-    for (const off of [-2.55, -1.1, 1.1, 2.55]) { strokePts(ctx, offsetPolyline(lp, off)); ctx.stroke(); }
+  // the grassed reservation off the street grid
+  ctx.strokeStyle = COLORS.grass; ctx.lineWidth = 12.6 * PPM;
+  for (const line of world.luasLines) for (const lp of line.tracks) {
+    let run = [];
+    for (const p of [...lp, {}]) { if (p.open) run.push(p); else { if (run.length > 1) { strokePts(ctx, run); ctx.stroke(); } run = []; } }
   }
+  for (const line of world.luasLines) for (const lp of line.tracks) {
+    ctx.strokeStyle = '#4a4a4c'; ctx.lineWidth = 3.8 * PPM; strokePts(ctx, lp); ctx.stroke();
+  }
+  ctx.strokeStyle = '#8d8e90'; ctx.lineWidth = Math.max(1, 0.14 * PPM);
+  for (const line of world.luasLines) for (const lp of line.tracks) for (const off of [-0.72, 0.72]) { strokePts(ctx, offsetPolyline(lp, off)); ctx.stroke(); }
 
   // lane markings: white dashed centre lines, trimmed at junctions
   ctx.strokeStyle = COLORS.white; ctx.lineCap = 'butt';
