@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { addReflections } from '../render/reflect.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { world, v2, pointInPolygon, insetPolygon, project } from './geo.js';
-import { sites, reserved, grounds, extraSites, cpAt, BOI, boiAt, FC, fcAt } from './sites.js';
+import { sites, reserved, grounds, extraSites, cpAt, BOI, boiAt, FC, fcAt, KH } from './sites.js';
 import { parkPolys, campusPolys, stoneTex, WATER_Y, paintArea, COLORS, getStreets } from './ground.js';
 import { rng, makeStoneTexture } from './textures.js';
 import { addBox, addSegment, addPolyline } from '../game/collision.js';
@@ -16,6 +16,7 @@ import { placeHapenny, placeParts, setStoneNight, placeCrokePark, placeAviva, pl
 import { placeHeuston } from './heuston.js';
 import { placeThreeArena } from './threearena.js';
 import { placeCCJ } from './ccj.js';
+import { placeKilmainham } from './kilmainham.js';
 import { placeBarrowStreet } from './barrowst.js';
 import { placeGrandCanal, gcsColliders } from './gcsquare.js';
 import { buildTowers } from './towers.js';
@@ -2306,6 +2307,10 @@ export function buildLandmarks(scene) {
   // Criminal Courts of Justice (Blender hero): its outline collides whether or not the model loads
   let ccjHero = null;
   placeCCJ(scene, S.ccj, S.ccj.outline).then((h) => { if (h) { ccjHero = h; h.setNight(nightLevel); } });
+  // Kilmainham: the Gaol and its Courthouse, the Royal Hospital, its gardens and avenues, the Richmond Tower (Blender
+  // heroes; their footprints and the gaol's wall ring collide whether or not the model loads)
+  let kilmainhamHero = null;
+  placeKilmainham(scene, KH).then((h) => { if (h) { kilmainhamHero = h; h.setNight(nightLevel); } });
   // Barrow Street, the Google campus, Boland's Quay and the DART embankment (one Blender hero, lit offices
   // at night): Google Docks' outline, every building box and the embankment are solid whether or not it loads; the
   // lit towers show in the inner basin after dark
@@ -2367,6 +2372,7 @@ export function buildLandmarks(scene) {
       if (arenaHero) arenaHero.setNight(level);
       if (avivaHero) avivaHero.setNight(level);
       if (ccjHero) ccjHero.setNight(level);
+      if (kilmainhamHero) kilmainhamHero.setNight(level);
       if (barrowHero) barrowHero.setNight(level);
       if (gcsHero) gcsHero.setNight(level);
       if (guinnessHero) guinnessHero.setNight(level);

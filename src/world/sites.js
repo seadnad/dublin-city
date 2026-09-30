@@ -279,6 +279,102 @@ export function ccjOutline(pad = 0) {
   }
   return out;
 }
+// Kilmainham (docs/research/kilmainham.md; the Blender heroes in tools/blender/build_kilmainham.py are built in game
+// metres, x east / y north in each model, and turned by `rot` about the vertical). West of PARK_X the map is squeezed
+// east-west to 0.35 of real but the roads are not, so each hero is slid off the carriageways and footpaths it would
+// otherwise stand on:
+//   the Courthouse west off the SCR, then south off Inchicore Road;
+//   the Gaol (plan 0.55 of its OSM wall ring, turned square to Inchicore Road) west until its east wall clears the
+//     Courthouse, then south until its front clears Inchicore Road;
+//   the Royal Hospital (plan 0.55) stands on its OSM centre, turned 11 degrees like the real quadrangle; its drives
+//     (streets.json KHA*) run round it in the same frame;
+//   the Richmond Tower straddles the avenue's last straight, east of the SCR's footpath.
+export const KH = (() => {
+  const roadClear = (pts, keep = () => true, margin = 0.3) => pts.every((p) => {
+    for (const s of world.segsNear(p.x, p.z)) {
+      if (!keep(s.way)) continue;
+      const a = s.a, b = s.b, abx = b.x - a.x, abz = b.z - a.z, l2 = abx * abx + abz * abz || 1e-9;
+      const t = Math.max(0, Math.min(1, ((p.x - a.x) * abx + (p.z - a.z) * abz) / l2));
+      if (Math.hypot(p.x - a.x - abx * t, p.z - a.z - abz * t) < s.way.width / 2 + s.way.pave + margin) return false;
+    }
+    return true;
+  });
+  // model (u east, v north) -> world, for an origin and a rotation (three.js rotation.y)
+  const frame = (o, rot) => { const c = Math.cos(rot), s = Math.sin(rot); return (u, v) => ({ x: o.x + u * c - v * s, z: o.z - u * s - v * c }); };
+  const toModel = (o, rot) => { const c = Math.cos(rot), s = Math.sin(rot); return (p) => { const dx = p.x - o.x, dz = p.z - o.z; return { u: dx * c - dz * s, v: -(dx * s + dz * c) }; }; };
+  const grid = (u0, u1, v0, v1, step = 1) => { const out = []; for (let u = u0; u <= u1 + 1e-6; u += Math.min(step, u1 - u0 || 1)) for (let v = v0; v <= v1 + 1e-6; v += Math.min(step, v1 - v0 || 1)) out.push([u, v]); return out; };
+  const boxOf = (at, rot, u0, u1, v0, v1) => ({ ...at((u0 + u1) / 2, (v0 + v1) / 2), rot, w: u1 - u0, d: v1 - v0 });
+  const slide = (o, rot, pts, du, dv, keep, max = 60) => {
+    for (let k = 0; k <= max * 4; k++) {
+      const at = frame({ x: o.x + (du * Math.cos(rot) - dv * Math.sin(rot)) * k * 0.25, z: o.z + (-du * Math.sin(rot) - dv * Math.cos(rot)) * k * 0.25 }, rot);
+      if (roadClear(pts.map(([u, v]) => at(u, v)), keep)) return { x: o.x + (du * Math.cos(rot) - dv * Math.sin(rot)) * k * 0.25, z: o.z + (-du * Math.sin(rot) - dv * Math.cos(rot)) * k * 0.25 };
+    }
+    console.warn('Kilmainham: no clear spot near', Math.round(o.x), Math.round(o.z));
+    return o;
+  };
+  const isNamed = (re) => (w) => re.test(w.name);
+
+  // ---- Inchicore Road: the gaol and the courthouse
+  const ia = N('KHG2'), ib = N('KHG1'), id = v2.norm(v2.sub(ib, ia));
+  const gRot = Math.atan2(-id.z, id.x);
+  // the courthouse (plan 0.45 x 0.5): 14.8 x 12.5 m and 2.4 m of railed forecourt
+  const CT = { u0: -7.4, u1: 7.4, v0: -6.25, v1: 8.65 };
+  let ct = project(53.34177, -6.3085);
+  ct = slide(ct, gRot, grid(CT.u0, CT.u1, CT.v0, CT.v1), -1, 0, isNamed(/South Circular/));
+  ct = slide(ct, gRot, grid(CT.u0, CT.u1, CT.v0, CT.v1), 0, -1, isNamed(/Inchicore|South Circular/));
+  const ctAt = frame(ct, gRot);
+  // the gaol: the OSM wall ring's first node, then west of the courthouse and south of the road
+  const G = { u0: -21.0, u1: 35.1, v0: -39.3, v1: 0.8 };
+  let go = project(53.3420594, -6.3097445);
+  { const ctIn = toModel(go, gRot)(ctAt(CT.u0, 0)); go = frame(go, gRot)(Math.min(0, ctIn.u - 0.6 - G.u1), 0); }
+  go = slide(go, gRot, grid(G.u0, G.u1, 0, G.v1).filter(([, v]) => v > 0), 0, -1, isNamed(/Inchicore/));
+  const gaolAt = frame(go, gRot);
+  // the wall ring (build_kilmainham.py RING, turned 5.8 degrees and scaled 0.55), for collision
+  const TH = (5.8 * Math.PI) / 180;
+  const RING = [[0, 0], [-1.7, 0.8], [-19.2, 2.6], [-30.0, 3.7], [-34.7, 2.7], [-36.7, 0.9], [-37.8, -2.1], [-38.2, -6.5], [-32.4, -7.1],
+    [-33.3, -15.5], [-32.7, -17.9], [-33.9, -26.8], [-37.0, -55.4], [-38.3, -55.2], [-39.7, -65.7], [-28.3, -67.0], [34.0, -73.6],
+    [45.8, -75.8], [57.0, -64.5], [57.2, -62.1], [61.9, -15.0], [62.1, -12.8], [61.8, -10.7], [60.5, -8.5], [57.7, -7.4],
+    [55.9, -6.2], [41.9, -4.4], [23.7, -2.3]];
+  const gaolRing = RING.map(([x, y]) => gaolAt((x * Math.cos(TH) - y * Math.sin(TH)) * 0.55, (x * Math.sin(TH) + y * Math.cos(TH)) * 0.55));
+  // the Proclamation plaza across the road from the gaol's door
+  const door = gaolAt(5.8, 1), dr = world.nearestRoad(door.x, door.z);
+  const nv = { x: -Math.sin(gRot), z: -Math.cos(gRot) }; // the model's +v (north) in the world
+  const plaza = { x: dr.cx + nv.x * (dr.way.width / 2 + dr.way.pave + 8), z: dr.cz + nv.z * (dr.way.width / 2 + dr.way.pave + 8), rot: gRot, w: 24, d: 13 };
+
+  // ---- the Royal Hospital
+  const rRot = (11 * Math.PI) / 180, rc = project(53.34294, -6.30005), rhkAt = frame(rc, rRot), rhkIn = toModel(rc, rRot);
+  const garden = { u0: -26, u1: 26, v0: 41.5, v1: 128 };
+  const gh = { u: -6, v: 133 };
+
+  // ---- the Richmond Tower: on the avenue's last straight, east of the SCR
+  const ta = N('KHA9'), tb = N('KHK1'), td = v2.norm(v2.sub(ta, tb)); // eastward, into the grounds
+  const tRot = Math.atan2(-td.z, td.x);
+  const RT = { u0: -3.4, u1: 3.4, v0: -10.6, v1: 7.0 };
+  const to = slide({ x: tb.x, z: tb.z }, tRot, grid(RT.u0, RT.u1, RT.v0, RT.v1).filter(([, v]) => Math.abs(v) > 3.1), 1, 0, (w) => w.name !== 'Royal Hospital Kilmainham');
+  const rtAt = frame(to, tRot);
+
+  const solids = {
+    gaolWest: boxOf(gaolAt, gRot, -6.7, 0.1, -12.1, 0.8), gaolEast: boxOf(gaolAt, gRot, 11.4, 18.3, -12.1, 0.8),
+    courthouse: boxOf(ctAt, gRot, CT.u0, CT.u1, CT.v0, 6.25), courtForecourt: boxOf(ctAt, gRot, CT.u0, CT.u1, 6.25, CT.v1),
+    rhk: boxOf(rhkAt, rRot, -24.5, 24.5, -26, 26), rhkNorth: boxOf(rhkAt, rRot, -6.0, 6.0, 26, 32.1),
+    gardenHouse: boxOf(rhkAt, rRot, gh.u - 4.1, gh.u + 4.1, gh.v - 4.1, gh.v + 4.1),
+    richmondN: boxOf(rtAt, tRot, -3.4, 3.4, 3.05, 6.95), richmondS: boxOf(rtAt, tRot, -3.4, 3.4, -6.95, -3.05),
+    richmondTurret: boxOf(rtAt, tRot, -3.5, 2.3, -10.6, -6.95),
+    richmondWallN: boxOf(rtAt, tRot, -1.1, -0.5, 6.95, 13.5), richmondWallS: boxOf(rtAt, tRot, -1.1, -0.5, -12.2, -10.6),
+  };
+  return {
+    gaolAt, rhkAt, rtAt, ctAt, rhkIn, gaolRing, plaza, garden, gh, gRot, rRot, tRot,
+    enclosure: boxOf(gaolAt, gRot, G.u0, G.u1, G.v0, G.v1),
+    solids: Object.values(solids), named: solids,
+    groups: {
+      'Kilmainham Gaol': { gaol: { ...go, rot: gRot }, courthouse: { ...ct, rot: gRot } },
+      'Royal Hospital Kilmainham': { rhk: { ...rc, rot: rRot }, gardenhouse: { ...rhkAt(gh.u, gh.v), rot: rRot } },
+      'Richmond Tower': { richmond: { ...to, rot: tRot } },
+    },
+    gates: [{ ...N('KHM4'), r: 7 }, { ...to, r: 8 }],
+    inGarden: (p) => { const q = rhkIn(p); return q.u > garden.u0 - 1 && q.u < garden.u1 + 1 && q.v > garden.v0 - 1 && q.v < garden.v1 + 10; },
+  };
+})();
 const xingBox = (s0, s1, q0, q1) => ({ ...lansdowneXing.at((s0 + s1) / 2, (q0 + q1) / 2), rot: lansdowneXing.trackRot, w: q1 - q0, d: s1 - s0 });
 const xingRoadBox = (u0, u1, w0, w1) => ({ ...lansdowneXing.atRoad((u0 + u1) / 2, (w0 + w1) / 2), rot: lansdowneXing.roadRot, w: u1 - u0, d: w1 - w0 });
 
@@ -485,6 +581,19 @@ export const sites = {
     outline: ccjOutline(),
     view: spot('WT3', 'PG1', 0.35),
   },
+  kilmainhamGaol: {
+    // the walled enclosure; the front blocks, the courthouse and its forecourt are extraSites.kh* (see KH above)
+    name: 'Kilmainham Gaol', ...KH.enclosure, labelY: 22,
+    view: spot('KHK1', 'KHG1', 0.55), // westbound on Inchicore Road, the front on the left
+  },
+  royalHospital: {
+    name: 'Royal Hospital Kilmainham', ...KH.named.rhk, labelY: 42,
+    view: spot('KHA8', 'KHA7', 0.25), // up the lime avenue towards the west front
+  },
+  richmondTower: {
+    name: 'Richmond Tower', ...KH.named.richmondN, labelY: 18,
+    view: spot('KHG1', 'KHK1', 0.1), // eastbound on Inchicore Road, the gate closing the view
+  },
   // Connolly Station (docs/research/railway.md): William Deane Butler's 1844 granite front with its Italianate tower,
   // on the east side of Amiens Street at the Talbot Street / Store Street junction, facing west (local +z). The
   // train shed over platforms 1-4 runs north-east behind it (railway.js); the Loop Line's DART platforms pass south of
@@ -601,6 +710,10 @@ export const extraSites = {
   lansdowneXing,
   // O'Connell Bridge House's 7-storey extension down D'Olier Street (the tower is sites.oconnellBridgeHouse)
   obhExtension: obh.ext,
+  // Kilmainham: the gaol's front blocks, the courthouse and its railed forecourt, the Proclamation plaza, the Royal
+  // Hospital's north front and steps, the Garden House, the Richmond Tower's piers, turret and wall stubs
+  ...Object.fromEntries(Object.entries(KH.named).filter(([k]) => !['rhk', 'richmondN'].includes(k)).map(([k, s]) => ['kh_' + k, s])),
+  kh_plaza: KH.plaza,
 };
 // Aviva footprint slabs, the podium over the DART (a strip along the track and its front on Lansdowne Road with the
 // grand stairs), the station's track bed and platforms, and the station building - all kept free of filler
@@ -989,6 +1102,10 @@ export const reserved = [
   extraSites.chq,
   // the tall buildings (src/world/towers.js)
   ...tallFootprints,
+  // Kilmainham: the gaol enclosure, the Royal Hospital, the Richmond Tower and the rest of their parts (KH above)
+  sites.kilmainhamGaol, sites.royalHospital, sites.richmondTower, ...Object.entries(extraSites).filter(([k]) => k.startsWith('kh_')).map(([, s]) => s),
+  // the Heuston rail yards between St John's Road West and the Liffey, out to the SCR: no filler
+  ...heustonYard(),
   // Clerys, Parnell Square (the Rotunda, the Ambassador, the Gate, the Garden of Remembrance) and Busáras
   ...northCityFootprints,
   // the DART viaduct between its street bridges (railline.js), Connolly's front, Pearse's front on Westland Row, and
@@ -998,5 +1115,24 @@ export const reserved = [
   (extraSites.pearseFront = (() => { const F = pearseFront(); return F ? fitBox(F.poly, Math.atan2(F.poly[1].x - F.poly[0].x, F.poly[1].z - F.poly[0].z)) : null; })()),
   (extraSites.fireTower = { x: fireTower.x, z: fireTower.z, rot: 0, w: fireTower.w + 1, d: fireTower.w + 1 }),
 ].filter(Boolean);
+
+// The rail yards west of Heuston: open ground (tracks, sidings, the station car park) from the station's west end to
+// the South Circular Road, between St John's Road West and the river. A grid of boxes north of the road.
+function heustonYard() {
+  const road = ['SJ2', 'KHM0', 'SJ3', 'KHS1', 'KHS2', 'KHS3', 'KHS4', 'KHS5', 'KHJ'].map((id) => N(id));
+  const scr = N('KHN3').x + 5.5 + 3.5 + 2;
+  const out = [];
+  for (let x = -1640; x < -1340; x += 12) for (let z = -40; z < 210; z += 12) {
+    const p = { x: x + 6, z: z + 6 };
+    if (p.x < scr + 6 || pointInPolygon(p, world.riverPoly)) continue;
+    // north of St John's Road West: the road's z at this x, less its half width and footpath
+    let rz = null;
+    for (let i = 0; i + 1 < road.length; i++) { const a = road[i], b = road[i + 1]; if ((a.x - p.x) * (b.x - p.x) <= 0 && a.x !== b.x) rz = a.z + ((p.x - a.x) / (b.x - a.x)) * (b.z - a.z); }
+    if (rz === null || p.z > rz - 7 - 3.5 - 6.5) continue;
+    if (p.x > -1350 && p.z > 20) continue; // Heuston's own west end
+    out.push({ ...p, rot: 0, w: 12, d: 12 });
+  }
+  return out;
+}
 
 export { campusPolys, parkPolys };
