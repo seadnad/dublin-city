@@ -10,7 +10,7 @@ import { LITE } from '../render/quality.js';
 import { addBox } from '../game/collision.js';
 import { chunkedInstances } from './chunks.js';
 import { plantTrees } from './trees.js';
-import { FC } from './sites.js';
+import { FC, sites } from './sites.js';
 
 const rand = rng(1847);
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _up = new THREE.Vector3(0, 1, 0), _p = new THREE.Vector3(), _one = new THREE.Vector3(1, 1, 1);
@@ -133,6 +133,13 @@ function stopSign() {
   return t;
 }
 
+// footpaths kept free of stops, shelters and bins: the Famine figures' strip on Custom House Quay
+const CLEAR = [sites.famine].filter(Boolean);
+const keepClear = (p) => CLEAR.some((b) => {
+  const dx = p.x - b.x, dz = p.z - b.z, c = Math.cos(b.rot), sn = Math.sin(b.rot);
+  return Math.abs(dx * c - dz * sn) < b.w / 2 + 4 && Math.abs(dx * sn + dz * c) < b.d / 2 + 3;
+});
+
 export function buildFurniture(scene) {
   const stops = [], shelters = [], bins = [], posts = [], bollards = [];
   for (const way of world.ways) {
@@ -144,7 +151,7 @@ export function buildFurniture(scene) {
         const out = { x: d.z * side, z: -d.x * side }; // away from the road on this side
         const rot = Math.atan2(-out.x, -out.z);        // faces the road
         const at = (s, off) => { const p = v2.add(v2.lerp(a, b, s / L), v2.scale(out, way.width / 2 + off)); return { ...p, rot }; };
-        const ok = (p) => fieldAt(p.x, p.z) > 0.4 && (world.nearestRoad(p.x, p.z) || {}).way === way;
+        const ok = (p) => fieldAt(p.x, p.z) > 0.4 && (world.nearestRoad(p.x, p.z) || {}).way === way && !keepClear(p);
         if (bus && L > 70) {
           const s = 25 + rand() * (L - 50);
           const pole = at(s, 0.7);

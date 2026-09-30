@@ -135,7 +135,8 @@ kbd { display: inline-block; min-width: 1.5em; padding: 1px 5px; border-radius: 
 .lg-blip::before { content: ''; width: 12px; height: 12px; border-radius: 50%; background: #ff2d2d; border: 2px solid #fff; }
 .lg-line::before { content: ''; width: 18px; height: 3px; }
 .lg-main::before { background: #d8dce0; }
-.lg-luas::before { background: repeating-linear-gradient(90deg, #b05bd8 0 5px, transparent 5px 8px); }
+.lg-luas::before { background: repeating-linear-gradient(90deg, #d6212b 0 5px, transparent 5px 8px); }
+.lg-luas-green::before { background: repeating-linear-gradient(90deg, #00a651 0 5px, transparent 5px 8px); }
 .lg-limit::before { background: repeating-linear-gradient(90deg, #e8c547 0 6px, transparent 6px 9px); }
 .lg-swatch::before { content: ''; width: 16px; height: 12px; border-radius: 3px; }
 .lg-park::before { background: #2e5a3a; }

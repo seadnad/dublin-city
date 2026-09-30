@@ -3,9 +3,16 @@
 // a label height, and a teleport spot on a nearby road looking at it.
 import { world, v2, PAVEMENT, pointInPolygon, laneOffset, project } from './geo.js';
 import { bridges, parkPolys, campusPolys, dockPolys } from './ground.js';
-import { monumentSites } from './oconnell.js';
+import { monumentSites, along, chainageOf } from './oconnell.js';
+import ncLayout from '../data/northcity.json';
+const { clerys: CLERYS, parnell: PARNELL, busaras: BUSARAS } = ncLayout;
+import { collegeGreenSites, cgAt, CG_SPOTS, CG_EAST } from './collegegreen.js';
+import { KD_BOXES, KD_OPEN } from './kildarelayout.js';
 import tanksData from '../data/guinness-tanks.json';
 import bsLayout from '../data/barrowst.json';
+import { spans as railSpans, at as railAt, footprints as railFootprints, pearseFront, fireTower } from './railline.js';
+import { pubSites } from './pubsites.js';
+import * as LQ from './liffeysites.js';
 
 const N = (id) => world.nodes.get(id);
 const wayBetween = (a, b) => world.ways.find((w) => {
@@ -586,6 +593,20 @@ export const sites = {
     name: 'Richmond Tower', ...KH.named.richmondN, labelY: 18,
     view: spot('KHG1', 'KHK1', 0.1), // eastbound on Inchicore Road, the gate closing the view
   },
+  // Connolly Station (docs/research/railway.md): William Deane Butler's 1844 granite front with its Italianate tower,
+  // on the east side of Amiens Street at the Talbot Street / Store Street junction, facing west (local +z). The
+  // train shed over platforms 1-4 runs north-east behind it (railway.js); the Loop Line's DART platforms pass south of
+  // it, beyond the Luas stop (left open). Seen from Talbot Street, eastbound.
+  connolly: {
+    name: 'Connolly Station', ...beside('BP3', 'AM', 1, -1, 40, 17, { gap: 0.6, shift: -14 }), labelY: 36, // clear of Sheriff Street
+    view: spot('TB1', 'AM', 0.55),
+  },
+  // the Loopline Bridge (1891): the lattice girders over the Liffey between Custom House Quay and George's Quay, in
+  // front of the Custom House (a bridge: not a footprint). Seen from Burgh Quay, eastbound, with the dome behind it.
+  loopline: (() => {
+    const sp = railSpans.find((k) => k.hero), a = railAt(sp ? (sp.s0 + sp.s1) / 2 : 0);
+    return { name: 'Loopline Bridge', x: a.x, z: a.z, rot: Math.atan2(a.d.x, a.d.z), w: 12, d: sp ? sp.s1 - sp.s0 : 0, labelY: 14, bridge: true, view: spot('SQ8', 'SQ9', 0.55) };
+  })(),
 };
 
 // A railway bridge over the road at a node (the GSWR, docs/research/croke-park.md 1.2; no trains, so only the deck
@@ -610,6 +631,8 @@ function shifted(site, lx, lz, w, d) {
 export const grounds = [
 
   shifted(sites.customHouse, 0, -3, 124, 34),
+  // Leinster Lawn, from Leinster House's garden front to Merrion Square West
+  { ...KD_OPEN.lawn, lawn: 1 }, { ...KD_OPEN.lawnEast, lawn: 1 }, { ...KD_OPEN.lawnEast2, lawn: 1 },
   // Lansdowne FC's back pitch, between the stadium's east side and the Dodder
   { ...shifted(sites.aviva, 75.5, -2, 15, 78), lawn: 1 },
   // Lansdowne Lawn Tennis Club, north of it up to Bath Avenue: open courts, so the stadium shows across the Dodder
@@ -648,12 +671,12 @@ export const extraSites = {
   fcPortico: fcBox(-7.7, 7.7, -3.6, 0.3),
   // Iveagh Play Centre, facing St Patrick's Park across Bull Alley
   iveaghPlay: beside('PK1', 'BD3', 0.5, 1, 34, 15, { gap: 0.3 }),
-  // the red pub corner, SE of Temple Bar x Temple Lane South (invented name; the real one is a protected brand)
-  redPub: (() => { const tl = wayBetween('DM1', 'TTL'); return beside('TTL', 'TFO', 0, -1, 16, 13, { shift: tl.width / 2 + tl.pave + 8.2, gap: 0.15 }); })(),
+  // (the Temple Bar pub on the Temple Lane South corner is in src/world/pubsites.js with the other pubs)
   // Temple Bar Square: the flagged square on the south side of Temple Bar, west of Crown Alley
   tbSquare: (() => { const ca = wayBetween('TBQ', 'CCA'); return beside('TBQ', 'TFO', 0, 1, 21, 13, { shift: ca.width / 2 + ca.pave + 10.8, gap: 0.1 }); })(),
-  bewleys: beside('GR1', 'GR2', 0.78, -1, 12, 18, { gap: 0.15 }),
-  brownThomas: beside('GR1', 'GR2', 0.3, -1, 28, 22, { gap: 0.15 }),
+  // (Grafton Street is split at Duke Street, GRD, 0.352 of the way from GR1 to GR2 on the same line: same spots)
+  bewleys: beside('GRD', 'GR2', (0.78 - 0.352) / 0.648, -1, 12, 18, { gap: 0.15 }),
+  brownThomas: beside('GR1', 'GRD', 0.3 / 0.352, -1, 28, 22, { gap: 0.15 }),
   weir: beside('CG3', 'GR1', 0.9, -1, 10, 14, { gap: 0.15 }),
   sgCentre: (() => {
     const W = 56, D = 54, kss = v2.len(v2.sub(N('KSS1'), N('SGNW')));
@@ -663,7 +686,8 @@ export const extraSites = {
   })(),
   // Grattan's statue on its island at the east end of College Green, in front of the east arch pavilion, facing
   // west down Dame Street (the island's east tip stays clear of the Trinity junction)
-  grattan: (() => { const a = N('CGT'), b = N('CG0'), p = v2.lerp(a, b, 0.31), d = v2.norm(v2.sub(b, a)); return { ...p, rot: Math.atan2(d.x, d.z) }; })(),
+  // (docs/research/kildare-street.md: the islands, Davis and the fountain are src/world/collegegreen.js; he faces Trinity)
+  grattan: { ...cgAt(...CG_SPOTS.grattan), rot: CG_EAST },
   // Parliament House outline beyond the main block: the piazza with its arch pavilions, the porticos on Foster
   // Place and Westmoreland Street, the SE corner block
   boiPiazza: boiBox(-23.9, 23.9, -2.4, 17),
@@ -729,6 +753,18 @@ extraSites.bsPlaza = bsLayout.plaza;
 
 // the O'Connell Street monuments on their islands down the middle of the street (src/world/oconnell.js)
 Object.assign(extraSites, monumentSites);
+// College Green's islands (Davis and the Four Angels, Grattan), Molly Malone and St Andrew's Church on Suffolk Street
+Object.assign(extraSites, collegeGreenSites);
+// Kildare Street / Merrion Street (src/world/kildarelayout.js): the Library, Museum, Leinster House and its wings, the
+// Natural History Museum, the Gallery, Government Buildings, the Shelbourne; the forecourt, the lawn, the courtyard
+for (const [k, b] of Object.entries(KD_BOXES)) extraSites['kd_' + k] = b;
+for (const [k, b] of Object.entries(KD_OPEN)) extraSites['kdOpen_' + k] = b;
+Object.assign(sites, {
+  leinsterHouse: { name: 'Leinster House', ...KD_BOXES.leinster, labelY: 26, view: spot('KDK1', 'KDK2', 0.12) },
+  govBuildings: { name: 'Government Buildings', ...KD_BOXES.govCentre, labelY: 40, view: spot('MR1', 'MSSW', 0.12) },
+  shelbourne: { name: 'The Shelbourne', ...KD_BOXES.shelbourne, labelY: 28, view: spot('DS1', 'KS1', 0.45) },
+  mollyMalone: { name: 'Molly Malone', ...collegeGreenSites.molly, labelY: 5, view: spot('CG3', 'KDS1', 0.3) },
+});
 
 // ---------- Dublin's tall buildings (docs/research/tallest-buildings.md; built in src/world/towers.js) ----------
 // Each stands on its OSM centre and is then slid (along a given direction, in 0.25 m steps) until every part of it is
@@ -754,6 +790,7 @@ function clearSpot(o, avoid, margin) {
     if (r && !r.way.pedestrian && r.edgeDist < r.way.pave + margin) return false;
     if (pointInPolygon(p, world.riverPoly) || dockPolys.some((dk) => pointInPolygon(p, dk.poly))) return false;
     if (avoid.some((a) => insideBox(p, a, 0.5))) return false;
+    if (world.luasNear(p.x, p.z, 4.5)) return false; // off the Luas tracks and their platforms
   }
   return true;
 }
@@ -872,6 +909,78 @@ export const tall = (() => {
   }
   return T;
 })();
+// ---------- North city: Clerys, Parnell Square, Busáras (docs/research/north-city.md) ----------
+// One Blender hero (tools/blender/build_northcity.py -> public/models/northcity.glb) with a root per building, each
+// built in game metres in its own front frame: u along the front, v into the building, origin at the middle of the
+// front at ground level. A frame is placed by a point and the direction d of u (the building is to the LEFT of d);
+// three.js rotation.y = atan2(-d.z, d.x), as for the 3Arena. Keep the dimensions here in step with the build script.
+export const NC = (() => {
+  // a frame: origin p, u along d, v to the left of d
+  const frame = (p, d) => {
+    const n = { x: d.z, z: -d.x };
+    const at = (u, v) => ({ x: p.x + d.x * u + n.x * v, z: p.z + d.z * u + n.z * v });
+    const box = (u0, u1, v0, v1) => ({ ...at((u0 + u1) / 2, (v0 + v1) / 2), rot: Math.atan2(-d.z, d.x), w: u1 - u0, d: v1 - v0 });
+    return { x: p.x, z: p.z, rot: Math.atan2(-d.z, d.x), d, n, at, box };
+  };
+  // the road edge (back of the footpath) of a->b, pushed a further `extra` to its left, as a point and direction
+  const edge = (a, b, extra = 0) => {
+    const A = N(a), B = N(b), d = v2.norm(v2.sub(B, A)), way = wayBetween(a, b), off = way.width / 2 + way.pave + extra;
+    return { p: { x: A.x + d.z * off, z: A.z - d.x * off }, d, A, B };
+  };
+  const meet = (e, f) => { // where two edge lines cross
+    const den = e.d.x * f.d.z - e.d.z * f.d.x, t = ((f.p.x - e.p.x) * f.d.z - (f.p.z - e.p.z) * f.d.x) / den;
+    return { x: e.p.x + e.d.x * t, z: e.p.z + e.d.z * t };
+  };
+  const walk = (p, d, s) => ({ x: p.x + d.x * s, z: p.z + d.z * s });
+
+  // Clerys (Robert Atkinson, 1922) on the east side of O'Connell Street Lower, facing the GPO. The front runs
+  // southbound (so the building is on its left); the clock hangs over the main entrance, south of the middle.
+  const bw = wayBetween('OC1', 'OC2');
+  const sClock = chainageOf(project(53.3492209, -6.2596962)); // OSM 1348371011, "Clery's Clock"
+  const cp = along(sClock + CLERYS.clockU, -(bw.width / 2 + bw.pave + 0.2));
+  const clerys = frame(cp, { x: -cp.dir.x, z: -cp.dir.z });
+
+  // Parnell Square: the Rotunda block between Parnell Street, Cavendish Row, Parnell Square East, North and West
+  const pSt = edge('RN01', 'OC4'), cav = edge('OC4', 'RN04'), east = edge('RN04', 'RN03'), north = edge('RN03', 'RN02'), west = edge('RN02', 'RN01');
+  const SW = meet(west, pSt), SE = meet(pSt, cav), KINK = meet(cav, east), NE = meet(east, north), NW = meet(north, west);
+  // the hospital's front stands behind a railed forecourt (ref 02), its main block 26.5 m in from the west corner
+  const rotunda = frame(walk(walk(SW, pSt.d, PARNELL.rotundaS), { x: pSt.d.z, z: -pSt.d.x }, PARNELL.forecourt), pSt.d);
+  // the Ambassador drum sits in the corner facing up O'Connell Street, just clear of both footpaths
+  const R = PARNELL.drumR + 0.6;
+  const drum = meet({ p: walk(pSt.p, { x: pSt.d.z, z: -pSt.d.x }, R), d: pSt.d }, { p: walk(cav.p, { x: cav.d.z, z: -cav.d.x }, R), d: cav.d });
+  // the Gate faces Cavendish Row, its north end at the bend into Parnell Square East
+  const gate = frame(walk(KINK, cav.d, -PARNELL.gateW / 2 - 0.4), cav.d);
+  // the Garden of Remembrance fills the north end, along Parnell Square North, behind its railings
+  // (a trapezoid: its west end runs parallel to Parnell Square West; u runs west, v south into the square)
+  const garden = frame(walk(walk(NE, north.d, 1.5 + PARNELL.gardenW / 2), { x: north.d.z, z: -north.d.x }, 0.6), north.d);
+  const { gardenW: GW, gardenD: GD, gardenKW: GK } = PARNELL;
+  garden.poly = [garden.at(-GW / 2, 0), garden.at(GW / 2, 0), garden.at(GW / 2 - GK * GD, GD), garden.at(-GW / 2, GD)];
+
+  // Busáras (Michael Scott, 1953) between Store Street, Beresford Place and Amiens Street: squared to Store Street,
+  // the concourse and its wavy canopy on the Beresford Place side, the bus yard east of it towards Amiens Street
+  // (left open: the railway comes along Amiens Street and over Store Street to Connolly)
+  const st = edge('ST1', 'BP2'), bp = edge('BP2', 'BP3');
+  const bsw = meet(st, bp);
+  const busaras = frame(walk(walk(bsw, { x: 1, z: 0 }, BUSARAS.w / 2 + 0.3), { x: 0, z: -1 }, 0.4), { x: 1, z: 0 });
+  return { clerys, rotunda, drum, gate, garden, busaras, block: [SW, SE, KINK, NE, NW] };
+})();
+// the Places list and the filler, from the frames above
+Object.assign(sites, {
+  clerys: { name: 'Clerys', ...NC.clerys.box(-CLERYS.w / 2, CLERYS.w / 2, 0, CLERYS.d), labelY: 28, view: spot('OC1', 'OC2', 0.25) },
+  rotunda: { name: 'Parnell Square and the Rotunda', ...NC.rotunda.box(-26, PARNELL.linkU, 0, 14), labelY: 36, view: spot('OC3', 'OC4', 0.4) },
+  gardenOfRemembrance: { name: 'Garden of Remembrance', ...NC.garden.box(-PARNELL.gardenW / 2, PARNELL.gardenW / 2 - PARNELL.gardenKW * PARNELL.gardenD / 2, 0, PARNELL.gardenD / 2), labelY: 14, view: spot('RN02', 'RN03', 0.3) },
+  busaras: { name: 'Busáras', ...NC.busaras.box(-BUSARAS.w / 2, BUSARAS.w / 2, 0, BUSARAS.d), labelY: 32, view: spot('NQ10', 'NQ11', 0.6) },
+});
+Object.assign(extraSites, {
+  // the hospital's rear ranges, the Ambassador (its drum's square), the Gate, and Busáras's open bus yard (not solid)
+  rotundaRear: NC.rotunda.box(-26, 19, 14, 34),
+  ambassador: { x: NC.drum.x, z: NC.drum.z, rot: NC.rotunda.rot, w: PARNELL.drumR * 2, d: PARNELL.drumR * 2 },
+  gate: NC.gate.box(-PARNELL.gateW / 2, PARNELL.gateW / 2, 0, PARNELL.gateD),
+  gardenSouth: NC.garden.box(-PARNELL.gardenW / 2, PARNELL.gardenW / 2 - PARNELL.gardenKW * PARNELL.gardenD, PARNELL.gardenD / 2, PARNELL.gardenD),
+  busarasYard: NC.busaras.box(BUSARAS.w / 2, BUSARAS.w / 2 + 22, 0, BUSARAS.d),
+});
+const northCityFootprints = [sites.clerys, sites.rotunda, sites.gardenOfRemembrance, sites.busaras, extraSites.rotundaRear, extraSites.ambassador, extraSites.gate, extraSites.gardenSouth, extraSites.busarasYard];
+
 // the notable ones join the Places list; every part is kept free of filler and checked by footprints.mjs
 Object.assign(sites, {
   libertyHall: { name: 'Liberty Hall', ...tall.libertyHall, labelY: 62, view: spot('NQ8', 'NQ9', 0.35) },
@@ -892,11 +1001,27 @@ Object.assign(extraSites, {
 const tallFootprints = [sites.libertyHall, sites.collegeSquare, sites.capitalDock, sites.exo, sites.johnsLane, sites.stGeorges, sites.findlaters,
   ...Object.entries(extraSites).filter(([k]) => /^(libertyHallWing|collegeSquareOffice|millenniumTower|altoVetro|gqPlaza\d|capitalDock\d)$/.test(k)).map(([, s]) => s)];
 
+// the famous pubs join the Places list (the Temple Bar, the Long Hall, the Bleeding Horse, Copper Face Jacks and
+// O'Donoghue's; Kehoe's, Grogan's, Davy Byrnes, Mulligan's and Flannery's are built but not listed)
+for (const p of Object.values(pubSites)) {
+  if (p.place) sites[p.key] = { name: p.name, x: p.x, z: p.z, rot: p.rot, w: p.w, d: p.d, labelY: 20, view: p.view, blurb: p.blurb };
+}
+// the Liffey's riverside landmarks (src/world/liffeysites.js, docs/research/liffey-quays.md) join the Places list
+Object.assign(sites, {
+  famine: { name: 'Famine Memorial', ...LQ.FAMINE.site, view: spot('NQ12', 'NQ13', 0.04) },
+  jeanieJohnston: { name: 'Jeanie Johnston', x: LQ.SHIP.x, z: LQ.SHIP.z, rot: LQ.SHIP.rot, w: LQ.SHIP.w, d: LQ.SHIP.d, labelY: 24, water: true, view: spot('NQ13', 'NQ12', 0.12) },
+  millenniumBridge: { name: 'Millennium Bridge', ...LQ.MILLENNIUM, view: spot('SQ4', 'SQ5', 0.72) },
+  ocaseyBridge: { name: "Seán O'Casey Bridge", ...LQ.OCASEY, view: spot('SQ12', 'SQ13', 0.2) },
+});
+extraSites.chq = { ...LQ.CHQ };
+
 // Footprints the filler generator must avoid (landmark buildings; parks/campus handled separately).
 export const reserved = [
   sites.gpo, sites.bankOfIreland, ...Object.entries(extraSites).filter(([k]) => k.startsWith('boi')).map(([, s]) => s), sites.christChurch, sites.stPatricks, extraSites.iveaghPlay, sites.customHouse, sites.trinity, ...grounds,
   sites.cityHall, sites.centralBank, extraSites.olympia, extraSites.clockCorner,
-  extraSites.bewleys, extraSites.brownThomas, extraSites.weir, extraSites.sgCentre, extraSites.merchantsHall, extraSites.redPub, extraSites.tbSquare,
+  extraSites.bewleys, extraSites.brownThomas, extraSites.weir, extraSites.sgCentre, extraSites.merchantsHall, extraSites.tbSquare,
+  // the famous pubs (src/world/pubsites.js)
+  ...Object.values(pubSites),
   shifted(extraSites.sgCentre, -extraSites.sgCentre.w / 2 - 8, 0, 16, extraSites.sgCentre.d), // broad footpath facing the Green
   { ...extraSites.castle, w: 44, d: 36, ...shifted(extraSites.castle, 0, -16, 44, 34) },
   shifted(sites.convention, 0, sites.convention.d / 2 + 6.5, sites.convention.w, 13), // its forecourt
@@ -959,12 +1084,24 @@ export const reserved = [
   // ...and the grounds behind it, out to the park wall (the green's edge, src/data/streets.json) on the west and north
   (extraSites.ccjWest = { x: CCJ.x - 34, z: CCJ.z - 10, rot: 0, w: 18, d: 38 }),
   (extraSites.ccjNorth = { x: CCJ.x - 6, z: CCJ.z - 29, rot: 0, w: 38, d: 8 }),
+  // Kildare Street / Merrion Street, the Shelbourne, St Andrew's Church and Molly's corner (not the College Green islands)
+  ...Object.entries(extraSites).filter(([k]) => /^kd_|^kdOpen_|^stAndrews/.test(k)).map(([, s]) => s), sites.mollyMalone,
+  // CHQ on Custom House Quay (src/world/liffey.js)
+  extraSites.chq,
   // the tall buildings (src/world/towers.js)
   ...tallFootprints,
   // Kilmainham: the gaol enclosure, the Royal Hospital, the Richmond Tower and the rest of their parts (KH above)
   sites.kilmainhamGaol, sites.royalHospital, sites.richmondTower, ...Object.entries(extraSites).filter(([k]) => k.startsWith('kh_')).map(([, s]) => s),
   // the Heuston rail yards between St John's Road West and the Liffey, out to the SCR: no filler
   ...heustonYard(),
+  // Clerys, Parnell Square (the Rotunda, the Ambassador, the Gate, the Garden of Remembrance) and Busáras
+  ...northCityFootprints,
+  // the DART viaduct between its street bridges (railline.js), Connolly's front, Pearse's front on Westland Row, and
+  // the Tara Street fire station's tower
+  ...railFootprints().map((b, i) => (extraSites[`rail${i}`] = b)),
+  sites.connolly,
+  (extraSites.pearseFront = (() => { const F = pearseFront(); return F ? fitBox(F.poly, Math.atan2(F.poly[1].x - F.poly[0].x, F.poly[1].z - F.poly[0].z)) : null; })()),
+  (extraSites.fireTower = { x: fireTower.x, z: fireTower.z, rot: 0, w: fireTower.w + 1, d: fireTower.w + 1 }),
 ].filter(Boolean);
 
 // The rail yards west of Heuston: open ground (tracks, sidings, the station car park) from the station's west end to

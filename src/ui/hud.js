@@ -48,6 +48,16 @@ const BLURBS = {
   kilmainhamGaol: 'The grim 1796 gaol where the 1916 leaders were held and shot; chained serpents over the door',
   royalHospital: 'Robinson’s 1680s old soldiers’ hospital (now IMMA): arcaded quadrangle, copper spire, formal gardens',
   richmondTower: 'Johnston’s Gothic gate at the end of the lime avenue, moved here from the quays in 1846',
+  clerys: 'The 1922 department store facing the GPO: meet under Clerys clock',
+  rotunda: 'Cassels’ maternity hospital, the Ambassador’s drum and the Gate at the top of O’Connell Street',
+  gardenOfRemembrance: 'The sunken garden and cruciform pool, with Oisín Kelly’s Children of Lir',
+  busaras: 'Michael Scott’s 1953 bus station, its wavy canopy and blue mosaic',
+  connolly: 'The 1844 Italianate terminus on Amiens Street; the DART calls on the Loop Line behind',
+  loopline: 'The 1891 lattice railway bridge that cuts across the view of the Custom House',
+  famine: 'Rowan Gillespie’s gaunt bronze figures walking to the emigrant ships',
+  jeanieJohnston: 'Replica of the 1847 famine ship, moored on Custom House Quay',
+  millenniumBridge: 'The 1999 steel footbridge from Temple Bar to Ormond Quay',
+  ocaseyBridge: 'The 2005 swing footbridge, balanced on two piers in the river',
 };
 
 export function createHUD({ sites, actions }) {
@@ -71,7 +81,7 @@ export function createHUD({ sites, actions }) {
     <div class="tram-stop" id="tramstop"></div>
     <div class="panel sheet places" id="places" hidden>
       <header><h2>Landmarks</h2><button class="close" data-a="places" aria-label="Close">&times;</button></header>
-      <ol>${Object.entries(sites).map(([k, s], i) => `<li><button data-go="${k}"><kbd>${i + 1}</kbd><span><b>${s.name}</b><small>${BLURBS[k] || ''}</small></span></button></li>`).join('')}</ol>
+      <ol>${Object.entries(sites).map(([k, s], i) => `<li><button data-go="${k}"><kbd>${i + 1}</kbd><span><b>${s.name}</b><small>${BLURBS[k] || s.blurb || ''}</small></span></button></li>`).join('')}</ol>
     </div>
     <div class="panel sheet help" id="help" hidden>
       <header><h2>Dublin Drive</h2><button class="close" data-a="help" aria-label="Close">&times;</button></header>

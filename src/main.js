@@ -16,8 +16,9 @@ import { input, updateInput, onKey, buildTouchControls, pad, readPad, setInputMo
 import { createPhotoMode } from './game/photo.js';
 import { CameraRig } from './game/camera.js';
 import { createTraffic } from './game/traffic.js';
-import { createLuas, combineTrams } from './game/luas.js';
+import { createLuas, buildLuasStops } from './game/luas.js';
 import { setStopNight } from './game/luasStop.js';
+import { createDart } from './game/dart.js';
 import { createPeople } from './game/people.js';
 import { audio } from './game/audio.js';
 import { createHUD } from './ui/hud.js';
@@ -105,6 +106,7 @@ const waterGlow = buildWaterGlow(scene, [
 await step(0.76, 'Setting out the furniture…');
 const rain = buildRain(scene);
 const furniture = buildFurniture(scene);
+buildLuasStops(scene, world.luasLines); // the Luas stops belong to the static city (height field, far view)
 const signals = createSignals(scene);
 console.log('furniture', JSON.stringify(furniture), 'signal heads', signals.count);
 const worldRoots = new Set(scene.children); // the static city (the helicopter's height field is drawn from these)
@@ -156,7 +158,9 @@ function respawnNearRoad() {
 // ---------- traffic + Luas ----------
 await step(0.8, 'Starting the traffic…');
 const traffic = createTraffic(scene, LITE ? { cars: 12, buses: 3, taxis: 3, parked: 120 } : { cars: 26, buses: 6, taxis: 5, parked: 320 });
-const tram = combineTrams(world.luasLines.map((line) => createLuas(scene, line)));
+const tram = createLuas(scene, world.luasLines);
+tram.camera = camera; // trams out of view draw nothing
+const dart = createDart(scene); // the DART on the Loop Line viaduct (no collision: it runs overhead)
 const people = createPeople(scene, { count: LITE ? 110 : 300 });
 // everything added since the world was built moves (player, traffic, trams, people): not part of the height field
 const dynamicRoots = scene.children.filter((c) => !worldRoots.has(c));
@@ -191,6 +195,7 @@ function applyMode() {
   lamps.setLevel(p.lamps);
   landmarks.setNight(mode.evening ? p.lamps : 0);
   setStopNight(mode.evening ? p.lamps : 0);
+  dart.setNight(mode.evening ? p.lamps : 0);
   waterGlow.setLevel(mode.evening ? p.lamps * (mode.rain ? 0.7 : 1) : 0);
   lampUniforms.uLampLevel.value = mode.evening ? p.lamps : 0; // baked lamp light only after dark
   landmarkMaterials.lampGlow.emissiveIntensity = 0.2 + p.lamps * 3;
@@ -555,6 +560,7 @@ function frame() {
   traffic.update(dt, camera);
   const tp2 = performance.now();
   tram.update(dt, car.pos);
+  dart.update(dt);
   signals.update(dt);
   const tp3 = performance.now();
   people.update(dt, car.pos, car);
@@ -690,7 +696,7 @@ window.__dublin = {
   ready: false, // set once shaders are compiled and the first frame has drawn
   heli, heliState: () => ({ flying, x: +heli.pos.x.toFixed(1), y: +heli.pos.y.toFixed(1), z: +heli.pos.z.toFixed(1), alt: +heli.alt.toFixed(1), speed: +heli.speed.toFixed(1), heading: +heli.heading.toFixed(2), rpm: +heli.rpm.toFixed(2), landed: heli.landed, floor: +heli.floor.toFixed(1), hm: heightField ? { W: heightField.W, H: heightField.H, cell: +heightField.cell.toFixed(2), ms: heightField.ms } : null, shadowExt: atmosphere.shadowExtent, far: Math.round(camera.far), fog: +scene.fog.density.toFixed(5) }),
   groundAt: (x, z) => groundAt(x, z), heliTune, heliEnv,
-  THREE, scene, camera, world, carMesh: () => carMesh, renderer, pipeline, groundAOUniforms, atmosphere, car, input, rig, traffic, tram, people, pursuit, trial, gameUI, buildings, landmarks, sites, teleportTo, actions, mode, audio,
+  THREE, scene, camera, world, carMesh: () => carMesh, renderer, pipeline, groundAOUniforms, atmosphere, car, input, rig, traffic, tram, dart, people, pursuit, trial, gameUI, buildings, landmarks, sites, teleportTo, actions, mode, audio,
   gfx: () => ({ mode: gfxMode, tier: pipeline.quality, dpr, maxDpr, lite: LITE, fpsCap }),
   lockQuality(q, d) { userQuality = true; dpr = d; renderer.setPixelRatio(d); pipeline.setQuality(q); pipeline.setMood(mode); slowTime = fastTime = 0; lastSwitch = time + 1e9; },
   profile() { const o = {}; for (const k of Object.keys(prof)) if (k !== 'n') o[k] = +(prof[k] / Math.max(1, prof.n)).toFixed(2); for (const k of Object.keys(prof)) prof[k] = 0; return o; },

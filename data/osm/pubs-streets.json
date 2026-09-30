@@ -1,0 +1,3667 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-09-29T21:06:20Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
+  "elements": [
+
+{
+  "type": "way",
+  "id": 2294383,
+  "bounds": {
+    "minlat": 53.3408408,
+    "minlon": -6.2634000,
+    "maxlat": 53.3409924,
+    "maxlon": -6.2633560
+  },
+  "nodes": [
+    135109499,
+    2390587433,
+    32237862
+  ],
+  "geometry": [
+    { "lat": 53.3409924, "lon": -6.2633560 },
+    { "lat": 53.3408780, "lon": -6.2634000 },
+    { "lat": 53.3408408, "lon": -6.2633960 }
+  ],
+  "tags": {
+    "alt_name": "Johnson's Place",
+    "alt_name:ga": "Plás Mhic Eoin",
+    "highway": "unclassified",
+    "lanes": "1",
+    "lit": "yes",
+    "logainm:ref": "1382958",
+    "logainm:url": "https://www.logainm.ie/1382958.aspx",
+    "maxspeed": "30",
+    "name": "Johnson Place",
+    "name:en": "Johnson Place",
+    "name:ga": "Plás Mhic Sheáin",
+    "oneway": "yes",
+    "sidewalk:both": "yes",
+    "surface": "asphalt",
+    "width": "2.5"
+  }
+},
+{
+  "type": "way",
+  "id": 3791744,
+  "bounds": {
+    "minlat": 53.3383958,
+    "minlon": -6.2661144,
+    "maxlat": 53.3385366,
+    "maxlon": -6.2660887
+  },
+  "nodes": [
+    389663,
+    5166524283,
+    10283110152,
+    2384200130
+  ],
+  "geometry": [
+    { "lat": 53.3383958, "lon": -6.2660887 },
+    { "lat": 53.3384454, "lon": -6.2661097 },
+    { "lat": 53.3384906, "lon": -6.2661144 },
+    { "lat": 53.3385366, "lon": -6.2661082 }
+  ],
+  "tags": {
+    "cycleway:left": "lane",
+    "cycleway:right": "share_busway",
+    "highway": "secondary",
+    "lane_markings": "yes",
+    "lanes": "3",
+    "lit": "yes",
+    "logainm:ref": "1383321",
+    "logainm:url": "https://www.logainm.ie/1383321.aspx",
+    "maxspeed": "30",
+    "name": "Aungier Street",
+    "name:en": "Aungier Street",
+    "name:ga": "Sráid Aungier",
+    "ref": "R114",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 4401569,
+  "bounds": {
+    "minlat": 53.3469675,
+    "minlon": -6.2589408,
+    "maxlat": 53.3470018,
+    "maxlon": -6.2587868
+  },
+  "nodes": [
+    1442736,
+    5101079533
+  ],
+  "geometry": [
+    { "lat": 53.3470018, "lon": -6.2587868 },
+    { "lat": 53.3469675, "lon": -6.2589408 }
+  ],
+  "tags": {
+    "cycleway:left": "no",
+    "highway": "secondary",
+    "lanes": "2",
+    "lanes:psv": "1",
+    "lit": "yes",
+    "logainm:ref": "1381039",
+    "logainm:url": "https://www.logainm.ie/1381039.aspx",
+    "maxspeed": "30",
+    "name": "Burgh Quay",
+    "name:en": "Burgh Quay",
+    "name:ga": "Cé Burg",
+    "old_name": "Mr Hawkin's Wall",
+    "old_name_date": "1661-1662",
+    "oneway": "yes",
+    "ref": "R148",
+    "sidewalk": "both",
+    "sidewalk:both:surface": "paving_stones",
+    "smoothness": "excellent",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 4472591,
+  "bounds": {
+    "minlat": 53.3453338,
+    "minlon": -6.2584280,
+    "maxlat": 53.3456107,
+    "maxlon": -6.2575160
+  },
+  "nodes": [
+    3451328715,
+    2363454328,
+    3451328711,
+    13352883299,
+    3451328710
+  ],
+  "geometry": [
+    { "lat": 53.3456107, "lon": -6.2575160 },
+    { "lat": 53.3455594, "lon": -6.2577500 },
+    { "lat": 53.3455170, "lon": -6.2579095 },
+    { "lat": 53.3454311, "lon": -6.2581692 },
+    { "lat": 53.3453338, "lon": -6.2584280 }
+  ],
+  "tags": {
+    "cycleway:left": "share_busway",
+    "highway": "secondary",
+    "lane_markings": "yes",
+    "lanes": "3",
+    "lanes:psv": "1",
+    "lit": "yes",
+    "logainm:ref": "1383246",
+    "logainm:url": "https://www.logainm.ie/1383246.aspx",
+    "maxspeed": "30",
+    "name": "College Street",
+    "name:en": "College Street",
+    "name:ga": "Sráid An Choláiste",
+    "old_name:1821-1835": "Bank Street",
+    "oneway": "yes",
+    "ref": "R138",
+    "sidewalk:both": "separate",
+    "smoothness": "excellent",
+    "source:old_name": "C T Macready",
+    "surface": "asphalt",
+    "turn:lanes": "through|right|right"
+  }
+},
+{
+  "type": "way",
+  "id": 4472592,
+  "bounds": {
+    "minlat": 53.3453118,
+    "minlon": -6.2588168,
+    "maxlat": 53.3453338,
+    "maxlon": -6.2584280
+  },
+  "nodes": [
+    3451328710,
+    14115099434,
+    2414927985,
+    2363454326,
+    10936901289
+  ],
+  "geometry": [
+    { "lat": 53.3453338, "lon": -6.2584280 },
+    { "lat": 53.3453209, "lon": -6.2585205 },
+    { "lat": 53.3453127, "lon": -6.2586091 },
+    { "lat": 53.3453118, "lon": -6.2587136 },
+    { "lat": 53.3453131, "lon": -6.2588168 }
+  ],
+  "tags": {
+    "cycleway:left": "lane",
+    "cycleway:left:lane": "exclusive",
+    "highway": "secondary_link",
+    "lane_markings": "yes",
+    "lanes": "2",
+    "lit": "yes",
+    "logainm:ref": "1383246",
+    "logainm:url": "https://www.logainm.ie/1383246.aspx",
+    "maxspeed": "30",
+    "name": "College Street",
+    "name:en": "College Street",
+    "name:ga": "Sráid An Choláiste",
+    "oneway": "yes",
+    "ref": "R138",
+    "sidewalk:left": "no",
+    "sidewalk:right": "separate",
+    "smoothness": "excellent",
+    "surface": "asphalt",
+    "turn:lanes": "right|right"
+  }
+},
+{
+  "type": "way",
+  "id": 4919459,
+  "bounds": {
+    "minlat": 53.3430052,
+    "minlon": -6.2644034,
+    "maxlat": 53.3430552,
+    "maxlon": -6.2620339
+  },
+  "nodes": [
+    1448439,
+    5330083343,
+    26165224,
+    26165229,
+    135109467,
+    26165233
+  ],
+  "geometry": [
+    { "lat": 53.3430052, "lon": -6.2644034 },
+    { "lat": 53.3430110, "lon": -6.2641063 },
+    { "lat": 53.3430248, "lon": -6.2637142 },
+    { "lat": 53.3430433, "lon": -6.2628703 },
+    { "lat": 53.3430521, "lon": -6.2626811 },
+    { "lat": 53.3430552, "lon": -6.2620339 }
+  ],
+  "tags": {
+    "highway": "unclassified",
+    "lanes": "1",
+    "lit": "yes",
+    "maxspeed": "30",
+    "name": "Exchequer Street",
+    "name:en": "Exchequer Street",
+    "name:ga": "Sráid An Chiste",
+    "old_name": "Chequer Lane (until 1770s)",
+    "oneway": "yes",
+    "sidewalk:both": "yes",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 4919471,
+  "bounds": {
+    "minlat": 53.3408408,
+    "minlon": -6.2640808,
+    "maxlat": 53.3412339,
+    "maxlon": -6.2633960
+  },
+  "nodes": [
+    26165710,
+    12015832633,
+    32235242,
+    12964901098,
+    32235243,
+    32235244,
+    32237862
+  ],
+  "geometry": [
+    { "lat": 53.3412339, "lon": -6.2640808 },
+    { "lat": 53.3412141, "lon": -6.2640097 },
+    { "lat": 53.3411311, "lon": -6.2637913 },
+    { "lat": 53.3410949, "lon": -6.2636975 },
+    { "lat": 53.3410575, "lon": -6.2636415 },
+    { "lat": 53.3409592, "lon": -6.2635310 },
+    { "lat": 53.3408408, "lon": -6.2633960 }
+  ],
+  "tags": {
+    "cycleway:both": "no",
+    "highway": "tertiary",
+    "lane_markings": "yes",
+    "lanes": "1",
+    "lit": "yes",
+    "logainm:ref": "1383616",
+    "logainm:url": "https://www.logainm.ie/1383616.aspx",
+    "maxspeed": "30",
+    "name": "Stephen Street Lower",
+    "name:en": "Stephen Street Lower",
+    "name:ga": "Sráid Stiabhna Íochtarach",
+    "oneway": "yes",
+    "sidewalk": "both",
+    "surface": "asphalt",
+    "width": "4"
+  }
+},
+{
+  "type": "way",
+  "id": 4919472,
+  "bounds": {
+    "minlat": 53.3425877,
+    "minlon": -6.2606436,
+    "maxlat": 53.3428417,
+    "maxlon": -6.2596073
+  },
+  "nodes": [
+    26165241,
+    10612577316,
+    2376159077,
+    2710588622,
+    9101664
+  ],
+  "geometry": [
+    { "lat": 53.3428417, "lon": -6.2606436 },
+    { "lat": 53.3428365, "lon": -6.2606071 },
+    { "lat": 53.3427591, "lon": -6.2602971 },
+    { "lat": 53.3426226, "lon": -6.2596818 },
+    { "lat": 53.3425877, "lon": -6.2596073 }
+  ],
+  "tags": {
+    "highway": "pedestrian",
+    "lit": "yes",
+    "maxspeed": "30",
+    "name": "Wicklow Street",
+    "name:ga": "Sráid Cill Mhantáin",
+    "old_name:1667-1839": "Chequer Lane",
+    "source:old_name": "C T Macready",
+    "surface": "paving_stones"
+  }
+},
+{
+  "type": "way",
+  "id": 4919478,
+  "bounds": {
+    "minlat": 53.3409687,
+    "minlon": -6.2623872,
+    "maxlat": 53.3428417,
+    "maxlon": -6.2606377
+  },
+  "nodes": [
+    26165241,
+    10612577318,
+    10612577319,
+    10612577315,
+    9627754287,
+    2839080765,
+    32236612,
+    32235615,
+    494229911,
+    12130498407,
+    12130498410,
+    10288341340,
+    10288341339,
+    2390587438,
+    32235616
+  ],
+  "geometry": [
+    { "lat": 53.3428417, "lon": -6.2606436 },
+    { "lat": 53.3428277, "lon": -6.2606377 },
+    { "lat": 53.3428113, "lon": -6.2606392 },
+    { "lat": 53.3427968, "lon": -6.2606474 },
+    { "lat": 53.3424433, "lon": -6.2609527 },
+    { "lat": 53.3424066, "lon": -6.2609844 },
+    { "lat": 53.3420517, "lon": -6.2612910 },
+    { "lat": 53.3419022, "lon": -6.2614220 },
+    { "lat": 53.3417181, "lon": -6.2616028 },
+    { "lat": 53.3414962, "lon": -6.2618173 },
+    { "lat": 53.3413299, "lon": -6.2619779 },
+    { "lat": 53.3411672, "lon": -6.2621352 },
+    { "lat": 53.3410980, "lon": -6.2622339 },
+    { "lat": 53.3410098, "lon": -6.2623057 },
+    { "lat": 53.3409687, "lon": -6.2623872 }
+  ],
+  "tags": {
+    "highway": "unclassified",
+    "lanes": "1",
+    "layer": "1",
+    "lit": "yes",
+    "logainm:ref": "1383372",
+    "logainm:url": "https://www.logainm.ie/1383372.aspx",
+    "maxspeed": "30",
+    "name": "Clarendon Street",
+    "name:en": "Clarendon Street",
+    "name:ga": "Sráid Clarendon",
+    "oneway": "yes",
+    "sidewalk": "both",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 4919487,
+  "bounds": {
+    "minlat": 53.3409687,
+    "minlon": -6.2632370,
+    "maxlat": 53.3411867,
+    "maxlon": -6.2623872
+  },
+  "nodes": [
+    32235616,
+    2390587437,
+    907187019,
+    10288341344,
+    11982150879,
+    11982150878,
+    9101658
+  ],
+  "geometry": [
+    { "lat": 53.3409687, "lon": -6.2623872 },
+    { "lat": 53.3409815, "lon": -6.2624593 },
+    { "lat": 53.3410458, "lon": -6.2626799 },
+    { "lat": 53.3411110, "lon": -6.2628807 },
+    { "lat": 53.3411783, "lon": -6.2630954 },
+    { "lat": 53.3411867, "lon": -6.2631755 },
+    { "lat": 53.3411794, "lon": -6.2632370 }
+  ],
+  "tags": {
+    "cycleway:left": "no",
+    "highway": "unclassified",
+    "lane_markings": "no",
+    "maxspeed": "30",
+    "name": "Chatham Row",
+    "name:ga": "Rae Chatham",
+    "oneway": "yes",
+    "surface": "concrete",
+    "width": "3"
+  }
+},
+{
+  "type": "way",
+  "id": 4919489,
+  "bounds": {
+    "minlat": 53.3408259,
+    "minlon": -6.2623872,
+    "maxlat": 53.3409709,
+    "maxlon": -6.2613494
+  },
+  "nodes": [
+    32235616,
+    2390587436,
+    135109491,
+    135109495
+  ],
+  "geometry": [
+    { "lat": 53.3409687, "lon": -6.2623872 },
+    { "lat": 53.3409709, "lon": -6.2622414 },
+    { "lat": 53.3408779, "lon": -6.2616732 },
+    { "lat": 53.3408259, "lon": -6.2613494 }
+  ],
+  "tags": {
+    "cycleway:both": "no",
+    "highway": "unclassified",
+    "lane_markings": "no",
+    "lit": "yes",
+    "maxspeed": "30",
+    "name": "Chatham Street",
+    "name:ga": "Sráid Chatham",
+    "surface": "paving_stones",
+    "width": "3"
+  }
+},
+{
+  "type": "way",
+  "id": 4919538,
+  "bounds": {
+    "minlat": 53.3418657,
+    "minlon": -6.2646780,
+    "maxlat": 53.3421572,
+    "maxlon": -6.2636202
+  },
+  "nodes": [
+    26165708,
+    12964901092,
+    12964901093,
+    26165156
+  ],
+  "geometry": [
+    { "lat": 53.3418657, "lon": -6.2636202 },
+    { "lat": 53.3420207, "lon": -6.2641989 },
+    { "lat": 53.3420582, "lon": -6.2642802 },
+    { "lat": 53.3421572, "lon": -6.2646780 }
+  ],
+  "tags": {
+    "highway": "unclassified",
+    "maxspeed": "30",
+    "name": "Fade Street",
+    "name:ga": "Sráid Fhaid",
+    "oneway": "yes",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 4919540,
+  "bounds": {
+    "minlat": 53.3422454,
+    "minlon": -6.2632659,
+    "maxlat": 53.3424296,
+    "maxlon": -6.2624883
+  },
+  "nodes": [
+    32236481,
+    32236476
+  ],
+  "geometry": [
+    { "lat": 53.3424296, "lon": -6.2632659 },
+    { "lat": 53.3422454, "lon": -6.2624883 }
+  ],
+  "tags": {
+    "highway": "pedestrian",
+    "lit": "yes",
+    "maxspeed": "30",
+    "name": "Castle Market",
+    "name:ga": "Caiseal Mhargadh",
+    "surface": "paving_stones"
+  }
+},
+{
+  "type": "way",
+  "id": 4919544,
+  "bounds": {
+    "minlat": 53.3419022,
+    "minlon": -6.2625452,
+    "maxlat": 53.3421653,
+    "maxlon": -6.2614220
+  },
+  "nodes": [
+    32236559,
+    32235615
+  ],
+  "geometry": [
+    { "lat": 53.3421653, "lon": -6.2625452 },
+    { "lat": 53.3419022, "lon": -6.2614220 }
+  ],
+  "tags": {
+    "highway": "pedestrian",
+    "maxspeed": "30",
+    "name": "Coppinger Row",
+    "name:ga": "Rae Coppinger",
+    "old_name": "Coppinger Lane (early 1700s)",
+    "source:old_name": "Neal Doherty 'Streets of Dublin'",
+    "surface": "paving_stones"
+  }
+},
+{
+  "type": "way",
+  "id": 4919546,
+  "bounds": {
+    "minlat": 53.3417765,
+    "minlon": -6.2612910,
+    "maxlat": 53.3420517,
+    "maxlon": -6.2600922
+  },
+  "nodes": [
+    32236612,
+    494229909,
+    11984231523,
+    2558968980,
+    32236629
+  ],
+  "geometry": [
+    { "lat": 53.3420517, "lon": -6.2612910 },
+    { "lat": 53.3419330, "lon": -6.2608719 },
+    { "lat": 53.3419094, "lon": -6.2607814 },
+    { "lat": 53.3417966, "lon": -6.2601729 },
+    { "lat": 53.3417765, "lon": -6.2600922 }
+  ],
+  "tags": {
+    "highway": "pedestrian",
+    "lit": "yes",
+    "maxspeed": "30",
+    "name": "Johnson's Court",
+    "surface": "paving_stones"
+  }
+},
+{
+  "type": "way",
+  "id": 4919615,
+  "bounds": {
+    "minlat": 53.3409924,
+    "minlon": -6.2633560,
+    "maxlat": 53.3427614,
+    "maxlon": -6.2621304
+  },
+  "nodes": [
+    2363474216,
+    2839080745,
+    726662845,
+    11085983331,
+    32236476,
+    32236559,
+    12964953702,
+    12964953703,
+    9101659,
+    12964953701,
+    12964901100,
+    12015832609,
+    9101658,
+    2363474210,
+    135109499
+  ],
+  "geometry": [
+    { "lat": 53.3427614, "lon": -6.2621304 },
+    { "lat": 53.3426647, "lon": -6.2621942 },
+    { "lat": 53.3424975, "lon": -6.2623046 },
+    { "lat": 53.3423711, "lon": -6.2623959 },
+    { "lat": 53.3422454, "lon": -6.2624883 },
+    { "lat": 53.3421653, "lon": -6.2625452 },
+    { "lat": 53.3420805, "lon": -6.2625979 },
+    { "lat": 53.3420235, "lon": -6.2626233 },
+    { "lat": 53.3417571, "lon": -6.2627990 },
+    { "lat": 53.3415420, "lon": -6.2629556 },
+    { "lat": 53.3415033, "lon": -6.2630010 },
+    { "lat": 53.3414729, "lon": -6.2630222 },
+    { "lat": 53.3411794, "lon": -6.2632370 },
+    { "lat": 53.3410787, "lon": -6.2633192 },
+    { "lat": 53.3409924, "lon": -6.2633560 }
+  ],
+  "tags": {
+    "cycleway:left": "no",
+    "highway": "unclassified",
+    "lanes": "1",
+    "lit": "yes",
+    "logainm:ref": "1383485",
+    "logainm:url": "https://www.logainm.ie/1383485.aspx",
+    "maxspeed": "30",
+    "name": "William Street South",
+    "name:en": "William Street South",
+    "name:etymology": "William Williams",
+    "name:ga": "Sráid Liam Theas",
+    "oneway": "yes",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 4919617,
+  "bounds": {
+    "minlat": 53.3428417,
+    "minlon": -6.2620339,
+    "maxlat": 53.3430552,
+    "maxlon": -6.2606436
+  },
+  "nodes": [
+    26165233,
+    26165238,
+    2704197619,
+    10612577314,
+    10612577317,
+    26165241
+  ],
+  "geometry": [
+    { "lat": 53.3430552, "lon": -6.2620339 },
+    { "lat": 53.3430025, "lon": -6.2611564 },
+    { "lat": 53.3429854, "lon": -6.2610733 },
+    { "lat": 53.3428619, "lon": -6.2606876 },
+    { "lat": 53.3428530, "lon": -6.2606619 },
+    { "lat": 53.3428417, "lon": -6.2606436 }
+  ],
+  "tags": {
+    "cycleway:left": "no",
+    "highway": "unclassified",
+    "lanes": "1",
+    "lit": "yes",
+    "maxspeed": "30",
+    "name": "Wicklow Street",
+    "name:en": "Wicklow Street",
+    "name:ga": "Sráid Cill Mhantáin",
+    "old_name:1667-1839": "Chequer Lane",
+    "oneway": "yes",
+    "sidewalk": "both",
+    "source:old_name": "C T Macready",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 12341256,
+  "bounds": {
+    "minlat": 53.3456146,
+    "minlon": -6.2572384,
+    "maxlat": 53.3459064,
+    "maxlon": -6.2569871
+  },
+  "nodes": [
+    5355630057,
+    5355630056,
+    13352791176,
+    13352791157,
+    13352791159,
+    5355630051,
+    5297779229,
+    13352791175,
+    13361582852,
+    5355630053,
+    5355630044,
+    13352791174,
+    5355630060
+  ],
+  "geometry": [
+    { "lat": 53.3459064, "lon": -6.2569871 },
+    { "lat": 53.3458777, "lon": -6.2569883 },
+    { "lat": 53.3458537, "lon": -6.2569934 },
+    { "lat": 53.3458264, "lon": -6.2570020 },
+    { "lat": 53.3457992, "lon": -6.2570142 },
+    { "lat": 53.3457739, "lon": -6.2570298 },
+    { "lat": 53.3457597, "lon": -6.2570413 },
+    { "lat": 53.3457244, "lon": -6.2570717 },
+    { "lat": 53.3457055, "lon": -6.2570923 },
+    { "lat": 53.3456999, "lon": -6.2570978 },
+    { "lat": 53.3456937, "lon": -6.2571075 },
+    { "lat": 53.3456639, "lon": -6.2571514 },
+    { "lat": 53.3456146, "lon": -6.2572384 }
+  ],
+  "tags": {
+    "access": "no",
+    "bus": "yes",
+    "foot": "yes",
+    "highway": "service",
+    "lanes": "1",
+    "maxspeed": "30",
+    "name": "College Street",
+    "name:en": "College Street",
+    "name:ga": "Sráid An Choláiste",
+    "oneway": "yes",
+    "sidewalk": "separate",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 13994983,
+  "bounds": {
+    "minlat": 53.3464521,
+    "minlon": -6.2571542,
+    "maxlat": 53.3468020,
+    "maxlon": -6.2570804
+  },
+  "nodes": [
+    1416315122,
+    3451328733,
+    4024303332,
+    842446710
+  ],
+  "geometry": [
+    { "lat": 53.3468020, "lon": -6.2571542 },
+    { "lat": 53.3467845, "lon": -6.2571508 },
+    { "lat": 53.3467375, "lon": -6.2571417 },
+    { "lat": 53.3464521, "lon": -6.2570804 }
+  ],
+  "tags": {
+    "cycleway:left": "no",
+    "highway": "unclassified",
+    "lanes": "1",
+    "maxspeed": "30",
+    "name": "Hawkins Street",
+    "name:en": "Hawkins Street",
+    "name:ga": "Sráid Háicín",
+    "oneway": "yes",
+    "sidewalk:both": "separate",
+    "surface": "asphalt",
+    "wikidata": "Q101209881"
+  }
+},
+{
+  "type": "way",
+  "id": 14151839,
+  "bounds": {
+    "minlat": 53.3409815,
+    "minlon": -6.2594897,
+    "maxlat": 53.3411092,
+    "maxlon": -6.2583302
+  },
+  "nodes": [
+    32235828,
+    5112286582,
+    1273981425,
+    32236047,
+    434149479
+  ],
+  "geometry": [
+    { "lat": 53.3409815, "lon": -6.2583302 },
+    { "lat": 53.3409926, "lon": -6.2584327 },
+    { "lat": 53.3410559, "lon": -6.2590074 },
+    { "lat": 53.3410983, "lon": -6.2593877 },
+    { "lat": 53.3411092, "lon": -6.2594897 }
+  ],
+  "tags": {
+    "bicycle": "designated",
+    "highway": "pedestrian",
+    "lanes": "1",
+    "lit": "yes",
+    "maxspeed": "30",
+    "name": "Anne Street South",
+    "name:en": "Anne Street South",
+    "name:ga": "Sráid Anna Theas",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 14151841,
+  "bounds": {
+    "minlat": 53.3408259,
+    "minlon": -6.2613494,
+    "maxlat": 53.3413157,
+    "maxlon": -6.2610373
+  },
+  "nodes": [
+    135109478,
+    135109495
+  ],
+  "geometry": [
+    { "lat": 53.3413157, "lon": -6.2610373 },
+    { "lat": 53.3408259, "lon": -6.2613494 }
+  ],
+  "tags": {
+    "highway": "unclassified",
+    "lane_markings": "no",
+    "maxspeed": "30",
+    "name": "Chatham Lane",
+    "name:ga": "Lána Chatham",
+    "oneway": "yes",
+    "surface": "paving_stones",
+    "width": "2"
+  }
+},
+{
+  "type": "way",
+  "id": 14151842,
+  "bounds": {
+    "minlat": 53.3407861,
+    "minlon": -6.2633560,
+    "maxlat": 53.3409924,
+    "maxlon": -6.2625388
+  },
+  "nodes": [
+    135109499,
+    135109507
+  ],
+  "geometry": [
+    { "lat": 53.3409924, "lon": -6.2633560 },
+    { "lat": 53.3407861, "lon": -6.2625388 }
+  ],
+  "tags": {
+    "bicycle": "no",
+    "foot": "yes",
+    "highway": "pedestrian",
+    "lit": "yes",
+    "logainm:ref": "1382452",
+    "logainm:url": "https://www.logainm.ie/1382452.aspx",
+    "maxspeed": "30",
+    "name": "Clarendon Market",
+    "name:en": "Clarendon Market",
+    "name:ga": "Margadh Clarendon",
+    "surface": "paving_stones",
+    "width": "3"
+  }
+},
+{
+  "type": "way",
+  "id": 14151843,
+  "bounds": {
+    "minlat": 53.3404140,
+    "minlon": -6.2627657,
+    "maxlat": 53.3405405,
+    "maxlon": -6.2627434
+  },
+  "nodes": [
+    11742247030,
+    11742247029,
+    11742247028,
+    11742247027,
+    12545706210,
+    11742247026,
+    11742247025,
+    2465416009
+  ],
+  "geometry": [
+    { "lat": 53.3404140, "lon": -6.2627464 },
+    { "lat": 53.3404362, "lon": -6.2627465 },
+    { "lat": 53.3404627, "lon": -6.2627602 },
+    { "lat": 53.3404810, "lon": -6.2627657 },
+    { "lat": 53.3404885, "lon": -6.2627651 },
+    { "lat": 53.3405034, "lon": -6.2627639 },
+    { "lat": 53.3405171, "lon": -6.2627598 },
+    { "lat": 53.3405405, "lon": -6.2627434 }
+  ],
+  "tags": {
+    "highway": "pedestrian",
+    "lit": "yes",
+    "logainm:ref": "1383131",
+    "logainm:url": "https://www.logainm.ie/1383131.aspx",
+    "maxspeed": "30",
+    "name": "Clarendon Row",
+    "name:en": "Clarendon Row",
+    "name:ga": "Rae Chlarendon",
+    "oneway": "yes",
+    "surface": "paving_stones",
+    "width": "10"
+  }
+},
+{
+  "type": "way",
+  "id": 14152302,
+  "bounds": {
+    "minlat": 53.3388586,
+    "minlon": -6.2659588,
+    "maxlat": 53.3391577,
+    "maxlon": -6.2645710
+  },
+  "nodes": [
+    135109574,
+    10743377322,
+    7447234461,
+    135109570
+  ],
+  "geometry": [
+    { "lat": 53.3391577, "lon": -6.2659588 },
+    { "lat": 53.3391330, "lon": -6.2658543 },
+    { "lat": 53.3389932, "lon": -6.2651920 },
+    { "lat": 53.3388586, "lon": -6.2645710 }
+  ],
+  "tags": {
+    "highway": "service",
+    "logainm:ref": "1423985",
+    "logainm:url": "https://www.logainm.ie/1423985.aspx",
+    "maxspeed": "30",
+    "name": "Aungier Place",
+    "name:en": "Aungier Place",
+    "name:ga": "Plás Áinséir",
+    "old_name": "Stable Lane",
+    "old_name_date": "1756",
+    "oneway": "yes",
+    "service": "alley",
+    "surface": "concrete"
+  }
+},
+{
+  "type": "way",
+  "id": 16309919,
+  "bounds": {
+    "minlat": 53.3408441,
+    "minlon": -6.2675337,
+    "maxlat": 53.3410542,
+    "maxlon": -6.2669690
+  },
+  "nodes": [
+    51510562,
+    2522022627,
+    11813645208,
+    2522022628,
+    10274394517,
+    1426048954
+  ],
+  "geometry": [
+    { "lat": 53.3408441, "lon": -6.2675337 },
+    { "lat": 53.3408924, "lon": -6.2673754 },
+    { "lat": 53.3409147, "lon": -6.2673157 },
+    { "lat": 53.3409428, "lon": -6.2672403 },
+    { "lat": 53.3410114, "lon": -6.2670832 },
+    { "lat": 53.3410542, "lon": -6.2669690 }
+  ],
+  "tags": {
+    "cycleway:left": "no",
+    "highway": "tertiary",
+    "lane_markings": "yes",
+    "lanes": "1",
+    "lit": "yes",
+    "logainm:ref": "1383617",
+    "logainm:url": "https://www.logainm.ie/1383617.aspx",
+    "maxspeed": "30",
+    "name": "Stephen Street Upper",
+    "name:en": "Stephen Street Upper",
+    "name:ga": "Sráid Stiabhna Uachtarach",
+    "oneway": "yes",
+    "sidewalk": "left",
+    "sidewalk:left:surface": "paving_stones",
+    "smoothness": "excellent",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 19830548,
+  "bounds": {
+    "minlat": 53.3407244,
+    "minlon": -6.2613494,
+    "maxlat": 53.3408259,
+    "maxlon": -6.2607552
+  },
+  "nodes": [
+    135109495,
+    2363454321,
+    2391004319,
+    32235740
+  ],
+  "geometry": [
+    { "lat": 53.3408259, "lon": -6.2613494 },
+    { "lat": 53.3407731, "lon": -6.2610323 },
+    { "lat": 53.3407435, "lon": -6.2608669 },
+    { "lat": 53.3407244, "lon": -6.2607552 }
+  ],
+  "tags": {
+    "highway": "pedestrian",
+    "lit": "yes",
+    "maxspeed": "30",
+    "name": "Chatham Street",
+    "name:ga": "Sráid Chatham",
+    "surface": "paving_stones"
+  }
+},
+{
+  "type": "way",
+  "id": 19830549,
+  "bounds": {
+    "minlat": 53.3412101,
+    "minlon": -6.2610373,
+    "maxlat": 53.3413157,
+    "maxlon": -6.2604745
+  },
+  "nodes": [
+    135109478,
+    2299500292,
+    2558585930,
+    9101662
+  ],
+  "geometry": [
+    { "lat": 53.3413157, "lon": -6.2610373 },
+    { "lat": 53.3412689, "lon": -6.2608144 },
+    { "lat": 53.3412238, "lon": -6.2605670 },
+    { "lat": 53.3412101, "lon": -6.2604745 }
+  ],
+  "tags": {
+    "highway": "pedestrian",
+    "lit": "yes",
+    "maxspeed": "30",
+    "name": "Harry Street",
+    "name:ga": "Sráid Hearaí",
+    "oneway": "yes",
+    "surface": "paving_stones"
+  }
+},
+{
+  "type": "way",
+  "id": 24687121,
+  "bounds": {
+    "minlat": 53.3420864,
+    "minlon": -6.2634804,
+    "maxlat": 53.3428165,
+    "maxlon": -6.2630031
+  },
+  "nodes": [
+    9872971598,
+    32236481,
+    9872940981
+  ],
+  "geometry": [
+    { "lat": 53.3420864, "lon": -6.2634804 },
+    { "lat": 53.3424296, "lon": -6.2632659 },
+    { "lat": 53.3428165, "lon": -6.2630031 }
+  ],
+  "tags": {
+    "bicycle": "designated",
+    "cycleway:left": "no",
+    "highway": "pedestrian",
+    "maxspeed": "30",
+    "name": "Drury Street",
+    "name:ga": "An Bóthar Beag",
+    "old_name": "Boater Lane (1776)",
+    "old_name:1577-1776": "Butter Lane",
+    "oneway": "yes",
+    "source:old_name": "C T Macready",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 24953717,
+  "bounds": {
+    "minlat": 53.3456107,
+    "minlon": -6.2575160,
+    "maxlat": 53.3459126,
+    "maxlon": -6.2572721
+  },
+  "nodes": [
+    389314,
+    2414928046,
+    2414928043,
+    1956224698,
+    2414928032,
+    1956224695,
+    2414927999,
+    3451328715
+  ],
+  "geometry": [
+    { "lat": 53.3459126, "lon": -6.2573451 },
+    { "lat": 53.3458532, "lon": -6.2572963 },
+    { "lat": 53.3458214, "lon": -6.2572785 },
+    { "lat": 53.3457912, "lon": -6.2572721 },
+    { "lat": 53.3457487, "lon": -6.2572840 },
+    { "lat": 53.3457101, "lon": -6.2573108 },
+    { "lat": 53.3456588, "lon": -6.2573757 },
+    { "lat": 53.3456107, "lon": -6.2575160 }
+  ],
+  "tags": {
+    "highway": "secondary",
+    "lane_markings": "yes",
+    "lanes": "3",
+    "lit": "yes",
+    "logainm:ref": "1383246",
+    "logainm:url": "https://www.logainm.ie/1383246.aspx",
+    "maxspeed": "30",
+    "name": "College Street",
+    "name:en": "College Street",
+    "name:ga": "Sráid An Choláiste",
+    "oneway": "yes",
+    "ref": "R138",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 24973956,
+  "bounds": {
+    "minlat": 53.3448396,
+    "minlon": -6.2592158,
+    "maxlat": 53.3453338,
+    "maxlon": -6.2584280
+  },
+  "nodes": [
+    3451328710,
+    2414927965,
+    14115099492,
+    1497227446,
+    14115099494,
+    14115099493,
+    2414927942,
+    686622002
+  ],
+  "geometry": [
+    { "lat": 53.3453338, "lon": -6.2584280 },
+    { "lat": 53.3452284, "lon": -6.2586345 },
+    { "lat": 53.3451277, "lon": -6.2588588 },
+    { "lat": 53.3450946, "lon": -6.2589183 },
+    { "lat": 53.3450707, "lon": -6.2589584 },
+    { "lat": 53.3450428, "lon": -6.2589928 },
+    { "lat": 53.3450048, "lon": -6.2590291 },
+    { "lat": 53.3448396, "lon": -6.2592158 }
+  ],
+  "tags": {
+    "access": "no",
+    "bicycle": "yes",
+    "bus": "designated",
+    "emergency": "yes",
+    "foot": "yes",
+    "highway": "secondary",
+    "lane_markings": "yes",
+    "lanes": "1",
+    "lit": "yes",
+    "logainm:ref": "1383246",
+    "logainm:url": "https://www.logainm.ie/1383246.aspx",
+    "mapillary": "982818845806899",
+    "maxspeed": "30",
+    "name": "College Street",
+    "name:en": "College Street",
+    "name:ga": "Sráid An Choláiste",
+    "old_name": "Bank Street (1821-1835)",
+    "oneway": "yes",
+    "ref": "R138",
+    "sidewalk:left": "separate",
+    "sidewalk:right": "no",
+    "smoothness": "excellent",
+    "source:old_name": "C T Macready",
+    "surface": "asphalt",
+    "taxi": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 37264304,
+  "bounds": {
+    "minlat": 53.3411092,
+    "minlon": -6.2604745,
+    "maxlat": 53.3412101,
+    "maxlon": -6.2594897
+  },
+  "nodes": [
+    434149479,
+    2558585928,
+    9101662
+  ],
+  "geometry": [
+    { "lat": 53.3411092, "lon": -6.2594897 },
+    { "lat": 53.3412031, "lon": -6.2603617 },
+    { "lat": 53.3412101, "lon": -6.2604745 }
+  ],
+  "tags": {
+    "highway": "pedestrian",
+    "lit": "yes",
+    "maxspeed": "30",
+    "name": "Anne Street South",
+    "name:ga": "Sráid Anna Theas",
+    "oneway": "yes",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 38167418,
+  "bounds": {
+    "minlat": 53.3386192,
+    "minlon": -6.2652489,
+    "maxlat": 53.3389932,
+    "maxlon": -6.2651920
+  },
+  "nodes": [
+    7447234461,
+    449374177,
+    2363474110
+  ],
+  "geometry": [
+    { "lat": 53.3389932, "lon": -6.2651920 },
+    { "lat": 53.3387451, "lon": -6.2652372 },
+    { "lat": 53.3386192, "lon": -6.2652489 }
+  ],
+  "tags": {
+    "highway": "service",
+    "logainm:ref": "1423984",
+    "logainm:url": "https://www.logainm.ie/1423984.aspx",
+    "maxspeed": "30",
+    "name": "Aungier Lane",
+    "name:en": "Aungier Lane",
+    "name:ga": "Lána Áinséir",
+    "old_name": "Stable Lane",
+    "old_name_date": "1756",
+    "service": "alley",
+    "surface": "concrete"
+  }
+},
+{
+  "type": "way",
+  "id": 38167515,
+  "bounds": {
+    "minlat": 53.3405739,
+    "minlon": -6.2634730,
+    "maxlat": 53.3408408,
+    "maxlon": -6.2633770
+  },
+  "nodes": [
+    32237862,
+    2390587430,
+    2363474205,
+    2363474204,
+    32233897
+  ],
+  "geometry": [
+    { "lat": 53.3408408, "lon": -6.2633960 },
+    { "lat": 53.3407761, "lon": -6.2633770 },
+    { "lat": 53.3407149, "lon": -6.2633852 },
+    { "lat": 53.3406659, "lon": -6.2634079 },
+    { "lat": 53.3405739, "lon": -6.2634730 }
+  ],
+  "tags": {
+    "alt_name": "Johnson's Place",
+    "alt_name:ga": "Plás Mhic Eoin",
+    "highway": "tertiary",
+    "lanes": "1",
+    "lit": "yes",
+    "logainm:ref": "1382958",
+    "logainm:url": "https://www.logainm.ie/1382958.aspx",
+    "maxspeed": "30",
+    "name": "Johnson Place",
+    "name:en": "Johnson Place",
+    "name:ga": "Plás Mhic Sheáin",
+    "oneway": "yes",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 40701185,
+  "bounds": {
+    "minlat": 53.3413157,
+    "minlon": -6.2612647,
+    "maxlat": 53.3413436,
+    "maxlon": -6.2610373
+  },
+  "nodes": [
+    135109485,
+    2390587449,
+    135109478
+  ],
+  "geometry": [
+    { "lat": 53.3413436, "lon": -6.2612647 },
+    { "lat": 53.3413431, "lon": -6.2611821 },
+    { "lat": 53.3413157, "lon": -6.2610373 }
+  ],
+  "tags": {
+    "highway": "unclassified",
+    "lane_markings": "no",
+    "maxspeed": "30",
+    "name": "Harry Street",
+    "name:ga": "Sráid Hearaí",
+    "oneway": "yes",
+    "surface": "paving_stones",
+    "width": "3"
+  }
+},
+{
+  "type": "way",
+  "id": 43981320,
+  "bounds": {
+    "minlat": 53.3468020,
+    "minlon": -6.2572213,
+    "maxlat": 53.3473188,
+    "maxlon": -6.2571542
+  },
+  "nodes": [
+    2865089339,
+    14115099459,
+    11291937337,
+    14115099458,
+    2414928122,
+    1416315122
+  ],
+  "geometry": [
+    { "lat": 53.3473188, "lon": -6.2572058 },
+    { "lat": 53.3472683, "lon": -6.2572213 },
+    { "lat": 53.3472309, "lon": -6.2572172 },
+    { "lat": 53.3471004, "lon": -6.2571979 },
+    { "lat": 53.3469021, "lon": -6.2571709 },
+    { "lat": 53.3468020, "lon": -6.2571542 }
+  ],
+  "tags": {
+    "access": "destination",
+    "bicycle": "yes",
+    "cycleway:left": "no",
+    "foot": "yes",
+    "highway": "unclassified",
+    "lanes": "1",
+    "maxspeed": "30",
+    "name": "Hawkins Street",
+    "name:en": "Hawkins Street",
+    "name:ga": "Sráid Háicín",
+    "oneway": "yes",
+    "psv": "yes",
+    "sidewalk:left": "yes",
+    "sidewalk:right": "separate",
+    "surface": "asphalt",
+    "wikidata": "Q101209881"
+  }
+},
+{
+  "type": "way",
+  "id": 43981321,
+  "bounds": {
+    "minlat": 53.3472959,
+    "minlon": -6.2573470,
+    "maxlat": 53.3473188,
+    "maxlon": -6.2572058
+  },
+  "nodes": [
+    2865089339,
+    4024303349,
+    2865089333
+  ],
+  "geometry": [
+    { "lat": 53.3473188, "lon": -6.2572058 },
+    { "lat": 53.3473063, "lon": -6.2572833 },
+    { "lat": 53.3472959, "lon": -6.2573470 }
+  ],
+  "tags": {
+    "cycleway:right": "separate",
+    "cycleway:right:oneway": "no",
+    "foot": "no",
+    "highway": "secondary",
+    "lanes": "2",
+    "lanes:psv": "1",
+    "lit": "yes",
+    "logainm:ref": "1381039",
+    "logainm:url": "https://www.logainm.ie/1381039.aspx",
+    "maxspeed": "30",
+    "name": "Burgh Quay",
+    "name:en": "Burgh Quay",
+    "name:ga": "Cé Burg",
+    "old_name": "Mr Hawkin's Wall",
+    "old_name_date": "1661-1662",
+    "oneway": "yes",
+    "ref": "R105",
+    "sidewalk": "no",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 70595236,
+  "bounds": {
+    "minlat": 53.3460799,
+    "minlon": -6.2570804,
+    "maxlat": 53.3464521,
+    "maxlon": -6.2569925
+  },
+  "nodes": [
+    842446710,
+    2414928110
+  ],
+  "geometry": [
+    { "lat": 53.3464521, "lon": -6.2570804 },
+    { "lat": 53.3460799, "lon": -6.2569925 }
+  ],
+  "tags": {
+    "cycleway:left": "no",
+    "highway": "unclassified",
+    "lanes": "1",
+    "maxspeed": "30",
+    "name": "Hawkins Street",
+    "name:en": "Hawkins Street",
+    "name:ga": "Sráid Háicín",
+    "oneway": "yes",
+    "sidewalk:both": "separate",
+    "surface": "asphalt",
+    "wikidata": "Q101209881"
+  }
+},
+{
+  "type": "way",
+  "id": 74232837,
+  "bounds": {
+    "minlat": 53.3456145,
+    "minlon": -6.2572384,
+    "maxlat": 53.3456149,
+    "maxlon": -6.2569194
+  },
+  "nodes": [
+    3451328718,
+    12861768011,
+    5297779223,
+    14115099432,
+    5355630060
+  ],
+  "geometry": [
+    { "lat": 53.3456145, "lon": -6.2569194 },
+    { "lat": 53.3456146, "lon": -6.2569765 },
+    { "lat": 53.3456146, "lon": -6.2570411 },
+    { "lat": 53.3456149, "lon": -6.2572154 },
+    { "lat": 53.3456146, "lon": -6.2572384 }
+  ],
+  "tags": {
+    "bicycle": "yes",
+    "bus": "yes",
+    "cycleway:left": "no",
+    "foot": "yes",
+    "highway": "secondary",
+    "horse": "destination",
+    "lane_markings": "yes",
+    "lanes": "2",
+    "lanes:bus": "1",
+    "lit": "yes",
+    "logainm:ref": "1383246",
+    "logainm:url": "https://www.logainm.ie/1383246.aspx",
+    "maxspeed": "30",
+    "motor_vehicle": "destination",
+    "motorcycle": "yes",
+    "name": "College Street",
+    "name:en": "College Street",
+    "name:ga": "Sráid An Choláiste",
+    "old_name:1821-1835": "Bank Street",
+    "oneway": "yes",
+    "psv": "yes",
+    "ref": "R118",
+    "sidewalk:both": "separate",
+    "source:old_name": "C T Macready",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 74232843,
+  "bounds": {
+    "minlat": 53.3459064,
+    "minlon": -6.2569968,
+    "maxlat": 53.3460799,
+    "maxlon": -6.2569871
+  },
+  "nodes": [
+    2414928110,
+    12861768006,
+    5355630045,
+    5355630057
+  ],
+  "geometry": [
+    { "lat": 53.3460799, "lon": -6.2569925 },
+    { "lat": 53.3460022, "lon": -6.2569968 },
+    { "lat": 53.3459663, "lon": -6.2569949 },
+    { "lat": 53.3459064, "lon": -6.2569871 }
+  ],
+  "tags": {
+    "access": "no",
+    "bus": "yes",
+    "foot": "yes",
+    "highway": "service",
+    "lanes": "1",
+    "maxspeed": "30",
+    "name": "Hawkins Street",
+    "name:en": "Hawkins Street",
+    "name:ga": "Sráid Háicín",
+    "oneway": "yes",
+    "sidewalk": "separate",
+    "surface": "asphalt",
+    "wikidata": "Q101209881"
+  }
+},
+{
+  "type": "way",
+  "id": 229883910,
+  "bounds": {
+    "minlat": 53.3408073,
+    "minlon": -6.2670788,
+    "maxlat": 53.3410542,
+    "maxlon": -6.2669690
+  },
+  "nodes": [
+    2363474208,
+    2384200118,
+    2384200116,
+    1426048954
+  ],
+  "geometry": [
+    { "lat": 53.3408073, "lon": -6.2670415 },
+    { "lat": 53.3408533, "lon": -6.2670744 },
+    { "lat": 53.3409007, "lon": -6.2670788 },
+    { "lat": 53.3410542, "lon": -6.2669690 }
+  ],
+  "tags": {
+    "cycleway:left": "no",
+    "highway": "tertiary_link",
+    "lane_markings": "yes",
+    "lanes": "1",
+    "lit": "yes",
+    "logainm:ref": "1383617",
+    "logainm:url": "https://www.logainm.ie/1383617.aspx",
+    "maxspeed": "30",
+    "name": "Stephen Street Upper",
+    "name:en": "Stephen Street Upper",
+    "name:ga": "Sráid Stiabhna Uachtarach",
+    "oneway": "yes",
+    "sidewalk": "both",
+    "smoothness": "excellent",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 238740928,
+  "bounds": {
+    "minlat": 53.3406020,
+    "minlon": -6.2626869,
+    "maxlat": 53.3409687,
+    "maxlon": -6.2623872
+  },
+  "nodes": [
+    11742247023,
+    2390587425,
+    12066997831,
+    135109507,
+    9936338286,
+    11982150880,
+    32235616
+  ],
+  "geometry": [
+    { "lat": 53.3406020, "lon": -6.2626869 },
+    { "lat": 53.3406396, "lon": -6.2626526 },
+    { "lat": 53.3407578, "lon": -6.2625659 },
+    { "lat": 53.3407861, "lon": -6.2625388 },
+    { "lat": 53.3408084, "lon": -6.2625170 },
+    { "lat": 53.3409213, "lon": -6.2624353 },
+    { "lat": 53.3409687, "lon": -6.2623872 }
+  ],
+  "tags": {
+    "alt_name:ga": "Rae Chlarendon",
+    "cycleway:both": "no",
+    "highway": "unclassified",
+    "lane_markings": "no",
+    "lanes": "1",
+    "lit": "yes",
+    "logainm:ref": "1383131",
+    "logainm:url": "https://www.logainm.ie/1383131.aspx",
+    "maxspeed": "30",
+    "name": "Clarendon Row",
+    "name:en": "Clarendon Row",
+    "name:ga": "Rae Clarendon",
+    "oneway": "no",
+    "sidewalk": "both",
+    "surface": "asphalt",
+    "width": "2.5"
+  }
+},
+{
+  "type": "way",
+  "id": 271165125,
+  "bounds": {
+    "minlat": 53.3473188,
+    "minlon": -6.2572058,
+    "maxlat": 53.3473653,
+    "maxlon": -6.2568902
+  },
+  "nodes": [
+    11100274512,
+    3451374066,
+    2987403692,
+    2865089339
+  ],
+  "geometry": [
+    { "lat": 53.3473653, "lon": -6.2568902 },
+    { "lat": 53.3473490, "lon": -6.2570126 },
+    { "lat": 53.3473399, "lon": -6.2570698 },
+    { "lat": 53.3473188, "lon": -6.2572058 }
+  ],
+  "tags": {
+    "cycleway:left": "no",
+    "cycleway:right": "separate",
+    "highway": "secondary",
+    "lanes": "2",
+    "lanes:psv": "1",
+    "lit": "yes",
+    "logainm:ref": "1381039",
+    "logainm:url": "https://www.logainm.ie/1381039.aspx",
+    "maxspeed": "30",
+    "name": "Burgh Quay",
+    "name:en": "Burgh Quay",
+    "name:ga": "Cé Burg",
+    "old_name": "Mr Hawkin's Wall",
+    "old_name_date": "1661-1662",
+    "oneway": "yes",
+    "ref": "R105",
+    "sidewalk:both:surface": "paving_stones",
+    "sidewalk:left": "yes",
+    "sidewalk:right": "separate",
+    "smoothness": "excellent",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 281669760,
+  "bounds": {
+    "minlat": 53.3447581,
+    "minlon": -6.2635367,
+    "maxlat": 53.3448568,
+    "maxlon": -6.2633978
+  },
+  "nodes": [
+    2856529647,
+    2856529654,
+    2856529655,
+    2856529648,
+    2856529647
+  ],
+  "geometry": [
+    { "lat": 53.3447592, "lon": -6.2633978 },
+    { "lat": 53.3448568, "lon": -6.2634000 },
+    { "lat": 53.3448554, "lon": -6.2635367 },
+    { "lat": 53.3447581, "lon": -6.2635340 },
+    { "lat": 53.3447592, "lon": -6.2633978 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:housenumber": "4",
+    "addr:street": "Fownes Street Upper",
+    "building": "yes",
+    "heritage": "4"
+  }
+},
+{
+  "type": "way",
+  "id": 281669765,
+  "bounds": {
+    "minlat": 53.3447299,
+    "minlon": -6.2637250,
+    "maxlat": 53.3449905,
+    "maxlon": -6.2633974
+  },
+  "nodes": [
+    2856529659,
+    2856529662,
+    2856529663,
+    2856529664,
+    2856529665,
+    2856529666,
+    2856529667,
+    2856529668,
+    2856529669,
+    2856529670,
+    2856529659
+  ],
+  "geometry": [
+    { "lat": 53.3447299, "lon": -6.2637250 },
+    { "lat": 53.3449672, "lon": -6.2637184 },
+    { "lat": 53.3449874, "lon": -6.2636884 },
+    { "lat": 53.3449905, "lon": -6.2634431 },
+    { "lat": 53.3449778, "lon": -6.2634001 },
+    { "lat": 53.3449024, "lon": -6.2633974 },
+    { "lat": 53.3449011, "lon": -6.2635220 },
+    { "lat": 53.3449204, "lon": -6.2635456 },
+    { "lat": 53.3449199, "lon": -6.2636021 },
+    { "lat": 53.3447312, "lon": -6.2636127 },
+    { "lat": 53.3447299, "lon": -6.2637250 }
+  ],
+  "tags": {
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 281669766,
+  "bounds": {
+    "minlat": 53.3448554,
+    "minlon": -6.2635373,
+    "maxlat": 53.3449024,
+    "maxlon": -6.2633964
+  },
+  "nodes": [
+    2856529667,
+    12957286422,
+    12957286421,
+    2856529655,
+    2856529654,
+    12035318311,
+    2856529666,
+    2856529667
+  ],
+  "geometry": [
+    { "lat": 53.3449011, "lon": -6.2635220 },
+    { "lat": 53.3448774, "lon": -6.2635213 },
+    { "lat": 53.3448772, "lon": -6.2635373 },
+    { "lat": 53.3448554, "lon": -6.2635367 },
+    { "lat": 53.3448568, "lon": -6.2634000 },
+    { "lat": 53.3448657, "lon": -6.2633964 },
+    { "lat": 53.3449024, "lon": -6.2633974 },
+    { "lat": 53.3449011, "lon": -6.2635220 }
+  ],
+  "tags": {
+    "building": "yes",
+    "heritage": "4"
+  }
+},
+{
+  "type": "way",
+  "id": 294962764,
+  "bounds": {
+    "minlat": 53.3453856,
+    "minlon": -6.2642229,
+    "maxlat": 53.3455325,
+    "maxlon": -6.2639205
+  },
+  "nodes": [
+    2986017556,
+    2986017557,
+    2986017558,
+    2986017559,
+    2986017560,
+    4608973693,
+    2986017556
+  ],
+  "geometry": [
+    { "lat": 53.3455325, "lon": -6.2639292 },
+    { "lat": 53.3455131, "lon": -6.2642229 },
+    { "lat": 53.3453903, "lon": -6.2642188 },
+    { "lat": 53.3453856, "lon": -6.2640937 },
+    { "lat": 53.3454311, "lon": -6.2640962 },
+    { "lat": 53.3454446, "lon": -6.2639205 },
+    { "lat": 53.3455325, "lon": -6.2639292 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:county": "Dublin",
+    "addr:housenumber": "47-48",
+    "addr:postcode": "D02 N725",
+    "addr:street": "Temple Bar",
+    "amenity": "pub",
+    "building": "retail",
+    "building:levels": "4",
+    "check_date": "2025-10-19",
+    "contact:facebook": "TheTempleBarPub",
+    "contact:instagram": "thetemplebarpub",
+    "food": "yes",
+    "heritage": "4",
+    "indoor_seating": "yes",
+    "name": "The Temple Bar",
+    "name:en": "The Temple Bar",
+    "name:zh": "圣殿酒吧",
+    "opening_hours": "Mo-Th 09:30-23:30; Fr 09:30-20:00; Sa 09:30-19:00; Su 11:00-23:30",
+    "outdoor_seating": "yes",
+    "roof:levels": "0",
+    "website": "https://thetemplebarpub.com",
+    "website:menu": "https://thetemplebarpub.com/wp-content/uploads/2024/02/Temple-Bar-Food-Menu-2024.pdf",
+    "website:orders": "https://thetemplebarpubdublin.wi-q.com/service/1047",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 294962766,
+  "bounds": {
+    "minlat": 53.3453806,
+    "minlon": -6.2639292,
+    "maxlat": 53.3455440,
+    "maxlon": -6.2636829
+  },
+  "nodes": [
+    2986017556,
+    4608973693,
+    2986017562,
+    2986017563,
+    2986017564,
+    2986017556
+  ],
+  "geometry": [
+    { "lat": 53.3455325, "lon": -6.2639292 },
+    { "lat": 53.3454446, "lon": -6.2639205 },
+    { "lat": 53.3453806, "lon": -6.2639162 },
+    { "lat": 53.3453833, "lon": -6.2636829 },
+    { "lat": 53.3455440, "lon": -6.2636944 },
+    { "lat": 53.3455325, "lon": -6.2639292 }
+  ],
+  "tags": {
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 294962767,
+  "bounds": {
+    "minlat": 53.3453833,
+    "minlon": -6.2636944,
+    "maxlat": 53.3455496,
+    "maxlon": -6.2634648
+  },
+  "nodes": [
+    2986017564,
+    2986017565,
+    2986017566,
+    2986017563,
+    2986017564
+  ],
+  "geometry": [
+    { "lat": 53.3455440, "lon": -6.2636944 },
+    { "lat": 53.3455496, "lon": -6.2634762 },
+    { "lat": 53.3453888, "lon": -6.2634648 },
+    { "lat": 53.3453833, "lon": -6.2636829 },
+    { "lat": 53.3455440, "lon": -6.2636944 }
+  ],
+  "tags": {
+    "building": "retail",
+    "heritage": "4"
+  }
+},
+{
+  "type": "way",
+  "id": 294972560,
+  "bounds": {
+    "minlat": 53.3450647,
+    "minlon": -6.2635902,
+    "maxlat": 53.3452827,
+    "maxlon": -6.2634497
+  },
+  "nodes": [
+    2986100508,
+    2986100509,
+    2986100510,
+    2986100511,
+    2986100508
+  ],
+  "geometry": [
+    { "lat": 53.3452811, "lon": -6.2635902 },
+    { "lat": 53.3452827, "lon": -6.2634568 },
+    { "lat": 53.3450663, "lon": -6.2634497 },
+    { "lat": 53.3450647, "lon": -6.2635830 },
+    { "lat": 53.3452811, "lon": -6.2635902 }
+  ],
+  "tags": {
+    "addr:street": "Fownes Street Upper",
+    "building": "apartments",
+    "building:levels": "3",
+    "roof:levels": "0"
+  }
+},
+{
+  "type": "way",
+  "id": 316457573,
+  "bounds": {
+    "minlat": 53.3449902,
+    "minlon": -6.2645965,
+    "maxlat": 53.3450991,
+    "maxlon": -6.2642975
+  },
+  "nodes": [
+    2853210401,
+    2853210402,
+    3225735928,
+    4388186587,
+    3225735929,
+    5659273448,
+    2853210401
+  ],
+  "geometry": [
+    { "lat": 53.3449902, "lon": -6.2645965 },
+    { "lat": 53.3450978, "lon": -6.2645957 },
+    { "lat": 53.3450975, "lon": -6.2645693 },
+    { "lat": 53.3450991, "lon": -6.2644932 },
+    { "lat": 53.3450982, "lon": -6.2643035 },
+    { "lat": 53.3449946, "lon": -6.2642975 },
+    { "lat": 53.3449902, "lon": -6.2645965 }
+  ],
+  "tags": {
+    "building": "yes",
+    "contact:facebook": "https://www.facebook.com/irishrockmuseum/",
+    "contact:instagram": "https://www.instagram.com/irishrockmuseum/",
+    "fee": "yes",
+    "name": "The Irish Rock 'n' Roll Museum Experience",
+    "tourism": "museum",
+    "website": "https://irishrocknrollmuseum.com/",
+    "website:booking": "https://rocknrollmuseum.retailint-tickets.com/Event/IRRMETOUR"
+  }
+},
+{
+  "type": "way",
+  "id": 325216518,
+  "bounds": {
+    "minlat": 53.3455631,
+    "minlon": -6.2643399,
+    "maxlat": 53.3456665,
+    "maxlon": -6.2642164
+  },
+  "nodes": [
+    3318820166,
+    3318820173,
+    3318820172,
+    3318820165,
+    3318820166
+  ],
+  "geometry": [
+    { "lat": 53.3455743, "lon": -6.2642164 },
+    { "lat": 53.3456665, "lon": -6.2642258 },
+    { "lat": 53.3456530, "lon": -6.2643399 },
+    { "lat": 53.3455631, "lon": -6.2643202 },
+    { "lat": 53.3455743, "lon": -6.2642164 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:country": "IE",
+    "addr:housenumber": "1",
+    "addr:street": "Temple Bar",
+    "building": "yes",
+    "heritage": "4"
+  }
+},
+{
+  "type": "way",
+  "id": 325216519,
+  "bounds": {
+    "minlat": 53.3455851,
+    "minlon": -6.2640073,
+    "maxlat": 53.3456852,
+    "maxlon": -6.2638281
+  },
+  "nodes": [
+    3318820175,
+    3318820176,
+    3318820169,
+    3318820168,
+    3318820175
+  ],
+  "geometry": [
+    { "lat": 53.3456732, "lon": -6.2640073 },
+    { "lat": 53.3456852, "lon": -6.2638481 },
+    { "lat": 53.3455954, "lon": -6.2638281 },
+    { "lat": 53.3455851, "lon": -6.2639932 },
+    { "lat": 53.3456732, "lon": -6.2640073 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:country": "IE",
+    "addr:street": "Temple Bar",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 325216520,
+  "bounds": {
+    "minlat": 53.3455743,
+    "minlon": -6.2642258,
+    "maxlat": 53.3456705,
+    "maxlon": -6.2640766
+  },
+  "nodes": [
+    3318820173,
+    3318820174,
+    3318820167,
+    3318820166,
+    3318820173
+  ],
+  "geometry": [
+    { "lat": 53.3456665, "lon": -6.2642258 },
+    { "lat": 53.3456705, "lon": -6.2640880 },
+    { "lat": 53.3455802, "lon": -6.2640766 },
+    { "lat": 53.3455743, "lon": -6.2642164 },
+    { "lat": 53.3456665, "lon": -6.2642258 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:country": "IE",
+    "addr:housenumber": "2",
+    "addr:street": "Temple Bar",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 325216521,
+  "bounds": {
+    "minlat": 53.3455802,
+    "minlon": -6.2640880,
+    "maxlat": 53.3456732,
+    "maxlon": -6.2639932
+  },
+  "nodes": [
+    3318820174,
+    3318820167,
+    3318820168,
+    3318820175,
+    3318820174
+  ],
+  "geometry": [
+    { "lat": 53.3456705, "lon": -6.2640880 },
+    { "lat": 53.3455802, "lon": -6.2640766 },
+    { "lat": 53.3455851, "lon": -6.2639932 },
+    { "lat": 53.3456732, "lon": -6.2640073 },
+    { "lat": 53.3456705, "lon": -6.2640880 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:country": "IE",
+    "addr:housenumber": "3",
+    "addr:street": "Temple Bar",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 325216523,
+  "bounds": {
+    "minlat": 53.3455535,
+    "minlon": -6.2644137,
+    "maxlat": 53.3456530,
+    "maxlon": -6.2643202
+  },
+  "nodes": [
+    3318820165,
+    3318820172,
+    3318820171,
+    3318820164,
+    3318820165
+  ],
+  "geometry": [
+    { "lat": 53.3455631, "lon": -6.2643202 },
+    { "lat": 53.3456530, "lon": -6.2643399 },
+    { "lat": 53.3456400, "lon": -6.2644137 },
+    { "lat": 53.3455535, "lon": -6.2643778 },
+    { "lat": 53.3455631, "lon": -6.2643202 }
+  ],
+  "tags": {
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 325216524,
+  "bounds": {
+    "minlat": 53.3455435,
+    "minlon": -6.2644806,
+    "maxlat": 53.3456400,
+    "maxlon": -6.2643778
+  },
+  "nodes": [
+    6257799727,
+    3318820171,
+    3318820164,
+    3318822041,
+    6257799727
+  ],
+  "geometry": [
+    { "lat": 53.3456300, "lon": -6.2644806 },
+    { "lat": 53.3456400, "lon": -6.2644137 },
+    { "lat": 53.3455535, "lon": -6.2643778 },
+    { "lat": 53.3455435, "lon": -6.2644447 },
+    { "lat": 53.3456300, "lon": -6.2644806 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:housenumber": "22",
+    "addr:street": "Essex Street East",
+    "amenity": "restaurant",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 325217020,
+  "bounds": {
+    "minlat": 53.3455342,
+    "minlon": -6.2645456,
+    "maxlat": 53.3456300,
+    "maxlon": -6.2644447
+  },
+  "nodes": [
+    3318822041,
+    6257799727,
+    6257799728,
+    3318820163,
+    3318822041
+  ],
+  "geometry": [
+    { "lat": 53.3455435, "lon": -6.2644447 },
+    { "lat": 53.3456300, "lon": -6.2644806 },
+    { "lat": 53.3456203, "lon": -6.2645456 },
+    { "lat": 53.3455342, "lon": -6.2645088 },
+    { "lat": 53.3455435, "lon": -6.2644447 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:housenumber": "21",
+    "addr:street": "Essex Street East",
+    "amenity": "pharmacy",
+    "building": "yes",
+    "check_date": "2025-10-19",
+    "dispensing": "yes",
+    "drive_through": "no",
+    "healthcare": "pharmacy",
+    "name": "The Temple Bar Pharmacy",
+    "opening_hours": "Mo-Fr 10:00-18:00; Sa 11:00-18:00; Su 12:00-18:00",
+    "phone": "+353 1 6709751",
+    "website": "https://templebarpharmacy.com/",
+    "wheelchair": "no"
+  }
+},
+{
+  "type": "way",
+  "id": 369652830,
+  "bounds": {
+    "minlat": 53.3410542,
+    "minlon": -6.2669690,
+    "maxlat": 53.3410824,
+    "maxlon": -6.2669398
+  },
+  "nodes": [
+    1426048954,
+    2705322908
+  ],
+  "geometry": [
+    { "lat": 53.3410542, "lon": -6.2669690 },
+    { "lat": 53.3410824, "lon": -6.2669398 }
+  ],
+  "tags": {
+    "cycleway:both": "no",
+    "highway": "tertiary",
+    "lane_markings": "yes",
+    "lanes": "2",
+    "lit": "yes",
+    "logainm:ref": "1383617",
+    "logainm:url": "https://www.logainm.ie/1383617.aspx",
+    "maxspeed": "30",
+    "name": "Stephen Street Upper",
+    "name:en": "Stephen Street Upper",
+    "name:ga": "Sráid Stiabhna Uachtarach",
+    "oneway": "yes",
+    "sidewalk": "both",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 372226878,
+  "bounds": {
+    "minlat": 53.3410824,
+    "minlon": -6.2669398,
+    "maxlat": 53.3415312,
+    "maxlon": -6.2653904
+  },
+  "nodes": [
+    2705322908,
+    2363474211,
+    4460729969,
+    51510558,
+    2522022629,
+    2363474214,
+    13233638305,
+    2522022630,
+    51510555,
+    2522022631,
+    10287815238,
+    51510553,
+    2522022632,
+    51510551,
+    11742165391,
+    11742165398,
+    11742165396,
+    26165126
+  ],
+  "geometry": [
+    { "lat": 53.3410824, "lon": -6.2669398 },
+    { "lat": 53.3411871, "lon": -6.2668040 },
+    { "lat": 53.3412761, "lon": -6.2666665 },
+    { "lat": 53.3413205, "lon": -6.2665979 },
+    { "lat": 53.3413536, "lon": -6.2665354 },
+    { "lat": 53.3414071, "lon": -6.2664143 },
+    { "lat": 53.3414262, "lon": -6.2663695 },
+    { "lat": 53.3414481, "lon": -6.2663181 },
+    { "lat": 53.3415003, "lon": -6.2661293 },
+    { "lat": 53.3415073, "lon": -6.2660606 },
+    { "lat": 53.3415250, "lon": -6.2659557 },
+    { "lat": 53.3415312, "lon": -6.2658560 },
+    { "lat": 53.3415237, "lon": -6.2657124 },
+    { "lat": 53.3415139, "lon": -6.2656155 },
+    { "lat": 53.3415146, "lon": -6.2655993 },
+    { "lat": 53.3415069, "lon": -6.2655398 },
+    { "lat": 53.3415001, "lon": -6.2654835 },
+    { "lat": 53.3414822, "lon": -6.2653904 }
+  ],
+  "tags": {
+    "cycleway:left": "no",
+    "highway": "tertiary",
+    "lane_markings": "yes",
+    "lanes": "2",
+    "lit": "yes",
+    "logainm:ref": "1383617",
+    "logainm:url": "https://www.logainm.ie/1383617.aspx",
+    "maxspeed": "30",
+    "name": "Stephen Street Upper",
+    "name:en": "Stephen Street Upper",
+    "name:ga": "Sráid Stiabhna Uachtarach",
+    "oneway": "yes",
+    "sidewalk": "both",
+    "smoothness": "good",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 441055582,
+  "bounds": {
+    "minlat": 53.3450581,
+    "minlon": -6.2640061,
+    "maxlat": 53.3453888,
+    "maxlon": -6.2634568
+  },
+  "nodes": [
+    4608973692,
+    4388186585,
+    2986100511,
+    2986100508,
+    2986100509,
+    2986017566,
+    2986017563,
+    2986017562,
+    4608973694,
+    4608973699,
+    4608973692
+  ],
+  "geometry": [
+    { "lat": 53.3452741, "lon": -6.2639264 },
+    { "lat": 53.3450581, "lon": -6.2639288 },
+    { "lat": 53.3450647, "lon": -6.2635830 },
+    { "lat": 53.3452811, "lon": -6.2635902 },
+    { "lat": 53.3452827, "lon": -6.2634568 },
+    { "lat": 53.3453888, "lon": -6.2634648 },
+    { "lat": 53.3453833, "lon": -6.2636829 },
+    { "lat": 53.3453806, "lon": -6.2639162 },
+    { "lat": 53.3453530, "lon": -6.2640060 },
+    { "lat": 53.3452747, "lon": -6.2640061 },
+    { "lat": 53.3452741, "lon": -6.2639264 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:housenumber": "7a",
+    "addr:street": "Fownes Street Upper",
+    "brand": "Urban Outfitters",
+    "brand:wikidata": "Q3552193",
+    "brand:wikipedia": "en:Urban Outfitters",
+    "building": "yes",
+    "clothes": "women;men;accessories",
+    "contact:facebook": "https://www.facebook.com/urbanoutfitters/",
+    "contact:instagram": "https://www.instagram.com/urbanoutfitters",
+    "name": "Urban Outfitters",
+    "operator": "Urban Outfitters",
+    "shop": "clothes",
+    "source:geometry": "Bing",
+    "website": "https://www.urbanoutfitters.com/stores/temple-bar",
+    "wheelchair": "limited"
+  }
+},
+{
+  "type": "way",
+  "id": 441055583,
+  "bounds": {
+    "minlat": 53.3455954,
+    "minlon": -6.2643857,
+    "maxlat": 53.3458745,
+    "maxlon": -6.2634504
+  },
+  "nodes": [
+    6257799724,
+    12957286447,
+    12957286446,
+    12164326037,
+    12957286444,
+    12957286445,
+    11358633339,
+    4388188607,
+    11358633340,
+    4388188604,
+    3318820169,
+    3318820176,
+    3318820175,
+    3318820174,
+    3318820173,
+    3318820172,
+    12957323502,
+    6257799724
+  ],
+  "geometry": [
+    { "lat": 53.3457545, "lon": -6.2643857 },
+    { "lat": 53.3458061, "lon": -6.2640465 },
+    { "lat": 53.3457955, "lon": -6.2640426 },
+    { "lat": 53.3458079, "lon": -6.2639612 },
+    { "lat": 53.3458172, "lon": -6.2638976 },
+    { "lat": 53.3458257, "lon": -6.2639001 },
+    { "lat": 53.3458745, "lon": -6.2635747 },
+    { "lat": 53.3457922, "lon": -6.2635619 },
+    { "lat": 53.3458031, "lon": -6.2634758 },
+    { "lat": 53.3456152, "lon": -6.2634504 },
+    { "lat": 53.3455954, "lon": -6.2638281 },
+    { "lat": 53.3456852, "lon": -6.2638481 },
+    { "lat": 53.3456732, "lon": -6.2640073 },
+    { "lat": 53.3456705, "lon": -6.2640880 },
+    { "lat": 53.3456665, "lon": -6.2642258 },
+    { "lat": 53.3456530, "lon": -6.2643399 },
+    { "lat": 53.3456758, "lon": -6.2643530 },
+    { "lat": 53.3457545, "lon": -6.2643857 }
+  ],
+  "tags": {
+    "addr:street": "Wellington Quay",
+    "building": "retail",
+    "source:geometry": "Bing"
+  }
+},
+{
+  "type": "way",
+  "id": 441055587,
+  "bounds": {
+    "minlat": 53.3450982,
+    "minlon": -6.2646934,
+    "maxlat": 53.3454652,
+    "maxlon": -6.2643035
+  },
+  "nodes": [
+    2853192337,
+    4388188600,
+    3225735929,
+    4388186587,
+    12957286448,
+    4388188594,
+    4388188593,
+    2853192337
+  ],
+  "geometry": [
+    { "lat": 53.3454218, "lon": -6.2646934 },
+    { "lat": 53.3454652, "lon": -6.2643174 },
+    { "lat": 53.3450982, "lon": -6.2643035 },
+    { "lat": 53.3450991, "lon": -6.2644932 },
+    { "lat": 53.3452054, "lon": -6.2644970 },
+    { "lat": 53.3453331, "lon": -6.2644951 },
+    { "lat": 53.3453154, "lon": -6.2646522 },
+    { "lat": 53.3454218, "lon": -6.2646934 }
+  ],
+  "tags": {
+    "building": "apartments",
+    "source:geometry": "Bing"
+  }
+},
+{
+  "type": "way",
+  "id": 441055588,
+  "bounds": {
+    "minlat": 53.3443896,
+    "minlon": -6.2642152,
+    "maxlat": 53.3449845,
+    "maxlon": -6.2638185
+  },
+  "nodes": [
+    4388186582,
+    12957286419,
+    4388186583,
+    2705523759,
+    2705523757,
+    2705523752,
+    13657039273,
+    13657039271,
+    2705523750,
+    4388186582
+  ],
+  "geometry": [
+    { "lat": 53.3449821, "lon": -6.2642066 },
+    { "lat": 53.3449845, "lon": -6.2638417 },
+    { "lat": 53.3449720, "lon": -6.2638185 },
+    { "lat": 53.3444296, "lon": -6.2638373 },
+    { "lat": 53.3444272, "lon": -6.2639678 },
+    { "lat": 53.3443962, "lon": -6.2639669 },
+    { "lat": 53.3443943, "lon": -6.2640249 },
+    { "lat": 53.3443921, "lon": -6.2641180 },
+    { "lat": 53.3443896, "lon": -6.2642152 },
+    { "lat": 53.3449821, "lon": -6.2642066 }
+  ],
+  "tags": {
+    "building": "yes",
+    "source:geometry": "Bing"
+  }
+},
+{
+  "type": "way",
+  "id": 466002406,
+  "bounds": {
+    "minlat": 53.3450552,
+    "minlon": -6.2640849,
+    "maxlat": 53.3452747,
+    "maxlon": -6.2639264
+  },
+  "nodes": [
+    4388186585,
+    4608973695,
+    4608973700,
+    4608973696,
+    4608973697,
+    4608973698,
+    4608973699,
+    4608973692,
+    4388186585
+  ],
+  "geometry": [
+    { "lat": 53.3450581, "lon": -6.2639288 },
+    { "lat": 53.3450552, "lon": -6.2640231 },
+    { "lat": 53.3451655, "lon": -6.2640140 },
+    { "lat": 53.3452189, "lon": -6.2640137 },
+    { "lat": 53.3452203, "lon": -6.2640849 },
+    { "lat": 53.3452747, "lon": -6.2640722 },
+    { "lat": 53.3452747, "lon": -6.2640061 },
+    { "lat": 53.3452741, "lon": -6.2639264 },
+    { "lat": 53.3450581, "lon": -6.2639288 }
+  ],
+  "tags": {
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 466002407,
+  "bounds": {
+    "minlat": 53.3450552,
+    "minlon": -6.2641062,
+    "maxlat": 53.3451679,
+    "maxlon": -6.2640140
+  },
+  "nodes": [
+    4608973700,
+    4608973701,
+    4608973702,
+    4608973695,
+    4608973700
+  ],
+  "geometry": [
+    { "lat": 53.3451655, "lon": -6.2640140 },
+    { "lat": 53.3451679, "lon": -6.2640971 },
+    { "lat": 53.3450577, "lon": -6.2641062 },
+    { "lat": 53.3450552, "lon": -6.2640231 },
+    { "lat": 53.3451655, "lon": -6.2640140 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:housenumber": "2",
+    "addr:street": "Cecilia Street",
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 466002408,
+  "bounds": {
+    "minlat": 53.3450577,
+    "minlon": -6.2642181,
+    "maxlat": 53.3452747,
+    "maxlon": -6.2640722
+  },
+  "nodes": [
+    4608973698,
+    4608973703,
+    4608973704,
+    4608973702,
+    4608973701,
+    4608973697,
+    4608973698
+  ],
+  "geometry": [
+    { "lat": 53.3452747, "lon": -6.2640722 },
+    { "lat": 53.3452747, "lon": -6.2642181 },
+    { "lat": 53.3450588, "lon": -6.2642041 },
+    { "lat": 53.3450577, "lon": -6.2641062 },
+    { "lat": 53.3451679, "lon": -6.2640971 },
+    { "lat": 53.3452203, "lon": -6.2640849 },
+    { "lat": 53.3452747, "lon": -6.2640722 }
+  ],
+  "tags": {
+    "building": "yes",
+    "name": "Temple Bar Lane",
+    "tourism": "hotel"
+  }
+},
+{
+  "type": "way",
+  "id": 466002409,
+  "bounds": {
+    "minlat": 53.3452747,
+    "minlon": -6.2642181,
+    "maxlat": 53.3453530,
+    "maxlon": -6.2640060
+  },
+  "nodes": [
+    4608973694,
+    4608973705,
+    4608973703,
+    4608973698,
+    4608973699,
+    4608973694
+  ],
+  "geometry": [
+    { "lat": 53.3453530, "lon": -6.2640060 },
+    { "lat": 53.3453530, "lon": -6.2642180 },
+    { "lat": 53.3452747, "lon": -6.2642181 },
+    { "lat": 53.3452747, "lon": -6.2640722 },
+    { "lat": 53.3452747, "lon": -6.2640061 },
+    { "lat": 53.3453530, "lon": -6.2640060 }
+  ],
+  "tags": {
+    "building": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 532427444,
+  "bounds": {
+    "minlat": 53.3385366,
+    "minlon": -6.2661082,
+    "maxlat": 53.3406939,
+    "maxlon": -6.2656081
+  },
+  "nodes": [
+    2384200130,
+    135109574,
+    5355515613,
+    389281,
+    3506865299,
+    2996413692,
+    12108766527,
+    6217157350,
+    135109542,
+    1448442
+  ],
+  "geometry": [
+    { "lat": 53.3385366, "lon": -6.2661082 },
+    { "lat": 53.3391577, "lon": -6.2659588 },
+    { "lat": 53.3393981, "lon": -6.2659031 },
+    { "lat": 53.3395894, "lon": -6.2658639 },
+    { "lat": 53.3397359, "lon": -6.2658319 },
+    { "lat": 53.3398913, "lon": -6.2657946 },
+    { "lat": 53.3399202, "lon": -6.2657891 },
+    { "lat": 53.3401737, "lon": -6.2657325 },
+    { "lat": 53.3404824, "lon": -6.2656577 },
+    { "lat": 53.3406939, "lon": -6.2656081 }
+  ],
+  "tags": {
+    "cycleway:left": "lane",
+    "cycleway:left:lane": "advisory",
+    "cycleway:right": "share_busway",
+    "highway": "secondary",
+    "lane_markings": "yes",
+    "lanes": "3",
+    "lit": "yes",
+    "logainm:ref": "1383321",
+    "logainm:url": "https://www.logainm.ie/1383321.aspx",
+    "maxspeed": "30",
+    "name": "Aungier Street",
+    "name:en": "Aungier Street",
+    "name:ga": "Sráid Aungier",
+    "ref": "R114",
+    "sidewalk": "both",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 554991019,
+  "bounds": {
+    "minlat": 53.3406939,
+    "minlon": -6.2656081,
+    "maxlat": 53.3413598,
+    "maxlon": -6.2654321
+  },
+  "nodes": [
+    1448442,
+    13690719954,
+    11742165392
+  ],
+  "geometry": [
+    { "lat": 53.3406939, "lon": -6.2656081 },
+    { "lat": 53.3407972, "lon": -6.2655808 },
+    { "lat": 53.3413598, "lon": -6.2654321 }
+  ],
+  "tags": {
+    "cycleway:left": "track",
+    "cycleway:right": "lane",
+    "cycleway:right:lane": "advisory",
+    "highway": "secondary",
+    "lane_markings": "yes",
+    "lanes": "2",
+    "lit": "yes",
+    "logainm:ref": "1383321",
+    "logainm:url": "https://www.logainm.ie/1383321.aspx",
+    "maxspeed": "30",
+    "name": "Aungier Street",
+    "name:en": "Aungier Street",
+    "name:ga": "Sráid Aungier",
+    "ref": "R114",
+    "sidewalk": "both",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 575070043,
+  "bounds": {
+    "minlat": 53.3456107,
+    "minlon": -6.2575160,
+    "maxlat": 53.3456146,
+    "maxlon": -6.2572384
+  },
+  "nodes": [
+    5355630060,
+    5355630061,
+    3451328715
+  ],
+  "geometry": [
+    { "lat": 53.3456146, "lon": -6.2572384 },
+    { "lat": 53.3456143, "lon": -6.2572556 },
+    { "lat": 53.3456107, "lon": -6.2575160 }
+  ],
+  "tags": {
+    "bicycle": "yes",
+    "bus": "yes",
+    "foot": "yes",
+    "highway": "secondary",
+    "horse": "destination",
+    "lane_markings": "yes",
+    "lanes": "2",
+    "lanes:bus": "1",
+    "lit": "yes",
+    "logainm:ref": "1383246",
+    "logainm:url": "https://www.logainm.ie/1383246.aspx",
+    "maxspeed": "30",
+    "motor_vehicle": "destination",
+    "motorcycle": "yes",
+    "name": "College Street",
+    "name:en": "College Street",
+    "name:ga": "Sráid An Choláiste",
+    "old_name:1821-1835": "Bank Street",
+    "oneway": "yes",
+    "psv": "yes",
+    "ref": "R118",
+    "sidewalk:left": "separate",
+    "sidewalk:right": "no",
+    "source:old_name": "C T Macready",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 593140762,
+  "bounds": {
+    "minlat": 53.3449090,
+    "minlon": -6.2647838,
+    "maxlat": 53.3449946,
+    "maxlon": -6.2642937
+  },
+  "nodes": [
+    2853210401,
+    5659273448,
+    3225735924,
+    3225735923,
+    3225735925,
+    3225735926,
+    3225735927,
+    2853209600,
+    2853210401
+  ],
+  "geometry": [
+    { "lat": 53.3449902, "lon": -6.2645965 },
+    { "lat": 53.3449946, "lon": -6.2642975 },
+    { "lat": 53.3449117, "lon": -6.2642937 },
+    { "lat": 53.3449090, "lon": -6.2644139 },
+    { "lat": 53.3449155, "lon": -6.2645312 },
+    { "lat": 53.3449285, "lon": -6.2646567 },
+    { "lat": 53.3449487, "lon": -6.2647750 },
+    { "lat": 53.3449900, "lon": -6.2647838 },
+    { "lat": 53.3449902, "lon": -6.2645965 }
+  ],
+  "tags": {
+    "addr:city": "Dublin",
+    "addr:street": "Curved Street",
+    "amenity": "theatre",
+    "building": "theatre",
+    "contact:facebook": "https://www.facebook.com/thebuttonfactory/",
+    "email": "office@buttonfactory.ie",
+    "name": "The Button Factory",
+    "name:ko": "더 버튼 팩토리",
+    "phone": "+353 1 670 9105",
+    "website": "https://buttonfactory.ie/",
+    "wheelchair": "yes"
+  }
+},
+{
+  "type": "way",
+  "id": 668245141,
+  "bounds": {
+    "minlat": 53.3456445,
+    "minlon": -6.2645967,
+    "maxlat": 53.3457545,
+    "maxlon": -6.2643530
+  },
+  "nodes": [
+    6257799729,
+    6257799724,
+    12957323502,
+    12957323501,
+    6257799729
+  ],
+  "geometry": [
+    { "lat": 53.3457232, "lon": -6.2645967 },
+    { "lat": 53.3457545, "lon": -6.2643857 },
+    { "lat": 53.3456758, "lon": -6.2643530 },
+    { "lat": 53.3456445, "lon": -6.2645640 },
+    { "lat": 53.3457232, "lon": -6.2645967 }
+  ],
+  "tags": {
+    "addr:housenumber": "25-27",
+    "addr:street": "Wellington Quay",
+    "building": "commercial",
+    "heritage": "4"
+  }
+},
+{
+  "type": "way",
+  "id": 730418127,
+  "bounds": {
+    "minlat": 53.3471672,
+    "minlon": -6.2580248,
+    "maxlat": 53.3472959,
+    "maxlon": -6.2573470
+  },
+  "nodes": [
+    2865089333,
+    14115099436,
+    11395085512
+  ],
+  "geometry": [
+    { "lat": 53.3472959, "lon": -6.2573470 },
+    { "lat": 53.3472526, "lon": -6.2575928 },
+    { "lat": 53.3471672, "lon": -6.2580248 }
+  ],
+  "tags": {
+    "cycleway:right": "separate",
+    "cycleway:right:oneway": "no",
+    "highway": "secondary",
+    "implicit": "no",
+    "lanes": "2",
+    "lanes:psv": "1",
+    "lit": "yes",
+    "logainm:ref": "1381039",
+    "logainm:url": "https://www.logainm.ie/1381039.aspx",
+    "maxspeed": "30",
+    "name": "Burgh Quay",
+    "name:en": "Burgh Quay",
+    "name:ga": "Cé Burg",
+    "old_name": "Mr Hawkin's Wall",
+    "old_name_date": "1661-1662",
+    "oneway": "yes",
+    "psv": "destination",
+    "ref": "R105",
+    "sidewalk": "separate",
+    "smoothness": "excellent",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 876578188,
+  "bounds": {
+    "minlat": 53.3412339,
+    "minlon": -6.2640808,
+    "maxlat": 53.3418657,
+    "maxlon": -6.2636202
+  },
+  "nodes": [
+    26165710,
+    10612578477,
+    5684729793,
+    26165708
+  ],
+  "geometry": [
+    { "lat": 53.3412339, "lon": -6.2640808 },
+    { "lat": 53.3412674, "lon": -6.2640286 },
+    { "lat": 53.3415706, "lon": -6.2638202 },
+    { "lat": 53.3418657, "lon": -6.2636202 }
+  ],
+  "tags": {
+    "cycleway:left": "no",
+    "highway": "unclassified",
+    "lane_markings": "no",
+    "lit": "yes",
+    "maxspeed": "30",
+    "name": "Drury Street",
+    "name:ga": "An Bóthar Beag",
+    "old_name:-1766": "Boater Lane",
+    "old_name:1577-1776": "Butter Lane",
+    "oneway": "yes",
+    "sidewalk:both": "yes",
+    "source:old_name": "C T Macready",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 876578189,
+  "bounds": {
+    "minlat": 53.3412339,
+    "minlon": -6.2653904,
+    "maxlat": 53.3414822,
+    "maxlon": -6.2640808
+  },
+  "nodes": [
+    26165126,
+    11742165394,
+    32235240,
+    12015832636,
+    12015832635,
+    12015832634,
+    26165710
+  ],
+  "geometry": [
+    { "lat": 53.3414822, "lon": -6.2653904 },
+    { "lat": 53.3414573, "lon": -6.2652795 },
+    { "lat": 53.3413896, "lon": -6.2648787 },
+    { "lat": 53.3413130, "lon": -6.2644095 },
+    { "lat": 53.3412853, "lon": -6.2642693 },
+    { "lat": 53.3412491, "lon": -6.2641402 },
+    { "lat": 53.3412339, "lon": -6.2640808 }
+  ],
+  "tags": {
+    "cycleway:both": "no",
+    "highway": "tertiary",
+    "lane_markings": "yes",
+    "lanes": "1",
+    "lit": "yes",
+    "logainm:ref": "1383616",
+    "logainm:url": "https://www.logainm.ie/1383616.aspx",
+    "maxspeed": "30",
+    "name": "Stephen Street Lower",
+    "name:en": "Stephen Street Lower",
+    "name:ga": "Sráid Stiabhna Íochtarach",
+    "oneway": "yes",
+    "sidewalk": "both",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1029430989,
+  "bounds": {
+    "minlat": 53.3474301,
+    "minlon": -6.2563601,
+    "maxlat": 53.3474637,
+    "maxlon": -6.2559417
+  },
+  "nodes": [
+    1396960574,
+    14115099439,
+    14115099438,
+    1396960572
+  ],
+  "geometry": [
+    { "lat": 53.3474637, "lon": -6.2559417 },
+    { "lat": 53.3474584, "lon": -6.2560303 },
+    { "lat": 53.3474430, "lon": -6.2562342 },
+    { "lat": 53.3474301, "lon": -6.2563601 }
+  ],
+  "tags": {
+    "cycleway:left": "no",
+    "cycleway:right": "separate",
+    "highway": "secondary",
+    "lanes": "2",
+    "lanes:psv": "1",
+    "lit": "yes",
+    "logainm:ref": "1381039",
+    "logainm:url": "https://www.logainm.ie/1381039.aspx",
+    "maxspeed": "30",
+    "name": "Burgh Quay",
+    "name:en": "Burgh Quay",
+    "name:ga": "Cé Burg",
+    "old_name": "Mr Hawkin's Wall",
+    "old_name_date": "1661-1662",
+    "oneway": "yes",
+    "ref": "R105",
+    "sidewalk:both:surface": "paving_stones",
+    "sidewalk:left": "yes",
+    "sidewalk:right": "separate",
+    "smoothness": "excellent",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1076654777,
+  "bounds": {
+    "minlat": 53.3427614,
+    "minlon": -6.2621304,
+    "maxlat": 53.3430552,
+    "maxlon": -6.2620339
+  },
+  "nodes": [
+    26165233,
+    2363474217,
+    2363474216
+  ],
+  "geometry": [
+    { "lat": 53.3430552, "lon": -6.2620339 },
+    { "lat": 53.3429064, "lon": -6.2620769 },
+    { "lat": 53.3427614, "lon": -6.2621304 }
+  ],
+  "tags": {
+    "bicycle": "designated",
+    "cycleway:left": "no",
+    "highway": "pedestrian",
+    "lanes": "1",
+    "lit": "yes",
+    "logainm:ref": "1383485",
+    "logainm:url": "https://www.logainm.ie/1383485.aspx",
+    "maxspeed": "30",
+    "name": "William Street South",
+    "name:en": "William Street South",
+    "name:etymology": "William Williams",
+    "name:ga": "Sráid Liam Theas",
+    "oneway": "yes",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1076667201,
+  "bounds": {
+    "minlat": 53.3418657,
+    "minlon": -6.2636202,
+    "maxlat": 53.3420864,
+    "maxlon": -6.2634804
+  },
+  "nodes": [
+    26165708,
+    9872971598
+  ],
+  "geometry": [
+    { "lat": 53.3418657, "lon": -6.2636202 },
+    { "lat": 53.3420864, "lon": -6.2634804 }
+  ],
+  "tags": {
+    "cycleway:left": "no",
+    "highway": "unclassified",
+    "maxspeed": "30",
+    "name": "Drury Street",
+    "name:ga": "An Bóthar Beag",
+    "old_name:-1766": "Boater Lane",
+    "old_name:1577-1776": "Butter Lane",
+    "oneway": "yes",
+    "source:old_name": "C T Macready",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1076667202,
+  "bounds": {
+    "minlat": 53.3428165,
+    "minlon": -6.2630031,
+    "maxlat": 53.3430433,
+    "maxlon": -6.2628703
+  },
+  "nodes": [
+    9872940981,
+    10743755510,
+    2705755588,
+    26165229
+  ],
+  "geometry": [
+    { "lat": 53.3428165, "lon": -6.2630031 },
+    { "lat": 53.3428336, "lon": -6.2629915 },
+    { "lat": 53.3430040, "lon": -6.2628758 },
+    { "lat": 53.3430433, "lon": -6.2628703 }
+  ],
+  "tags": {
+    "cycleway:left": "no",
+    "highway": "unclassified",
+    "lane_markings": "no",
+    "maxspeed": "30",
+    "name": "Drury Street",
+    "name:ga": "An Bóthar Beag",
+    "old_name:-1766": "Boater Lane",
+    "old_name:1577-1776": "Butter Lane",
+    "sidewalk:both": "yes",
+    "source:old_name": "C T Macready",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1177247242,
+  "bounds": {
+    "minlat": 53.3453131,
+    "minlon": -6.2591324,
+    "maxlat": 53.3453301,
+    "maxlon": -6.2588168
+  },
+  "nodes": [
+    10936901289,
+    10936901290,
+    2414927987,
+    3452011333,
+    14115099433,
+    659795
+  ],
+  "geometry": [
+    { "lat": 53.3453131, "lon": -6.2588168 },
+    { "lat": 53.3453138, "lon": -6.2588783 },
+    { "lat": 53.3453160, "lon": -6.2589449 },
+    { "lat": 53.3453204, "lon": -6.2590174 },
+    { "lat": 53.3453229, "lon": -6.2590560 },
+    { "lat": 53.3453301, "lon": -6.2591324 }
+  ],
+  "tags": {
+    "highway": "secondary_link",
+    "lane_markings": "yes",
+    "lanes": "2",
+    "lit": "yes",
+    "logainm:ref": "1383246",
+    "logainm:url": "https://www.logainm.ie/1383246.aspx",
+    "maxspeed": "30",
+    "name": "College Street",
+    "name:en": "College Street",
+    "name:ga": "Sráid An Choláiste",
+    "oneway": "yes",
+    "ref": "R138",
+    "sidewalk:left": "no",
+    "sidewalk:right": "separate",
+    "smoothness": "excellent",
+    "surface": "asphalt",
+    "turn:lanes": "right|right"
+  }
+},
+{
+  "type": "way",
+  "id": 1184889198,
+  "bounds": {
+    "minlat": 53.3473966,
+    "minlon": -6.2566534,
+    "maxlat": 53.3474301,
+    "maxlon": -6.2563601
+  },
+  "nodes": [
+    1396960572,
+    14115099437,
+    3451374065
+  ],
+  "geometry": [
+    { "lat": 53.3474301, "lon": -6.2563601 },
+    { "lat": 53.3474122, "lon": -6.2565364 },
+    { "lat": 53.3473966, "lon": -6.2566534 }
+  ],
+  "tags": {
+    "cycleway:left": "no",
+    "cycleway:right": "separate",
+    "highway": "secondary",
+    "lanes": "2",
+    "lanes:psv": "1",
+    "lit": "yes",
+    "logainm:ref": "1381039",
+    "logainm:url": "https://www.logainm.ie/1381039.aspx",
+    "maxspeed": "30",
+    "name": "Burgh Quay",
+    "name:en": "Burgh Quay",
+    "name:ga": "Cé Burg",
+    "old_name": "Mr Hawkin's Wall",
+    "old_name_date": "1661-1662",
+    "oneway": "yes",
+    "ref": "R105",
+    "sidewalk:both:surface": "paving_stones",
+    "sidewalk:left": "yes",
+    "sidewalk:right": "separate",
+    "smoothness": "excellent",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1196167947,
+  "bounds": {
+    "minlat": 53.3473653,
+    "minlon": -6.2568902,
+    "maxlat": 53.3473966,
+    "maxlon": -6.2566534
+  },
+  "nodes": [
+    3451374065,
+    11100274512
+  ],
+  "geometry": [
+    { "lat": 53.3473966, "lon": -6.2566534 },
+    { "lat": 53.3473653, "lon": -6.2568902 }
+  ],
+  "tags": {
+    "cycleway:left": "no",
+    "cycleway:right": "separate",
+    "highway": "secondary",
+    "lanes": "2",
+    "lanes:psv": "1",
+    "lit": "yes",
+    "logainm:ref": "1381039",
+    "logainm:url": "https://www.logainm.ie/1381039.aspx",
+    "maxspeed": "30",
+    "name": "Burgh Quay",
+    "name:en": "Burgh Quay",
+    "name:ga": "Cé Burg",
+    "old_name": "Mr Hawkin's Wall",
+    "old_name_date": "1661-1662",
+    "oneway": "yes",
+    "ref": "R105",
+    "sidewalk:left": "yes",
+    "sidewalk:right": "separate",
+    "smoothness": "excellent",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1224826047,
+  "bounds": {
+    "minlat": 53.3457922,
+    "minlon": -6.2635747,
+    "maxlat": 53.3458894,
+    "maxlon": -6.2634758
+  },
+  "nodes": [
+    11358633339,
+    4388188607,
+    11358633340,
+    11358633341,
+    11358633339
+  ],
+  "geometry": [
+    { "lat": 53.3458745, "lon": -6.2635747 },
+    { "lat": 53.3457922, "lon": -6.2635619 },
+    { "lat": 53.3458031, "lon": -6.2634758 },
+    { "lat": 53.3458894, "lon": -6.2634825 },
+    { "lat": 53.3458745, "lon": -6.2635747 }
+  ],
+  "tags": {
+    "addr:housenumber": "41",
+    "addr:street": "Wellington Quay",
+    "building": "retail"
+  }
+},
+{
+  "type": "way",
+  "id": 1263553964,
+  "bounds": {
+    "minlat": 53.3470744,
+    "minlon": -6.2586758,
+    "maxlat": 53.3470908,
+    "maxlon": -6.2585905
+  },
+  "nodes": [
+    11611585343,
+    11611585327,
+    11611585331
+  ],
+  "geometry": [
+    { "lat": 53.3470908, "lon": -6.2585905 },
+    { "lat": 53.3470841, "lon": -6.2586209 },
+    { "lat": 53.3470744, "lon": -6.2586758 }
+  ],
+  "tags": {
+    "highway": "cycleway",
+    "name": "Burgh Quay",
+    "name:en": "Burgh Quay",
+    "name:ga": "Cé Burg",
+    "oneway": "no",
+    "sidewalk:right": "separate",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1263553967,
+  "bounds": {
+    "minlat": 53.3470908,
+    "minlon": -6.2585905,
+    "maxlat": 53.3473167,
+    "maxlon": -6.2575185
+  },
+  "nodes": [
+    11611585324,
+    11611585325,
+    11611585326,
+    11611585343
+  ],
+  "geometry": [
+    { "lat": 53.3473167, "lon": -6.2575185 },
+    { "lat": 53.3472539, "lon": -6.2578496 },
+    { "lat": 53.3471730, "lon": -6.2582296 },
+    { "lat": 53.3470908, "lon": -6.2585905 }
+  ],
+  "tags": {
+    "highway": "cycleway",
+    "lanes": "2",
+    "name": "Burgh Quay",
+    "name:en": "Burgh Quay",
+    "name:ga": "Cé Burg",
+    "oneway": "no",
+    "separation": "kerb",
+    "sidewalk:right": "separate",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1263872043,
+  "bounds": {
+    "minlat": 53.3413924,
+    "minlon": -6.2654235,
+    "maxlat": 53.3414822,
+    "maxlon": -6.2653904
+  },
+  "nodes": [
+    11742165399,
+    11742165395,
+    26165126
+  ],
+  "geometry": [
+    { "lat": 53.3413924, "lon": -6.2654235 },
+    { "lat": 53.3414009, "lon": -6.2654212 },
+    { "lat": 53.3414822, "lon": -6.2653904 }
+  ],
+  "tags": {
+    "cycleway:left": "no",
+    "cycleway:right": "no",
+    "highway": "secondary",
+    "lane_markings": "yes",
+    "lanes": "2",
+    "lit": "yes",
+    "logainm:ref": "1383321",
+    "logainm:url": "https://www.logainm.ie/1383321.aspx",
+    "maxspeed": "30",
+    "name": "Aungier Street",
+    "name:en": "Aungier Street",
+    "name:ga": "Sráid Aungier",
+    "ref": "R114",
+    "sidewalk": "both",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1263872044,
+  "bounds": {
+    "minlat": 53.3413598,
+    "minlon": -6.2654321,
+    "maxlat": 53.3413924,
+    "maxlon": -6.2654235
+  },
+  "nodes": [
+    11742165392,
+    11742165399
+  ],
+  "geometry": [
+    { "lat": 53.3413598, "lon": -6.2654321 },
+    { "lat": 53.3413924, "lon": -6.2654235 }
+  ],
+  "tags": {
+    "cycleway:left": "no",
+    "cycleway:right": "lane",
+    "cycleway:right:lane": "advisory",
+    "highway": "secondary",
+    "lane_markings": "yes",
+    "lanes": "2",
+    "lit": "yes",
+    "logainm:ref": "1383321",
+    "logainm:url": "https://www.logainm.ie/1383321.aspx",
+    "maxspeed": "30",
+    "name": "Aungier Street",
+    "name:en": "Aungier Street",
+    "name:ga": "Sráid Aungier",
+    "ref": "R114",
+    "sidewalk": "both",
+    "smoothness": "good",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1263880316,
+  "bounds": {
+    "minlat": 53.3405405,
+    "minlon": -6.2627434,
+    "maxlat": 53.3406020,
+    "maxlon": -6.2626869
+  },
+  "nodes": [
+    2465416009,
+    11742247023
+  ],
+  "geometry": [
+    { "lat": 53.3405405, "lon": -6.2627434 },
+    { "lat": 53.3406020, "lon": -6.2626869 }
+  ],
+  "tags": {
+    "alt_name:ga": "Rae Chlarendon",
+    "cycleway:both": "no",
+    "highway": "unclassified",
+    "lane_markings": "no",
+    "lanes": "1",
+    "lit": "yes",
+    "logainm:ref": "1383131",
+    "logainm:url": "https://www.logainm.ie/1383131.aspx",
+    "maxspeed": "30",
+    "name": "Clarendon Row",
+    "name:en": "Clarendon Row",
+    "name:ga": "Rae Clarendon",
+    "oneway": "yes",
+    "sidewalk": "both",
+    "surface": "asphalt",
+    "width": "2"
+  }
+},
+{
+  "type": "way",
+  "id": 1310767084,
+  "bounds": {
+    "minlat": 53.3470476,
+    "minlon": -6.2588116,
+    "maxlat": 53.3470744,
+    "maxlon": -6.2586758
+  },
+  "nodes": [
+    11611585331,
+    11611585336,
+    11611585338
+  ],
+  "geometry": [
+    { "lat": 53.3470744, "lon": -6.2586758 },
+    { "lat": 53.3470635, "lon": -6.2587365 },
+    { "lat": 53.3470476, "lon": -6.2588116 }
+  ],
+  "tags": {
+    "highway": "cycleway",
+    "name": "Burgh Quay",
+    "name:en": "Burgh Quay",
+    "name:ga": "Cé Burg",
+    "oneway": "yes",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1310767085,
+  "bounds": {
+    "minlat": 53.3470018,
+    "minlon": -6.2587868,
+    "maxlat": 53.3470445,
+    "maxlon": -6.2585951
+  },
+  "nodes": [
+    528802184,
+    1442736
+  ],
+  "geometry": [
+    { "lat": 53.3470445, "lon": -6.2585951 },
+    { "lat": 53.3470018, "lon": -6.2587868 }
+  ],
+  "tags": {
+    "cycleway:right": "separate",
+    "highway": "secondary",
+    "lanes": "3",
+    "lanes:psv": "1",
+    "lit": "yes",
+    "logainm:ref": "1381039",
+    "logainm:url": "https://www.logainm.ie/1381039.aspx",
+    "maxspeed": "30",
+    "motor_vehicle:lanes": "destination|no|yes",
+    "name": "Burgh Quay",
+    "name:en": "Burgh Quay",
+    "name:ga": "Cé Burg",
+    "old_name": "Mr Hawkin's Wall",
+    "old_name_date": "1661-1662",
+    "oneway": "yes",
+    "psv:lanes": "yes|designated|yes",
+    "ref": "R105",
+    "sidewalk": "separate",
+    "smoothness": "excellent",
+    "surface": "asphalt",
+    "turn:lanes": "left|through|through"
+  }
+},
+{
+  "type": "way",
+  "id": 1310767758,
+  "bounds": {
+    "minlat": 53.3473486,
+    "minlon": -6.2573553,
+    "maxlat": 53.3473759,
+    "maxlon": -6.2572150
+  },
+  "nodes": [
+    11611585321,
+    11611585322,
+    11611585323
+  ],
+  "geometry": [
+    { "lat": 53.3473759, "lon": -6.2572150 },
+    { "lat": 53.3473608, "lon": -6.2572926 },
+    { "lat": 53.3473486, "lon": -6.2573553 }
+  ],
+  "tags": {
+    "crossing": "marked",
+    "highway": "cycleway",
+    "lanes": "2",
+    "name": "Burgh Quay",
+    "name:en": "Burgh Quay",
+    "name:ga": "Cé Burg",
+    "oneway": "no",
+    "sidewalk:right": "separate",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1437033556,
+  "bounds": {
+    "minlat": 53.3473854,
+    "minlon": -6.2571662,
+    "maxlat": 53.3475072,
+    "maxlon": -6.2559571
+  },
+  "nodes": [
+    11611585315,
+    11611585316,
+    11611585317,
+    11611585318,
+    11611585319,
+    11611585320,
+    12280318697,
+    12133151528,
+    12237092346
+  ],
+  "geometry": [
+    { "lat": 53.3475072, "lon": -6.2559571 },
+    { "lat": 53.3475025, "lon": -6.2560801 },
+    { "lat": 53.3474949, "lon": -6.2561974 },
+    { "lat": 53.3474821, "lon": -6.2563518 },
+    { "lat": 53.3474597, "lon": -6.2565983 },
+    { "lat": 53.3474260, "lon": -6.2568954 },
+    { "lat": 53.3474035, "lon": -6.2570594 },
+    { "lat": 53.3473975, "lon": -6.2570953 },
+    { "lat": 53.3473854, "lon": -6.2571662 }
+  ],
+  "tags": {
+    "highway": "cycleway",
+    "lanes": "2",
+    "name": "Burgh Quay",
+    "name:en": "Burgh Quay",
+    "name:ga": "Cé Burg",
+    "oneway": "no",
+    "separation": "kerb",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1489966131,
+  "bounds": {
+    "minlat": 53.3447670,
+    "minlon": -6.2647681,
+    "maxlat": 53.3448860,
+    "maxlon": -6.2642957
+  },
+  "nodes": [
+    13657039277,
+    13657039276,
+    13657039278,
+    13657039279,
+    13657039286,
+    2853176599,
+    2853180602,
+    2853180601,
+    13657039283,
+    13657039284,
+    13657039280,
+    13657039281,
+    13657039282,
+    13657039277
+  ],
+  "geometry": [
+    { "lat": 53.3447670, "lon": -6.2642957 },
+    { "lat": 53.3447671, "lon": -6.2644353 },
+    { "lat": 53.3447679, "lon": -6.2644716 },
+    { "lat": 53.3447749, "lon": -6.2644723 },
+    { "lat": 53.3447740, "lon": -6.2645486 },
+    { "lat": 53.3447739, "lon": -6.2645893 },
+    { "lat": 53.3448223, "lon": -6.2645949 },
+    { "lat": 53.3448185, "lon": -6.2647613 },
+    { "lat": 53.3448860, "lon": -6.2647681 },
+    { "lat": 53.3448723, "lon": -6.2646699 },
+    { "lat": 53.3448644, "lon": -6.2645924 },
+    { "lat": 53.3448553, "lon": -6.2644660 },
+    { "lat": 53.3448522, "lon": -6.2642981 },
+    { "lat": 53.3447670, "lon": -6.2642957 }
+  ],
+  "tags": {
+    "building": "yes",
+    "heritage": "4"
+  }
+},
+{
+  "type": "way",
+  "id": 1555330165,
+  "bounds": {
+    "minlat": 53.3473167,
+    "minlon": -6.2575185,
+    "maxlat": 53.3473486,
+    "maxlon": -6.2573553
+  },
+  "nodes": [
+    11611585323,
+    11611585324
+  ],
+  "geometry": [
+    { "lat": 53.3473486, "lon": -6.2573553 },
+    { "lat": 53.3473167, "lon": -6.2575185 }
+  ],
+  "tags": {
+    "crossing": "marked",
+    "highway": "cycleway",
+    "lanes": "2",
+    "name": "Burgh Quay",
+    "name:en": "Burgh Quay",
+    "name:ga": "Cé Burg",
+    "oneway": "no",
+    "sidewalk:right": "separate",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1555330168,
+  "bounds": {
+    "minlat": 53.3473759,
+    "minlon": -6.2572150,
+    "maxlat": 53.3473854,
+    "maxlon": -6.2571662
+  },
+  "nodes": [
+    12237092346,
+    11611585321
+  ],
+  "geometry": [
+    { "lat": 53.3473854, "lon": -6.2571662 },
+    { "lat": 53.3473759, "lon": -6.2572150 }
+  ],
+  "tags": {
+    "crossing": "marked",
+    "highway": "cycleway",
+    "lanes": "2",
+    "name": "Burgh Quay",
+    "name:en": "Burgh Quay",
+    "name:ga": "Cé Burg",
+    "oneway": "no",
+    "sidewalk:right": "separate",
+    "surface": "asphalt"
+  }
+},
+{
+  "type": "way",
+  "id": 1562983373,
+  "bounds": {
+    "minlat": 53.3470445,
+    "minlon": -6.2585951,
+    "maxlat": 53.3471672,
+    "maxlon": -6.2580248
+  },
+  "nodes": [
+    11395085512,
+    2987615201,
+    8608822310,
+    528802184
+  ],
+  "geometry": [
+    { "lat": 53.3471672, "lon": -6.2580248 },
+    { "lat": 53.3470723, "lon": -6.2584685 },
+    { "lat": 53.3470609, "lon": -6.2585195 },
+    { "lat": 53.3470445, "lon": -6.2585951 }
+  ],
+  "tags": {
+    "cycleway:right": "separate",
+    "cycleway:right:oneway": "no",
+    "highway": "secondary",
+    "implicit": "no",
+    "lanes": "3",
+    "lanes:psv": "1",
+    "lit": "yes",
+    "logainm:ref": "1381039",
+    "logainm:url": "https://www.logainm.ie/1381039.aspx",
+    "maxspeed": "30",
+    "motor_vehicle:lanes": "destination|no|yes",
+    "name": "Burgh Quay",
+    "name:en": "Burgh Quay",
+    "name:ga": "Cé Burg",
+    "old_name": "Mr Hawkin's Wall",
+    "old_name_date": "1661-1662",
+    "oneway": "yes",
+    "psv": "destination",
+    "psv:lanes": "yes|designated|yes",
+    "ref": "R105",
+    "sidewalk": "separate",
+    "smoothness": "excellent",
+    "surface": "asphalt",
+    "turn:lanes": "left|through|through"
+  }
+}
+
+  ]
+}

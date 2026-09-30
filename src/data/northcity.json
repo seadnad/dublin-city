@@ -1,0 +1,6 @@
+{
+  "_note": "Shared by src/world/sites.js (placement) and tools/blender/build_northcity.py (the model). Game metres.",
+  "clerys": { "w": 34, "d": 24, "clockU": 5 },
+  "parnell": { "rotundaS": 26.5, "forecourt": 4.5, "drumR": 9.5, "linkU": 24.5, "gateW": 12, "gateD": 22, "gardenW": 91, "gardenD": 46, "gardenKW": 0.464 },
+  "busaras": { "w": 40, "d": 34 }
+}

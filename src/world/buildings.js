@@ -78,8 +78,8 @@ for (const poly of canalBankPolys()) fillPolygon(poly);
 for (const g of world.greens) fillPolygon(g.poly);
 for (const p of [...parkPolys, ...campusPolys]) fillPolygon(p.poly);
 for (const r of reserved) markOBB(r, -1);
-// Luas platforms stand in the road; keep an apron clear around the track anyway
-for (const { pts } of world.luasLines) for (let i = 1; i < pts.length; i++) fillSegment(pts[i - 1], pts[i], 6);
+// keep the Luas clear: the tracks and a strip each side for the platforms and the overhead-line poles
+for (const line of world.luasLines) for (const pts of line.tracks) for (let i = 1; i < pts.length; i++) fillSegment(pts[i - 1], pts[i], 6.5);
 
 // ---------- styles ----------
 const S = { GEORGIAN: 0, BRICK: 1, STUCCO: 2, TEMPLEBAR: 3, MODERN: 4 };

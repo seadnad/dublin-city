@@ -20,6 +20,11 @@ import { placeKilmainham } from './kilmainham.js';
 import { placeBarrowStreet } from './barrowst.js';
 import { placeGrandCanal, gcsColliders } from './gcsquare.js';
 import { buildTowers } from './towers.js';
+import { buildLiffey } from './liffey.js';
+import { buildPubs } from './pubs.js';
+import { collegeGreen, suffolkStreet, placeKildare, setKildareNight } from './kildare.js';
+import { placeNorthCity, northCityColliders } from './northcity.js';
+import { buildRailway, placeLoopline } from './railway.js';
 import { LITE } from '../render/quality.js';
 const lawnMat = () => getStreets().grassMat;
 import { buildPark } from './park.js';
@@ -1552,18 +1557,6 @@ function clockCorner(site) {
   return b.build('Dame Street clock tower');
 }
 
-function grattanIsland(site) {
-  // Henry Grattan on his granite pedestal, on a kerbed island in the middle of College Green
-  const b = new Builder(site);
-  b.box(3.2, KERB_H, 16, M.granite);
-  b.box(2.8, 0.05, 15.4, M.cobble, { y: KERB_H });
-  b.box(2.2, 3.4, 2.2, M.graniteSmooth, { y: KERB_H });
-  b.box(2.6, 0.4, 2.6, M.graniteSmooth, { y: KERB_H + 3.4 });
-  b.statue(0, KERB_H + 3.8, 0, 1.25, M.bronze);
-  b.solid(0, 0, 3.2, 16);
-  return b.build('Grattan monument');
-}
-
 // ---------- Grafton Street ----------
 // shopfront elevations painted to scale (32 px per metre), used on a plane over the building's street face
 const PXM = 32;
@@ -1933,83 +1926,12 @@ function gpo(site) {
 }
 
 // ---------- Temple Bar (docs/research/temple-bar.md) ----------
-// dark Dublin brick with white 2-over-2 sashes and stone sills: one bay 4 m x 3.1 m
-const darkBrickTex = canvasTex(128, 100, (ctx, w, h) => {
-  ctx.fillStyle = '#5e3a2e'; ctx.fillRect(0, 0, w, h);
-  for (let y = 0; y < h; y += 4) { ctx.fillStyle = 'rgba(30,15,10,0.35)'; ctx.fillRect(0, y, w, 1); }
-  for (let i = 0; i < 300; i++) { ctx.fillStyle = `rgba(${90 + Math.random() * 50},${50 + Math.random() * 20},35,0.25)`; ctx.fillRect(Math.random() * w, Math.random() * h, 7, 3); }
-  ctx.fillStyle = '#b8b0a2'; ctx.fillRect(40, 82, 48, 5);
-  ctx.fillStyle = '#f2f0ea'; ctx.fillRect(44, 20, 40, 62);
-  ctx.fillStyle = '#26303a'; ctx.fillRect(48, 24, 32, 26); ctx.fillRect(48, 53, 32, 26);
-});
-// a pub front 16 m x 4.2 m: glossy red joinery, black fascia with gilt lettering, pilasters, lit windows
-const pubFrontTex = (name, base = '#b3121b') => canvasTex(1024, 270, (ctx, w, h) => {
-  const px = w / 16;
-  ctx.fillStyle = base; ctx.fillRect(0, 0, w, h);
-  ctx.fillStyle = '#141414'; ctx.fillRect(0, 10, w, 0.9 * px);                       // fascia
-  ctx.fillStyle = '#d4a63a'; ctx.font = `bold ${0.62 * px}px Georgia`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(name, w / 2, 10 + 0.45 * px);
-  ctx.fillStyle = '#6a0a10'; ctx.fillRect(0, 0, w, 10); ctx.fillRect(0, 10 + 0.9 * px, w, 6);   // cornice shadow
-  for (let k = 0; k <= 5; k++) {                                                       // pilasters
-    const x = k * (w / 5) - 10;
-    ctx.fillStyle = '#8f0e16'; ctx.fillRect(x, 10 + 0.9 * px, 20, h);
-    ctx.fillStyle = '#d4a63a'; ctx.fillRect(x + 3, 10 + 0.9 * px + 4, 14, 5);
-  }
-  for (let k = 0; k < 5; k++) {                                                        // windows / doors
-    const x = k * (w / 5) + 22, ww = w / 5 - 44, top = 10 + 0.9 * px + 22, door = k === 1 || k === 3;
-    ctx.fillStyle = '#2a1a12'; ctx.fillRect(x, top, ww, h - top - (door ? 0 : 0.7 * px));
-    const g = ctx.createLinearGradient(0, top, 0, h); g.addColorStop(0, '#f2b766'); g.addColorStop(1, '#6b3a1c');
-    ctx.fillStyle = g; ctx.fillRect(x + 6, top + 6, ww - 12, h - top - (door ? 6 : 0.7 * px + 6));
-    ctx.fillStyle = base; if (!door) ctx.fillRect(x, h - 0.7 * px, ww, 0.7 * px);     // stall riser
-    ctx.fillStyle = '#141414'; for (let j = 1; j < 3; j++) ctx.fillRect(x + (ww * j) / 3, top, 3, h - top - (door ? 0 : 0.7 * px));
-  }
-});
-const wallNameTex = (name) => canvasTex(1024, 128, (ctx, w, h) => {
-  ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = '#ede6d6'; ctx.font = 'bold 92px Georgia'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(name, w / 2, h / 2 + 4);
-});
 Object.assign(M, {
-  darkBrick: new THREE.MeshStandardMaterial({ map: darkBrickTex, roughness: 0.9 }),
-  pubRed: new THREE.MeshStandardMaterial({ map: pubFrontTex("CRAMPTON'S BAR"), roughness: 0.35, emissive: 0xffffff, emissiveMap: pubFrontTex("CRAMPTON'S BAR"), emissiveIntensity: 0.04 }),
-  pubRedSide: new THREE.MeshStandardMaterial({ map: pubFrontTex('EST. 1840 · MUSIC NIGHTLY'), roughness: 0.35 }),
-  wallName: new THREE.MeshStandardMaterial({ map: wallNameTex("CRAMPTON'S BAR"), transparent: true, alphaTest: 0.3, roughness: 0.8, depthWrite: false }),
   basket: new THREE.MeshStandardMaterial({ color: 0x3f6b2a, roughness: 0.95 }),
   basketFlowers: new THREE.MeshStandardMaterial({ color: 0xd63a6a, roughness: 0.9 }),
-  neonRed: glow(0xff2a3a, 0.4, 3.2),
   flagsSquare: new THREE.MeshStandardMaterial({ color: 0x9e9c97, map: stoneT, roughness: 0.8 }),
 });
-// the pub windows glow warmly after dark
-neon.push({ m: M.pubRed, day: 0.04, night: 0.7 });
-
-function redPub(site) {
-  // The landmark red pub corner (style only, invented name): glossy red ground floor wrapping the corner under a
-  // black-and-gilt fascia, three storeys of dark brick with white sashes and painted wall lettering, hanging
-  // baskets, scroll lanterns and a neon blade. Local +z faces Temple Bar, local -x faces Temple Lane South.
-  const b = new Builder(site);
-  const W = site.w, D = site.d, G = 4.2, H = G + 3 * 3.1;
-  b.facade(W, H - G, D, M.darkBrick, M.slate, { y: G }, 4, 3.1);
-  b.box(W, G, D, M.darkBrick);
-  b.add(new THREE.PlaneGeometry(W, G), M.pubRed, { y: G / 2, z: D / 2 + 0.03 });
-  b.add(new THREE.PlaneGeometry(D, G), M.pubRedSide, { x: -W / 2 - 0.03, y: G / 2, ry: -Math.PI / 2 });
-  b.box(W + 0.3, 0.25, 0.5, M.dark, { y: G, z: D / 2 + 0.1 }); b.box(0.5, 0.25, D + 0.3, M.dark, { x: -W / 2 - 0.1, y: G });
-  b.box(W + 0.4, 0.5, D + 0.4, M.portlandSmooth, { y: H });
-  b.add(new THREE.PlaneGeometry(W * 0.9, 1.1), M.wallName, { y: H - 1.2, z: D / 2 + 0.04 });
-  // baskets over the fascia, lanterns on scroll brackets, the neon blade on the corner
-  for (let k = 0; k < 6; k++) {
-    const x = -W / 2 + 1.6 + k * ((W - 3.2) / 5);
-    b.box(0.03, 0.5, 0.03, M.dark, { x, y: G + 0.4, z: D / 2 + 0.6 });
-    b.add(new THREE.IcosahedronGeometry(0.42, 1), M.basket, { x, y: G + 0.25, z: D / 2 + 0.6 });
-    b.add(new THREE.IcosahedronGeometry(0.3, 0), M.basketFlowers, { x, y: G + 0.5, z: D / 2 + 0.6 });
-  }
-  for (const [x, z] of [[-W / 2 + 4, D / 2], [W / 2 - 4, D / 2]]) {
-    b.box(0.04, 0.04, 0.6, M.dark, { x, y: G + 1.9, z: z + 0.3 });
-    b.add(new THREE.CylinderGeometry(0.16, 0.12, 0.4, 4), M.lampGlow, { x, y: G + 1.5, z: z + 0.6 });
-  }
-  b.box(0.15, 3.4, 0.9, M.neonRed, { x: -W / 2 - 0.1, y: G + 0.8, z: D / 2 - 1.2 });
-  b.solid(0, 0, W, D);
-  return b.build("Crampton's Bar");
-}
+// (the Temple Bar pub on the Temple Lane South corner is built by the pub-front kit, src/world/pubs.js)
 
 function templeBarSquare(sq) {
   // granite flags wall to wall, benches, a young tree and a modern black lamp column
@@ -2294,9 +2216,9 @@ export function buildLandmarks(scene) {
     smithOBrien(extraSites.smithOBrien), grayMonument(extraSites.gray), larkinMonument(extraSites.larkin),
     fatherMathewMonument(extraSites.fatherMathew), parnellMonument(extraSites.parnell),
     cityHall(S.cityHall), dublinCastle(extraSites.castle), centralBank(S.centralBank), olympia(extraSites.olympia),
-    clockCorner(extraSites.clockCorner), grattanIsland(extraSites.grattan),
+    clockCorner(extraSites.clockCorner), collegeGreen({ Builder, M, KERB_H }), ...suffolkStreet({ Builder, M, KERB_H }),
     iveaghPlayCentre(extraSites.iveaghPlay),
-    merchantsHall(extraSites.merchantsHall), redPub(extraSites.redPub), templeBarSquare(extraSites.tbSquare), templeBarDressing(),
+    merchantsHall(extraSites.merchantsHall), templeBarSquare(extraSites.tbSquare), templeBarDressing(),
     bewleys(extraSites.bewleys), brownThomas(extraSites.brownThomas), weirAndSons(extraSites.weir), stephensGreenCentre(extraSites.sgCentre), graftonDressing(),
     drSteevens(extraSites.steevens), jamesGate(extraSites.jamesGate), breweryWall(extraSites.breweryWall0), breweryWall(extraSites.breweryWall1), beckettHarp(S.beckett), convention(S.convention),
     grattanOffice(S.grandCanalSt), grandCanalSquare(S.grandCanal.square),
@@ -2308,9 +2230,23 @@ export function buildLandmarks(scene) {
   // Dublin's tall buildings (src/world/towers.js): Liberty Hall, George's Quay Plaza, College Square, Capital Dock, the Exo,
   // the Grand Canal Dock towers and the three tallest church spires
   const towers = buildTowers(scene, Builder);
+  // the famous pubs (src/world/pubs.js): one atlas, one material; their groups join the landmark batch
+  const pubs = buildPubs(Builder);
+  groups.push(...pubs.groups);
+  // the DART line (src/world/railway.js): viaduct, street bridges, track, overhead line, stations; joins the batch
+  const railway = buildRailway();
+  groups.push(railway.group);
+  placeLoopline(scene); // the Loopline Bridge and the lattice span over Beresford Place (Blender hero)
+  // Connolly Station's 1844 front on Amiens Street (Blender hero, shared stone materials; lit windows at night)
+  { const C = S.connolly; addBox(C.x, C.z, C.w / 2, C.d / 2, C.rot); placeParts(scene, 'connolly', { parts: { connolly: { x: C.x, z: C.z, rot: C.rot } } }, 'Connolly Station'); }
   if (phoenixPark) groups.push(phoenixPark.group);
+  // the Liffey Boardwalk, the Millennium and O'Casey footbridges, the Famine, the Jeanie Johnston and CHQ (liffey.js)
+  const liffey = buildLiffey({ Builder, M, waterGlowSources });
+  groups.push(...liffey.groups);
   for (const g of groups) scene.add(g);
   fourCourts(); // its colliders and statues (the hero is placed below)
+  // Kildare Street / Merrion Street (Blender hero; its colliders and the Shelbourne's torch-bearers queue first)
+  placeKildare(scene, { Builder, M });
   buildStatues(scene); // the statue-kit figures queued by the builders above (loads statues.glb)
   // Parliament House / Bank of Ireland (Blender hero; the old procedural block if it can't load)
   parliamentColliders();
@@ -2335,6 +2271,11 @@ export function buildLandmarks(scene) {
       arenaHero = h; h.setNight(nightLevel);
     });
   }
+  // Clerys, Parnell Square (the Rotunda, the Ambassador, the Gate, the Garden of Remembrance) and Busáras: one Blender
+  // hero, solid whether or not it loads; the stone is floodlit with the rest, the clock and the offices lit at night
+  let northHero = null;
+  northCityColliders();
+  placeNorthCity(scene).then((h) => { if (h) { northHero = h; h.setNight(nightLevel); } });
   // the Four Courts (Blender hero; floodlit through setStoneNight)
   placeParts(scene, 'fourcourts', S.fourCourts, 'Four Courts');
   // St Patrick's Cathedral (Blender hero) and its park dressing
@@ -2419,7 +2360,7 @@ export function buildLandmarks(scene) {
   // floating place labels were removed from the 3D view (landmarks are on the map instead)
   const labels = new THREE.Group();
   return {
-    groups, labels, trees, park: phoenixPark, towers,
+    groups, labels, trees, park: phoenixPark, towers, pubs,
     setLabels(on) { labels.visible = on; },
     // docklands lighting after dark (0 = day, 1 = night)
     setNight(level) {
@@ -2427,6 +2368,7 @@ export function buildLandmarks(scene) {
       nightLevel = level; if (hapennyHero) hapennyHero.setNight(level);
       if (crokeHero) crokeHero.setNight(level);
       if (heustonHero) heustonHero.setNight(level);
+      liffey.setNight(level);
       if (arenaHero) arenaHero.setNight(level);
       if (avivaHero) avivaHero.setNight(level);
       if (ccjHero) ccjHero.setNight(level);
@@ -2434,7 +2376,11 @@ export function buildLandmarks(scene) {
       if (barrowHero) barrowHero.setNight(level);
       if (gcsHero) gcsHero.setNight(level);
       if (guinnessHero) guinnessHero.setNight(level);
+      if (northHero) northHero.setNight(level);
+      pubs.setNight(level);
       towers.setNight(level);
+      setKildareNight(level);
+      railway.setNight(level);
       setStoneNight(level);
       if (phoenixPark) phoenixPark.setNight(level);
     },
