@@ -646,17 +646,31 @@ export function buildStreets(scene, puddles) {
   settsMesh.receiveShadow = true;
   group.add(settsMesh);
 
-  // Luas: concrete track bed and four steel rails
+  // Luas: a concrete bed and two steel rails (standard gauge) along every track
   const bed = new Ribbons(), rails = new Ribbons();
-  for (const { pts: lp } of world.luasLines) {
-    bed.strip(lp, 0, 7.2, 0.006, null);
-    for (const off of [-2.52, -1.08, 1.08, 2.52]) rails.strip(lp, off, 0.075, 0.011, null);
+  for (const line of world.luasLines) for (const lp of line.tracks) {
+    bed.strip(lp, 0, 3.7, 0.006, null);
+    for (const off of [-0.72, 0.72]) rails.strip(lp, off, 0.075, 0.011, null);
   }
   const bedGeo = bed.geometry();
   { const p = bedGeo.attributes.position, uv = bedGeo.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i) / 3.6, p.getZ(i) / 3.6); }
   const bedMat = new THREE.MeshStandardMaterial({ map: P.map, normalMap: P.normalMap, color: 0xb9b6ae, roughness: 0.85, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
   const railMat = addReflections(new THREE.MeshStandardMaterial({ color: 0xb8bcc0, metalness: 1, roughness: 0.25, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 }), 1.0);
   group.add(new THREE.Mesh(bedGeo, bedMat), new THREE.Mesh(rails.geometry(), railMat));
+  // off the street grid the tracks run on a grassed reservation (the Red Line on the old canal bed past Rialto, the
+  // Green Line on the old railway to Broombridge and Ranelagh): a verge along the outer side of each track
+  const verge = new Ribbons();
+  for (const line of world.luasLines) for (const lp of line.tracks) {
+    let run = [];
+    const flush = () => { if (run.length > 1) verge.strip(run, -4.15, 4.6, 0.004, null); run = []; };
+    for (const p of lp) { if (p.open) run.push(p); else flush(); }
+    flush();
+  }
+  if (verge.pos.length) {
+    const vg = verge.geometry();
+    { const p = vg.attributes.position, uv = vg.attributes.uv; for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i), p.getZ(i)); }
+    group.add(new THREE.Mesh(vg, grassMat));
+  }
   group.children.forEach((m) => { m.receiveShadow = true; });
 
   scene.add(group);

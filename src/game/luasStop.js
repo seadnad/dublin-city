@@ -11,6 +11,8 @@
 //   sides       { 1: { shelters: [[d0, modules], ...], wall: bool }, -1: {...} }; side +1 is along (-dz, dx)
 //   poles       pitch of the overhead-line poles (0 = none)
 //   hatch       paint a hatched island between the tracks
+//   only        the sides that get a platform ([-1] or [1] for a single track, with track 0); default both
+//   ga, color   the stop's Irish name and its line's colour, for the name totems and wall sign
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { addReflections } from '../render/reflect.js';
@@ -43,52 +45,53 @@ function materials() {
 }
 export function setStopNight(level) { for (const [m, day, night] of nightMats) m.emissiveIntensity = day + (night - day) * level; }
 
-// sign atlas: 512 x (256 x SIGN_ROWS). Row 0: the first stop's name panel (0..256 x 0..256), the ticket-machine screen
-// (256..384 x 0..128), validator and strip light; every kitted stop gets its own 256-high row for its name panel and wall sign
-const SIGN_ROWS = 4, SIGN_H = 256 * SIGN_ROWS;
-const signCache = new Map();
+// sign atlas: 1024 x 1280 in 256 x 128 cells (4 a row, 10 rows). Cell 0 holds the shared bits: the ticket-machine
+// screen (0..128 x 0..128), the yellow validator head (128..192 x 0..64) and the white strip light (192..256 x 0..64).
+// Every stop gets a cell of its own: the name totem face (the left 128 x 128) and the wall sign (the right 128 x 64).
+const SIGN_W = 1024, CELL_W = 256, CELL_H = 128, COLS = SIGN_W / CELL_W, SIGN_ROWS = 10, SIGN_H = CELL_H * SIGN_ROWS;
 function signCanvas() {
-  const c = document.createElement('canvas'); c.width = 512; c.height = SIGN_H;
+  const c = document.createElement('canvas'); c.width = SIGN_W; c.height = SIGN_H;
   const g = c.getContext('2d');
-  g.fillStyle = '#2f3337'; g.fillRect(0, 0, 256, 256);
-  g.fillStyle = '#f4f4f0'; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillStyle = '#c8102e'; g.fillRect(0, 0, 256, 18); // Red Line band
-  g.fillStyle = '#1a1c1e'; g.fillRect(256, 0, 128, 128);
+  g.fillStyle = '#2f3337'; g.fillRect(0, 0, SIGN_W, SIGN_H);
+  g.fillStyle = '#1a1c1e'; g.fillRect(0, 0, 128, 128);
   const scr = g.createLinearGradient(0, 16, 0, 112); scr.addColorStop(0, '#3f7fd0'); scr.addColorStop(1, '#1e4f9a');
-  g.fillStyle = scr; g.fillRect(270, 16, 100, 70);
-  g.fillStyle = '#e8eef4'; g.fillRect(282, 96, 76, 12);
-  // yellow validator head (384..448 x 0..64), the white strip light (448..512 x 0..64)
-  g.fillStyle = '#e8c020'; g.fillRect(384, 0, 64, 64);
-  g.fillStyle = '#ffffff'; g.fillRect(448, 0, 64, 64);
+  g.fillStyle = scr; g.fillRect(14, 16, 100, 70);
+  g.fillStyle = '#e8eef4'; g.fillRect(26, 96, 76, 12);
+  g.fillStyle = '#e8c020'; g.fillRect(128, 0, 64, 64);
+  g.fillStyle = '#ffffff'; g.fillRect(192, 0, 64, 64);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
   t.userData = { canvas: c, names: new Map() };
   return t;
 }
-// the stops' Irish names (OSM name:ga)
-const GA = { 'Four Courts': 'Na Ceithre Cúirteanna' };
-// each stop name gets a row in the sign canvas (name totem face and wall sign; the wall sign is the row's lower right)
-function nameUV(name) {
+// fit a line of text into a width by shrinking the font
+function fitText(g, text, x, y, maxW, px, style) {
+  let size = px;
+  g.font = `${style} ${size}px "Segoe UI", Arial, sans-serif`;
+  while (size > 8 && g.measureText(text).width > maxW) { size -= 1; g.font = `${style} ${size}px "Segoe UI", Arial, sans-serif`; }
+  g.fillText(text, x, y);
+}
+// each stop name gets a cell (name totem face and wall sign), banded in its line's colour, Irish above English
+function nameUV(name, ga = name, color = '#c8102e') {
   const t = M.sign.map, { canvas: c, names } = t.userData;
   if (!names.has(name)) {
-    const g = c.getContext('2d'), row = Math.min(names.size, SIGN_ROWS - 1);
-    g.save(); g.translate(0, row * 256);
-    // totem face: the Red Line band, Irish above (smaller), English below
-    g.fillStyle = '#c8102e'; g.fillRect(0, 0, 256, 18);
-    g.fillStyle = '#2f3337'; g.fillRect(0, 18, 256, 238);
+    const cell = Math.min(names.size + 1, COLS * SIGN_ROWS - 1), x0 = (cell % COLS) * CELL_W, y0 = Math.floor(cell / COLS) * CELL_H;
+    const g = c.getContext('2d');
+    g.save(); g.translate(x0, y0);
+    g.fillStyle = '#2f3337'; g.fillRect(0, 0, CELL_W, CELL_H);
+    // totem face
+    g.fillStyle = color; g.fillRect(0, 0, 128, 10);
     g.fillStyle = '#f4f4f0'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    const ga = GA[name] || name;
-    g.font = `italic ${ga.length > 14 ? 22 : 30}px "Segoe UI", Arial, sans-serif`; g.fillText(ga, 128, 90);
-    g.font = 'bold 40px "Segoe UI", Arial, sans-serif'; g.fillText(name, 128, 150);
+    fitText(g, ga, 64, 46, 120, 16, 'italic');
+    fitText(g, name, 64, 76, 122, 21, 'bold');
     // wall sign
-    g.fillStyle = '#2f3337'; g.fillRect(256, 128, 256, 128);
-    g.fillStyle = '#c8102e'; g.fillRect(256, 128, 256, 12);
-    g.fillStyle = '#f4f4f0'; g.font = 'bold 44px "Segoe UI", Arial, sans-serif'; g.fillText(name, 384, 196);
+    g.fillStyle = color; g.fillRect(128, 0, 128, 6);
+    g.fillStyle = '#f4f4f0'; fitText(g, name, 192, 36, 120, 22, 'bold');
     g.restore();
-    names.set(name, row);
+    names.set(name, [x0, y0]);
     t.needsUpdate = true;
   }
-  const y = names.get(name) * 256;
-  return { totem: [0, y, 256, 256], wall: [256, y + 128, 256, 128], screen: [256, 0, 128, 128], yellow: [384, 0, 64, 64], light: [456, 8, 48, 48] };
+  const [x, y] = names.get(name);
+  return { totem: [x, y, 128, 128], wall: [x + 128, y, 128, 64], screen: [0, 0, 128, 128], yellow: [128, 0, 64, 64], light: [200, 8, 48, 48] };
 }
 function hatchTexture() {
   const c = document.createElement('canvas'); c.width = c.height = 64;
@@ -124,21 +127,22 @@ function put(geo, f, side, off, y = 0, along = 0) {
 }
 const uvRect = (geo, [x, y, w, h], face = null) => { // map a plane's uvs into a sign-atlas rectangle
   const uv = geo.attributes.uv;
-  for (let i = 0; i < uv.count; i++) uv.setXY(i, (x + uv.getX(i) * w) / 512, 1 - (y + (1 - uv.getY(i)) * h) / SIGN_H);
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, (x + uv.getX(i) * w) / SIGN_W, 1 - (y + (1 - uv.getY(i)) * h) / SIGN_H);
   return geo;
 };
 
 // ---------- the kit ----------
 export function buildStopKit(scene, at, cfg) {
   const mat = materials();
-  const uvs = nameUV(cfg.name);
+  const uvs = nameUV(cfg.name, cfg.ga, cfg.color);
   const from = cfg.from ?? -13, to = cfg.to ?? 13, W = cfg.width ?? 2.4, TRACK = cfg.track ?? 1.8;
   const e0 = TRACK + TRAM_HALF + GAP; // platform inner edge
   const ground = [], metal = [], glass = [], signs = [], hatch = [], wires = [];
   const frames = [];
   for (let d = from; d <= to + 1e-6; d += 1) frames.push({ d, ...at(d) });
   const F = (d) => at(d);
-  for (const side of [1, -1]) {
+  const SIDES = cfg.only || [1, -1];
+  for (const side of SIDES) {
     const sc = (cfg.sides && cfg.sides[side]) || {};
     // platform: top in lanes (white edge line, tactile strip, paving), the kerb face on the track side and the back
     const lanes = [[0, 0.1, C.line], [0.1, 0.7, C.tactile], [0.7, W, C.paving]];
@@ -226,11 +230,12 @@ export function buildStopKit(scene, at, cfg) {
     const n = Math.max(1, Math.round((to - from) / cfg.poles));
     for (let k = 0; k <= n; k++) {
       const d = from + ((to - from) * k) / n, f = F(d), o = e0 + W - 0.2;
-      for (const side of [1, -1]) metal.push(colorize(put(pole, f, side, o), C.pole));
-      const L = [f.x + f.dz * o, 6.8, f.z - f.dx * o], R = [f.x - f.dz * o, 6.8, f.z + f.dx * o];
-      wires.push(...L, ...R);
+      for (const side of SIDES) metal.push(colorize(put(pole, f, side, o), C.pole));
+      // span wire from the pole(s) across the track(s)
+      const oL = SIDES.includes(-1) ? o : TRACK + 0.5, oR = SIDES.includes(1) ? o : TRACK + 0.5;
+      wires.push(f.x + f.dz * oL, 6.8, f.z - f.dx * oL, f.x - f.dz * oR, 6.8, f.z + f.dx * oR);
     }
-    for (const t of [TRACK, -TRACK]) {
+    for (const t of TRACK ? [TRACK, -TRACK] : [0]) {
       for (let i = 0; i < frames.length - 1; i++) {
         const a = frames[i], b = frames[i + 1];
         wires.push(a.x - a.dz * t, 6.0, a.z + a.dx * t, b.x - b.dz * t, 6.0, b.z + b.dx * t);

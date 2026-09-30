@@ -1,0 +1,13 @@
+[out:json][timeout:170];
+(
+  way["railway"~"^(rail|platform|station|light_rail)$"](53.3300,-6.2560,53.3620,-6.2150);
+  node["railway"~"^(station|halt|level_crossing|stop)$"](53.3300,-6.2560,53.3620,-6.2150);
+  way["public_transport"="platform"]["train"="yes"](53.3300,-6.2560,53.3620,-6.2150);
+  way["building"="train_station"](53.3300,-6.2560,53.3620,-6.2150);
+  way["name"~"Connolly|Tara Street|Pearse|Loopline|Loop Line"](53.3300,-6.2560,53.3620,-6.2150);
+  way["man_made"="bridge"](53.3380,-6.2560,53.3560,-6.2400);
+  way["building"]["name"~"Fire Station|Connolly|Tara"](53.3380,-6.2560,53.3560,-6.2400);
+  way["building"="fire_station"](53.3380,-6.2560,53.3560,-6.2400);
+  way["amenity"="fire_station"](53.3380,-6.2560,53.3560,-6.2400);
+);
+out geom tags;

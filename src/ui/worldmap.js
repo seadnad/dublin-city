@@ -8,7 +8,7 @@ const B = world.bounds;
 const C = {
   void: '#0a1219', outside: '#141f28', hatch: 'rgba(255,255,255,0.035)', land: '#2c3843', block: '#25303a',
   landmark: '#4a4236', park: '#2e5a3a', campus: '#34503d', water: '#1c4f6e', waterEdge: '#2b6a8e',
-  road: '#9aa3ab', main: '#d8dce0', limit: '#e8c547', luas: '#b05bd8', text: '#e9edf0', halo: 'rgba(8,14,20,0.9)',
+  road: '#9aa3ab', main: '#d8dce0', limit: '#e8c547', luas: '#b05bd8', tram: '#f2e6ff', text: '#e9edf0', halo: 'rgba(8,14,20,0.9)',
   district: 'rgba(233,237,240,0.42)', icon: '#f2b632', you: '#ffffff', waypoint: '#e04ce0',
 };
 const MAIN = new Set(['boulevard', 'primary', 'quay', 'bridge']);
@@ -21,7 +21,7 @@ const DISTRICTS = [
   ['BALLSBRIDGE', 'AVSH2', 30], ["HAROLD'S CROSS", 'GXSGR2', 0, 30], ['STONEYBATTER', 'RN63', 0, -20],
 ];
 // short icon glyphs for each landmark
-const GLYPH = { spire: 'S', gpo: 'P', oconnellBridge: 'B', hapenny: 'H', trinity: 'T', bankOfIreland: '£', christChurch: '✚', stPatricks: '✚', customHouse: 'C', stephensGreen: '♣', heuston: 'R', guinness: 'G', beckett: 'B', convention: 'CC', threeArena: '3', grandCanal: 'Th', marker: 'M', grandCanalSt: 'O', cityHall: 'H', centralBank: '€', ccj: 'J', google: 'Go', bolands: 'Bq', clerys: 'Cl', rotunda: 'R', gardenOfRemembrance: '♣', busaras: 'Bu' };
+const GLYPH = { spire: 'S', gpo: 'P', oconnellBridge: 'B', hapenny: 'H', trinity: 'T', bankOfIreland: '£', christChurch: '✚', stPatricks: '✚', customHouse: 'C', stephensGreen: '♣', heuston: 'R', guinness: 'G', beckett: 'B', convention: 'CC', threeArena: '3', grandCanal: 'Th', marker: 'M', grandCanalSt: 'O', cityHall: 'H', centralBank: '€', ccj: 'J', google: 'Go', bolands: 'Bq', clerys: 'Cl', rotunda: 'R', gardenOfRemembrance: '♣', busaras: 'Bu', famine: 'F', jeanieJohnston: 'JJ', millenniumBridge: 'M', ocaseyBridge: 'O' };
 
 export function createWorldMap({ sites, lots, getLive, onTeleport, onWaypoint }) {
   const root = document.createElement('div');
@@ -47,6 +47,7 @@ export function createWorldMap({ sites, lots, getLive, onTeleport, onWaypoint })
         <li><i class="lg-blip"></i>Mission target</li>
         <li><i class="lg-line lg-main"></i>Main road</li>
         <li><i class="lg-line lg-luas"></i>Luas Red Line</li>
+        <li><i class="lg-line lg-luas lg-luas-green"></i>Luas Green Line</li>
         <li><i class="lg-swatch lg-park"></i>Park</li>
         <li><i class="lg-swatch lg-water"></i>River and canals</li>
         <li><i class="lg-line lg-limit"></i>City limit</li>
@@ -114,8 +115,9 @@ export function createWorldMap({ sites, lots, getLive, onTeleport, onWaypoint })
     ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     for (const w of world.ways) if (!MAIN.has(w.type)) { path(w.pts); ctx.strokeStyle = C.road; ctx.lineWidth = Math.max(1.2, w.width * scale * 0.8); ctx.stroke(); }
     for (const w of world.ways) if (MAIN.has(w.type)) { path(w.pts); ctx.strokeStyle = C.main; ctx.lineWidth = Math.max(2, w.width * scale * 0.85); ctx.stroke(); }
-    ctx.setLineDash([5, 4]); ctx.strokeStyle = C.luas; ctx.lineWidth = 2.2;
-    for (const l of world.luasLines) { path(l.pts); ctx.stroke(); }
+    // the Luas in its lines' colours (each track; the pairs merge at map scale)
+    ctx.setLineDash([5, 4]); ctx.lineWidth = 2.2;
+    for (const l of world.luasLines) { ctx.strokeStyle = l.color || C.luas; for (const t of l.tracks) { path(t); ctx.stroke(); } }
     ctx.setLineDash([]);
     districtLabels();
     if (scale > 1.5) streetLabels();
@@ -126,7 +128,7 @@ export function createWorldMap({ sites, lots, getLive, onTeleport, onWaypoint })
     ctx.font = '700 10px system-ui, sans-serif'; ctx.fillStyle = C.limit; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
     if (y0 > 16) ctx.fillText('CITY LIMIT', x0 + 4, y0 - 4);
     // tram, blips, waypoint, landmarks, player
-    ctx.fillStyle = C.luas;
+    ctx.fillStyle = C.tram;
     for (const t of live.tram) { const [x, y] = toS(t.x, t.z); ctx.beginPath(); ctx.arc(x, y, 3.5, 0, 7); ctx.fill(); }
     for (const b of live.blips || []) { const [x, y] = toS(b.x, b.z); ctx.beginPath(); ctx.arc(x, y, 8, 0, 7); ctx.fillStyle = b.color; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = '#fff'; ctx.stroke(); }
     if (waypoint) {

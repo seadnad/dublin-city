@@ -1,8 +1,10 @@
 // Every landmark / reserved footprint must stay off the carriageways: samples each box (shrunk 0.6 m) against
 // the street graph and lists any that sit on a road.
 // Monuments that really stand in the middle of O'Connell Street, on its islands (and Parnell's island in the mouth of
-// the Parnell Street junction), are allowed by name. Nothing else is exempt.
-const IN_STREET = ['spire', 'extra.oconnellMonument', 'extra.smithOBrien', 'extra.gray', 'extra.larkin', 'extra.fatherMathew', 'extra.parnell'];
+// the Parnell Street junction), and College Green's two islands (the Davis memorial, Grattan) are allowed by name.
+// Nothing else is exempt.
+const IN_STREET = ['spire', 'extra.oconnellMonument', 'extra.smithOBrien', 'extra.gray', 'extra.larkin', 'extra.fatherMathew', 'extra.parnell',
+  'extra.davisIsland', 'extra.grattanIsland'];
 export default async function (page) {
   const r = await page.evaluate(async (IN_STREET) => {
     const d = window.__dublin, { sites, extraSites, reserved } = await import('/src/world/sites.js');
@@ -24,9 +26,10 @@ export default async function (page) {
     }
     // ...but the exempt ones must actually stand on one of the street's islands
     const { ISLANDS, islandOutline } = await import('/src/world/oconnell.js'), { pointInPolygon } = await import('/src/world/geo.js');
+    const { CG_ISLANDS } = await import('/src/world/collegegreen.js');
     for (const k of IN_STREET) {
       const s = k.startsWith('extra.') ? extraSites[k.slice(6)] : sites[k];
-      if (!s || !ISLANDS.some((isl) => pointInPolygon(s, islandOutline(isl)))) out.push({ site: k, roads: { 'not on an island': 1 } });
+      if (!s || !(ISLANDS.some((isl) => pointInPolygon(s, islandOutline(isl))) || CG_ISLANDS.some((isl) => pointInPolygon(s, isl.poly)))) out.push({ site: k, roads: { 'not on an island': 1 } });
     }
     return out;
   }, IN_STREET);
