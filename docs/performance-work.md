@@ -177,3 +177,10 @@ The footprint scenario returned 0 overlaps. The bridge scenario exceeded Puppete
 default protocol timeout while sampling the whole map, so the local check harness now allows
 up to ten minutes for this scenario's browser call. The rerun returned `bad: {}` for all road
 samples and no console errors.
+## Shared vehicle assets, 2026-09-30
+
+The procedural fleet and placeholder player car used to paint identical 1024 px hatchback atlases and create a second wheel geometry and rim texture. `src/game/fleet.js` now caches immutable atlas, body, and wheel assets. The procedural car retains its look; the Blender car still replaces the placeholder when ready. Materials remain separate because their light levels can differ. Do not dispose the shared textures or geometry when swapping the placeholder out.
+
+One local production-browser comparison: traffic construction 203 -> 167 ms, texture inventory at quality setup 160 -> 157, time to play 32.4 -> 32.3 s. The total timing is within run variance. Report no FPS gain from this change. A Canvas2D readback hint was also added to the ground layout; it does not change the painted map.
+
+The larger remaining cost is still ~7.5 s of eager city construction plus ~16 s of shader preparation on this machine. A real district build must prepare the reachable ring and its collision before allowing play, warm approaching content without frame spikes, and retain cheap safe silhouettes during transition. Keep High full fidelity and verify a cold first visit on representative hardware.

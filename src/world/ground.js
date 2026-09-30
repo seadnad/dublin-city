@@ -70,7 +70,7 @@ export const dockPolys = world.docks.map((p) => ({ name: p.name, poly: p.ids ? i
 function drawLayout() {
   const c = document.createElement('canvas');
   c.width = CW; c.height = CH;
-  const ctx = c.getContext('2d');
+  const ctx = c.getContext('2d', { willReadFrequently: true });
   ctx.lineJoin = 'round'; ctx.lineCap = 'round';
 
   // base: stone paving / block interiors, with some mottling

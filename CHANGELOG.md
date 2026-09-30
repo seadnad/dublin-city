@@ -1,5 +1,12 @@
 # Change log
 
+## 2026-09-30 - Shared vehicle assets
+
+- Procedural traffic and the temporary player car now share each design's atlas and body geometry, plus the wheel geometry and rim texture. Their appearance and the detailed Blender car remain the same.
+- The ground-layout canvas now requests a readback-friendly context because landmark lawns repeatedly inspect its pixels.
+
+On the local production browser check, traffic construction went from 203 to 167 ms and the initial texture inventory from 160 to 157. Time to play was essentially unchanged (32.4 versus 32.3 seconds), and frame rate varied between runs. This is a small memory and construction improvement, not a fix for the public startup target. The city and shader stages remain the main work; see [docs/performance-work.md](docs/performance-work.md).
+
 ## 2026-09-30 - Prioritised distant landmarks
 
 - On Auto/Low, distant 3Arena, Guinness Storehouse and Aviva models now load after the first playable frame. Their collisions remain available; a cheap silhouette stays visible until each finished model and its shaders are ready. The next model is chosen from the player's current position and heading, so a turn or teleport changes priority. High keeps loading the full set before play.

@@ -51,11 +51,17 @@ export const TYPES = {
 TYPES.taxi = { ...TYPES.saloon };
 
 const PLATE_TEXT = ['191-D-2847', '12-D-40318', '221-D-9954', '08-KE-1127', '162-D-4410', '232-D-1789', '10-WW-3321', '201-D-6620'];
+// The placeholder/player car and the traffic fleet use the same designs. Keep their immutable GPU assets
+// shared so swapping to the Blender car does not leave a second 1024 px atlas and geometry resident.
+const atlasCache = new WeakMap();
+const bodyCache = new WeakMap();
+let sharedWheelGeometry, sharedRimTexture;
 
 // ---------------- atlas painting ----------------
 // Layout (1024 x 1024, v up): side view v in [0.5,1], plan (top) view v in [0.25,0.5],
 // front (u<0.5) and back (u>0.5) views in v [0,0.25]. Alpha = paint mask (1 = body colour, tinted per instance).
 export function paintAtlas(t) {
+  if (atlasCache.has(t)) return atlasCache.get(t);
   const S = 1024;
   const mk = () => { const cv = document.createElement('canvas'); cv.width = cv.height = S; return cv; };
   const colC = mk(), mskC = mk(), emiC = mk();
@@ -135,11 +141,14 @@ export function paintAtlas(t) {
   map.minFilter = THREE.LinearMipmapLinearFilter; map.magFilter = THREE.LinearFilter; map.needsUpdate = true;
   const emissiveMap = new THREE.CanvasTexture(shrink(emiC, 256)); // lamp masks only need coarse detail
   emissiveMap.colorSpace = THREE.SRGBColorSpace;
-  return { map, emissiveMap };
+  const atlas = { map, emissiveMap };
+  atlasCache.set(t, atlas);
+  return atlas;
 }
 
 // ---------------- body geometry ----------------
 function bodyGeometry(t) {
+  if (bodyCache.has(t)) return bodyCache.get(t);
   const shape = new THREE.Shape();
   const pts = t.top;
   shape.moveTo(pts[0][0], pts[0][1]);
@@ -181,6 +190,7 @@ function bodyGeometry(t) {
     }
   }
   g.computeVertexNormals();
+  bodyCache.set(t, g);
   return g;
 }
 
@@ -204,6 +214,7 @@ function carMaterial(atlas) {
 
 // ---------------- wheels ----------------
 function wheelGeometry() {
+  if (sharedWheelGeometry) return sharedWheelGeometry;
   const g = new THREE.CylinderGeometry(1, 1, 1, 12, 1);
   g.rotateZ(Math.PI / 2);
   const pos = g.attributes.position, uv = g.attributes.uv, nor = g.attributes.normal;
@@ -211,9 +222,11 @@ function wheelGeometry() {
     if (Math.abs(nor.getX(i)) > 0.9) uv.setXY(i, pos.getZ(i) * 0.5 + 0.5, pos.getY(i) * 0.5 + 0.5);
     else uv.setXY(i, 0.02, 0.02); // tread samples the black tyre
   }
+  sharedWheelGeometry = g;
   return g;
 }
 function rimTexture() {
+  if (sharedRimTexture) return sharedRimTexture;
   const c = document.createElement('canvas');
   c.width = c.height = 128;
   const g = c.getContext('2d');
@@ -224,6 +237,7 @@ function rimTexture() {
   g.fillStyle = '#c4c8cc'; g.beginPath(); g.arc(64, 64, 10, 0, 7); g.fill();
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
+  sharedRimTexture = t;
   return t;
 }
 
