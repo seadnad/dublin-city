@@ -8,6 +8,9 @@ import { rng } from '../world/textures.js';
 import { createContactShadows } from '../render/contact.js';
 
 const rand = rng(2024);
+// pedestrian-only walks registered by the world builders before createPeople (greenpark.js: the Green's paths)
+const footLanes = [];
+export function addFootLanes(list) { footLanes.push(...list); }
 // part ids: 0 coat/top, 1 skin, 2 hair, 3 left leg, 4 right leg, 5 left arm, 6 right arm, 7 shoes, 8 coat skirt
 function part(geo, id, pivotY = 0, side = 0) {
   const g = geo.index ? geo.toNonIndexed() : geo;
@@ -130,6 +133,8 @@ export function createPeople(scene, { count = 240, fixed = [] } = {}) {
       if (way.pedestrian || way.access === 'pedestrian') lanes.push({ way, side, pts: offsetPolyline(way.pts, side > 0 ? -1.2 : 1.2), weight }); // crowds walk the carriageway too
     }
   }
+  // walks off the street graph (the paths in St Stephen's Green): { pts, ids (one per point, shared where paths meet), weight }
+  for (const w of footLanes) lanes.push({ way: { nodeIds: w.ids, name: w.name || 'path', width: 2 }, side: 1, pts: w.pts, weight: w.weight });
   // lanes near a point, weighted by how busy the street is (refreshed as the player moves)
   let nearby = lanes, nearbyAt = null, nearbyW = 0;
   const segNear = (l, c, r) => l.pts.some((p, i) => i < l.pts.length - 1 && Math.hypot((p.x + l.pts[i + 1].x) / 2 - c.x, (p.z + l.pts[i + 1].z) / 2 - c.z) < r + v2.len(v2.sub(l.pts[i + 1], p)) / 2);
@@ -152,7 +157,7 @@ export function createPeople(scene, { count = 240, fixed = [] } = {}) {
   }
   const clearOf = (id) => {
     const n = world.nodes.get(id);
-    if (n.edges.length < 3) return 0;
+    if (!n || n.edges.length < 3) return 0; // (walks off the street graph have no junction nodes)
     let w = 0; for (const wy of n.ways) w = Math.max(w, wy.width);
     return w / 2 + 3;
   };
