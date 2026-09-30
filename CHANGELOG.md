@@ -1,5 +1,14 @@
 # Change log
 
+## 2026-09-30 - Garda car model refresh
+
+- Rebuilt the Garda estate from its Blender source using the supplied side, front and rear photos as shape guides. The headlight outlines are more swept, the reflectors are lighter, and each alloy wheel now has five broad tapered spokes.
+- Kept the white estate body, roof lightbar, Garda markings, wheel pivots, brake and reverse lamps, and flashing controls. The livery still paints onto the same UV atlas in the game.
+- Replaced the grille, headlight, tail light and plate Boolean cuts with shallow surface details. Those cuts were pulling long triangles across the bonnet and tailgate; the uninterrupted shell now shades more cleanly. Wheel arches remain cut into the body.
+- Regenerated `models/garda.blend`, `public/models/garda.glb` and its ambient-occlusion image. The compressed car asset is 153,632 bytes, down from 165,596 bytes (about 7%). The current mesh is 12,300 triangles. These figures alone do not establish a frame-rate improvement.
+
+Blender front, side and rear previews and close views in the running game were inspected. The production browser build reached play with no console errors. The source script is `tools/blender/build_garda.py`, so the mesh and game asset can be regenerated. Reverting this change restores the previous car assets and material settings.
+
 ## 2026-09-30 - First-visit loading screen
 
 - Replaced the plain Low/Auto loading card with a lightweight Dublin illustration, a clear welcome, honest first-visit timing guidance, and stage text tied to the actual loading sequence. The illustration uses CSS and adds no image download or second rendering context.

@@ -13,8 +13,8 @@ Construction (i40 Tourer, 4.775 x 1.815 x 1.47 m, wheelbase 2.77 m, 215/55 R16):
     belt and up a tumbled-home glasshouse to the roof. Over the bonnet and below the tailgate the glasshouse
     points collapse onto a crowned panel, so windscreen, roof, tailgate and bonnet are all one surface.
     Plan-view taper rounds the nose and tail; the lower body flares over the wheels.
-  - wheel arches, tail lamps, headlamps, grille, intakes and the rear plate are BOOLEAN-cut into the shell, so
-    lamps sit in real recesses with dark reveal walls; lenses, reflectors and plates sit inside them.
+  - wheel arches are cut into the shell. Lamps, grille and plates are projected as shallow layers, avoiding
+    pinched Boolean triangles across the bonnet and tailgate while keeping their outlines crisp.
   - glazing and small trim are projected onto the shell (raycast), so they follow its curvature exactly.
   - UVs: every body face is planar-projected by its dominant direction into an atlas region (sides, top, front,
     rear). The layout is exported as glTF extras on the body so the game paints the livery with the same maps.
@@ -527,8 +527,8 @@ TAIL = [(0.36, 1.005), (0.62, 1.0), (0.8, 0.985), (0.865, 0.958), (0.865, 0.905)
 TAIL_REV = [(0.52, 0.95), (0.66, 0.935), (0.66, 0.915), (0.52, 0.93)]
 TAIL_SIDE = [(-2.39, 0.99), (-2.23, 0.975), (-2.12, 0.962), (-2.12, 0.94), (-2.25, 0.93), (-2.39, 0.9)]  # side view (y, z)
 REAR_PLATE = (0.66, 0.26, 0.068)   # centre z, half width, half height of the plate recess
-HEAD = [(0.55, 0.705), (0.62, 0.745), (0.74, 0.79), (0.86, 0.815), (0.92, 0.79), (0.91, 0.74), (0.8, 0.705), (0.62, 0.69)]
-GRILLE = [(-0.47, 0.705), (0.47, 0.705), (0.55, 0.64), (0.52, 0.52), (0.44, 0.39), (-0.44, 0.39), (-0.52, 0.52), (-0.55, 0.64)]
+HEAD = [(0.48, 0.725), (0.53, 0.765), (0.66, 0.815), (0.81, 0.84), (0.91, 0.82), (0.91, 0.76), (0.81, 0.715), (0.63, 0.70)]
+GRILLE = [(-0.42, 0.70), (0.42, 0.70), (0.50, 0.65), (0.48, 0.55), (0.40, 0.39), (-0.40, 0.39), (-0.48, 0.55), (-0.50, 0.65)]
 INTAKE = [(-0.62, 0.305), (0.62, 0.305), (0.66, 0.335), (-0.66, 0.335)]  # black lower lip
 FOG = [(0.66, 0.36), (0.84, 0.37), (0.87, 0.47), (0.69, 0.45)]
 FRONT_PLATE_Z = 0.45  # on the lower grille, standing proud of it on its bracket
@@ -539,47 +539,40 @@ def build(M):
     surf = Surface([body])
     parts = []
 
-    # ---- recess cutters (built on the arch-cut shell, before any lamp holes exist)
-    cut_specs = []  # (bmesh, material index for the reveal: 1 trim / 2 gloss / 0 paint)
-    for side in (1, -1):
-        sh = (lambda p: p) if side > 0 else mirror_x
-        cut_specs.append((cutter(sh(TAIL), 'rear', surf, 0.022), 1))
-        cut_specs.append((cutter(sh(HEAD), 'front', surf, 0.05, min_facing=0.1), 1))
-        cut_specs.append((cutter(sh(FOG), 'front', surf, 0.03), 2))
-        cut_specs.append((cutter(TAIL_SIDE, 'right' if side > 0 else 'left', surf, 0.022), 1))
-    cut_specs.append((cutter(GRILLE, 'front', surf, 0.045), 2))
     pz, phw, phh = REAR_PLATE
-    cut_specs.append((cutter([(-phw, pz - phh), (phw, pz - phh), (phw, pz + phh), (-phw, pz + phh)], 'rear', surf, 0.014, cuts=1), 0))
 
     # ---- things that sit inside the recesses / on the surface (projected before cutting)
     for side, view in ((1, 'right'), (-1, 'left')):
         sh = (lambda p: p) if side > 0 else mirror_x
-        parts.append(decal(f'tail_{side}', sh(TAIL), 'rear', surf, M['tail'], -0.007, cuts=2))
-        parts.append(decal(f'tail_rev_{side}', sh(TAIL_REV), 'rear', surf, M['reverse'], -0.004, cuts=1))
-        parts.append(decal(f'tail_side_{side}', TAIL_SIDE, view, surf, M['tail'], -0.007, cuts=2))
-        parts.append(decal(f'head_refl_{side}', sh(HEAD), 'front', surf, M['head_refl'], -0.045, cuts=2, min_facing=0.1))
-        parts.append(decal(f'head_lens_{side}', sh(HEAD), 'front', surf, M['head_lens'], -0.003, cuts=2, min_facing=0.1))
-        # projector bowl and LED DRL strip behind the lens
-        parts.append(decal(f'head_proj_{side}', ellipse(0.73 * side, 0.745, 0.055, 0.035, 14), 'front', surf, M['head_lamp'], -0.03, cuts=1))
-        parts.append(decal(f'head_drl_{side}', sh([(0.6, 0.705), (0.86, 0.73), (0.87, 0.742), (0.6, 0.717)]), 'front', surf, M['head_lamp'], -0.02, cuts=1))
-        parts.append(decal(f'head_ind_{side}', sh([(0.84, 0.78), (0.91, 0.77), (0.91, 0.755), (0.84, 0.765)]), 'front', surf, M['ind'], -0.025, cuts=1))
+        parts.append(decal(f'tail_surround_{side}', sh(TAIL), 'rear', surf, M['gloss'], 0.004, cuts=2))
+        parts.append(decal(f'tail_{side}', sh(TAIL), 'rear', surf, M['tail'], 0.009, cuts=2))
+        parts.append(decal(f'tail_rev_{side}', sh(TAIL_REV), 'rear', surf, M['reverse'], 0.013, cuts=1))
+        parts.append(decal(f'tail_side_{side}', TAIL_SIDE, view, surf, M['tail'], 0.009, cuts=2))
+        parts.append(decal(f'head_surround_{side}', sh(HEAD), 'front', surf, M['gloss'], 0.004, cuts=2, min_facing=0.1))
+        parts.append(decal(f'head_refl_{side}', sh(HEAD), 'front', surf, M['head_refl'], 0.009, cuts=2, min_facing=0.1))
+        parts.append(decal(f'head_lens_{side}', sh(HEAD), 'front', surf, M['head_lens'], 0.023, cuts=2, min_facing=0.1))
+        # The curved front corner makes a projected projector distort at driving distance.
+        # The reflector and lens carry the swept shape; the lower lamps remain illuminated.
+        parts.append(decal(f'head_ind_{side}', sh([(0.84, 0.78), (0.9, 0.77), (0.9, 0.755), (0.84, 0.765)]), 'front', surf, M['ind'], 0.017, cuts=1))
         # blue grille flashers either side of the grille
-        parts.append(decal(f'grille_blue_{side}', sh([(0.3, 0.44), (0.4, 0.44), (0.4, 0.47), (0.3, 0.47)]), 'front', surf, M['lb_L' if side < 0 else 'lb_R'], -0.02, cuts=1))
-        parts.append(decal(f'fog_{side}', ellipse(0.775 * side, 0.415, 0.035, 0.03, 12), 'front', surf, M['head_lamp'], -0.02, cuts=1))
+        parts.append(decal(f'grille_blue_{side}', sh([(0.3, 0.44), (0.4, 0.44), (0.4, 0.47), (0.3, 0.47)]), 'front', surf, M['lb_L' if side < 0 else 'lb_R'], 0.016, cuts=1))
+        parts.append(decal(f'fog_surround_{side}', sh(FOG), 'front', surf, M['gloss'], 0.004, cuts=1))
+        parts.append(decal(f'fog_{side}', ellipse(0.775 * side, 0.415, 0.035, 0.03, 12), 'front', surf, M['head_lamp'], 0.012, cuts=1))
         parts.append(decal(f'reflector_{side}', sh([(0.68, 0.37), (0.84, 0.37), (0.84, 0.395), (0.68, 0.395)]), 'rear', surf, M['tail'], 0.004, cuts=1))
-    # grille: chrome surround and horizontal chrome bars on gloss black
+    # grille: dark insert, chrome surround and horizontal bars
+    parts.append(decal('grille_black', GRILLE, 'front', surf, M['gloss'], 0.004, cuts=3))
     for i in range(len(GRILLE)):
         a, b = Vector((*GRILLE[i], 0)), Vector((*GRILLE[(i + 1) % len(GRILLE)], 0))
         d = (b - a).normalized(); nrm = Vector((d.y, -d.x, 0)) * 0.018
-        parts.append(decal(f'grille_rim_{i}', [(a.x, a.y), (b.x, b.y), (b.x + nrm.x, b.y + nrm.y), (a.x + nrm.x, a.y + nrm.y)], 'front', surf, M['chrome'], 0.003, cuts=1))
+        parts.append(decal(f'grille_rim_{i}', [(a.x, a.y), (b.x, b.y), (b.x + nrm.x, b.y + nrm.y), (a.x + nrm.x, a.y + nrm.y)], 'front', surf, M['chrome'], 0.013, cuts=1))
     for k, z in enumerate((0.45, 0.52, 0.59, 0.66)):
         bar = clip([(-0.6, z), (0.6, z), (0.6, z + 0.014), (-0.6, z + 0.014)], -0.54, 0.54, 0.39, 0.705)
-        parts.append(decal(f'grille_bar_{k}', bar, 'front', surf, M['chrome'], -0.02, cuts=1))
+        parts.append(decal(f'grille_bar_{k}', bar, 'front', surf, M['chrome'], 0.014, cuts=1))
     parts.append(decal('lower_lip', INTAKE, 'front', surf, M['trim'], 0.003, cuts=2))
     parts.append(decal('logo_front', ellipse(0, 0.675, 0.07, 0.035), 'front', surf, M['chrome'], 0.006, cuts=1))
     parts.append(decal('logo_rear', ellipse(0, 0.84, 0.06, 0.03), 'rear', surf, M['chrome'], 0.004, cuts=1))
     # number plates
-    rp = decal('plate_rear', [(-0.26, pz - 0.055), (0.26, pz - 0.055), (0.26, pz + 0.055), (-0.26, pz + 0.055)], 'rear', surf, M['plate'], -0.008, cuts=1)
+    rp = decal('plate_rear', [(-0.26, pz - 0.055), (0.26, pz - 0.055), (0.26, pz + 0.055), (-0.26, pz + 0.055)], 'rear', surf, M['plate'], 0.012, cuts=1)
     fp = decal('plate_front', [(-0.26, FRONT_PLATE_Z - 0.055), (0.26, FRONT_PLATE_Z - 0.055), (0.26, FRONT_PLATE_Z + 0.055), (-0.26, FRONT_PLATE_Z + 0.055)], 'front', surf, M['plate'], 0.012, cuts=1)
     rect_uv(rp, ATLAS['plate_rear'], 'rear'); rect_uv(fp, ATLAS['plate_front'], 'front')
     parts += [rp, fp]
@@ -615,30 +608,15 @@ def build(M):
     # high-level brake light in the spoiler
     parts.append(decal('hmsl', [(-0.2, 1.365), (0.2, 1.365), (0.2, 1.378), (-0.2, 1.378)], 'rear', surf, M['tail'], 0.012, cuts=1))
 
-    # ---- cut the recesses one at a time (overlapping cutters joined into one operand break the exact solver),
-    # then colour the reveals
-    reveal = []
-    for bm_c, mi in cut_specs:
-        reveal.append((BVHTree.FromBMesh(bm_c), mi))
-        boolean(body, mesh_obj('recess_cut', bm_c, None))
+    # Keep the painted shell continuous. Lamp and grille details are shallow layers above it.
     arches = [(YF, ARCH_Z), (YR, ARCH_Z)]
     for p in body.data.polygons:
         c = p.center
         mi = 0
-        for tree, m in reveal:
-            _, _, _, d = tree.find_nearest(c)
-            if d is not None and d < 2e-3:
-                mi = m if m else 0
-                if m == 0:
-                    mi = -1
-                break
-        if mi == -1:
-            mi = 0
-        elif mi == 0:
-            # arch liners, the underbody and the lowest lip of the bumpers are black plastic
-            if any(abs(math.hypot(c.y - ay, c.z - az) - ARCH_R) < 4e-3 for ay, az in arches) or p.normal.z < -0.6 or c.z < zbot(c.y) + 0.035 \
-                    or (c.y < -2.2 and c.z < 0.44) or (c.y > 2.2 and c.z < 0.335):
-                mi = 1
+        # arch liners, the underbody and the lowest lip of the bumpers are black plastic
+        if any(abs(math.hypot(c.y - ay, c.z - az) - ARCH_R) < 4e-3 for ay, az in arches) or p.normal.z < -0.6 or c.z < zbot(c.y) + 0.035 \
+                or (c.y < -2.2 and c.z < 0.44) or (c.y > 2.2 and c.z < 0.335):
+            mi = 1
         p.material_index = mi
     unwrap_body(body)
     return body, parts
@@ -653,14 +631,25 @@ def wheel(name, x, y, side, M):
     hub = lathe(f'{name}_hub', [(0.075, 0.07), (0.07, 0.095), (0.04, 0.104), (0.0, 0.106)], 14, M['rim'], loc, side)
     disc = lathe(f'{name}_disc', [(0.16, 0.0), (0.16, 0.025), (0.06, 0.025)], 18, M['disc'], loc, side)
     caliper = box(f'{name}_caliper', (0.05, 0.1, 0.07), (x - side * 0.01, y - 0.06, R + 0.13), M['barrel'], 0.012, segs=1)
+    # Broad, tapered five-spoke alloys. Each spoke is one small prism, and the dark barrel
+    # remains visible between them. The wheel pivot and materials stay compatible with runtime spin.
     spokes = []
     for k in range(5):
-        a0 = k / 5 * math.tau
-        for da in (-0.13, 0.13):
-            a = a0 + da
-            mid = 0.13
-            spokes.append(box(f'{name}_spoke_{k}_{da}', (0.03, 0.12, 0.026),
-                              (x + side * 0.086, y + math.cos(a) * mid, R + math.sin(a) * mid), M['rim'], rot=(a + math.pi / 2, 0, 0)))
+        a = (k + 0.5) / 5 * math.tau
+        bm = bmesh.new()
+        rings = []
+        for radius, half_angle, dx in ((0.064, 0.26, 0.102), (0.175, 0.19, 0.104),
+                                       (0.186, 0.19, 0.088), (0.064, 0.26, 0.086)):
+            rings.append([bm.verts.new((side * dx, math.cos(a + sign * half_angle) * radius,
+                                        math.sin(a + sign * half_angle) * radius)) for sign in (-1, 1)])
+        for i in range(4):
+            j = (i + 1) % 4
+            bm.faces.new((rings[i][0], rings[i][1], rings[j][1], rings[j][0]))
+        bm.faces.new((rings[0][0], rings[1][0], rings[2][0], rings[3][0]))
+        bm.faces.new((rings[3][1], rings[2][1], rings[1][1], rings[0][1]))
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+        spokes.append(mesh_obj(f'{name}_spoke_{k}', bm, M['rim'], 30))
+        spokes[-1].location = loc
     w = join([tyre, rim, barrel, hub, disc, caliper] + spokes, name)
     bpy.context.scene.cursor.location = loc
     activate(w)
