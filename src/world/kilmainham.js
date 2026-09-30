@@ -490,7 +490,9 @@ function plantKilmainham(scene, KH) {
   let tries = 0;
   const xs = green ? green.poly.map((p) => p.x) : [], zs = green ? green.poly.map((p) => p.z) : [];
   const SP = ['chestnut', 'lime', 'plane', 'chestnut'];
-  while (green && items.length < 70 && tries++ < 3000) {
+  // Low / Battery saver: half as many meadow trees (the avenues' limes stay)
+  const target = items.length + (LITE ? 35 : 70);
+  while (green && items.length < target && tries++ < 3000) {
     const p = { x: Math.min(...xs) + r() * (Math.max(...xs) - Math.min(...xs)), z: Math.min(...zs) + r() * (Math.max(...zs) - Math.min(...zs)) };
     if (!pointInPolygon(p, green.poly)) continue;
     const rd = world.nearestRoad(p.x, p.z);
@@ -526,9 +528,9 @@ export async function placeKilmainham(scene, KH) {
   let gltf;
   try { gltf = await load('kilmainham'); } catch (e) { console.warn('kilmainham model failed to load', e); return null; }
   prepare(gltf.scene);
-  const heroes = [];
-  for (const [group, nodes] of Object.entries(KH.groups)) {
-    const g = new THREE.Group();
+  // all three landmarks share their materials and stand within 300 m: one mesh per material for the lot
+  const g = new THREE.Group();
+  for (const nodes of Object.values(KH.groups)) {
     for (const [node, p] of Object.entries(nodes)) {
       const o = gltf.scene.getObjectByName(node);
       if (!o) continue;
@@ -536,11 +538,11 @@ export async function placeKilmainham(scene, KH) {
       o.position.set(p.x, 0, p.z); o.rotation.set(0, p.rot, 0);
       g.add(o);
     }
-    const merged = mergeGroup(g, group);
-    merged.children.forEach((m) => m.updateMatrix());
-    scene.add(merged);
-    heroes.push(merged);
   }
+  const merged = mergeGroup(g, 'Kilmainham');
+  merged.children.forEach((m) => m.updateMatrix());
+  scene.add(merged);
+  const heroes = [merged];
   const garden = gardenDressing(scene, KH);
   const walls = boundaryWall(scene, KH);
   const trees = plantKilmainham(scene, KH);

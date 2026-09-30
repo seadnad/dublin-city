@@ -243,3 +243,40 @@ backs, the arms), with an emissive night twin for the lit windows and the lanter
 - **Kilmainham Lane** meets the SCR 30 m south of the Inchicore Road junction in reality; here 17 m.
 - **Emmet Road, Mount Brown and the SCR to Rialto** are not built (see 1.3).
 - **Heights** are estimates from photos (sections 3.1-3.3).
+
+---
+
+## 6. Phase 2: what was built
+
+- **Model**: `tools/blender/build_kilmainham.py` -> `public/models/kilmainham.glb` (129 KB, Draco; source
+  `models/kilmainham.blend`). 8.65k triangles after the AO subdivision: gaol 2.3k, courthouse 0.3k, Royal Hospital
+  4.6k (with the tower and spire), Garden House 0.2k, Richmond Tower 1.2k. Built in game metres (plan 0.55, real
+  heights), AO baked into vertex colours.
+- **Game**: `src/world/kilmainham.js` paints the textures (ashlar, calp rubble, roughcast, dressings, slate, copper, a
+  1024 atlas with a night twin), places the three landmarks from `sites.js` `KH` (absolute coordinates, slid off the
+  roads) and merges them into one mesh per material (8 draw calls for all three). Also the formal gardens (gravel
+  walks, box hedges, cone yews, hollies, the statue roundel), the calp boundary wall along every road bordering the
+  grounds, lime rows on both drives, meadow trees (70; 35 on Low / Battery saver), the Proclamation figures.
+- **Places**: Kilmainham Gaol, Royal Hospital Kilmainham, Richmond Tower. World map: `KILMAINHAM` district label and
+  glyphs.
+- **Filler** (`buildings.js`): two-storey terraces (three on the main roads, no front gardens) west of x -1330 / south
+  of z 60; Heuston South Quarter 6-8 storeys; no filler in the Heuston rail yards (`sites.js heustonYard`).
+- **Night**: the stone is washed by the shared uplight (heroes.js `uplit`); a third of the sashes, the hall and chapel
+  windows, the dormers, the gaol door's lantern and the courthouse door glow.
+- **Cost** (headless, low tier, dpr 1; noisy because other agents share the GPU): at the gaol +22 draw calls, +0.04M
+  triangles; on the lime avenue +31 calls, +0.16M triangles (mostly the trees); GPU time within the run-to-run noise
+  (+0..7 ms).
+- **Checks**: footprints.mjs 0, bridges.mjs clean, no console errors (desktop and `--mobile`).
+- **Comparison**: `docs/research/kilmainham-compare.png` (left the reference, right the game).
+- **Luas**: the Red Line (main) leaves JS3 south through St James's and runs west along the old canal line at
+  lat ~53.337; Bow Lane West leaves JS3 westward and diverges from it at once, and the SCR stops at Brookfield Road
+  (KHBR, ~100 m north of the tracks). Nothing here crosses or touches the tracks.
+
+### Not done
+
+- The serpent tympanum is a painted decal (no relief); the Stonebreakers' Yard is inside the walls, seen only from
+  the air.
+- The Royal Hospital's arcades are on the east, west and south courtyard faces only (as real); the Great Hall's and
+  Chapel's interiors are not modelled.
+- Emmet Road, Mount Brown, the SCR east to Rialto (see 1.3).
+- Bully's Acre is grass; no headstones.
