@@ -12,6 +12,7 @@ import tanksData from '../data/guinness-tanks.json';
 import bsLayout from '../data/barrowst.json';
 import { spans as railSpans, at as railAt, footprints as railFootprints, pearseFront, fireTower } from './railline.js';
 import { pubSites } from './pubsites.js';
+import { gqSites } from './graftonsites.js';
 import * as LQ from './liffeysites.js';
 
 const N = (id) => world.nodes.get(id);
@@ -452,7 +453,7 @@ export const sites = {
   },
   stephensGreen: {
     name: "St Stephen's Green", ...centroid(sgPark.poly), rot: 0, w: 0, d: 0, labelY: 30, park: sgPark,
-    view: spot('GR2', 'SGNW', 0.35),
+    view: spot('GFCH', 'SGNW', 0.05),
   },
   aviva: {
     // w x d is the bounding box for the map; the filler keeps off the fitted slabs below (extraSites.avivaSlabs)
@@ -566,14 +567,16 @@ export const extraSites = {
   // Temple Bar Square: the flagged square on the south side of Temple Bar, west of Crown Alley
   tbSquare: (() => { const ca = wayBetween('TBQ', 'CCA'); return beside('TBQ', 'TFO', 0, 1, 21, 13, { shift: ca.width / 2 + ca.pave + 10.8, gap: 0.1 }); })(),
   // (Grafton Street is split at Duke Street, GRD, 0.352 of the way from GR1 to GR2 on the same line: same spots)
-  bewleys: beside('GRD', 'GR2', (0.78 - 0.352) / 0.648, -1, 12, 18, { gap: 0.15 }),
-  brownThomas: beside('GR1', 'GRD', 0.3 / 0.352, -1, 28, 22, { gap: 0.15 }),
-  weir: beside('CG3', 'GR1', 0.9, -1, 10, 14, { gap: 0.15 }),
+  // (and again at Johnson's Court, GFJC, 0.47 of the way from GRD to GR2: Bewley's keeps its spot)
+  bewleys: beside('GFJC', 'GR2', ((0.78 - 0.352) / 0.648 - 0.47) / 0.53, -1, 12, 8, { gap: 0.15 }),
+  // (20 deep, so its back clears Clarendon Street; Weir & Sons stands on the north corner of the slanting Wicklow Street)
+  brownThomas: beside('GR1', 'GRD', 0.3 / 0.352, -1, 28, 20, { gap: 0.15 }),
+  weir: beside('CG3', 'GR1', 0.78, -1, 10, 14, { gap: 0.15 }),
   sgCentre: (() => {
-    const W = 56, D = 54, kss = v2.len(v2.sub(N('KSS1'), N('SGNW')));
+    const W = 56, D = 54, kss = v2.len(v2.sub(N('GFKR'), N('SGNW'))); // (King St is split at Clarendon Row, GFKR)
     const west = wayBetween('SGNW', 'SGW'); // St Stephen's Green West: its half width and footpath set the corner
     // the Green West road slants ~12 degrees west going south: allow for it so the far end clears the footpath
-    return beside('SGNW', 'KSS1', (west.width / 2 + west.pave + 0.4 + D * 0.22 + W / 2) / kss, 1, W, D, { gap: 0.3 });
+    return beside('SGNW', 'GFKR', (west.width / 2 + west.pave + 0.4 + D * 0.22 + W / 2) / kss, 1, W, D, { gap: 0.3 });
   })(),
   // Grattan's statue on its island at the east end of College Green, in front of the east arch pavilion, facing
   // west down Dame Street (the island's east tip stays clear of the Trinity junction)
@@ -892,6 +895,10 @@ const tallFootprints = [sites.libertyHall, sites.collegeSquare, sites.capitalDoc
 for (const p of Object.values(pubSites)) {
   if (p.place) sites[p.key] = { name: p.name, x: p.x, z: p.z, rot: p.rot, w: p.w, d: p.d, labelY: 20, view: p.view, blurb: p.blurb };
 }
+// ...and the Grafton quarter's landmarks: the Gaiety Theatre, Powerscourt Townhouse and George's Street Arcade
+for (const p of Object.values(gqSites)) {
+  if (p.place) sites[p.key] = { name: p.name, x: p.x, z: p.z, rot: p.rot, w: p.w, d: p.d, labelY: 24, view: p.view, blurb: p.blurb };
+}
 // the Liffey's riverside landmarks (src/world/liffeysites.js, docs/research/liffey-quays.md) join the Places list
 Object.assign(sites, {
   famine: { name: 'Famine Memorial', ...LQ.FAMINE.site, view: spot('NQ12', 'NQ13', 0.04) },
@@ -906,7 +913,8 @@ export const reserved = [
   sites.gpo, sites.bankOfIreland, ...Object.entries(extraSites).filter(([k]) => k.startsWith('boi')).map(([, s]) => s), sites.christChurch, sites.stPatricks, extraSites.iveaghPlay, sites.customHouse, sites.trinity, ...grounds,
   sites.cityHall, sites.centralBank, extraSites.olympia, extraSites.clockCorner,
   extraSites.bewleys, extraSites.brownThomas, extraSites.weir, extraSites.sgCentre, extraSites.merchantsHall, extraSites.tbSquare,
-  // the famous pubs (src/world/pubsites.js)
+  // the famous pubs (src/world/pubsites.js) and the Grafton quarter's fronts (src/world/graftonsites.js)
+  ...Object.values(gqSites),
   ...Object.values(pubSites),
   shifted(extraSites.sgCentre, -extraSites.sgCentre.w / 2 - 8, 0, 16, extraSites.sgCentre.d), // broad footpath facing the Green
   { ...extraSites.castle, w: 44, d: 36, ...shifted(extraSites.castle, 0, -16, 44, 34) },

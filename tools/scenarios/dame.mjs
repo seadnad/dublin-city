@@ -5,9 +5,9 @@ const GRAFTON = [
   ['cg-bend', 'CGT', 'CGC', 0.1],
   ['nassau-luas', 'CG3', 'NS1', 0.15],
   ['grafton-north', 'CG3', 'GR1', 0.25],
-  ['grafton-bt', 'GR1', 'GR2', 0.05],
-  ['grafton-bewleys', 'GR1', 'GR2', 0.55],
-  ['grafton-top', 'GR2', 'SGNW', 0.4],
+  ['grafton-bt', 'GR1', 'GRD', 0.1],
+  ['grafton-bewleys', 'GFJC', 'GR2', 0.3],
+  ['grafton-top', 'GFCH', 'SGNW', 0.1],
   ['sg-centre', 'SGW', 'SGNW', 0.5],
 ];
 const DAME = [
