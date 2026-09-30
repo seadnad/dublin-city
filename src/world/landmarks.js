@@ -27,6 +27,7 @@ import { buildRailway, placeLoopline } from './railway.js';
 import { LITE } from '../render/quality.js';
 const lawnMat = () => getStreets().grassMat;
 import { buildPark } from './park.js';
+import { buildGreen, greenPlanting } from './greenpark.js';
 
 const rand = rng(1742);
 
@@ -2135,33 +2136,14 @@ function buildTrees(scene) {
   let pondAt = null;
   for (const pk of parkPolys) {
     if (pk.name === "St Stephen's Green") {
-      const c = sites.stephensGreen;
-      pondAt = { x: c.x + 10, z: c.z - 18 };
+      // the surveyed trees (open lawns where the real ones are), the understorey inside the railings and the lake
+      // shrubberies (greenpark.js); clear of the Fusiliers' Arch
       const arch = fusiliersSite(pk), clearOfArch = (p) => (p.x - arch.x) ** 2 + (p.z - arch.z) ** 2 > 18 * 18;
-      // perimeter belt: two staggered rows of big trees, and a band of shrubs just inside the railings
-      const shrubs = [];
-      for (const [inset, step, jitter, kind] of [[3.4, 3.2, 0.8, 'shrub'], [7, 8, 2, 'tree'], [13, 10, 3, 'tree']]) {
-        const ring = insetPolygon(pk.poly, inset);
-        for (let k = 0; k < ring.length; k++) {
-          const a = ring[k], bb = ring[(k + 1) % ring.length], L = v2.len(v2.sub(bb, a));
-          for (let t = rand() * step; t < L; t += step * (0.8 + rand() * 0.4)) {
-            const q = v2.lerp(a, bb, t / L), p = { x: q.x + (rand() - 0.5) * jitter, z: q.z + (rand() - 0.5) * jitter };
-            if (!clearOfArch(p)) continue;
-            if (kind === 'shrub') shrubs.push({ ...p, rot: rand() * 6.28, s: new THREE.Vector3(2 + rand() * 1.6, 1.6 + rand() * 1.4, 2 + rand() * 1.6), c: Math.floor(rand() * 5) });
-            else spots.push({ ...p, s: 1.15 + rand() * 0.45 });
-          }
-        }
-      }
-      // shrub clumps scattered through the interior lawns
-      const inner = insetPolygon(pk.poly, 20);
-      for (let i = 0; i < 90; i++) {
-        const k = Math.floor(rand() * inner.length), a = inner[k], bb = inner[(k + 1) % inner.length];
-        const q = v2.lerp(v2.lerp(a, bb, rand()), { x: c.x, z: c.z }, rand() * 0.8);
-        if ((q.x - pondAt.x) ** 2 / 500 + (q.z - pondAt.z) ** 2 / 150 < 1.4) continue;
-        shrubs.push({ ...q, rot: rand() * 6.28, s: new THREE.Vector3(1.6 + rand() * 1.5, 1.2 + rand() * 1.2, 1.6 + rand() * 1.5), c: Math.floor(rand() * 5) });
-      }
-      plantShrubs(scene, shrubs);
-      scatter(pk.poly, 110, 18);
+      const pl = greenPlanting(pk, rand, clearOfArch);
+      if (pl) {
+        plantShrubs(scene, pl.shrubs);
+        for (const t of pl.trees) spots.push({ x: t.x, z: t.z, s: t.s / 0.85, species: t.species, tint: t.tint });
+      } else scatter(pk.poly, 110, 18);
     } else if (pk.name === "St Patrick's Park") {
       let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
       for (const p of pk.poly) { x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); z0 = Math.min(z0, p.z); z1 = Math.max(z1, p.z); }
@@ -2200,7 +2182,7 @@ function buildTrees(scene) {
   for (const p of oct.rowans) addBox(p.x, p.z, 0.25, 0.25, 0);
   plantTrees(scene, oct.rowans.map((p) => ({ x: p.x, y: 0.16, z: p.z, rot: rand() * 6.28, s: 0.95 + rand() * 0.15 })), { rowan: 1 }, rand);
   // parks get a mix of species; street trees are London planes
-  const item = (p, k) => ({ x: p.x, y: KERB_H, z: p.z, rot: rand() * 6.28, s: p.s * k * (0.9 + rand() * 0.25) });
+  const item = (p, k) => ({ x: p.x, y: KERB_H, z: p.z, rot: rand() * 6.28, s: p.s * k * (0.9 + rand() * 0.25), species: p.species, tint: p.tint });
   plantTrees(scene, spots.filter((p) => !p.street).map((p) => item(p, 0.85)), { plane: 3, lime: 2, chestnut: 3, birch: 2, young: 1 }, rand);
   plantTrees(scene, spots.filter((p) => p.street).map((p) => item(p, 1.05)), { plane: 1 }, rand);
   return spots.length;
@@ -2246,6 +2228,10 @@ export function buildLandmarks(scene) {
   fourCourts(); // its colliders and statues (the hero is placed below)
   // Kildare Street / Merrion Street (Blender hero; its colliders and the Shelbourne's torch-bearers queue first)
   placeKildare(scene, { Builder, M });
+  // St Stephen's Green inside the railings (greenpark.js): paths, the lake and its bridge, fountains, bandstand,
+  // memorials, gates, benches, lamps, ducks, people and the jaunting car; its static parts join the landmark batch
+  const green = buildGreen(scene, { Builder, M, statue: addStatue });
+  if (green) for (const g of green.groups) { scene.add(g); groups.push(g); }
   buildStatues(scene); // the statue-kit figures queued by the builders above (loads statues.glb)
   // Parliament House / Bank of Ireland (Blender hero; the old procedural block if it can't load)
   parliamentColliders();
@@ -2342,20 +2328,12 @@ export function buildLandmarks(scene) {
     if (g.lawn) { const k = g.lawn, a = hx - k, bz = hz - k; scene.add(grassPolygon([[-a, -bz], [a, -bz], [a, bz], [-a, bz]].map(([lx, lz]) => ({ x: g.x + lx * c + lz * s, z: g.z - lx * s + lz * c })), lawnMat())); }
   }
 
-  // pond in St Stephen's Green
-  const c = S.stephensGreen;
-  const pond = new THREE.Mesh(new THREE.CircleGeometry(1, 40), M.water);
-  pond.rotation.x = -Math.PI / 2; pond.scale.set(20, 9, 1);
-  pond.position.set(c.x + 10, 0.03, c.z - 18);
-  const rim = new THREE.Mesh(new THREE.RingGeometry(1, 1.06, 40), M.granite);
-  rim.rotation.x = -Math.PI / 2; rim.scale.set(20, 9, 1); rim.position.set(c.x + 10, 0.05, c.z - 18);
-  scene.add(pond, rim);
-
   const trees = buildTrees(scene);
+  let lastUpdate = 0;
   // floating place labels were removed from the 3D view (landmarks are on the map instead)
   const labels = new THREE.Group();
   return {
-    groups, labels, trees, park: phoenixPark, towers, pubs,
+    groups, labels, trees, park: phoenixPark, towers, pubs, green,
     setLabels(on) { labels.visible = on; },
     // docklands lighting after dark (0 = day, 1 = night)
     setNight(level) {
@@ -2377,8 +2355,11 @@ export function buildLandmarks(scene) {
       railway.setNight(level);
       setStoneNight(level);
       if (phoenixPark) phoenixPark.setNight(level);
+      if (green) green.setNight(level);
     },
     update(camera) {
+      const now = performance.now() / 1000, dt = Math.min(0.1, now - (lastUpdate || now)); lastUpdate = now;
+      if (green) green.update(dt, now, camera);
       // hide labels that are far away or behind the camera
       for (const sp of labels.children) {
         const d = camera.position.distanceTo(sp.position);
