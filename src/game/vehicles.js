@@ -35,10 +35,30 @@ function assemble(parts) {
   return group;
 }
 
+// The parts of a Luas carriage as [material, geometries] (for instancing): with `cab`, only the cab end's extra parts.
+const silverMat = new THREE.MeshStandardMaterial({ color: 0xc9ccd0, roughness: 0.35, metalness: 0.6 });
+export function tramCarParts({ len = 11, cab = false } = {}) {
+  const W = 2.4;
+  if (cab) {
+    return [
+      [bodyMat(0xf3d21b), [box(W, 2.3, 0.3, 0, 1.6, len / 2 + 0.1)]],
+      [glassMat, [box(W - 0.2, 1.1, 0.1, 0, 2.3, len / 2 + 0.28)]],
+      [headMat, [box(0.3, 0.15, 0.05, -0.8, 0.9, len / 2 + 0.28), box(0.3, 0.15, 0.05, 0.8, 0.9, len / 2 + 0.28)]],
+    ];
+  }
+  return [
+    [silverMat, [box(W, 2.6, len, 0, 1.75, 0)]],
+    [bodyMat(0x5b2c83), [box(W + 0.02, 0.35, len, 0, 0.6, 0)]],
+    [glassMat, [box(W + 0.03, 1.1, len - 1.2, 0, 2.15, 0)]],
+    [trimMat, [box(0.2, 0.9, 0.6, 0, 3.5, 0), box(1.6, 0.05, 0.3, 0, 4.0, 0)]],
+    [tyreMat, [box(W - 0.3, 0.4, len - 1, 0, 0.3, 0)]],
+  ];
+}
+
 // One Luas carriage: silver/grey body, yellow front, pantograph. Faces +z.
 export function makeTramCar({ cab = false, len = 11 } = {}) {
   const W = 2.4;
-  const silver = new THREE.MeshStandardMaterial({ color: 0xc9ccd0, roughness: 0.35, metalness: 0.6 });
+  const silver = silverMat;
   const purple = bodyMat(0x5b2c83), yellow = bodyMat(0xf3d21b);
   const parts = [
     [silver, [box(W, 2.6, len, 0, 1.75, 0)]],

@@ -881,7 +881,10 @@
     { "name": "Londonbridge Road", "type": "secondary", "width": 9, "nodes": ["AVLT", "AVLR1", "AVLBE"] },
     { "name": "London Bridge", "type": "bridge", "width": 6, "nodes": ["AVLBE", "AVLBW"] },
     { "name": "Bath Avenue", "type": "secondary", "width": 9, "nodes": ["AVLBW", "AVBA3", "AVBH", "AVBA2", "AVBA1", "AVJ1"] },
-    { "name": "South Lotts Road", "type": "secondary", "width": 9, "nodes": ["AVJ1", "AVSL1", "AVSL2", "AVSL3", "SD1"] }
+    { "name": "South Lotts Road", "type": "secondary", "width": 9, "nodes": ["AVJ1", "AVSL1", "AVSL2", "AVSL3", "SD1"] },
+    { "name": "Rosie Hackett Bridge", "type": "bridge", "width": 13, "access": "destination", "nodes": ["NQ9", "SQ9"] },
+    { "name": "Hawkins Street", "type": "secondary", "width": 10, "nodes": ["SQ9", "CS1"] },
+    { "name": "Charlemont Luas Bridge", "type": "lane", "width": 8, "pedestrian": true, "access": "pedestrian", "lamps": "none", "nodes": ["GXSLU5", "GXSLU6"] }
   ],
   "river": {
     "name": "River Liffey",
@@ -941,19 +944,163 @@
   },
   "luas": {
     "name": "Luas Red Line",
-    "route": ["PTE", "PT", "MU3", "MU2", "SPD", "GS1", "MY2", "MY1", "IF1", "BP3", "BP2", "AB0", "AB1", "OC1", "AB2", "JV0", "CA1", "MA1", "CH1", "FC1", "FCS", "FC2", "CSX", "SMF", "BB0", "BB1", "BB2", "BB3", "WT3", "HB1", "HS", "SJ1", "SL1", "SL2", "JS3"],
-    "stops": {
-      "PT": "The Point",
-      "SPD": "Spencer Dock",
-      "MY1": "Mayor Square",
-      "BP2": "Busáras",
-      "AB1": "Abbey Street",
-      "JV0": "Jervis",
-      "FCS": "Four Courts",
-      "SMF": "Smithfield",
-      "BB1": "Museum",
-      "HS": "Heuston"
-    }
+    "color": "#d6212b",
+    "legs": {
+      "point": {
+        "route": [
+          "PTE",
+          "PT",
+          "MU3",
+          "MU2",
+          "SPD",
+          "GS1",
+          "MY2",
+          "MY1",
+          "IF1",
+          [53.351094, -6.250942]
+        ],
+        "stops": [
+          { "name": "The Point", "ga": "Iosta na Rinne", "at": "PT" },
+          { "name": "Spencer Dock", "ga": "Duga Spencer", "at": "SPD" },
+          { "name": "Mayor Square - NCI", "ga": "Cearnóg an Mhéara - CNÉ", "at": [53.34925, -6.24339] },
+          { "name": "George's Dock", "ga": "Duga Sheoirse", "at": ["MY1", 40] }
+        ]
+      },
+      "connolly": {
+        "route": [
+          [53.352649, -6.248939],
+          "RN30",
+          "AM",
+          [53.351094, -6.250942]
+        ],
+        "stops": [
+          { "name": "Connolly", "ga": "Conghaile", "at": [53.352649, -6.248939] }
+        ]
+      },
+      "west": {
+        "route": [
+          [53.351094, -6.250942],
+          "ST1",
+          "BP2",
+          "AB0",
+          "AB1",
+          "OC1",
+          "AB2",
+          "JV0",
+          "CA1",
+          "MA1",
+          "CH1",
+          "FC1",
+          "FCS",
+          "FC2",
+          "CSX",
+          "SMF",
+          "BB0",
+          "BB1",
+          "BB2",
+          "BB3",
+          "WT3",
+          "HB1",
+          "HS",
+          "SJ1",
+          "SL1",
+          "SL2",
+          "JS3",
+          [53.343027, -6.291117],
+          [53.342981, -6.291234],
+          [53.342526, -6.29332],
+          [53.342465, -6.29345],
+          [53.342422, -6.293495],
+          [53.342309, -6.293533],
+          [53.34172, -6.293193],
+          [53.341588, -6.293067],
+          [53.341548, -6.292965],
+          [53.341526, -6.292814],
+          [53.341591, -6.292372],
+          [53.341591, -6.292209],
+          [53.341547, -6.292035],
+          [53.341483, -6.291936],
+          [53.339748, -6.290799],
+          [53.339466, -6.290685],
+          [53.339306, -6.290687],
+          [53.339162, -6.290729],
+          [53.339019, -6.290811],
+          [53.338882, -6.290935],
+          [53.338767, -6.291092],
+          [53.338669, -6.291282],
+          [53.33854, -6.29168],
+          [53.33847, -6.292165],
+          [53.337731, -6.299124],
+          [53.337064, -6.30488],
+          [53.336959, -6.305464],
+          [53.336734, -6.306345],
+          [53.336668, -6.306727],
+          [53.336228, -6.310741],
+          [53.335576, -6.316179],
+          [53.334852, -6.322709],
+          [53.334533, -6.32538],
+          [53.334154, -6.328059],
+          [53.3341, -6.328256],
+          [53.333992, -6.328472],
+          [53.333625, -6.328813],
+          [53.333143, -6.329171],
+          [53.332191, -6.329742],
+          [53.331589, -6.330228],
+          [53.331122, -6.330725],
+          [53.330563, -6.331392],
+          [53.330368, -6.331646],
+          [53.330124, -6.332036],
+          [53.329874, -6.33252],
+          [53.329048, -6.334337],
+          [53.328728, -6.335172],
+          [53.328573, -6.335672],
+          [53.328343, -6.336571],
+          [53.327773, -6.338994]
+        ],
+        "shift": {
+          "AB0+12": 1.2,
+          "OC1-12": 1.2,
+          "OC1+12": -1.2,
+          "AB2-10": -1.2,
+          "AB2": 0
+        },
+        "stops": [
+          { "name": "Busáras", "ga": "Busáras", "at": ["ST1", -34] },
+          { "name": "Abbey Street", "ga": "Sráid na Mainistreach", "at": [53.34861, -6.25817] },
+          { "name": "Jervis", "ga": "Jervis", "at": [53.34767, -6.26555] },
+          { "name": "Four Courts", "ga": "Na Ceithre Cúirteanna", "at": "FCS" },
+          { "name": "Smithfield", "ga": "Margadh na Feirme", "at": "SMF" },
+          { "name": "Museum", "ga": "Ard-Mhúsaem", "at": [53.34789, -6.28673] },
+          { "name": "Heuston", "ga": "Heuston", "at": "HS" },
+          { "name": "James's", "ga": "Ospidéal San Séamas", "at": [53.34189, -6.29335] },
+          { "name": "Fatima", "ga": "Fatima", "at": [53.33846, -6.29252] },
+          { "name": "Rialto", "ga": "Rialto", "at": [53.33794, -6.29722] },
+          { "name": "Suir Road", "ga": "Bóthar na Siúire", "at": [53.33664, -6.30728] },
+          { "name": "Goldenbridge", "ga": "An Droichead Órga", "at": [53.33592, -6.31358] },
+          { "name": "Drimnagh", "ga": "Droimeanach", "at": [53.33539, -6.31808] },
+          { "name": "Blackhorse", "ga": "An Capall Dubh", "at": [53.33427, -6.32742] },
+          { "name": "Bluebell", "ga": "An Cloigín Gorm", "at": [53.32929, -6.33388] }
+        ]
+      }
+    },
+    "services": [
+      {
+        "name": "The Point",
+        "trams": 4,
+        "runs": [
+          ["point", "west"],
+          ["-west", "-point"]
+        ]
+      },
+      {
+        "name": "Connolly",
+        "trams": 3,
+        "runs": [
+          ["connolly", "west"],
+          ["-west", "-connolly"]
+        ]
+      }
+    ]
   },
   "docks": {
     "Grand Canal Dock": [
@@ -1019,15 +1166,132 @@
   },
   "luasGreen": {
     "name": "Luas Green Line",
-    "route": ["SQ8", "WMS", "WM1", "CG1", "CGM", "CGT", "CGC", "CG3", "NS1", "DSM", "DS1", "SGNW", "SGW", "SGSW", "HC1", "GXSHC2", "GXSHCS", "GXSLU1", "GXSHR1", "GXSLU2", "GXSLU3", "GXSLU4", "GXSLU5", "GXSCHL", "GXSLU6", "GXSLU7"],
-    "stops": {
-      "WMS": "Westmoreland",
-      "CGM": "Trinity",
-      "DSM": "Dawson",
-      "SGW": "St. Stephen's Green",
-      "GXSHCS": "Harcourt",
-      "GXSCHL": "Charlemont"
-    }
+    "color": "#00a651",
+    "legs": {
+      "south": {
+        "route": [
+          "CG1",
+          "CGM",
+          "CGT",
+          "CGC",
+          "CG3",
+          "NS1",
+          "DSM",
+          "DS1",
+          "SGNW",
+          "SGW",
+          "SGSW",
+          "HC1",
+          "GXSHC2",
+          "GXSHCS",
+          "GXSLU1",
+          "GXSHR1",
+          "GXSLU2",
+          "GXSLU3",
+          "GXSLU4",
+          "GXSLU5",
+          "GXSCHL",
+          "GXSLU6",
+          "GXSLU7",
+          [53.329202, -6.257327],
+          [53.32882, -6.257072],
+          [53.328113, -6.256707],
+          [53.327531, -6.256489],
+          [53.326303, -6.256138]
+        ],
+        "shift": {
+          "SGSW": 0,
+          "SGSW+20": 1.5,
+          "GXSHCS": 1.5,
+          "GXSHCS+20": 0
+        },
+        "stops": [
+          { "name": "Dawson", "ga": "Dásain", "at": "DSM" },
+          { "name": "St. Stephen's Green", "ga": "Faiche Stiabhna", "at": [53.33906, -6.26132] },
+          { "name": "Harcourt", "ga": "Sráid Fhearchair", "at": "GXSHCS" },
+          { "name": "Charlemont", "ga": "Charlemont", "at": ["GXSCHL", 30] }
+        ]
+      },
+      "nb": {
+        "single": true,
+        "route": ["CG1", "WM1", "WMS", "SQ8", "NQ8", "OC1", "OC2", "OC3", "OC4"],
+        "shift": {
+          "CG1": 1.8,
+          "CG1+14": 3,
+          "SQ8": 3,
+          "NQ8+4": 7,
+          "OC4-6": 7,
+          "OC4": 1.8
+        },
+        "stops": [
+          { "name": "Westmoreland", "ga": "Westmoreland", "at": "WMS" },
+          { "name": "O'Connell - GPO", "ga": "Ó Conaill AOP", "at": [53.34884, -6.25992] },
+          { "name": "O'Connell Upper", "ga": "Ó Conaill Uachtarach", "at": [53.35159, -6.26106] }
+        ]
+      },
+      "sb": {
+        "single": true,
+        "route": ["OC4", "RN05", "MB3", "MB2", "AB1", "NQ9", "SQ9", "CS1", "CG1"],
+        "shift": {
+          "OC4": 1.8,
+          "OC4+15": 3,
+          "RN05": 3,
+          "RN05+15": 2,
+          "CS1": 2.5,
+          "CS1+15": 3,
+          "CG1-12": 3,
+          "CG1": 1.8
+        },
+        "stops": [
+          { "name": "Parnell", "ga": "Parnell", "at": [53.35308, -6.26047] },
+          { "name": "Marlborough", "ga": "Maoilbhríde", "at": [53.34918, -6.25776] },
+          { "name": "Trinity", "ga": "Tríonóid", "at": ["CS1", 34] }
+        ]
+      },
+      "north": {
+        "route": [
+          "OC4",
+          "RN01",
+          "PN2",
+          "RN14",
+          "RN40",
+          [53.353882, -6.27449],
+          [53.353855, -6.274711],
+          [53.353873, -6.274963],
+          [53.353956, -6.275235],
+          [53.354056, -6.275399],
+          [53.356194, -6.277149],
+          [53.356379, -6.27727],
+          [53.356626, -6.277354],
+          [53.357101, -6.277364],
+          [53.358063, -6.277329],
+          [53.358312, -6.277367],
+          [53.358573, -6.27749],
+          [53.36624, -6.283494],
+          [53.366785, -6.28398],
+          [53.367356, -6.284552],
+          [53.367783, -6.28504],
+          [53.368437, -6.285879]
+        ],
+        "stops": [
+          { "name": "Dominick", "ga": "Doiminic", "at": ["PN2", 34] },
+          { "name": "Broadstone - University", "ga": "An Chloch Leathan - Ollscoil", "at": [53.353873, -6.274963] },
+          { "name": "Grangegorman", "ga": "Gráinseach Ghormáin", "at": [53.3571, -6.27736] },
+          { "name": "Phibsborough", "ga": "Baile Phib", "at": [53.36042, -6.27893] },
+          { "name": "Cabra", "ga": "Cabrach", "at": [53.36412, -6.28182] }
+        ]
+      }
+    },
+    "services": [
+      {
+        "name": "Broombridge - Bride's Glen",
+        "trams": 5,
+        "runs": [
+          ["-south", "nb", "north"],
+          ["-north", "sb", "south"]
+        ]
+      }
+    ]
   },
   "canals": {
     "Grand Canal": {

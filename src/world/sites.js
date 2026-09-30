@@ -641,6 +641,7 @@ function clearSpot(o, avoid, margin) {
     if (r && !r.way.pedestrian && r.edgeDist < r.way.pave + margin) return false;
     if (pointInPolygon(p, world.riverPoly) || dockPolys.some((dk) => pointInPolygon(p, dk.poly))) return false;
     if (avoid.some((a) => insideBox(p, a, 0.5))) return false;
+    if (world.luasNear(p.x, p.z, 4.5)) return false; // off the Luas tracks and their platforms
   }
   return true;
 }

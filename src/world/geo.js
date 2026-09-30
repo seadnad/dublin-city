@@ -277,11 +277,23 @@ function build() {
   // each stretch of canal water between two bridges or locks is a basin like the docks (water, walls, collision)
   for (const c of canals) for (const pool of c.pools) docks.push({ name: c.name, poly: pool.poly, ids: null, canal: c, level: pool.level });
 
-  const line = (l) => ({ name: l.name, pts: l.route.map((id) => ({ x: nodes.get(id).x, z: nodes.get(id).z, id })), stops: l.stops });
-  const luasLines = [line(data.luas), ...(data.luasGreen ? [line(data.luasGreen)] : [])];
+  const luasLines = [data.luas, data.luasGreen].filter(Boolean).map((l) => buildLuasLine(l, nodes, bounds, nearestRoad));
   const luas = luasLines[0];
+  // is (x, z) within r of a Luas track? (for placing buildings clear of the line)
+  const LH = new Map(), LC = 10, LR = 8; // segments hashed into every cell within LR of them
+  for (const l of luasLines) for (const t of l.tracks) for (let n = 1; n < t.length; n++) {
+    const a = t[n - 1], b = t[n], seg = [a, b];
+    for (let i = Math.floor((Math.min(a.x, b.x) - LR) / LC); i <= Math.floor((Math.max(a.x, b.x) + LR) / LC); i++) for (let j = Math.floor((Math.min(a.z, b.z) - LR) / LC); j <= Math.floor((Math.max(a.z, b.z) + LR) / LC); j++) {
+      const k = i * 100003 + j; if (!LH.has(k)) LH.set(k, []); LH.get(k).push(seg);
+    }
+  }
+  const luasNear = (x, z, r) => { // r up to LR
+    const p = { x, z };
+    for (const [a, b] of LH.get(Math.floor(x / LC) * 100003 + Math.floor(z / LC)) || []) if (closestOnSegment(p, a, b).d2 < r * r) return true;
+    return false;
+  };
 
-  return { nodes, ways, edges, bounds, segs, segsNear, nearestRoad, northBank, southBank, riverPoly, parks, campus, docks, canals, greens, luas, luasLines };
+  return { nodes, ways, edges, bounds, segs, segsNear, nearestRoad, northBank, southBank, riverPoly, parks, campus, docks, canals, greens, luas, luasLines, luasNear };
 }
 
 // ---------- canals ----------
@@ -392,6 +404,207 @@ function buildCanal(name, c, segs, segsNear) {
   }
   const ends = merged.map((g) => ({ ...g, a: at(g.s0), b: at(g.s1) }));
   return { name, width, pts, total, pools, gaps: ends, locks, covered };
+}
+
+// ---------- Luas ----------
+// A line (streets.json `luas`, `luasGreen`) is a set of legs and the services that run over them (docs/research/luas.md).
+// A leg is a centreline through street nodes or [lat, lon] points: double track unless `single` (one-way, like the
+// Green Line's O'Connell Street and Marlborough Street legs). `shift` moves the centreline sideways (metres to the left
+// of the leg's direction, keyed by node id or "id+metres", interpolated between keys), so a track can keep to one
+// carriageway. A run is a list of legs one tram drives end to end ("-leg" = against the leg's direction); trams keep
+// left, so a run over a double leg takes the track LUAS_TRACK to the left of its centreline. Every run becomes one
+// smooth polyline (corners filleted); the rendered tracks are the runs' polylines with shared stretches drawn once.
+export const LUAS_TRACK = 1.8;
+const LUAS_FILLET = 14;
+
+function luasKeyArc(key, arcOf) {
+  const m = /^(.*?)([+-]\d+(?:\.\d+)?)?$/.exec(key);
+  const a = arcOf(m[1]);
+  return a === undefined ? undefined : a + (m[2] ? +m[2] : 0);
+}
+// round every corner of a polyline ({x, z, ra}) with an arc of radius R (less where the segments are short)
+function filletPath(P, R) {
+  const out = [P[0]];
+  const mix = (p, q, t) => ({ x: p.x + (q.x - p.x) * t, z: p.z + (q.z - p.z) * t, ra: p.ra + (q.ra - p.ra) * t });
+  for (let i = 1; i < P.length - 1; i++) {
+    const a = P[i - 1], b = P[i], c = P[i + 1];
+    const la = v2.len(v2.sub(b, a)), lc = v2.len(v2.sub(c, b));
+    if (la < 1e-6 || lc < 1e-6) continue;
+    const u = v2.scale(v2.sub(b, a), 1 / la), w = v2.scale(v2.sub(c, b), 1 / lc);
+    const ang = Math.acos(Math.max(-1, Math.min(1, v2.dot(u, w))));
+    if (ang < 0.01) { out.push(b); continue; }
+    const t = Math.min(R * Math.tan(ang / 2), la * 0.45, lc * 0.45);
+    const p0 = mix(b, a, t / la), p1 = mix(b, c, t / lc), n = Math.max(2, Math.ceil(ang / 0.06));
+    for (let k = 0; k <= n; k++) { // quadratic Bezier through the tangent points, control point the corner
+      const s = k / n, q0 = mix(p0, b, s), q1 = mix(b, p1, s);
+      out.push(mix(q0, q1, s));
+    }
+  }
+  out.push(P[P.length - 1]);
+  return out;
+}
+function arcTable(pts) {
+  const s = [0];
+  for (let i = 1; i < pts.length; i++) s.push(s[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].z - pts[i - 1].z));
+  return s;
+}
+function buildLuasLine(l, nodes, bounds, nearestRoad) {
+  const pt = (r) => (typeof r === 'string' ? { x: nodes.get(r).x, z: nodes.get(r).z, id: r } : project(r[0], r[1]));
+  const legs = {};
+  for (const [name, L] of Object.entries(l.legs)) {
+    for (const r of L.route) if (typeof r === 'string' && !nodes.get(r)) throw new Error(`Unknown node ${r} in ${l.name} ${name}`);
+    const pts = L.route.map(pt), arc = arcTable(pts), len = arc[arc.length - 1];
+    const arcOf = (id) => { const k = L.route.indexOf(id); return k < 0 ? undefined : arc[k]; };
+    const keys = Object.entries(L.shift || {}).map(([k, v]) => ({ a: luasKeyArc(k, arcOf), v })).filter((k) => k.a !== undefined).sort((p, q) => p.a - q.a);
+    const shiftAt = (a) => {
+      if (!keys.length) return 0;
+      if (a <= keys[0].a) return keys[0].v;
+      for (let k = 1; k < keys.length; k++) if (a <= keys[k].a) { const p = keys[k - 1], q = keys[k]; return p.v + (q.v - p.v) * ((a - p.a) / (q.a - p.a || 1)); }
+      return keys[keys.length - 1].v;
+    };
+    // a point of the centreline at arc a (on the unshifted polyline)
+    const at = (a) => {
+      let i = 1; while (i < arc.length - 1 && arc[i] < a) i++;
+      const t = Math.max(0, Math.min(1, (a - arc[i - 1]) / (arc[i] - arc[i - 1] || 1)));
+      return v2.lerp(pts[i - 1], pts[i], t);
+    };
+    const nearestArc = (p) => {
+      let best = { d: Infinity, a: 0 };
+      for (let i = 1; i < pts.length; i++) {
+        const c = closestOnSegment(p, pts[i - 1], pts[i]);
+        if (c.d2 < best.d) best = { d: c.d2, a: arc[i - 1] + c.t * (arc[i] - arc[i - 1]) };
+      }
+      return best.a;
+    };
+    const stops = (L.stops || []).map((s) => {
+      const a = typeof s.at === 'string' ? arcOf(s.at) : typeof s.at[0] === 'string' ? arcOf(s.at[0]) + s.at[1] : nearestArc(project(s.at[0], s.at[1]));
+      return { ...s, leg: name, a, ...at(a) };
+    });
+    // stretches off the street grid (between two [lat, lon] points): the tracks run on a reservation of their own
+    const open = L.route.slice(1).map((r, i) => typeof r !== 'string' && typeof L.route[i] !== 'string');
+    legs[name] = { name, single: !!L.single, pts, arc, len, shiftAt, keys, stops, open };
+  }
+
+  const runs = new Map();
+  const runOf = (names) => {
+    const key = names.join(',');
+    if (runs.has(key)) return runs.get(key);
+    // raw polyline (the legs' vertices, with their arc along the run) and the run's shift keyframes: each leg's
+    // shift (mirrored when run backwards) plus the keep-left track offset
+    const raw = [], ranges = [], keys = [];
+    let base = 0;
+    for (const nm of names) {
+      const rev = nm[0] === '-', leg = legs[rev ? nm.slice(1) : nm];
+      if (!leg) throw new Error(`${l.name}: no leg ${nm}`);
+      if (rev && leg.single) throw new Error(`${l.name}: single-track leg ${nm} run backwards`);
+      const T = leg.single ? 0 : LUAS_TRACK;
+      const order = rev ? leg.pts.map((_, i) => leg.pts.length - 1 - i) : leg.pts.map((_, i) => i);
+      for (const i of order) {
+        const p = leg.pts[i], ra = base + (rev ? leg.len - leg.arc[i] : leg.arc[i]);
+        const last = raw[raw.length - 1];
+        if (last && Math.hypot(last.x - p.x, last.z - p.z) < 0.05) continue;
+        raw.push({ x: p.x, z: p.z, ra });
+      }
+      for (const a of [0, ...leg.keys.map((k) => k.a).filter((a) => a > 0 && a < leg.len), leg.len]) {
+        const v = leg.shiftAt(a);
+        keys.push({ ra: base + (rev ? leg.len - a : a), v: (rev ? -v : v) + T });
+      }
+      ranges.push({ leg, rev, r0: base, r1: base + leg.len });
+      base += leg.len;
+    }
+    keys.sort((p, q) => p.ra - q.ra);
+    for (let k = keys.length - 1; k > 0; k--) if (keys[k].ra - keys[k - 1].ra < 0.01) { keys[k - 1].v = (keys[k - 1].v + keys[k].v) / 2; keys.splice(k, 1); }
+    let kk = 1;
+    const shAt = (ra) => { // ra rises monotonically below, so walk the keys
+      while (kk < keys.length - 1 && keys[kk].ra < ra) kk++;
+      while (kk > 1 && keys[kk - 1].ra > ra) kk--;
+      const p = keys[kk - 1], q = keys[kk];
+      return p.v + (q.v - p.v) * Math.max(0, Math.min(1, (ra - p.ra) / (q.ra - p.ra || 1)));
+    };
+    // fillet the corners, resample at 1 m, then offset every point sideways by its shift
+    const f = resampleAttr(filletPath(raw, LUAS_FILLET), 1);
+    const pts = f.map((p, i) => {
+      const a = f[Math.max(0, i - 1)], b = f[Math.min(f.length - 1, i + 1)], d = v2.norm(v2.sub(b, a)), sh = shAt(p.ra);
+      return { x: p.x + d.z * sh, z: p.z - d.x * sh, ra: p.ra };
+    });
+    // flag the points on off-street stretches
+    for (const g of ranges) {
+      const { leg } = g;
+      if (!leg.open.some(Boolean)) continue;
+      let k = 1;
+      for (const p of pts) {
+        if (p.ra < g.r0 || p.ra > g.r1) continue;
+        const a = g.rev ? g.r1 - p.ra : p.ra - g.r0;
+        k = 1; while (k < leg.arc.length - 1 && leg.arc[k] < a) k++;
+        if (!leg.open[k - 1]) continue;
+        const r = nearestRoad(p.x, p.z); // not where the line crosses a road
+        if (!r || r.edgeDist > r.way.pave + 6.5) p.open = true;
+      }
+    }
+    const table = arcTable(pts);
+    // stops on this run: the nearest point to the stop (on the stretch of its own leg)
+    const stops = [];
+    for (const g of ranges) for (const st of g.leg.stops) {
+      const ra = g.rev ? g.r1 - st.a : g.r0 + st.a;
+      let best = null;
+      for (let i = 0; i < pts.length; i++) {
+        if (Math.abs(pts[i].ra - ra) > 40) continue;
+        const d = (pts[i].x - st.x) ** 2 + (pts[i].z - st.z) ** 2;
+        if (!best || d < best.d) best = { d, s: table[i] };
+      }
+      if (best) stops.push({ stop: st, s: best.s, rev: g.rev });
+    }
+    stops.sort((p, q) => p.s - q.s);
+    const run = { key, names, pts, table, total: table[table.length - 1], ranges, stops };
+    runs.set(key, run);
+    return run;
+  };
+  const services = l.services.map((s) => ({ name: s.name, trams: s.trams, runs: s.runs.map(runOf) }));
+
+  // the rendered tracks: every run's polyline, less the stretches another run already laid, clipped to the map
+  const CELL = 1, hash = new Map(), hk = (x, z) => `${Math.floor(x / CELL)},${Math.floor(z / CELL)}`;
+  const laid = (p) => {
+    const i = Math.floor(p.x / CELL), j = Math.floor(p.z / CELL);
+    for (let di = -1; di <= 1; di++) for (let dj = -1; dj <= 1; dj++) for (const q of hash.get(`${i + di},${j + dj}`) || []) if ((q.x - p.x) ** 2 + (q.z - p.z) ** 2 < 0.3 * 0.3) return true;
+    return false;
+  };
+  const inside = (p) => p.x > bounds.minX - 1 && p.x < bounds.maxX + 1 && p.z > bounds.minZ - 1 && p.z < bounds.maxZ + 1;
+  const tracks = [];
+  for (const run of runs.values()) {
+    let cur = [];
+    const flush = () => { if (cur.length > 1) tracks.push(simplifyTrack(cur, 0.03)); cur = []; };
+    const fresh = run.pts.map((p) => inside(p) && !laid(p));
+    // a piece keeps one shared point at each end, so pieces join up
+    run.pts.forEach((p, i) => { if (fresh[i] || fresh[i - 1] || fresh[i + 1]) cur.push(p); else flush(); });
+    flush();
+    for (const p of run.pts) { const k = hk(p.x, p.z); if (!hash.has(k)) hash.set(k, []); hash.get(k).push(p); }
+  }
+  return { name: l.name, color: l.color, legs, runs: [...runs.values()], services, tracks };
+}
+// Douglas-Peucker for a rendered track (1 m samples are only needed on the curves); keeps both ends of every
+// off-street stretch
+function simplifyTrack(pts, tol) {
+  const keep = new Uint8Array(pts.length); keep[0] = keep[pts.length - 1] = 1;
+  for (let i = 1; i < pts.length; i++) if (!pts[i].open !== !pts[i - 1].open) keep[i] = keep[i - 1] = 1;
+  const stack = [[0, pts.length - 1]];
+  while (stack.length) {
+    const [i, j] = stack.pop();
+    let best = -1, bd = tol;
+    for (let k = i + 1; k < j; k++) { const c = closestOnSegment(pts[k], pts[i], pts[j]), d = Math.sqrt(c.d2); if (d > bd) { bd = d; best = k; } }
+    if (best >= 0) { keep[best] = 1; stack.push([i, best], [best, j]); }
+  }
+  return pts.filter((_, i) => keep[i]);
+}
+// resample a polyline of {x, z, ra} at a step, interpolating the attributes
+function resampleAttr(pts, step) {
+  const out = [pts[0]];
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1], b = pts[i], L = Math.hypot(b.x - a.x, b.z - a.z);
+    if (L < 1e-6) continue;
+    const n = Math.max(1, Math.ceil(L / step));
+    for (let k = 1; k <= n; k++) { const t = k / n; out.push({ x: a.x + (b.x - a.x) * t, z: a.z + (b.z - a.z) * t, ra: a.ra + (b.ra - a.ra) * t }); }
+  }
+  return out;
 }
 
 // Intersection of segments ab and cd: the parameter t along ab, or null.
