@@ -10,9 +10,13 @@ import { collegeGreenSites, cgAt, CG_SPOTS, CG_EAST } from './collegegreen.js';
 import { KD_BOXES, KD_OPEN } from './kildarelayout.js';
 import tanksData from '../data/guinness-tanks.json';
 import bsLayout from '../data/barrowst.json';
+<<<<<<< HEAD
 import { spans as railSpans, at as railAt, footprints as railFootprints, pearseFront, fireTower } from './railline.js';
 import { pubSites } from './pubsites.js';
 import * as LQ from './liffeysites.js';
+=======
+import { aras, zooSite } from './aras-zoo.js';
+>>>>>>> worktree-agent-ad22367e04beb96c5
 
 const N = (id) => world.nodes.get(id);
 const wayBetween = (a, b) => world.ways.find((w) => {
@@ -484,6 +488,7 @@ export const sites = {
     outline: ccjOutline(),
     view: spot('WT3', 'PG1', 0.35),
   },
+<<<<<<< HEAD
   // Connolly Station (docs/research/railway.md): William Deane Butler's 1844 granite front with its Italianate tower,
   // on the east side of Amiens Street at the Talbot Street / Store Street junction, facing west (local +z). The
   // train shed over platforms 1-4 runs north-east behind it (railway.js); the Loop Line's DART platforms pass south of
@@ -498,6 +503,19 @@ export const sites = {
     const sp = railSpans.find((k) => k.hero), a = railAt(sp ? (sp.s0 + sp.s1) / 2 : 0);
     return { name: 'Loopline Bridge', x: a.x, z: a.z, rot: Math.atan2(a.d.x, a.d.z), w: 12, d: sp ? sp.s1 - sp.s0 : 0, labelY: 14, bridge: true, view: spot('SQ8', 'SQ9', 0.55) };
   })(),
+=======
+  aras: {
+    // Áras an Uachtaráin (src/world/aras-zoo.js): the main range and its terrace, set back behind its lawn and the
+    // ha-ha. The view is on Chesterfield Avenue where the house's vista meets it, facing up the lawn to the portico.
+    name: 'Áras an Uachtaráin', x: aras.x + aras.f.x * -5.2, z: aras.z + aras.f.z * -5.2, rot: aras.rot, w: 49.6, d: 17, labelY: 18,
+    view: aras.view,
+  },
+  zoo: {
+    // Dublin Zoo's entrance building on the Hollow (the lettered wall faces the park); seen from the road across the Hollow
+    name: 'Dublin Zoo', x: zooSite.x + Math.sin(zooSite.rot) * -2.9, z: zooSite.z + Math.cos(zooSite.rot) * -2.9, rot: zooSite.rot, w: 28, d: 6, labelY: 8,
+    view: zooSite.view,
+  },
+>>>>>>> worktree-agent-ad22367e04beb96c5
 };
 
 // A railway bridge over the road at a node (the GSWR, docs/research/croke-park.md 1.2; no trains, so only the deck
