@@ -4,6 +4,7 @@
 import { world, v2, PAVEMENT, pointInPolygon, laneOffset, project } from './geo.js';
 import { bridges, parkPolys, campusPolys, dockPolys } from './ground.js';
 import { monumentSites, along, chainageOf } from './oconnell.js';
+import { oconnellLayout, footprintOf } from './ocstreet.js';
 import ncLayout from '../data/northcity.json';
 const { clerys: CLERYS, parnell: PARNELL, busaras: BUSARAS } = ncLayout;
 import { collegeGreenSites, cgAt, CG_SPOTS, CG_EAST } from './collegegreen.js';
@@ -992,8 +993,17 @@ Object.assign(extraSites, {
   ambassador: { x: NC.drum.x, z: NC.drum.z, rot: NC.rotunda.rot, w: PARNELL.drumR * 2, d: PARNELL.drumR * 2 },
   gate: NC.gate.box(-PARNELL.gateW / 2, PARNELL.gateW / 2, 0, PARNELL.gateD),
   gardenSouth: NC.garden.box(-PARNELL.gardenW / 2, PARNELL.gardenW / 2 - PARNELL.gardenKW * PARNELL.gardenD, PARNELL.gardenD / 2, PARNELL.gardenD),
-  busarasYard: NC.busaras.box(BUSARAS.w / 2, BUSARAS.w / 2 + 22, 0, BUSARAS.d),
+  // (open out to Amiens Street: the yard runs through to it, so no filler stands side-on in front of the building
+  // seen from the east; docs/research/oconnell-street.md 5)
+  busarasYard: NC.busaras.box(BUSARAS.w / 2, BUSARAS.w / 2 + 29, 0, BUSARAS.d),
 });
+// ---------- O'Connell Street's frontages (docs/research/oconnell-street.md; src/world/ocstreet.js, ocfacades.js) ----------
+// every building between the side streets, the GPO and Clerys is reserved (the filler leaves the frontage to them);
+// the Gresham joins the Places list
+export const OCS = oconnellLayout([sites.gpo, sites.clerys]);
+for (const b of OCS.buildings) extraSites['oc_' + b.id] = footprintOf(b);
+if (extraSites.oc_gresham) sites.gresham = { name: 'The Gresham', ...extraSites.oc_gresham, labelY: 30, view: spot('OC3', 'OC4', 0.12) };
+const ocFootprints = OCS.buildings.map((b) => extraSites['oc_' + b.id]);
 const northCityFootprints = [sites.clerys, sites.rotunda, sites.gardenOfRemembrance, sites.busaras, extraSites.rotundaRear, extraSites.ambassador, extraSites.gate, extraSites.gardenSouth, extraSites.busarasYard];
 
 // the notable ones join the Places list; every part is kept free of filler and checked by footprints.mjs
@@ -1116,6 +1126,8 @@ export const reserved = [
   ...heustonYard(),
   // Clerys, Parnell Square (the Rotunda, the Ambassador, the Gate, the Garden of Remembrance) and Busáras
   ...northCityFootprints,
+  // O'Connell Street's frontages
+  ...ocFootprints,
   // the DART viaduct between its street bridges (railline.js), Connolly's front, Pearse's front on Westland Row, and
   // the Tara Street fire station's tower
   ...railFootprints().map((b, i) => (extraSites[`rail${i}`] = b)),

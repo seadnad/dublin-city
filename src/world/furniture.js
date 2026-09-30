@@ -11,6 +11,9 @@ import { addBox } from '../game/collision.js';
 import { chunkedInstances } from './chunks.js';
 import { plantTrees } from './trees.js';
 import { FC, sites } from './sites.js';
+import { along, chainageOf } from './oconnell.js';
+import { project } from './geo.js';
+import ocData from '../data/oconnellst.json';
 
 const rand = rng(1847);
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _up = new THREE.Vector3(0, 1, 0), _p = new THREE.Vector3(), _one = new THREE.Vector3(1, 1, 1);
@@ -155,7 +158,8 @@ export function buildFurniture(scene) {
         if (bus && L > 70) {
           const s = 25 + rand() * (L - 50);
           const pole = at(s, 0.7);
-          if (ok(pole)) {
+          // (O'Connell Street's stops are placed from OSM below; the draws are kept so the rest of the city is unchanged)
+          if (ok(pole) && way.type !== 'boulevard') {
             stops.push(pole);
             if (rand() < 0.6) { const sh = at(s + 4, 2.4); if (ok(sh)) shelters.push(sh); }
           }
@@ -166,6 +170,18 @@ export function buildFurniture(scene) {
         }
         if (rand() < 0.08 && L > 40) { const p = at(L * 0.5, 0.6); if (ok(p)) posts.push(p); }
       }
+    }
+  }
+  // O'Connell Street: the stops where OSM has them (src/data/oconnellst.json), poles at the kerb; a shelter at the busiest
+  // (by the Dublin Bus head office and at the Gresham; refs/oconnell-street 23)
+  {
+    const street = world.ways.find((w) => w.type === 'boulevard');
+    for (const [lat, lon, name, , , off] of ocData.stops) {
+      const s = chainageOf(project(lat, lon)), side = off > 0 ? -1 : 1, p = along(s, side * (street.width / 2 + 0.7));
+      const out = { x: p.left.x * side, z: p.left.z * side }, rot = Math.atan2(-out.x, -out.z);
+      if (stops.some((q) => (q.x - p.x) ** 2 + (q.z - p.z) ** 2 < 16)) continue;
+      stops.push({ x: p.x, z: p.z, rot });
+      if (/Dublin Bus|Gresham|Cathal Brugha/.test(name)) { const q = along(s + 4, side * (street.width / 2 + 2.4)); shelters.push({ x: q.x, z: q.z, rot }); }
     }
   }
   // cast-iron bollards around the corners of busy junctions

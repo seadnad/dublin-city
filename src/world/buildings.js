@@ -248,6 +248,21 @@ for (let z = B.minZ + 10; z < B.maxZ - 10; z += 11) {
   }
 }
 
+// Round Busáras (Store Street, Amiens Street, Beresford Place) the real neighbours are three- and four-storey Victorian
+// brick and the Store Street Garda station, not glass towers: the Docklands rule was putting 10-15 storey filler
+// between Busáras and Amiens Street that hid it from the east (docs/research/oconnell-street.md 5). Brick, at most
+// five storeys; set after placement from a position hash, so no rand() draw moves the rest of the city.
+{
+  const B = sites.busaras;
+  for (const L of lots) {
+    if (L.style !== S.MODERN || Math.hypot(L.x - B.x, L.z - B.z) > 95) continue;
+    const h = hash01(L.x, L.z), floors = 3 + Math.floor(h * 2.99);
+    Object.assign(L, { style: S.BRICK, fh: 3.5, bay: 2.6, base: BRICKS[Math.floor(h * BRICKS.length)], trim: FASCIA[Math.floor(hash01(L.z, L.x) * FASCIA.length)] });
+    L.h = floors * 3.5 + 0.9;
+    L.nb = Math.max(1, Math.round(L.w / 2.6));
+  }
+}
+
 // ---------- textures ----------
 // Flemish-bond brick, 1.8 m tile. R: brick tone, G: hue variation, B: mortar mask (1 = mortar).
 function brickTexture() {
