@@ -1025,7 +1025,7 @@
     { "name": "Clarendon Row", "type": "lane", "pedestrian": true, "width": 6, "pave": 0.5, "nodes": ["GFCC", "GFKR"] },
     { "name": "Drury Street", "type": "lane", "pedestrian": true, "width": 7, "pave": 0.6, "nodes": ["GFDR", "CM1", "GFFD"] },
     { "name": "Drury Street", "type": "lane", "width": 6.5, "pave": 1.8, "surface": "asphalt", "nodes": ["GFFD", "SSL1"] },
-    { "name": "Fade Street", "type": "lane", "width": 6.5, "pave": 1.8, "surface": "asphalt", "nodes": ["GFFD", "GFFA"] }
+    { "name": "Fade Street", "type": "lane", "width": 6.5, "pave": 1.8, "surface": "asphalt", "nodes": ["GFFD", "DC16"] }
   ],
   "river": {
     "name": "River Liffey",
