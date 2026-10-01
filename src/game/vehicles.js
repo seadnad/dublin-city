@@ -1,4 +1,4 @@
-// Luas tram carriages built from boxes, merged per material. (Cars and buses live in fleet.js.)
+// Luas Citadis-inspired carriages: small shared geometries, merged per material and instanced across the fleet.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
@@ -37,42 +37,93 @@ function assemble(parts) {
 
 // The parts of a Luas carriage as [material, geometries] (for instancing): with `cab`, only the cab end's extra parts.
 const silverMat = new THREE.MeshStandardMaterial({ color: 0xc9ccd0, roughness: 0.35, metalness: 0.6 });
-export function tramCarParts({ len = 11, cab = false } = {}) {
-  const W = 2.4;
-  if (cab) {
-    return [
-      [bodyMat(0xf3d21b), [box(W, 2.3, 0.3, 0, 1.6, len / 2 + 0.1)]],
-      [glassMat, [box(W - 0.2, 1.1, 0.1, 0, 2.3, len / 2 + 0.28)]],
-      [headMat, [box(0.3, 0.15, 0.05, -0.8, 0.9, len / 2 + 0.28), box(0.3, 0.15, 0.05, 0.8, 0.9, len / 2 + 0.28)]],
-    ];
-  }
-  return [
-    [silverMat, [box(W, 2.6, len, 0, 1.75, 0)]],
-    [bodyMat(0x5b2c83), [box(W + 0.02, 0.35, len, 0, 0.6, 0)]],
-    [glassMat, [box(W + 0.03, 1.1, len - 1.2, 0, 2.15, 0)]],
-    [trimMat, [box(0.2, 0.9, 0.6, 0, 3.5, 0), box(1.6, 0.05, 0.3, 0, 4.0, 0)]],
-    [tyreMat, [box(W - 0.3, 0.4, len - 1, 0, 0.3, 0)]],
-  ];
+const purpleMat = bodyMat(0x5b2c83), yellowMat = bodyMat(0xf3d21b);
+const ready = (parts) => parts.map(([mat, geos]) => [mat, geos.map((g) => g.index ? g.toNonIndexed() : g)]);
+
+function panel(points) {
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute([
+    ...points[0], ...points[1], ...points[2], ...points[0], ...points[2], ...points[3],
+  ], 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute([0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1], 2));
+  g.computeVertexNormals();
+  return g;
 }
 
-// One Luas carriage: silver/grey body, yellow front, pantograph. Faces +z.
-export function makeTramCar({ cab = false, len = 11 } = {}) {
-  const W = 2.4;
-  const silver = silverMat;
-  const purple = bodyMat(0x5b2c83), yellow = bodyMat(0xf3d21b);
-  const parts = [
-    [silver, [box(W, 2.6, len, 0, 1.75, 0)]],
-    [purple, [box(W + 0.02, 0.35, len, 0, 0.6, 0)]],
-    [glassMat, [box(W + 0.03, 1.1, len - 1.2, 0, 2.15, 0)]],
-    [trimMat, [box(0.2, 0.9, 0.6, 0, 3.5, 0), box(1.6, 0.05, 0.3, 0, 4.0, 0)]],
-    [tyreMat, [box(W - 0.3, 0.4, len - 1, 0, 0.3, 0)]],
-  ];
+function shell(len, w = 2.4) {
+  const s = new THREE.Shape();
+  s.moveTo(-w / 2, 0.43);
+  s.lineTo(w / 2, 0.43);
+  s.lineTo(w / 2, 3.20);
+  s.quadraticCurveTo(w / 2, 3.47, w / 2 - 0.25, 3.47);
+  s.lineTo(-w / 2 + 0.25, 3.47);
+  s.quadraticCurveTo(-w / 2, 3.47, -w / 2, 3.20);
+  s.closePath();
+  const g = new THREE.ExtrudeGeometry(s, { depth: len, bevelEnabled: false, curveSegments: 3 });
+  g.translate(0, 0, -len / 2);
+  return g;
+}
+
+function cabNose(end, w = 2.4) {
+  // Profile in (forward, up): full-height windscreen raked back to a shorter roof.
+  const s = new THREE.Shape();
+  s.moveTo(end - 0.42, 0.43);
+  s.lineTo(end + 0.43, 0.43);
+  s.lineTo(end + 0.54, 0.95);
+  s.lineTo(end + 0.49, 1.70);
+  s.lineTo(end + 0.19, 3.23);
+  s.lineTo(end - 0.04, 3.43);
+  s.lineTo(end - 0.42, 3.43);
+  s.closePath();
+  const g = new THREE.ExtrudeGeometry(s, { depth: w, bevelEnabled: true,
+    bevelThickness: 0.03, bevelSize: 0.045, bevelSegments: 1 });
+  g.rotateY(-Math.PI / 2);
+  g.translate(w / 2, 0, 0);
+  return g;
+}
+
+export function tramCarParts({ len = 11, cab = false } = {}) {
+  const W = 2.4, end = len / 2;
   if (cab) {
-    parts.push([yellow, [box(W, 2.3, 0.3, 0, 1.6, len / 2 + 0.1)]]);
-    parts.push([glassMat, [box(W - 0.2, 1.1, 0.1, 0, 2.3, len / 2 + 0.28)]]);
-    parts.push([headMat, [box(0.3, 0.15, 0.05, -0.8, 0.9, len / 2 + 0.28), box(0.3, 0.15, 0.05, 0.8, 0.9, len / 2 + 0.28)]]);
+    return ready([
+      [yellowMat, [cabNose(end, W), box(2.12, 0.12, 0.07, 0, 3.16, end + 0.20)]],
+      [glassMat, [panel([[-1.08, 1.72, end + 0.60], [1.08, 1.72, end + 0.60],
+        [0.99, 3.07, end + 0.33], [-0.99, 3.07, end + 0.33]]),
+        box(1.25, 0.18, 0.04, 0, 3.15, end + 0.25)]],
+      [silverMat, [box(2.24, 0.055, 0.08, 0, 0.48, end + 0.52)]],
+      [headMat, [box(0.32, 0.12, 0.07, -0.86, 0.94, end + 0.58),
+        box(0.32, 0.12, 0.07, 0.86, 0.94, end + 0.58)]],
+    ]);
   }
-  const g = assemble(parts);
-  g.userData = { length: len, width: W };
+  const glazing = [], framing = [], doors = [], yellow = [];
+  for (const side of [-1, 1]) {
+    const x = side * (W / 2 + 0.012);
+    for (const z of [-4.18, -1.15, 1.15, 4.18]) {
+      glazing.push(box(0.032, 1.12, 1.6, x, 2.25, z));
+      framing.push(box(0.05, 1.22, 0.048, x + side * 0.012, 2.25, z - 0.82));
+    }
+    for (const z of [-2.64, 2.64]) {
+      doors.push(box(0.035, 2.44, 1.10, x, 1.71, z));
+      glazing.push(box(0.043, 1.37, 0.94, x + side * 0.024, 2.24, z));
+      framing.push(box(0.052, 1.38, 0.035, x + side * 0.04, 2.24, z));
+    }
+    yellow.push(box(0.04, 0.075, len - 0.35, x, 1.29, 0));
+  }
+  return ready([
+    [silverMat, [shell(len, W), ...framing]],
+    [purpleMat, [box(W + 0.035, 0.39, len - 0.12, 0, 0.66, 0), ...doors]],
+    [yellowMat, yellow],
+    [glassMat, glazing],
+    [trimMat, [box(W - 0.12, 2.30, 0.16, 0, 1.8, -end + 0.05),
+      box(W - 0.12, 2.30, 0.16, 0, 1.8, end - 0.05),
+      box(1.10, 0.16, 1.5, 0, 3.56, 0), box(0.12, 0.38, 0.12, 0, 3.82, 0)]],
+    [tyreMat, [box(W - 0.28, 0.33, len - 0.5, 0, 0.27, 0)]],
+  ]);
+}
+
+// One carriage for previews or standalone use. The moving fleet uses the same parts as instanced meshes.
+export function makeTramCar({ cab = false, len = 11 } = {}) {
+  const g = assemble([...tramCarParts({ len }), ...(cab ? tramCarParts({ len, cab: true }) : [])]);
+  g.userData = { length: len, width: 2.4 };
   return g;
 }

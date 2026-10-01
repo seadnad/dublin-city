@@ -1,5 +1,14 @@
 # Change log
 
+## 2026-10-01 - Luas and Dublin Bus design refresh
+
+- Reworked the Luas carriages around a Citadis-style silhouette: rounded roof, distinct windows and passenger doors, purple skirt and yellow accent, articulation ends, and a raked yellow cab with a visible windscreen and lights.
+- Updated the yellow-and-blue Dublin Bus toward the SG-class Wright Gemini 3: a front that leans back above the driver, one nearside passenger entrance, modeled mirrors, and wheels moved to the edge of the body where their shared wheel mesh is visible.
+- Kept the bus route atlases at their existing resolutions and retained the fleet's shared geometry. The Luas uses two more instanced material groups than before when visible; no external 3D model or downloaded image is added. The Luas's gameplay length is unchanged.
+- Recorded reference images, licences, design choices and the real-length compromise in [docs/research/transit-vehicles.md](docs/research/transit-vehicles.md).
+
+Production browser close views reached play with no console errors on desktop and a mobile-emulated viewport. The headless frame-rate readings vary with camera placement and are not evidence of a speed gain. Revert this change to restore the earlier vehicle geometry and atlas painting.
+
 ## 2026-09-30 - Garda car model refresh
 
 - Rebuilt the Garda estate from its Blender source using the supplied side, front and rear photos as shape guides. The headlight outlines are more swept, the reflectors are lighter, and each alloy wheel now has five broad tapered spokes.
