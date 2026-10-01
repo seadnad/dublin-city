@@ -35,6 +35,7 @@ import { createPipeline } from './render/pipeline.js';
 import { batchStatic } from './render/batch.js';
 import { cullInstances, installShadowOnly, setViewCut } from './world/chunks.js';
 import { createFarView } from './world/farview.js';
+import { createStaticDistricts } from './world/static-districts.js';
 import { profile, LITE, mode as gfxModeNow, setMode as setGfxMode, learn as learnGfx, forget as forgetGfx, MODES as GFX_MODES, MODE_NAMES as GFX_NAMES, GPU, WEAK_GPU } from './render/quality.js';
 import { applyTextureQuality } from './render/texquality.js';
 import { createContactShadows } from './render/contact.js';
@@ -82,7 +83,7 @@ const atmosphere = createAtmosphere(scene, renderer);
 const ground = buildGround(scene);
 const start = laneSpot(world.nodes.get('NQ8').edges.find((e) => e.to.id === 'OC1'), 0.2);
 await step(0.62, 'Raising the buildings…');
-const buildings = buildBuildings(scene);
+const buildings = buildBuildings(scene, LITE ? { start } : {});
 { const t = performance.now(); bakeGroundAO([...buildings.lots, ...landmarkFootprints], world.bounds); console.log(`ground AO baked in ${Math.round(performance.now() - t)} ms`); }
 await step(0.68, 'Placing the landmarks…');
 const landmarks = buildLandmarks(scene, { start });
@@ -217,8 +218,18 @@ function applyMode() {
 
 // ---------- HUD + input ----------
 const siteKeys = Object.keys(sites);
-function teleportTo(key) {
+let teleportRequest = 0;
+async function teleportTo(key) {
   const v = sites[key].view;
+  const request = ++teleportRequest;
+  if (LITE && (buildings.pendingDistricts || staticDistricts?.pendingDistricts)) {
+    hud.toast(`Preparing ${sites[key].name}…`, 3500);
+    await Promise.all([
+      buildings.warmNear(v.x, v.z),
+      staticDistricts?.warmNear(v.x, v.z, 650, renderer, camera, () => pipeline.sceneTarget),
+    ]);
+  }
+  if (request !== teleportRequest) return;
   car.teleport(v.x, v.z, v.heading);
   if (flying) { heli.place(v.x, groundAt(v.x, v.z) + 40, v.z, v.heading); heli.rpm = 1; heli.landed = false; }
   rig.snap();
@@ -387,11 +398,15 @@ const treesReady = loadTrees().then((s) => console.log('trees loaded:', s.join('
 const heli = new Heli();
 let heliVis = null, heightField = null, flying = false, heliBusy = false, beamPref = null;
 let districtLoading = null;
+let staticDistricts = null;
 function startDistrictStreaming() {
   if (!LITE) return Promise.resolve();
-  if (!districtLoading) districtLoading = landmarks.streamDistricts(renderer, camera, () => pipeline.sceneTarget,
-    () => ({ x: car.pos.x, z: car.pos.z, heading: car.heading, speed: car.speed }),
-    () => far.refreshHeroes()).catch((e) => console.warn('district streaming stopped', e));
+  const drive = () => ({ x: car.pos.x, z: car.pos.z, heading: car.heading, speed: car.speed });
+  if (!districtLoading) districtLoading = Promise.all([
+    buildings.streamDistricts(drive),
+    staticDistricts?.startStreaming(renderer, camera, () => pipeline.sceneTarget, drive),
+    landmarks.streamDistricts(renderer, camera, () => pipeline.sceneTarget, drive, () => far.refreshHeroes()),
+  ]).catch((e) => console.warn('district streaming stopped', e));
   return districtLoading;
 }
 const heliEnv = { hm: null, bounds: world.bounds, overWater: isOverWater, waterY: WATER_Y };
@@ -405,7 +420,7 @@ async function enterHeli() {
   heliBusy = true;
   // The helicopter's height field is captured once from visible buildings. Finish any
   // queued models first so a late roof cannot appear above that collision surface.
-  if (LITE && landmarks.pendingDistricts) { hud.toast('Preparing the city for flight', 3500); await startDistrictStreaming(); }
+  if (LITE && (landmarks.pendingDistricts || buildings.pendingDistricts || staticDistricts?.pendingDistricts)) { hud.toast('Preparing the city for flight', 3500); await startDistrictStreaming(); }
   far.prepare(); // the far view builds in the background while the rotor spins up
   if (!heliVis) {
     heliVis = await loadHeli();
@@ -691,8 +706,19 @@ const tc = performance.now();
 // frame just after the loading screen lifts
 const settle = (p, ms) => Promise.race([p.catch(() => {}), new Promise((r) => setTimeout(r, ms))]);
 settle(Promise.all([carReady, treesReady]), 8000).then(() => {
+  if (LITE) {
+    const t = performance.now();
+    staticDistricts = createStaticDistricts(scene, scene.children.filter((root) => !dynamicRoots.includes(root)), start,
+      { exclude: [ground.group, buildings.mesh] });
+    console.log(`static districts staged in ${Math.round(performance.now() - t)} ms: ${staticDistricts.pendingDistricts} drawables`);
+  }
   renderer.setRenderTarget(pipeline.sceneTarget);
-  return renderer.compileAsync ? Promise.all([renderer.compileAsync(scene, camera), renderer.compileAsync(far.scene, far.camera)]) : null;
+  if (!renderer.compileAsync) return null;
+  const started = performance.now();
+  return Promise.all([
+    renderer.compileAsync(scene, camera).then(() => console.log(`main shaders ready in ${Math.round(performance.now() - started)} ms`)),
+    renderer.compileAsync(far.scene, far.camera).then(() => console.log(`far shaders ready in ${Math.round(performance.now() - started)} ms`)),
+  ]);
 }).catch(() => {}).then(() => {
   renderer.setRenderTarget(null);
   console.log(`shaders compiled in ${Math.round(performance.now() - tc)} ms`);
@@ -721,7 +747,7 @@ window.__dublin = {
   ready: false, // set once shaders are compiled and the first frame has drawn
   heli, heliState: () => ({ flying, x: +heli.pos.x.toFixed(1), y: +heli.pos.y.toFixed(1), z: +heli.pos.z.toFixed(1), alt: +heli.alt.toFixed(1), speed: +heli.speed.toFixed(1), heading: +heli.heading.toFixed(2), rpm: +heli.rpm.toFixed(2), landed: heli.landed, floor: +heli.floor.toFixed(1), hm: heightField ? { W: heightField.W, H: heightField.H, cell: +heightField.cell.toFixed(2), ms: heightField.ms } : null, shadowExt: atmosphere.shadowExtent, far: Math.round(camera.far), fog: +scene.fog.density.toFixed(5) }),
   groundAt: (x, z) => groundAt(x, z), heliTune, heliEnv,
-  THREE, scene, camera, world, carMesh: () => carMesh, renderer, pipeline, groundAOUniforms, atmosphere, car, input, rig, traffic, tram, dart, people, pursuit, trial, gameUI, buildings, landmarks, sites, teleportTo, actions, mode, audio,
+  THREE, scene, camera, world, carMesh: () => carMesh, renderer, pipeline, groundAOUniforms, atmosphere, car, input, rig, traffic, tram, dart, people, pursuit, trial, gameUI, buildings, landmarks, get staticDistricts() { return staticDistricts; }, sites, teleportTo, actions, mode, audio,
   gfx: () => ({ mode: gfxMode, tier: pipeline.quality, dpr, maxDpr, lite: LITE, fpsCap }),
   lockQuality(q, d) { userQuality = true; dpr = d; renderer.setPixelRatio(d); pipeline.setQuality(q); pipeline.setMood(mode); slowTime = fastTime = 0; lastSwitch = time + 1e9; },
   profile() { const o = {}; for (const k of Object.keys(prof)) if (k !== 'n') o[k] = +(prof[k] / Math.max(1, prof.n)).toFixed(2); for (const k of Object.keys(prof)) prof[k] = 0; return o; },

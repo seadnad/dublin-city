@@ -1,5 +1,14 @@
 # Change log
 
+## 2026-10-01 - Start district scenery stream
+
+- On the light profile, the O'Connell Street starting area gets detailed building facades before play. Distant 300 m building blocks keep solid, roof-height coloured silhouettes and their original collisions, then gain detailed facades in player-priority order after play. High still builds the complete city up front.
+- Distant static scenery whose materials are unique to those areas now waits until after the first frame for shader preparation. Existing road and ground geometry remain available from the start. The next block is chosen using player distance, heading and speed; a landmark teleport waits for nearby staged detail. Helicopter entry waits for the queues before capturing roof collisions.
+- Added a production browser scenario for queue progress, distant teleport, preserved collision segments and frame gaps. Mobile-emulated Low runs started with 81 distant building blocks and 105 static drawables queued; all queues drained after the test's distant teleport. Frame gaps varied across local runs: the final slower queue measured 67 ms at the 95th percentile and a 100 ms worst gap over 4.5 seconds. No console errors occurred. A High smoke run also reached play without errors.
+- First-play time remains roughly 27–30 seconds on this laptop, versus a 30-second single-run baseline. The difference is too small and variable to claim the 15-second public target. The whole street/collision layout and building lot generation are still built before play, and shader preparation remains the largest startup cost. Details and reproduction steps are in [docs/performance-work.md](docs/performance-work.md).
+
+Revert this commit to restore eager building facades and static scenery. The earlier three distant Blender landmark silhouettes and streaming remain independent of this pass.
+
 ## 2026-10-01 - More active streets and pedestrian vehicle contact
 
 - Raised light-profile activity (Low, Battery saver, and Auto on weaker devices) from 12 to 18 moving cars, 3 to 4 buses, 120 to 150 parked cars, and 110 to 160 walkers. Full-profile devices now use 36 cars, 8 buses, 360 parked cars, and 400 walkers (previously 26, 6, 320, and 300).

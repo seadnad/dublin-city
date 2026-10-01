@@ -728,7 +728,7 @@ function buildGeorgianFronts(scene) {
   scene.add(railMesh, pitMesh, stepMesh);
 }
 
-export function buildBuildings(scene) {
+export function buildBuildings(scene, { start = null } = {}) {
   const geo = new THREE.BoxGeometry(1, 1, 1);
   geo.translate(0, 0.5, 0);
   const count = lots.length;
@@ -763,7 +763,7 @@ export function buildBuildings(scene) {
   });
   // One instanced mesh per ~450 m chunk rather than one for the whole city, so the camera and the shadow
   // camera can cull whole districts (the map is ~2.4 km wide and holds >10k buildings).
-  const material = makeMaterial(), CH = 450, buckets = new Map();
+  const material = makeMaterial(), CH = start ? 300 : 450, buckets = new Map();
   lots.forEach((L, i) => {
     const k = `${Math.floor(L.x / CH)},${Math.floor(L.z / CH)}`;
     if (!buckets.has(k)) buckets.set(k, []);
@@ -772,7 +772,7 @@ export function buildBuildings(scene) {
   const mesh = new THREE.Group();
   mesh.name = 'buildings';
   const pick = (src, n, ids) => { const out = new Float32Array(ids.length * n); ids.forEach((i, j) => out.set(src.subarray(i * n, i * n + n), j * n)); return out; };
-  for (const ids of buckets.values()) {
+  const detail = (ids) => {
     const g = geo.clone();
     g.setAttribute('aBase', new THREE.InstancedBufferAttribute(pick(aBase, 3, ids), 3));
     g.setAttribute('aTrim', new THREE.InstancedBufferAttribute(pick(aTrim, 3, ids), 3));
@@ -783,7 +783,24 @@ export function buildBuildings(scene) {
     im.castShadow = im.receiveShadow = true;
     im.computeBoundingSphere();
     im.matrixAutoUpdate = false;
-    mesh.add(im);
+    return im;
+  };
+  // Every remote block has a solid roof-height silhouette until its detailed facade is ready.
+  // This also protects teleports and helicopter views while the queue catches up.
+  const proxyMaterial = start ? new THREE.MeshLambertMaterial({ vertexColors: true }) : null;
+  const pending = [];
+  for (const [key, ids] of buckets) {
+    const [ix, iz] = key.split(',').map(Number);
+    const cx = (ix + 0.5) * CH, cz = (iz + 0.5) * CH;
+    if (!start || Math.hypot(cx - start.x, cz - start.z) < 690) { mesh.add(detail(ids)); continue; }
+    const proxy = new THREE.InstancedMesh(geo, proxyMaterial, ids.length);
+    proxy.instanceMatrix.array.set(pick(mats, 16, ids));
+    proxy.instanceColor = new THREE.InstancedBufferAttribute(pick(aBase, 3, ids), 3);
+    proxy.castShadow = proxy.receiveShadow = true;
+    proxy.computeBoundingSphere();
+    proxy.matrixAutoUpdate = false;
+    mesh.add(proxy);
+    pending.push({ ids, cx, cz, proxy });
   }
   scene.add(mesh);
 
@@ -799,5 +816,48 @@ export function buildBuildings(scene) {
   scene.add(cm, pm);
   buildGeorgianFronts(scene);
 
-  return { mesh, count, frontageCount, lots };
+  let streaming = null;
+  const finish = (job) => {
+    const im = detail(job.ids);
+    mesh.add(im);
+    mesh.remove(job.proxy);
+  };
+  const streamDistricts = (getDrive, onReady = () => {}) => {
+    if (streaming) return streaming;
+    streaming = (async () => {
+      while (pending.length) {
+        // One small upload after a rendered frame; recalculate priority after turns or teleports.
+        await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
+        if (!pending.length) break; // a teleport may have consumed the remaining jobs
+        const p = getDrive(), lead = Math.min(450, Math.max(0, p.speed) * 18);
+        const px = p.x + Math.sin(p.heading) * lead, pz = p.z + Math.cos(p.heading) * lead;
+        pending.sort((a, b) => {
+          const score = (j) => Math.hypot(j.cx - p.x, j.cz - p.z) + 0.4 * Math.hypot(j.cx - px, j.cz - pz);
+          return score(a) - score(b);
+        });
+        const job = pending.shift();
+        finish(job);
+        onReady();
+        // Leave several render opportunities between uploads on slow devices.
+        await new Promise((resolve) => setTimeout(resolve, 220));
+      }
+    })();
+    return streaming;
+  };
+  const warmNear = async (x, z, radius = 650) => {
+    const near = pending.filter((j) => Math.hypot(j.cx - x, j.cz - z) < radius);
+    near.sort((a, b) => Math.hypot(a.cx - x, a.cz - z) - Math.hypot(b.cx - x, b.cz - z));
+    for (const job of near) {
+      await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
+      // Keep it in the queue until ready, so a second teleport cannot skip it.
+      const i = pending.indexOf(job);
+      if (i < 0) continue;
+      pending.splice(i, 1);
+      finish(job);
+    }
+  };
+  return { mesh, count, frontageCount, lots,
+    get pendingDistricts() { return pending.length; },
+    pendingNear(x, z, radius = 650) { return pending.filter((j) => Math.hypot(j.cx - x, j.cz - z) < radius).length; },
+    streamDistricts, warmNear };
 }
