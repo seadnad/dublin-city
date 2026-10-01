@@ -1,5 +1,15 @@
 # Change log
 
+## 2026-10-01 - More active streets and pedestrian vehicle contact
+
+- Raised light-profile activity (Low, Battery saver, and Auto on weaker devices) from 12 to 18 moving cars, 3 to 4 buses, 120 to 150 parked cars, and 110 to 160 walkers. Full-profile devices now use 36 cars, 8 buses, 360 parked cars, and 400 walkers (previously 26, 6, 320, and 300).
+- Spawned and recycled moving traffic closer to the player, and kept pedestrians in a tighter nearby area. This gives the player more visible activity without creating agents across the whole map. Initial traffic placement now avoids cars overlapping one another.
+- Broadened the civilian car paint palette with restrained blue, red, green, gold, and purple shades. Additional buses share the existing six route textures and materials, keeping bus texture count fixed.
+- Added lightweight 2D body boundaries for walking pedestrians against the player car, moving cars and buses, and parked cars. A fixed spatial grid makes parked-car checks local. Contact stops a walker briefly; it does not add a full rigid-body physics engine.
+- Added `tools/scenarios/city-life.mjs` to record nearby activity and force a pedestrian/car contact in the running game. The Low mobile-emulated production check reached play in 29 seconds, had no console errors, and reported about 28–30 indicative fps at adaptive DPR 0.9. Forced High reached play in 41 seconds and was substantially slower on this laptop; its frame rate is not representative of a high-end device.
+
+To revert this pass, revert its commit. Density settings are in `src/main.js`; the contact helper is `src/game/pedestrian-vehicles.js`.
+
 ## 2026-10-01 - Luas and Dublin Bus design refresh
 
 - Reworked the Luas carriages around a Citadis-style silhouette: rounded roof, distinct windows and passenger doors, purple skirt and yellow accent, articulation ends, and a raked yellow cab with a visible windscreen and lights.

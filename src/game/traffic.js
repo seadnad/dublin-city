@@ -6,8 +6,8 @@ import { rng } from '../world/textures.js';
 import { addBox } from './collision.js';
 
 const rand = rng(1916);
-// Irish car colours: mostly silver, grey, black and white, a few darker blues, reds and greens
-const PAINT = ['#b7babd', '#b7babd', '#8d9195', '#5f6368', '#1a1c1e', '#1a1c1e', '#e9e9e6', '#e9e9e6', '#23345a', '#7d1d1f', '#23402f', '#a99a80', '#6d8196', '#4a3b30']
+// Varied but plausible Irish traffic colours. Repeated neutrals keep the street from looking toy-like.
+const PAINT = ['#b7babd', '#b7babd', '#8d9195', '#5f6368', '#1a1c1e', '#e9e9e6', '#e9e9e6', '#23345a', '#7d1d1f', '#23402f', '#a99a80', '#6d8196', '#4a3b30', '#bd3c2d', '#27618c', '#2e7773', '#b89535', '#704d83', '#d9d4c8', '#8e382f']
   .map((h) => new THREE.Color(h));
 const paint = () => PAINT[Math.floor(rand() * PAINT.length)];
 const pickKind = () => { const r = rand(); return r < 0.34 ? 'hatch' : r < 0.62 ? 'saloon' : r < 0.84 ? 'suv' : 'van'; };
@@ -164,7 +164,7 @@ function parkingSpots(max) {
   return spots.slice(0, max);
 }
 
-export function createTraffic(scene, { cars = 16, buses = 4, taxis = 4, parked = 300 } = {}) {
+export function createTraffic(scene, { cars = 16, buses = 4, taxis = 4, parked = 300, focus = null } = {}) {
   const spots = parkingSpots(parked);
   // decide every vehicle's kind first so the fleet can size its instanced meshes
   const aiKinds = [];
@@ -175,14 +175,25 @@ export function createTraffic(scene, { cars = 16, buses = 4, taxis = 4, parked =
   const fleet = createFleet(scene, counts);
 
   const list = [];
+  // One startup selection for all agents; the city graph can have thousands of edges.
+  const starting = focus ? drivable.filter((e) => {
+    const dx = (e.from.x + e.to.x) / 2 - focus.x, dz = (e.from.z + e.to.z) / 2 - focus.z;
+    const d2 = dx * dx + dz * dz;
+    return d2 > 25 * 25 && d2 < 125 * 125;
+  }) : drivable;
   for (let i = 0; i < cars + buses; i++) {
     const isBus = i >= cars;
     const kind = isBus ? 'bus' : aiKinds[i];
     const handle = fleet.add(kind, kind === 'taxi' ? new THREE.Color(rand() < 0.5 ? '#1a1c1e' : '#b7babd') : paint());
     handle.lit = true; // moving vehicles light the road at night
     const ai = new AICar(handle, isBus);
-    const e = drivable[Math.floor(rand() * drivable.length)];
-    ai.place(e, rand() * e.len);
+    // Start near the player, with room between vehicles at the first frame.
+    const spawnEdges = starting.length ? starting : drivable;
+    for (let tries = 0; tries < 24; tries++) {
+      const e = spawnEdges[Math.floor(rand() * spawnEdges.length)];
+      ai.place(e, rand() * e.len);
+      if (list.every((other) => Math.hypot(other.pos.x - ai.pos.x, other.pos.z - ai.pos.z) > (isBus || other.isBus ? 13 : 7))) break;
+    }
     list.push(ai);
   }
   // parked cars: the fleet only draws the ones that can be seen (see cull)
@@ -192,6 +203,7 @@ export function createTraffic(scene, { cars = 16, buses = 4, taxis = 4, parked =
     addBox(p.x, p.z, t.W / 2, t.L / 2, p.heading);
   }
   fleet.addParked(parkedCars);
+  const pedestrianParked = parkedCars.map((p) => ({ x: p.x, z: p.z, heading: p.heading, width: TYPES[p.kind].W, length: TYPES[p.kind].L }));
 
   let player = null, tram = null, signals = null;
   const ctx = {
@@ -217,13 +229,13 @@ export function createTraffic(scene, { cars = 16, buses = 4, taxis = 4, parked =
   };
 
   const tmp = new THREE.Vector3();
-  // respawn candidates: drivable edges 120-320 m from the player, refreshed as the player moves. Picking from the
+  // respawn candidates: drivable edges 65-210 m from the player, refreshed as the player moves. Picking from the
   // whole map missed that ring more often the bigger the map got, leaving cars stranded far away.
   let ring = [], ringAt = null;
   const ringNear = (px, pz) => {
     if (ringAt && (px - ringAt.x) ** 2 + (pz - ringAt.z) ** 2 < 40 * 40) return ring;
     ringAt = { x: px, z: pz };
-    ring = drivable.filter((e) => { const d = Math.hypot((e.from.x + e.to.x) / 2 - px, (e.from.z + e.to.z) / 2 - pz); return d > 125 && d < 315; });
+    ring = drivable.filter((e) => { const d = Math.hypot((e.from.x + e.to.x) / 2 - px, (e.from.z + e.to.z) / 2 - pz); return d > 65 && d < 205; });
     return ring;
   };
   return {
@@ -233,6 +245,7 @@ export function createTraffic(scene, { cars = 16, buses = 4, taxis = 4, parked =
     setSignals(s) { signals = s; },
     fleet,
     parkedCount: spots.length,
+    pedestrianParked,
     setLights: (v) => fleet.setLights(v),
     // after the camera has moved this frame: which parked cars to draw
     cull: (camera, focus) => fleet.cull(camera, focus),
@@ -242,7 +255,7 @@ export function createTraffic(scene, { cars = 16, buses = 4, taxis = 4, parked =
         // recycle far-away cars to somewhere near the player, out of view
         if (player) {
           const dx = ai.pos.x - player.pos.x, dz = ai.pos.z - player.pos.z;
-          if (dx * dx + dz * dz > 380 * 380) {
+          if (dx * dx + dz * dz > 260 * 260) {
             const cand = ringNear(player.pos.x, player.pos.z);
             for (let tries = 0; tries < 12 && cand.length; tries++) {
               const e = cand[Math.floor(rand() * cand.length)];
@@ -250,7 +263,7 @@ export function createTraffic(scene, { cars = 16, buses = 4, taxis = 4, parked =
               const d = Math.hypot(mx - player.pos.x, mz - player.pos.z);
               tmp.set(mx, 1, mz).project(camera);
               const inView = tmp.z < 1 && Math.abs(tmp.x) < 1.1;
-              if (d > 120 && d < 320 && !inView) { ai.place(e, e.len * 0.3); break; }
+              if (d > 65 && d < 210 && !inView) { ai.place(e, e.len * 0.3); break; }
             }
           }
         }

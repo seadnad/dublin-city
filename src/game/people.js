@@ -6,6 +6,7 @@ import { world, v2, offsetPolyline } from '../world/geo.js';
 import { KERB_H } from '../world/roads.js';
 import { rng } from '../world/textures.js';
 import { createContactShadows } from '../render/contact.js';
+import { parkedVehicleGrid, separatePedestrian } from './pedestrian-vehicles.js';
 
 const rand = rng(2024);
 // pedestrian-only walks registered by the world builders before createPeople (greenpark.js: the Green's paths)
@@ -52,7 +53,7 @@ const SKIN = ['#f1d3bf', '#e8bfa3', '#d9a888', '#c48e6a', '#a26d4c', '#7a4e36', 
 const HAIR = ['#2a1d14', '#3b2a1c', '#5a3e25', '#8a6a42', '#c49a5a', '#b3542a', '#1b1b1b', '#8e8b86', '#d8d2c6'];
 const UMBRELLAS = ['#141414', '#141414', '#141414', '#1b2744', '#6b1a1a', '#1d4a33', '#d8b43a', '#b23a2a', '#e8e6e0'];
 
-export function createPeople(scene, { count = 240, fixed = [] } = {}) {
+export function createPeople(scene, { count = 240, fixed = [], parkedVehicles = [] } = {}) {
   // fixed: people who stay put (busker crowds, café tables, buskers): { x, z, heading, pose: "stand"|"sit"|"busk" }
   const N = count + fixed.length;
   const contact = createContactShadows(scene, N, { opacity: 0.45, round: true });
@@ -172,6 +173,7 @@ export function createPeople(scene, { count = 240, fixed = [] } = {}) {
   };
 
   const people = [];
+  const parkedGrid = parkedVehicleGrid(parkedVehicles);
   const col = new THREE.Color();
   for (let i = 0; i < count; i++) {
     const p = {
@@ -244,20 +246,22 @@ export function createPeople(scene, { count = 240, fixed = [] } = {}) {
   }
 
   let raining = false;
+  const playerBody = { pos: null, heading: 0, width: 1.9, length: 4.6 };
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), P = new THREE.Vector3(), S = new THREE.Vector3(), zero = new THREE.Vector3(0, 0, 0);
   let initialised = false, frame = 0;
   return {
     people,
     setRain(on) { raining = on; for (const p of people) aLook.array[p.i * 4 + 3] = on && p.umbrella ? 1 : 0; aLook.needsUpdate = true; },
-    update(dtFrame, focus, car) {
+    update(dtFrame, focus, car, movingVehicles = []) {
       frame++;
       refreshNearby(focus);
-      if (!initialised) { for (const p of people) place(p, { x: focus.x, z: focus.z, min: 0, max: 130 }); initialised = true; }
+      if (!initialised) { for (const p of people) place(p, { x: focus.x, z: focus.z, min: 0, max: 95 }); initialised = true; }
       const cs = car ? Math.abs(car.speed) : 0;
+      if (car) { playerBody.pos = car.pos; playerBody.heading = car.heading; }
       const cfx = car ? Math.sin(car.heading) : 0, cfz = car ? Math.cos(car.heading) : 0;
       for (const p of people) {
         const dxF = p.x - focus.x, dzF = p.z - focus.z, d2 = dxF * dxF + dzF * dzF;
-        if (d2 > 150 * 150) place(p, { x: focus.x, z: focus.z, min: 70, max: 140 });
+        if (d2 > 125 * 125) place(p, { x: focus.x, z: focus.z, min: 55, max: 115 });
         // beyond 45 m nobody can tell a 30 Hz walk from a 60 Hz one: update on alternate frames, double step
         const far = d2 > 45 * 45;
         if (far && ((frame + p.i) & 1)) continue;
@@ -295,6 +299,19 @@ export function createPeople(scene, { count = 240, fixed = [] } = {}) {
             p.dodgeX = cfz * s * 4.5; p.dodgeZ = -cfx * s * 4.5; p.dodge = 0.5; p.pause = 0.8;
           }
         }
+        // Keep walking figures outside vehicle bodies. Broadphase checks are numbers only;
+        // parked cars use a fixed grid, and distant moving traffic is skipped immediately.
+        let blocked = false;
+        for (let pass = 0; pass < 2; pass++) {
+          if (car && !car.airborne) blocked = separatePedestrian(p, playerBody) || blocked;
+          for (const v of movingVehicles) {
+            if (Math.abs(p.x - v.pos.x) > 7 || Math.abs(p.z - v.pos.z) > 7) continue;
+            blocked = separatePedestrian(p, v) || blocked;
+          }
+          for (const v of parkedGrid.near(p.x, p.z)) blocked = separatePedestrian(p, v) || blocked;
+          if (!blocked) break;
+        }
+        if (blocked) { p.dodge = 0; p.pause = Math.max(p.pause, 0.25); moving = 0; }
         p.phase += dt * (moving ? 6.2 * (p.speed / 1.35) * moving : 0);
         p.walk += ((moving ? 1 : 0) - p.walk) * Math.min(1, dt * 6);
         aWalk.array[p.i * 2] = p.phase; aWalk.array[p.i * 2 + 1] = p.walk;

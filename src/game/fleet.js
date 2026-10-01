@@ -427,9 +427,15 @@ export function createFleet(scene, counts) {
   const busMeshes = [];
   if (counts.bus) {
     const geo = busGeometry();
+    // Extra buses reuse the six route atlases and materials; only their transforms cost more.
+    const routeMaterials = [];
     for (let k = 0; k < counts.bus; k++) {
-      const atlas = busAtlas(ROUTES[k % ROUTES.length]);
-      const mat = addReflections(new THREE.MeshStandardMaterial({ map: atlas.map, emissiveMap: atlas.emissiveMap, emissive: 0xffffff, emissiveIntensity: 1, roughness: 0.38, metalness: 0.15 }), 0.8);
+      const route = k % ROUTES.length;
+      if (!routeMaterials[route]) {
+        const atlas = busAtlas(ROUTES[route]);
+        routeMaterials[route] = addReflections(new THREE.MeshStandardMaterial({ map: atlas.map, emissiveMap: atlas.emissiveMap, emissive: 0xffffff, emissiveIntensity: 1, roughness: 0.38, metalness: 0.15 }), 0.8);
+      }
+      const mat = routeMaterials[route];
       const m = new THREE.Mesh(geo, mat);
       m.castShadow = m.receiveShadow = true;
       scene.add(m);

@@ -159,13 +159,15 @@ function respawnNearRoad() {
 // ---------- traffic + Luas ----------
 await step(0.8, 'Starting the traffic…');
 const trafficStart = performance.now();
-const traffic = createTraffic(scene, LITE ? { cars: 12, buses: 3, taxis: 3, parked: 120 } : { cars: 26, buses: 6, taxis: 5, parked: 320 });
+const traffic = createTraffic(scene, LITE
+  ? { cars: 18, buses: 4, taxis: 4, parked: 150, focus: car.pos }
+  : { cars: 36, buses: 8, taxis: 7, parked: 360, focus: car.pos });
 console.log(`traffic built in ${Math.round(performance.now() - trafficStart)} ms`);
 const tram = createLuas(scene, world.luasLines);
 tram.camera = camera; // trams out of view draw nothing
 const dart = createDart(scene); // the DART on the Loop Line viaduct (no collision: it runs overhead)
 // (plus the Grafton quarter's buskers, their crowds, the flower sellers and the café tables, who stay put)
-const people = createPeople(scene, { count: LITE ? 110 : 300, fixed: graftonPeople() });
+const people = createPeople(scene, { count: LITE ? 160 : 400, fixed: graftonPeople(), parkedVehicles: traffic.pedestrianParked });
 // everything added since the world was built moves (player, traffic, trams, people): not part of the height field
 const dynamicRoots = scene.children.filter((c) => !worldRoots.has(c));
 const farSkip = new Set([...dynamicRoots, rain.mesh].filter(Boolean)); // left out of the far view's captures
@@ -578,7 +580,7 @@ function frame() {
   dart.update(dt);
   signals.update(dt);
   const tp3 = performance.now();
-  people.update(dt, car.pos, car);
+  people.update(dt, car.pos, car, traffic.list);
   const tp4 = performance.now();
   // ride up onto the raised pavement
   rideY += ((car.surface === 'road' ? 0 : KERB_H) - rideY) * Math.min(1, dt * 18);
