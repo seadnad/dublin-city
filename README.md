@@ -15,7 +15,7 @@ A browser driving game set in a stylised, compressed central Dublin. Three.js (W
 | `C` | Chase / bonnet camera |
 | `R` | Rain (wet, reflective roads) |
 | `N` | Evening (lit windows, street lamps, headlights) |
-| `L` | Garda helicopter (take off from where the car is) / back to the car on the nearest road |
+| `L` | Garda helicopter (switched off for now: `HELI_ENABLED` in `src/game/heli.js`) |
 | `T`, `1`–`9` | Landmark list / teleport |
 | `H` | Help |
 | `Q` | Graphics quality: low / medium / high |

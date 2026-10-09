@@ -1,3 +1,4 @@
+import { HELI_ENABLED } from '../game/heli.js';
 // Game-mode UI: the Play menu, the mission panel (timer, meter), the countdown and the results card.
 import { ROUTES, dailyRoute } from '../game/modes/trial.js';
 import { fmt } from '../game/modes/pursuit.js';
@@ -34,7 +35,7 @@ export function createGameUI({ onPursuit, onTrial, onFree, onCar, onPaint = () =
       <header><h2>Play</h2><button class="close" aria-label="Close">&times;</button></header>
       <div class="cars">Your car:
         ${Object.entries(CARS).map(([k, c]) => `<button data-car="${k}" class="${car === k ? 'on' : ''}" title="${c.name}">${c.label}</button>`).join('')}
-        <button data-car="heli" class="${car === 'heli' ? 'on' : ''}" title="Garda Air Support Unit helicopter (L)">🚁 Helicopter</button>
+        ${HELI_ENABLED ? `<button data-car="heli" class="${car === 'heli' ? 'on' : ''}" title="Garda Air Support Unit helicopter (L)">🚁 Helicopter</button>` : ''}
       </div>
       ${CARS[car] ? `<p class="car-blurb">${CARS[car].blurb}</p>` : ''}
       ${CARS[car] && CARS[car].paints ? (() => {

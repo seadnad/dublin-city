@@ -1,3 +1,4 @@
+import { HELI_ENABLED } from '../game/heli.js';
 // HUD: street sign, speedo, minimap, toolbar, landmark list, help panel and toasts.
 import { world } from '../world/geo.js';
 import { layoutCanvas, PPM } from '../world/ground.js';
@@ -101,12 +102,12 @@ export function createHUD({ sites, actions }) {
         <tr><td><kbd>T</kbd> <kbd>1</kbd>&ndash;<kbd>9</kbd></td><td>Landmark list / teleport</td></tr>
         <tr><td><kbd>P</kbd></td><td>Photo mode: drag to orbit, scroll to zoom, right-drag to pan, WASD to move, Space to snap</td></tr>
         <tr><td><kbd>Backspace</kbd></td><td>Reset car onto the road</td></tr>
-        <tr><td><kbd>L</kbd></td><td>Garda helicopter / back to the car (also in Play)</td></tr>
-        <tr><td>🚁</td><td>Flying: <kbd>W</kbd> <kbd>S</kbd> tilt forward / back, <kbd>A</kbd> <kbd>D</kbd> turn, <kbd>&larr;</kbd> <kbd>&rarr;</kbd> bank, <kbd>Space</kbd> climb, <kbd>Shift</kbd> descend (hands off to hover, descend to land), <kbd>X</kbd> searchlight, <kbd>C</kbd> near / far camera</td></tr>
+        ${HELI_ENABLED ? `<tr><td><kbd>L</kbd></td><td>Garda helicopter / back to the car (also in Play)</td></tr>
+        <tr><td>🚁</td><td>Flying: <kbd>W</kbd> <kbd>S</kbd> tilt forward / back, <kbd>A</kbd> <kbd>D</kbd> turn, <kbd>&larr;</kbd> <kbd>&rarr;</kbd> bank, <kbd>Space</kbd> climb, <kbd>Shift</kbd> descend (hands off to hover, descend to land), <kbd>X</kbd> searchlight, <kbd>C</kbd> near / far camera</td></tr>` : ''}
         <tr><td>🎮</td><td>Controller: stick steers, RT go, LT brake / reverse, A or B handbrake, Y siren, X camera, LB siren tone, RB night, View map, Menu play, right stick click photo mode, D-pad right helicopter (flying: left stick tilts, right stick turns, RT / LT climb / descend, Y searchlight); in menus D-pad + A, B back</td></tr><tr><td><kbd>Q</kbd></td><td>Graphics: Auto / High / Medium / Low / Battery saver (also in Play)</td></tr>
         <tr><td><kbd>V</kbd> <kbd>F</kbd></td><td>Sound / frame rate</td></tr>
       </table>
-      <p class="touch-note">On a phone: steer with the left pad, pedals on the right, <b>HB</b> is the handbrake. Flying: tilt with the stick on the left; climb, descend and turn on the right.</p>
+      <p class="touch-note">On a phone: steer with the left pad, pedals on the right, <b>HB</b> is the handbrake.${HELI_ENABLED ? ' Flying: tilt with the stick on the left; climb, descend and turn on the right.' : ''}</p>
       <p class="fan-note">An unofficial fan project, made for fun. Not affiliated with or endorsed by An Garda Síochána, Dublin City Council, Transport for Ireland, or any business shown; names and liveries appear only to make the city recognisable. Map data © OpenStreetMap contributors (ODbL).</p>
     </div>
     <div class="toast" id="toast"></div>
