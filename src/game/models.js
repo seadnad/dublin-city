@@ -8,6 +8,7 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { carMaterialCache } from './carmaterials.js';
 import { gardaTextures, gardaMaterials } from './gardacar.js';
+import { LITE } from '../render/quality.js';
 
 const loader = new GLTFLoader();
 loader.setDRACOLoader(new DRACOLoader().setDecoderPath(`${import.meta.env.BASE_URL}draco/`));
@@ -56,6 +57,9 @@ export async function loadCar(name) {
     // front brake calipers steer with their wheel but don't spin (pivot at the wheel centre)
     if (/^caliper_front_[lr]$/.test(o.name)) calipers.push(o);
     if (!o.isMesh) return;
+    // On Low, only the body shell and wheels need to cast into the sun map. Tiny grille,
+    // badge and lamp shadows add draw calls without a visible silhouette at this map size.
+    o.userData.coreShadow = /^(body_paint|paint_|paint_white|tyre)/.test(o.material.name || '');
     o.castShadow = true; o.receiveShadow = true;
     o.material = material(o.material);
     const n = o.material.name || '';
@@ -67,7 +71,7 @@ export async function loadCar(name) {
   // Geometry is baked into the car root's space; wheels keep their own nodes.
   src.updateMatrixWorld(true);
   const inv = new THREE.Matrix4().copy(src.matrixWorld).invert();
-  const buckets = new Map(), victims = [];
+  const buckets = new Map(), coreShadows = new Set(), victims = [];
   src.traverse((o) => {
     if (!o.isMesh) return;
     for (let p = o; p && p !== src; p = p.parent) if (/^wheel_|^caliper_front_/.test(p.name)) return;
@@ -77,13 +81,15 @@ export async function loadCar(name) {
     g.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv, o.matrixWorld));
     if (!buckets.has(o.material)) buckets.set(o.material, []);
     buckets.get(o.material).push(g);
+    if (o.userData.coreShadow) coreShadows.add(o.material);
     victims.push(o);
   });
   for (const o of victims) o.parent.remove(o);
   for (const [mat, geos] of buckets) {
     const merged = new THREE.Mesh(mergeGeometries(geos), mat);
     // see-through parts neither cast nor receive shadows (a shadowed clear lens reads as a dark smudge)
-    merged.castShadow = merged.receiveShadow = !mat.transparent;
+    merged.castShadow = !mat.transparent && (!LITE || coreShadows.has(mat));
+    merged.receiveShadow = !mat.transparent;
     merged.renderOrder = mat.transparent ? 2 : 0;
     src.add(merged);
   }

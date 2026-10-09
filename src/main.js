@@ -20,6 +20,7 @@ import { createLuas, buildLuasStops } from './game/luas.js';
 import { setStopNight } from './game/luasStop.js';
 import { createDart } from './game/dart.js';
 import { createPeople } from './game/people.js';
+import { graftonPeople } from './world/graftonquarter.js';
 import { audio } from './game/audio.js';
 import { createHUD } from './ui/hud.js';
 import { createWorldMap } from './ui/worldmap.js';
@@ -34,6 +35,7 @@ import { createPipeline } from './render/pipeline.js';
 import { batchStatic } from './render/batch.js';
 import { cullInstances, installShadowOnly, setViewCut } from './world/chunks.js';
 import { createFarView } from './world/farview.js';
+import { createStaticDistricts } from './world/static-districts.js';
 import { profile, LITE, mode as gfxModeNow, setMode as setGfxMode, learn as learnGfx, forget as forgetGfx, MODES as GFX_MODES, MODE_NAMES as GFX_NAMES, GPU, WEAK_GPU } from './render/quality.js';
 import { applyTextureQuality } from './render/texquality.js';
 import { createContactShadows } from './render/contact.js';
@@ -67,9 +69,9 @@ installShadowOnly(renderer); // shadow-only instanced meshes (trees culled for t
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
 const scene = new THREE.Scene();
-// lite profile: 600 m view distance (a third fewer draw calls on the busy quays; draw-call overhead is what limits
+// lite profile: 500 m view distance (fewer draw calls on the busy quays; draw-call overhead is what limits
 // integrated-GPU laptops, not pixels), with slightly thicker fog so the edge doesn't pop
-const camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 0.4, LITE ? 600 : 950);
+const camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 0.4, LITE ? 500 : 950);
 
 // ---------- world ----------
 // The aerial intro (boot.js) keeps animating while this builds: report progress and give it a frame between steps.
@@ -79,11 +81,12 @@ const step = async (frac, text) => { if (!intro) return; intro.progress(frac, te
 const t0 = performance.now();
 const atmosphere = createAtmosphere(scene, renderer);
 const ground = buildGround(scene);
+const start = laneSpot(world.nodes.get('NQ8').edges.find((e) => e.to.id === 'OC1'), 0.2);
 await step(0.62, 'Raising the buildings…');
-const buildings = buildBuildings(scene);
-{ const t = performance.now(); bakeGroundAO([...buildings.lots, ...landmarkFootprints], world.bounds); console.log(`ground AO baked in ${Math.round(performance.now() - t)} ms`); }
+const buildings = buildBuildings(scene, LITE ? { start } : {});
+{ const t = performance.now(); bakeGroundAO([...buildings.lots, ...landmarkFootprints.filter((r) => !r.open)], world.bounds); console.log(`ground AO baked in ${Math.round(performance.now() - t)} ms`); }
 await step(0.68, 'Placing the landmarks…');
-const landmarks = buildLandmarks(scene);
+const landmarks = buildLandmarks(scene, { start });
 {
   const t = performance.now();
   const b = batchStatic(scene, [...landmarks.groups, ...ground.group.children.filter((c) => c.isGroup)], { name: 'landmarks (batched)' });
@@ -126,7 +129,6 @@ function laneSpot(edge, t) {
   const p = v2.lerp(edge.from, edge.to, t);
   return { x: p.x + d.z * off, z: p.z - d.x * off, heading: Math.atan2(d.x, d.z) };
 }
-const start = laneSpot(world.nodes.get('NQ8').edges.find((e) => e.to.id === 'OC1'), 0.2);
 const car = new Car(start.x, start.z, start.heading);
 // the player drives a Garda patrol car
 // (a procedural stand-in until the Blender model has loaded)
@@ -159,11 +161,16 @@ function respawnNearRoad() {
 
 // ---------- traffic + Luas ----------
 await step(0.8, 'Starting the traffic…');
-const traffic = createTraffic(scene, LITE ? { cars: 12, buses: 3, taxis: 3, parked: 120 } : { cars: 26, buses: 6, taxis: 5, parked: 320 });
+const trafficStart = performance.now();
+const traffic = createTraffic(scene, LITE
+  ? { cars: 18, buses: 4, taxis: 4, parked: 150, focus: car.pos }
+  : { cars: 36, buses: 8, taxis: 7, parked: 360, focus: car.pos });
+console.log(`traffic built in ${Math.round(performance.now() - trafficStart)} ms`);
 const tram = createLuas(scene, world.luasLines);
 tram.camera = camera; // trams out of view draw nothing
 const dart = createDart(scene); // the DART on the Loop Line viaduct (no collision: it runs overhead)
-const people = createPeople(scene, { count: LITE ? 110 : 300 });
+// (plus the Grafton quarter's buskers, their crowds, the flower sellers and the café tables, who stay put)
+const people = createPeople(scene, { count: LITE ? 160 : 400, fixed: graftonPeople(), parkedVehicles: traffic.pedestrianParked });
 // everything added since the world was built moves (player, traffic, trams, people): not part of the height field
 const dynamicRoots = scene.children.filter((c) => !worldRoots.has(c));
 const farSkip = new Set([...dynamicRoots, rain.mesh].filter(Boolean)); // left out of the far view's captures
@@ -213,8 +220,18 @@ function applyMode() {
 
 // ---------- HUD + input ----------
 const siteKeys = Object.keys(sites);
-function teleportTo(key) {
+let teleportRequest = 0;
+async function teleportTo(key) {
   const v = sites[key].view;
+  const request = ++teleportRequest;
+  if (LITE && (buildings.pendingDistricts || staticDistricts?.pendingDistricts)) {
+    hud.toast(`Preparing ${sites[key].name}…`, 3500);
+    await Promise.all([
+      buildings.warmNear(v.x, v.z),
+      staticDistricts?.warmNear(v.x, v.z, 650, renderer, camera, () => pipeline.sceneTarget),
+    ]);
+  }
+  if (request !== teleportRequest) return;
   car.teleport(v.x, v.z, v.heading);
   if (flying) { heli.place(v.x, groundAt(v.x, v.z) + 40, v.z, v.heading); heli.rpm = 1; heli.landed = false; }
   rig.snap();
@@ -382,6 +399,18 @@ const treesReady = loadTrees().then((s) => console.log('trees loaded:', s.join('
 // position follows the helicopter so traffic recycling, people, the minimap and the pursuit all track the player.
 const heli = new Heli();
 let heliVis = null, heightField = null, flying = false, heliBusy = false, beamPref = null;
+let districtLoading = null;
+let staticDistricts = null;
+function startDistrictStreaming() {
+  if (!LITE) return Promise.resolve();
+  const drive = () => ({ x: car.pos.x, z: car.pos.z, heading: car.heading, speed: car.speed });
+  if (!districtLoading) districtLoading = Promise.all([
+    buildings.streamDistricts(drive),
+    staticDistricts?.startStreaming(renderer, camera, () => pipeline.sceneTarget, drive),
+    landmarks.streamDistricts(renderer, camera, () => pipeline.sceneTarget, drive, () => far.refreshHeroes()),
+  ]).catch((e) => console.warn('district streaming stopped', e));
+  return districtLoading;
+}
 const heliEnv = { hm: null, bounds: world.bounds, overWater: isOverWater, waterY: WATER_Y };
 const NO_STICK = { pitch: 0, roll: 0, yaw: 0, lift: 0 };
 const BASE_FAR = camera.far;
@@ -391,6 +420,9 @@ function setCarBodyVisible(v) { for (const c of carMesh.children) if (!c.isLight
 async function enterHeli() {
   if (flying || heliBusy) return;
   heliBusy = true;
+  // The helicopter's height field is captured once from visible buildings. Finish any
+  // queued models first so a late roof cannot appear above that collision surface.
+  if (LITE && (landmarks.pendingDistricts || buildings.pendingDistricts || staticDistricts?.pendingDistricts)) { hud.toast('Preparing the city for flight', 3500); await startDistrictStreaming(); }
   far.prepare(); // the far view builds in the background while the rotor spins up
   if (!heliVis) {
     heliVis = await loadHeli();
@@ -565,7 +597,7 @@ function frame() {
   dart.update(dt);
   signals.update(dt);
   const tp3 = performance.now();
-  people.update(dt, car.pos, car);
+  people.update(dt, car.pos, car, traffic.list);
   const tp4 = performance.now();
   // ride up onto the raised pavement
   rideY += ((car.surface === 'road' ? 0 : KERB_H) - rideY) * Math.min(1, dt * 18);
@@ -637,16 +669,22 @@ function frame() {
   // after the intro and after each switch is skipped (shader compiles).
   const settled = !flight && time > 1.5 && time - lastSwitch > 1.0;
   const fdt = Math.min(rawDt, 0.25);
+  // Auto on a light-profile device favours a sharp image at roughly 30 fps over a blurry
+  // image at 45 fps. Explicit profiles keep their existing responsiveness target.
+  const targetFps = !userQuality && LITE ? 30 : 45;
   if (!settled || worldMap.isOpen || photo.active || fpsCap) { /* skip */ }
-  else if (fdt > 1 / 45) { slowTime += fdt * (fdt > 1 / 20 ? 2 : 1); fastTime = 0; }
-  else if (fdt < 1 / 58) { fastTime += fdt; slowTime = Math.max(0, slowTime - fdt); }
+  else if (fdt > 1 / targetFps) { slowTime += fdt * (fdt > 1 / 20 ? 2 : 1); fastTime = 0; }
+  else if (fdt < 1 / (targetFps + 13)) { fastTime += fdt; slowTime = Math.max(0, slowTime - fdt); }
   const setQ = (q) => { pipeline.setQuality(q); pipeline.setMood(mode); lastSwitch = time; slowTime = fastTime = 0; };
   const setDpr = (v) => { dpr = v; renderer.setPixelRatio(dpr); pipeline.setPixelRatio(); lastSwitch = time; slowTime = fastTime = 0; };
   if (slowTime > 0.8) {
     // step down: high -> medium -> low, then resolution (a big step if frames are very slow)
     if (!userQuality && pipeline.quality === 'high') { failed.high = true; setQ('medium'); }
     else if (!userQuality && pipeline.quality === 'medium') { failed.medium = true; setQ('low'); }
-    else if (dpr > 0.6) setDpr(Math.max(0.6, dpr - (fdt > 1 / 20 ? 0.4 : 0.2)));
+    else {
+      const minDpr = !userQuality ? Math.min(maxDpr, IS_MOBILE ? 1 : 0.8) : 0.6;
+      if (dpr > minDpr) setDpr(Math.max(minDpr, dpr - (fdt > 1 / 20 ? 0.4 : 0.2)));
+    }
   } else if (fastTime > 6) {
     if (dpr < maxDpr) setDpr(Math.min(maxDpr, dpr + 0.2));
     else if (!userQuality && pipeline.quality === 'low' && !failed.medium && !LITE) setQ('medium');
@@ -662,26 +700,39 @@ console.log('texture quality', JSON.stringify(applyTextureQuality(scene, rendere
 // compiling ~100 of them synchronously inside the first render froze the page for 15+ s on a cold cache.
 // compileAsync hands them to the driver in parallel (KHR_parallel_shader_compile) and keeps the page responsive
 // behind the loading screen; if it isn't available the first frame simply compiles as before.
-const loadingText = document.querySelector('#loading p');
-if (loadingText) loadingText.textContent = 'Preparing shaders…';
-if (intro) intro.progress(0.86, 'Preparing shaders…');
+const loadingText = document.querySelector('#loading .loading-step');
+if (loadingText) loadingText.textContent = 'Bringing the city into focus…';
+if (intro) intro.progress(0.86, 'Bringing the city into focus…');
 const tc = performance.now();
 // wait (briefly) for the player's car and the trees too, so their shaders join the batch instead of stalling a
 // frame just after the loading screen lifts
 const settle = (p, ms) => Promise.race([p.catch(() => {}), new Promise((r) => setTimeout(r, ms))]);
 settle(Promise.all([carReady, treesReady]), 8000).then(() => {
+  if (LITE) {
+    const t = performance.now();
+    staticDistricts = createStaticDistricts(scene, scene.children.filter((root) => !dynamicRoots.includes(root)), start,
+      { exclude: [ground.group, buildings.mesh] });
+    console.log(`static districts staged in ${Math.round(performance.now() - t)} ms: ${staticDistricts.pendingDistricts} drawables`);
+  }
   renderer.setRenderTarget(pipeline.sceneTarget);
-  return renderer.compileAsync ? Promise.all([renderer.compileAsync(scene, camera), renderer.compileAsync(far.scene, far.camera)]) : null;
+  if (!renderer.compileAsync) return null;
+  const started = performance.now();
+  return Promise.all([
+    renderer.compileAsync(scene, camera).then(() => console.log(`main shaders ready in ${Math.round(performance.now() - started)} ms`)),
+    renderer.compileAsync(far.scene, far.camera).then(() => console.log(`far shaders ready in ${Math.round(performance.now() - started)} ms`)),
+  ]);
 }).catch(() => {}).then(() => {
   renderer.setRenderTarget(null);
   console.log(`shaders compiled in ${Math.round(performance.now() - tc)} ms`);
   const tf = performance.now();
   frame();
   console.log(`first frame took ${Math.round(performance.now() - tf)} ms`);
+  if (LITE) setTimeout(startDistrictStreaming, 2500);
   document.getElementById('loading').classList.add('gone');
+  document.getElementById('loading').setAttribute('aria-hidden', 'true');
   if (!intro) { window.__dublin.ready = true; return; }
   // the aerial view pans to the start, then the real camera descends from that pose to the chase view
-  intro.progress(1, 'Ready');
+  intro.progress(1, 'Your drive is ready');
   frozen = true;
   document.getElementById('hud').classList.add('intro-hidden');
   intro.panTo({ x: car.pos.x, z: car.pos.z, heading: car.heading }).then(() => {
@@ -698,7 +749,7 @@ window.__dublin = {
   ready: false, // set once shaders are compiled and the first frame has drawn
   heli, heliState: () => ({ flying, x: +heli.pos.x.toFixed(1), y: +heli.pos.y.toFixed(1), z: +heli.pos.z.toFixed(1), alt: +heli.alt.toFixed(1), speed: +heli.speed.toFixed(1), heading: +heli.heading.toFixed(2), rpm: +heli.rpm.toFixed(2), landed: heli.landed, floor: +heli.floor.toFixed(1), hm: heightField ? { W: heightField.W, H: heightField.H, cell: +heightField.cell.toFixed(2), ms: heightField.ms } : null, shadowExt: atmosphere.shadowExtent, far: Math.round(camera.far), fog: +scene.fog.density.toFixed(5) }),
   groundAt: (x, z) => groundAt(x, z), heliTune, heliEnv,
-  THREE, scene, camera, world, carMesh: () => carMesh, renderer, pipeline, groundAOUniforms, atmosphere, car, input, rig, traffic, tram, dart, people, pursuit, trial, gameUI, buildings, landmarks, sites, teleportTo, actions, mode, audio,
+  THREE, scene, camera, world, carMesh: () => carMesh, renderer, pipeline, groundAOUniforms, atmosphere, car, input, rig, traffic, tram, dart, people, pursuit, trial, gameUI, buildings, landmarks, get staticDistricts() { return staticDistricts; }, sites, teleportTo, actions, mode, audio,
   gfx: () => ({ mode: gfxMode, tier: pipeline.quality, dpr, maxDpr, lite: LITE, fpsCap }),
   lockQuality(q, d) { userQuality = true; dpr = d; renderer.setPixelRatio(d); pipeline.setQuality(q); pipeline.setMood(mode); slowTime = fastTime = 0; lastSwitch = time + 1e9; },
   profile() { const o = {}; for (const k of Object.keys(prof)) if (k !== 'n') o[k] = +(prof[k] / Math.max(1, prof.n)).toFixed(2); for (const k of Object.keys(prof)) prof[k] = 0; return o; },

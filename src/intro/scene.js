@@ -7,7 +7,7 @@ import { world, pointInPolygon } from '../world/geo.js';
 
 const raf = typeof requestAnimationFrame === 'function' ? requestAnimationFrame : (f) => setTimeout(() => f(performance.now()), 16);
 
-export function createIntro(canvas, width, height, dpr) {
+export function createIntro(canvas, width, height, dpr, fps = 60) {
   const B = world.bounds;
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(dpr, 1.5));
@@ -88,6 +88,8 @@ export function createIntro(canvas, width, height, dpr) {
   const pose = () => ({ position: camera.position.toArray(), quaternion: camera.quaternion.toArray(), fov: camera.fov, stats: { ...stats, seconds: Math.round((performance.now() - t0) / 100) / 10 } });
   function tick(now) {
     if (!running) return;
+    // On the light profile, leave GPU time for the city and shader preparation behind the intro.
+    if (lastT && now - lastT < 1000 / fps - 2) { raf(tick); return; }
     if (lastT) { const g = now - lastT; stats.frames++; stats.maxGap = Math.max(stats.maxGap, Math.round(g)); if (g > 50) stats.over50++; }
     lastT = now;
     const a = -0.6 + ((now - t0) / 1000) * 0.05;

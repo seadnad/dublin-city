@@ -6,7 +6,7 @@ self.onmessage = async (e) => {
   const m = e.data;
   if (m.type === 'init') {
     // some browsers can transfer a canvas but not create WebGL in a worker: report it so the page takes over
-    try { intro = createIntro(m.canvas, m.width, m.height, m.dpr); self.postMessage({ type: 'ready' }); } catch (err) { self.postMessage({ type: 'failed', error: String(err) }); }
+    try { intro = createIntro(m.canvas, m.width, m.height, m.dpr, m.fps); self.postMessage({ type: 'ready' }); } catch (err) { self.postMessage({ type: 'failed', error: String(err) }); }
   }
   else if (!intro) return;
   else if (m.type === 'resize') intro.resize(m.width, m.height);

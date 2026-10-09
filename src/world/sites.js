@@ -4,6 +4,7 @@
 import { world, v2, PAVEMENT, pointInPolygon, laneOffset, project } from './geo.js';
 import { bridges, parkPolys, campusPolys, dockPolys } from './ground.js';
 import { monumentSites, along, chainageOf } from './oconnell.js';
+import { oconnellLayout, footprintOf } from './ocstreet.js';
 import ncLayout from '../data/northcity.json';
 const { clerys: CLERYS, parnell: PARNELL, busaras: BUSARAS } = ncLayout;
 import { collegeGreenSites, cgAt, CG_SPOTS, CG_EAST } from './collegegreen.js';
@@ -12,7 +13,9 @@ import tanksData from '../data/guinness-tanks.json';
 import bsLayout from '../data/barrowst.json';
 import { spans as railSpans, at as railAt, footprints as railFootprints, pearseFront, fireTower } from './railline.js';
 import { pubSites } from './pubsites.js';
+import { gqSites } from './graftonsites.js';
 import * as LQ from './liffeysites.js';
+import { aras, zooSite } from './aras-zoo.js';
 
 const N = (id) => world.nodes.get(id);
 const wayBetween = (a, b) => world.ways.find((w) => {
@@ -278,6 +281,102 @@ export function ccjOutline(pad = 0) {
   }
   return out;
 }
+// Kilmainham (docs/research/kilmainham.md; the Blender heroes in tools/blender/build_kilmainham.py are built in game
+// metres, x east / y north in each model, and turned by `rot` about the vertical). West of PARK_X the map is squeezed
+// east-west to 0.35 of real but the roads are not, so each hero is slid off the carriageways and footpaths it would
+// otherwise stand on:
+//   the Courthouse west off the SCR, then south off Inchicore Road;
+//   the Gaol (plan 0.55 of its OSM wall ring, turned square to Inchicore Road) west until its east wall clears the
+//     Courthouse, then south until its front clears Inchicore Road;
+//   the Royal Hospital (plan 0.55) stands on its OSM centre, turned 11 degrees like the real quadrangle; its drives
+//     (streets.json KHA*) run round it in the same frame;
+//   the Richmond Tower straddles the avenue's last straight, east of the SCR's footpath.
+export const KH = (() => {
+  const roadClear = (pts, keep = () => true, margin = 0.3) => pts.every((p) => {
+    for (const s of world.segsNear(p.x, p.z)) {
+      if (!keep(s.way)) continue;
+      const a = s.a, b = s.b, abx = b.x - a.x, abz = b.z - a.z, l2 = abx * abx + abz * abz || 1e-9;
+      const t = Math.max(0, Math.min(1, ((p.x - a.x) * abx + (p.z - a.z) * abz) / l2));
+      if (Math.hypot(p.x - a.x - abx * t, p.z - a.z - abz * t) < s.way.width / 2 + s.way.pave + margin) return false;
+    }
+    return true;
+  });
+  // model (u east, v north) -> world, for an origin and a rotation (three.js rotation.y)
+  const frame = (o, rot) => { const c = Math.cos(rot), s = Math.sin(rot); return (u, v) => ({ x: o.x + u * c - v * s, z: o.z - u * s - v * c }); };
+  const toModel = (o, rot) => { const c = Math.cos(rot), s = Math.sin(rot); return (p) => { const dx = p.x - o.x, dz = p.z - o.z; return { u: dx * c - dz * s, v: -(dx * s + dz * c) }; }; };
+  const grid = (u0, u1, v0, v1, step = 1) => { const out = []; for (let u = u0; u <= u1 + 1e-6; u += Math.min(step, u1 - u0 || 1)) for (let v = v0; v <= v1 + 1e-6; v += Math.min(step, v1 - v0 || 1)) out.push([u, v]); return out; };
+  const boxOf = (at, rot, u0, u1, v0, v1) => ({ ...at((u0 + u1) / 2, (v0 + v1) / 2), rot, w: u1 - u0, d: v1 - v0 });
+  const slide = (o, rot, pts, du, dv, keep, max = 60) => {
+    for (let k = 0; k <= max * 4; k++) {
+      const at = frame({ x: o.x + (du * Math.cos(rot) - dv * Math.sin(rot)) * k * 0.25, z: o.z + (-du * Math.sin(rot) - dv * Math.cos(rot)) * k * 0.25 }, rot);
+      if (roadClear(pts.map(([u, v]) => at(u, v)), keep)) return { x: o.x + (du * Math.cos(rot) - dv * Math.sin(rot)) * k * 0.25, z: o.z + (-du * Math.sin(rot) - dv * Math.cos(rot)) * k * 0.25 };
+    }
+    console.warn('Kilmainham: no clear spot near', Math.round(o.x), Math.round(o.z));
+    return o;
+  };
+  const isNamed = (re) => (w) => re.test(w.name);
+
+  // ---- Inchicore Road: the gaol and the courthouse
+  const ia = N('KHG2'), ib = N('KHG1'), id = v2.norm(v2.sub(ib, ia));
+  const gRot = Math.atan2(-id.z, id.x);
+  // the courthouse (plan 0.45 x 0.5): 14.8 x 12.5 m and 2.4 m of railed forecourt
+  const CT = { u0: -7.4, u1: 7.4, v0: -6.25, v1: 8.65 };
+  let ct = project(53.34177, -6.3085);
+  ct = slide(ct, gRot, grid(CT.u0, CT.u1, CT.v0, CT.v1), -1, 0, isNamed(/South Circular/));
+  ct = slide(ct, gRot, grid(CT.u0, CT.u1, CT.v0, CT.v1), 0, -1, isNamed(/Inchicore|South Circular/));
+  const ctAt = frame(ct, gRot);
+  // the gaol: the OSM wall ring's first node, then west of the courthouse and south of the road
+  const G = { u0: -21.0, u1: 35.1, v0: -39.3, v1: 0.8 };
+  let go = project(53.3420594, -6.3097445);
+  { const ctIn = toModel(go, gRot)(ctAt(CT.u0, 0)); go = frame(go, gRot)(Math.min(0, ctIn.u - 0.6 - G.u1), 0); }
+  go = slide(go, gRot, grid(G.u0, G.u1, 0, G.v1).filter(([, v]) => v > 0), 0, -1, isNamed(/Inchicore/));
+  const gaolAt = frame(go, gRot);
+  // the wall ring (build_kilmainham.py RING, turned 5.8 degrees and scaled 0.55), for collision
+  const TH = (5.8 * Math.PI) / 180;
+  const RING = [[0, 0], [-1.7, 0.8], [-19.2, 2.6], [-30.0, 3.7], [-34.7, 2.7], [-36.7, 0.9], [-37.8, -2.1], [-38.2, -6.5], [-32.4, -7.1],
+    [-33.3, -15.5], [-32.7, -17.9], [-33.9, -26.8], [-37.0, -55.4], [-38.3, -55.2], [-39.7, -65.7], [-28.3, -67.0], [34.0, -73.6],
+    [45.8, -75.8], [57.0, -64.5], [57.2, -62.1], [61.9, -15.0], [62.1, -12.8], [61.8, -10.7], [60.5, -8.5], [57.7, -7.4],
+    [55.9, -6.2], [41.9, -4.4], [23.7, -2.3]];
+  const gaolRing = RING.map(([x, y]) => gaolAt((x * Math.cos(TH) - y * Math.sin(TH)) * 0.55, (x * Math.sin(TH) + y * Math.cos(TH)) * 0.55));
+  // the Proclamation plaza across the road from the gaol's door
+  const door = gaolAt(5.8, 1), dr = world.nearestRoad(door.x, door.z);
+  const nv = { x: -Math.sin(gRot), z: -Math.cos(gRot) }; // the model's +v (north) in the world
+  const plaza = { x: dr.cx + nv.x * (dr.way.width / 2 + dr.way.pave + 8), z: dr.cz + nv.z * (dr.way.width / 2 + dr.way.pave + 8), rot: gRot, w: 24, d: 13 };
+
+  // ---- the Royal Hospital
+  const rRot = (11 * Math.PI) / 180, rc = project(53.34294, -6.30005), rhkAt = frame(rc, rRot), rhkIn = toModel(rc, rRot);
+  const garden = { u0: -26, u1: 26, v0: 41.5, v1: 128 };
+  const gh = { u: -6, v: 133 };
+
+  // ---- the Richmond Tower: on the avenue's last straight, east of the SCR
+  const ta = N('KHA9'), tb = N('KHK1'), td = v2.norm(v2.sub(ta, tb)); // eastward, into the grounds
+  const tRot = Math.atan2(-td.z, td.x);
+  const RT = { u0: -3.4, u1: 3.4, v0: -10.6, v1: 7.0 };
+  const to = slide({ x: tb.x, z: tb.z }, tRot, grid(RT.u0, RT.u1, RT.v0, RT.v1).filter(([, v]) => Math.abs(v) > 3.1), 1, 0, (w) => w.name !== 'Royal Hospital Kilmainham');
+  const rtAt = frame(to, tRot);
+
+  const solids = {
+    gaolWest: boxOf(gaolAt, gRot, -6.7, 0.1, -12.1, 0.8), gaolEast: boxOf(gaolAt, gRot, 11.4, 18.3, -12.1, 0.8),
+    courthouse: boxOf(ctAt, gRot, CT.u0, CT.u1, CT.v0, 6.25), courtForecourt: boxOf(ctAt, gRot, CT.u0, CT.u1, 6.25, CT.v1),
+    rhk: boxOf(rhkAt, rRot, -24.5, 24.5, -26, 26), rhkNorth: boxOf(rhkAt, rRot, -6.0, 6.0, 26, 32.1),
+    gardenHouse: boxOf(rhkAt, rRot, gh.u - 4.1, gh.u + 4.1, gh.v - 4.1, gh.v + 4.1),
+    richmondN: boxOf(rtAt, tRot, -3.4, 3.4, 3.05, 6.95), richmondS: boxOf(rtAt, tRot, -3.4, 3.4, -6.95, -3.05),
+    richmondTurret: boxOf(rtAt, tRot, -3.5, 2.3, -10.6, -6.95),
+    richmondWallN: boxOf(rtAt, tRot, -1.1, -0.5, 6.95, 13.5), richmondWallS: boxOf(rtAt, tRot, -1.1, -0.5, -12.2, -10.6),
+  };
+  return {
+    gaolAt, rhkAt, rtAt, ctAt, rhkIn, gaolRing, plaza, garden, gh, gRot, rRot, tRot,
+    enclosure: boxOf(gaolAt, gRot, G.u0, G.u1, G.v0, G.v1),
+    solids: Object.values(solids), named: solids,
+    groups: {
+      'Kilmainham Gaol': { gaol: { ...go, rot: gRot }, courthouse: { ...ct, rot: gRot } },
+      'Royal Hospital Kilmainham': { rhk: { ...rc, rot: rRot }, gardenhouse: { ...rhkAt(gh.u, gh.v), rot: rRot } },
+      'Richmond Tower': { richmond: { ...to, rot: tRot } },
+    },
+    gates: [{ ...N('KHM4'), r: 7 }, { ...to, r: 8 }],
+    inGarden: (p) => { const q = rhkIn(p); return q.u > garden.u0 - 1 && q.u < garden.u1 + 1 && q.v > garden.v0 - 1 && q.v < garden.v1 + 10; },
+  };
+})();
 const xingBox = (s0, s1, q0, q1) => ({ ...lansdowneXing.at((s0 + s1) / 2, (q0 + q1) / 2), rot: lansdowneXing.trackRot, w: q1 - q0, d: s1 - s0 });
 const xingRoadBox = (u0, u1, w0, w1) => ({ ...lansdowneXing.atRoad((u0 + u1) / 2, (w0 + w1) / 2), rot: lansdowneXing.roadRot, w: u1 - u0, d: w1 - w0 });
 
@@ -452,7 +551,7 @@ export const sites = {
   },
   stephensGreen: {
     name: "St Stephen's Green", ...centroid(sgPark.poly), rot: 0, w: 0, d: 0, labelY: 30, park: sgPark,
-    view: spot('GR2', 'SGNW', 0.35),
+    view: spot('GFCH', 'SGNW', 0.05),
   },
   aviva: {
     // w x d is the bounding box for the map; the filler keeps off the fitted slabs below (extraSites.avivaSlabs)
@@ -484,6 +583,19 @@ export const sites = {
     outline: ccjOutline(),
     view: spot('WT3', 'PG1', 0.35),
   },
+  kilmainhamGaol: {
+    // the walled enclosure; the front blocks, the courthouse and its forecourt are extraSites.kh* (see KH above)
+    name: 'Kilmainham Gaol', ...KH.enclosure, labelY: 22,
+    view: spot('KHK1', 'KHG1', 0.55), // westbound on Inchicore Road, the front on the left
+  },
+  royalHospital: {
+    name: 'Royal Hospital Kilmainham', ...KH.named.rhk, labelY: 42,
+    view: spot('KHA8', 'KHA7', 0.25), // up the lime avenue towards the west front
+  },
+  richmondTower: {
+    name: 'Richmond Tower', ...KH.named.richmondN, labelY: 18,
+    view: spot('KHG1', 'KHK1', 0.1), // eastbound on Inchicore Road, the gate closing the view
+  },
   // Connolly Station (docs/research/railway.md): William Deane Butler's 1844 granite front with its Italianate tower,
   // on the east side of Amiens Street at the Talbot Street / Store Street junction, facing west (local +z). The
   // train shed over platforms 1-4 runs north-east behind it (railway.js); the Loop Line's DART platforms pass south of
@@ -498,6 +610,17 @@ export const sites = {
     const sp = railSpans.find((k) => k.hero), a = railAt(sp ? (sp.s0 + sp.s1) / 2 : 0);
     return { name: 'Loopline Bridge', x: a.x, z: a.z, rot: Math.atan2(a.d.x, a.d.z), w: 12, d: sp ? sp.s1 - sp.s0 : 0, labelY: 14, bridge: true, view: spot('SQ8', 'SQ9', 0.55) };
   })(),
+  aras: {
+    // Áras an Uachtaráin (src/world/aras-zoo.js): the main range and its terrace, set back behind its lawn and the
+    // ha-ha. The view is on Chesterfield Avenue where the house's vista meets it, facing up the lawn to the portico.
+    name: 'Áras an Uachtaráin', x: aras.x + aras.f.x * -5.2, z: aras.z + aras.f.z * -5.2, rot: aras.rot, w: 49.6, d: 17, labelY: 18,
+    view: aras.view,
+  },
+  zoo: {
+    // Dublin Zoo's entrance building on the Hollow (the lettered wall faces the park); seen from the road across the Hollow
+    name: 'Dublin Zoo', x: zooSite.x + Math.sin(zooSite.rot) * -2.9, z: zooSite.z + Math.cos(zooSite.rot) * -2.9, rot: zooSite.rot, w: 28, d: 6, labelY: 8,
+    view: zooSite.view,
+  },
 };
 
 // A railway bridge over the road at a node (the GSWR, docs/research/croke-park.md 1.2; no trains, so only the deck
@@ -548,8 +671,6 @@ export const shelbournePark = (() => {
 
 // Smaller landmarks that are modelled but not in the teleport list
 export const extraSites = {
-  // the Cork Hill gate of Dublin Castle, on Lord Edward Street (the Upper Yard sits behind it)
-  castle: beside('DM3', 'LE1', 0.55, 1, 40, 2, { gap: 0.5 }),
   // 72 Dame Street, on the Temple Bar side like the Central Bank
   olympia: beside('DSY', 'DM3', 0.2, -1, 12, 16, { gap: 0.15 }),
   clockCorner: beside('CG0', 'DAN', 0.4, 1, 16, 16, { gap: 0.15 }),
@@ -581,14 +702,16 @@ export const extraSites = {
     };
   })(),
   // (Grafton Street is split at Duke Street, GRD, 0.352 of the way from GR1 to GR2 on the same line: same spots)
-  bewleys: beside('GRD', 'GR2', (0.78 - 0.352) / 0.648, -1, 12, 18, { gap: 0.15 }),
-  brownThomas: beside('GR1', 'GRD', 0.3 / 0.352, -1, 28, 22, { gap: 0.15 }),
-  weir: beside('CG3', 'GR1', 0.9, -1, 10, 14, { gap: 0.15 }),
+  // (and again at Johnson's Court, GFJC, 0.47 of the way from GRD to GR2: Bewley's keeps its spot)
+  bewleys: beside('GFJC', 'GR2', ((0.78 - 0.352) / 0.648 - 0.47) / 0.53, -1, 12, 8, { gap: 0.15 }),
+  // (20 deep, so its back clears Clarendon Street; Weir & Sons stands on the north corner of the slanting Wicklow Street)
+  brownThomas: beside('GR1', 'GRD', 0.3 / 0.352, -1, 28, 20, { gap: 0.15 }),
+  weir: beside('CG3', 'GR1', 0.78, -1, 10, 14, { gap: 0.15 }),
   sgCentre: (() => {
-    const W = 56, D = 54, kss = v2.len(v2.sub(N('KSS1'), N('SGNW')));
+    const W = 56, D = 54, kss = v2.len(v2.sub(N('GFKR'), N('SGNW'))); // (King St is split at Clarendon Row, GFKR)
     const west = wayBetween('SGNW', 'SGW'); // St Stephen's Green West: its half width and footpath set the corner
     // the Green West road slants ~12 degrees west going south: allow for it so the far end clears the footpath
-    return beside('SGNW', 'KSS1', (west.width / 2 + west.pave + 0.4 + D * 0.22 + W / 2) / kss, 1, W, D, { gap: 0.3 });
+    return beside('SGNW', 'GFKR', (west.width / 2 + west.pave + 0.4 + D * 0.22 + W / 2) / kss, 1, W, D, { gap: 0.3 });
   })(),
   // Grattan's statue on its island at the east end of College Green, in front of the east arch pavilion, facing
   // west down Dame Street (the island's east tip stays clear of the Trinity junction)
@@ -604,6 +727,10 @@ export const extraSites = {
   lansdowneXing,
   // O'Connell Bridge House's 7-storey extension down D'Olier Street (the tower is sites.oconnellBridgeHouse)
   obhExtension: obh.ext,
+  // Kilmainham: the gaol's front blocks, the courthouse and its railed forecourt, the Proclamation plaza, the Royal
+  // Hospital's north front and steps, the Garden House, the Richmond Tower's piers, turret and wall stubs
+  ...Object.fromEntries(Object.entries(KH.named).filter(([k]) => !['rhk', 'richmondN'].includes(k)).map(([k, s]) => ['kh_' + k, s])),
+  kh_plaza: KH.plaza,
 };
 // Aviva footprint slabs, the podium over the DART (a strip along the track and its front on Lansdowne Road with the
 // grand stairs), the station's track bed and platforms, and the station building - all kept free of filler
@@ -879,8 +1006,17 @@ Object.assign(extraSites, {
   ambassador: { x: NC.drum.x, z: NC.drum.z, rot: NC.rotunda.rot, w: PARNELL.drumR * 2, d: PARNELL.drumR * 2 },
   gate: NC.gate.box(-PARNELL.gateW / 2, PARNELL.gateW / 2, 0, PARNELL.gateD),
   gardenSouth: NC.garden.box(-PARNELL.gardenW / 2, PARNELL.gardenW / 2 - PARNELL.gardenKW * PARNELL.gardenD, PARNELL.gardenD / 2, PARNELL.gardenD),
-  busarasYard: NC.busaras.box(BUSARAS.w / 2, BUSARAS.w / 2 + 22, 0, BUSARAS.d),
+  // (open out to Amiens Street: the yard runs through to it, so no filler stands side-on in front of the building
+  // seen from the east; docs/research/oconnell-street.md 5)
+  busarasYard: NC.busaras.box(BUSARAS.w / 2, BUSARAS.w / 2 + 29, 0, BUSARAS.d),
 });
+// ---------- O'Connell Street's frontages (docs/research/oconnell-street.md; src/world/ocstreet.js, ocfacades.js) ----------
+// every building between the side streets, the GPO and Clerys is reserved (the filler leaves the frontage to them);
+// the Gresham joins the Places list
+export const OCS = oconnellLayout([sites.gpo, sites.clerys]);
+for (const b of OCS.buildings) extraSites['oc_' + b.id] = footprintOf(b);
+if (extraSites.oc_gresham) sites.gresham = { name: 'The Gresham', ...extraSites.oc_gresham, labelY: 30, view: spot('OC3', 'OC4', 0.12) };
+const ocFootprints = OCS.buildings.map((b) => extraSites['oc_' + b.id]);
 const northCityFootprints = [sites.clerys, sites.rotunda, sites.gardenOfRemembrance, sites.busaras, extraSites.rotundaRear, extraSites.ambassador, extraSites.gate, extraSites.gardenSouth, extraSites.busarasYard];
 
 // the notable ones join the Places list; every part is kept free of filler and checked by footprints.mjs
@@ -908,6 +1044,53 @@ const tallFootprints = [sites.libertyHall, sites.collegeSquare, sites.capitalDoc
 for (const p of Object.values(pubSites)) {
   if (p.place) sites[p.key] = { name: p.name, x: p.x, z: p.z, rot: p.rot, w: p.w, d: p.d, labelY: 20, view: p.view, blurb: p.blurb };
 }
+// ...and the Grafton quarter's landmarks: the Gaiety Theatre, Powerscourt Townhouse and George's Street Arcade
+for (const p of Object.values(gqSites)) {
+  if (p.place) sites[p.key] = { name: p.name, x: p.x, z: p.z, rot: p.rot, w: p.w, d: p.d, labelY: 24, view: p.view, blurb: p.blurb };
+}
+// Dublin Castle, the George's Street Arcade and the Stag's Head mosaic (tools/blender/build_dublincastle.py; docs/research/
+// dublin-castle.md). The castle is built in game metres round DCO with no rotation, so the numbers here are the model's:
+// the Upper Yard x -421..-362, z 221..240 (pedestrian: the gates are bollarded), the Bedford Tower between the Gate
+// of Fortitude and the Gate of Justice on its north side, the Justice gate facing Cork Hill (DC1-DC2) over a cobbled
+// forecourt; the Record Tower and the Chapel Royal at its SE corner; Dubh Linn Garden south of the State Apartments.
+export const DCO = { x: -380, z: 250 };
+const dcBox = (x0, x1, z0, z1) => ({ x: (x0 + x1) / 2, z: (z0 + z1) / 2, rot: 0, w: x1 - x0, d: z1 - z0 });
+// the arcade: its front on George's Street's building line (the street runs within 2.5 degrees of north-south there),
+// the block 36 m deep to the east, 33.5 m from Exchequer Street's footpath to Fade Street's
+export const ARCADE = { x: -259.25, z: 281.5, w: 36, d: 33.5 };
+// solid building boxes (colliders): the ranges, the gates, the towers, the chapel, the Chester Beatty, the Coach House
+export const DC_SOLIDS = [
+  dcBox(-436, -421, 216, 240), dcBox(-397, -362, 217.4, 221), dcBox(-362, -354, 217.4, 240), dcBox(-436, -354, 238, 252),
+  dcBox(-414.5, -403.5, 212.5, 223.6), dcBox(-421, -414.5, 212.6, 221.4), dcBox(-403.5, -393.4, 212.6, 221.4),
+  { x: -352, z: 244.5, rot: 0, w: 12, d: 12 }, { x: -437.5, z: 249, rot: 0, w: 8.4, d: 8.4 },
+  dcBox(-346.5, -321.2, 234, 246), dcBox(-357, -327, 201.2, 209), dcBox(-318, -302, 246, 300), dcBox(-330, -318, 236, 246),
+  dcBox(-410, -393.8, 254.5, 290.2), dcBox(-373, -343, 298, 307), dcBox(-318, -302, 205, 232),
+];
+Object.assign(extraSites, {
+  dcNorth: dcBox(-400, -301, 201.2, 254), dcWest: dcBox(-436, -400, 216.5, 254), dcGates: dcBox(-421, -400, 211, 216.5),
+  dcGarden: dcBox(-400, -322, 254, 300), dcGardenS: dcBox(-380, -322, 300, 313), dcEast: dcBox(-322, -301, 254, 314),
+  // the castle wall along Ship Street Great and Stephen Street Upper (no filler between it and the street)
+  dcShip: (() => { const a = N('DC8'), b = N('DC7'), d = v2.norm(v2.sub(b, a)), L = v2.len(v2.sub(b, a)), m = v2.lerp(a, b, 0.5), n = { x: -d.z, z: d.x };
+    const k = v2.dot(n, v2.sub(DCO, m)) > 0 ? 1 : -1; return { x: m.x + n.x * k * 11.5, z: m.z + n.z * k * 11.5, rot: Math.atan2(-d.z, d.x), w: L - 8, d: 12 }; })(),
+  dcStephen: (() => { const a = N('DC7'), b = N('DC6'), d = v2.norm(v2.sub(b, a)), L = v2.len(v2.sub(b, a)), m = v2.lerp(a, b, 0.5), n = { x: -d.z, z: d.x };
+    const k = v2.dot(n, v2.sub(DCO, m)) > 0 ? 1 : -1; return { x: m.x + n.x * k * 12, z: m.z + n.z * k * 12, rot: Math.atan2(-d.z, d.x), w: L - 6, d: 12 }; })(),
+  arcade: { x: ARCADE.x + ARCADE.w / 2 - 1, z: ARCADE.z, rot: 0, w: ARCADE.w + 2, d: ARCADE.d },
+});
+const DC_RESERVED = ['dcNorth', 'dcWest', 'dcGates', 'dcGarden', 'dcGardenS', 'dcEast', 'dcShip', 'dcStephen', 'arcade'].map((k) => extraSites[k]);
+Object.assign(sites, {
+  dublinCastle: {
+    name: 'Dublin Castle', ...dcBox(-436, -322, 216.5, 252), labelY: 32, blurb: 'Bedford Tower, the Record Tower, the Chapel Royal and Dubh Linn Garden',
+    parts: { castle: { ...DCO, rot: 0 }, arcade: { x: ARCADE.x, z: ARCADE.z, rot: 0 },
+      // the Stag's Head mosaic in the Dame Street footpath at Dame Court's mouth, the words facing the passer-by on Dame St
+      mosaic: (() => { const d = N('DC14'), way = wayBetween('DFU', 'DC14'); return { x: d.x, z: d.z + way.width / 2 + way.pave * 0.55, rot: Math.PI }; })() },
+    view: spot('DC1', 'DC2', 0.05), // down Cork Hill, the Justice gate ahead and the Upper Yard through it
+  },
+  georgesArcade: {
+    name: "George's Street Arcade", ...extraSites.arcade, labelY: 22, blurb: 'The 1881 red-brick market block, through to Drury Street',
+    view: spot('DC11', 'SGG1', 0.2),
+  },
+});
+
 // the Liffey's riverside landmarks (src/world/liffeysites.js, docs/research/liffey-quays.md) join the Places list
 Object.assign(sites, {
   famine: { name: 'Famine Memorial', ...LQ.FAMINE.site, view: spot('NQ12', 'NQ13', 0.04) },
@@ -923,10 +1106,12 @@ export const reserved = [
   sites.cityHall, sites.centralBank, extraSites.olympia, extraSites.clockCorner,
   extraSites.bewleys, extraSites.brownThomas, extraSites.weir, extraSites.sgCentre, extraSites.merchantsHall, extraSites.tbSquare,
   extraSites.meetingHouse, extraSites.mhArk, extraSites.mhIfi, extraSites.mhGallery,
-  // the famous pubs (src/world/pubsites.js)
+  // the famous pubs (src/world/pubsites.js) and the Grafton quarter's fronts (src/world/graftonsites.js)
+  ...Object.values(gqSites),
   ...Object.values(pubSites),
   shifted(extraSites.sgCentre, -extraSites.sgCentre.w / 2 - 8, 0, 16, extraSites.sgCentre.d), // broad footpath facing the Green
-  { ...extraSites.castle, w: 44, d: 36, ...shifted(extraSites.castle, 0, -16, 44, 34) },
+  // Dublin Castle and the George's Street Arcade
+  ...DC_RESERVED,
   shifted(sites.convention, 0, sites.convention.d / 2 + 6.5, sites.convention.w, 13), // its forecourt
   sites.grandCanalSt, shifted(sites.grandCanalSt, 0, sites.grandCanalSt.d / 2 + 3.25, sites.grandCanalSt.w + 4, 6.5), // its raised forecourt
   shifted(sites.grandCanalSt, sites.grandCanalSt.w / 2 + 9, 3, 18, sites.grandCanalSt.d + 6.5), // open corner to Grattan Street (steps, parking)
@@ -993,8 +1178,14 @@ export const reserved = [
   extraSites.chq,
   // the tall buildings (src/world/towers.js)
   ...tallFootprints,
+  // Kilmainham: the gaol enclosure, the Royal Hospital, the Richmond Tower and the rest of their parts (KH above)
+  sites.kilmainhamGaol, sites.royalHospital, sites.richmondTower, ...Object.entries(extraSites).filter(([k]) => k.startsWith('kh_')).map(([, s]) => s),
+  // the Heuston rail yards between St John's Road West and the Liffey, out to the SCR: no filler
+  ...heustonYard(),
   // Clerys, Parnell Square (the Rotunda, the Ambassador, the Gate, the Garden of Remembrance) and Busáras
   ...northCityFootprints,
+  // O'Connell Street's frontages
+  ...ocFootprints,
   // the DART viaduct between its street bridges (railline.js), Connolly's front, Pearse's front on Westland Row, and
   // the Tara Street fire station's tower
   ...railFootprints().map((b, i) => (extraSites[`rail${i}`] = b)),
@@ -1002,5 +1193,24 @@ export const reserved = [
   (extraSites.pearseFront = (() => { const F = pearseFront(); return F ? fitBox(F.poly, Math.atan2(F.poly[1].x - F.poly[0].x, F.poly[1].z - F.poly[0].z)) : null; })()),
   (extraSites.fireTower = { x: fireTower.x, z: fireTower.z, rot: 0, w: fireTower.w + 1, d: fireTower.w + 1 }),
 ].filter(Boolean);
+
+// The rail yards west of Heuston: open ground (tracks, sidings, the station car park) from the station's west end to
+// the South Circular Road, between St John's Road West and the river. A grid of boxes north of the road.
+function heustonYard() {
+  const road = ['SJ2', 'KHM0', 'SJ3', 'KHS1', 'KHS2', 'KHS3', 'KHS4', 'KHS5', 'KHJ'].map((id) => N(id));
+  const scr = N('KHN3').x + 5.5 + 3.5 + 2;
+  const out = [];
+  for (let x = -1640; x < -1340; x += 12) for (let z = -40; z < 210; z += 12) {
+    const p = { x: x + 6, z: z + 6 };
+    if (p.x < scr + 6 || pointInPolygon(p, world.riverPoly)) continue;
+    // north of St John's Road West: the road's z at this x, less its half width and footpath
+    let rz = null;
+    for (let i = 0; i + 1 < road.length; i++) { const a = road[i], b = road[i + 1]; if ((a.x - p.x) * (b.x - p.x) <= 0 && a.x !== b.x) rz = a.z + ((p.x - a.x) / (b.x - a.x)) * (b.z - a.z); }
+    if (rz === null || p.z > rz - 7 - 3.5 - 6.5) continue;
+    if (p.x > -1350 && p.z > 20) continue; // Heuston's own west end
+    out.push({ ...p, rot: 0, w: 12, d: 12 });
+  }
+  return out;
+}
 
 export { campusPolys, parkPolys };

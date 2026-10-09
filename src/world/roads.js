@@ -740,8 +740,9 @@ export function greenLand(outlines, mat, { path = 2.5, cell = 2 } = {}) {
 }
 
 // Grass surfaces laid on top of the pavement (parks, lawns).
-export function grassPolygon(poly, mat) {
+export function grassPolygon(poly, mat, holes = []) {
   const shape = new THREE.Shape(poly.map((p) => new THREE.Vector2(p.x, -p.z)));
+  for (const h of holes) shape.holes.push(new THREE.Path(h.map((p) => new THREE.Vector2(p.x, -p.z))));
   const g = new THREE.ShapeGeometry(shape);
   g.rotateX(-Math.PI / 2);
   g.translate(0, KERB_H + 0.004, 0);

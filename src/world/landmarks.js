@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { addReflections } from '../render/reflect.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { world, v2, pointInPolygon, insetPolygon, project } from './geo.js';
-import { sites, reserved, grounds, extraSites, cpAt, BOI, boiAt, FC, fcAt } from './sites.js';
+import { sites, reserved, grounds, extraSites, cpAt, BOI, boiAt, FC, fcAt, KH, DC_SOLIDS } from './sites.js';
 import { parkPolys, campusPolys, stoneTex, WATER_Y, paintArea, COLORS, getStreets } from './ground.js';
 import { rng, makeStoneTexture } from './textures.js';
 import { addBox, addSegment, addPolyline } from '../game/collision.js';
@@ -16,19 +16,24 @@ import { placeHapenny, placeParts, setStoneNight, placeCrokePark, placeAviva, pl
 import { placeHeuston } from './heuston.js';
 import { placeThreeArena } from './threearena.js';
 import { placeCCJ } from './ccj.js';
+import { placeKilmainham } from './kilmainham.js';
 import { placeBarrowStreet } from './barrowst.js';
 import { placeGrandCanal, gcsColliders } from './gcsquare.js';
 import { buildTowers } from './towers.js';
 import { buildLiffey } from './liffey.js';
-import { buildPubs } from './pubs.js';
 import { buildTempleBar } from './templebar.js';
 import { buildMeetingHouse } from './meetinghouse.js';
+import { buildPubs, buildFronts } from './pubs.js';
+import { GQ_SPECS, gqSites } from './graftonsites.js';
+import { buildGraftonQuarter } from './graftonquarter.js';
 import { collegeGreen, suffolkStreet, placeKildare, setKildareNight } from './kildare.js';
 import { placeNorthCity, northCityColliders } from './northcity.js';
+import { buildOConnellStreet, oconnellTrees } from './ocfacades.js';
 import { buildRailway, placeLoopline } from './railway.js';
 import { LITE } from '../render/quality.js';
 const lawnMat = () => getStreets().grassMat;
 import { buildPark } from './park.js';
+import { buildGreen, greenPlanting } from './greenpark.js';
 
 const rand = rng(1742);
 
@@ -670,34 +675,6 @@ function parnellMonument(site) {
   b.box(0.9, 1.0, 0.7, M.bronze, { x: 0.8, y: ISL + 2.55, z: 1.0 }); // the draped table behind him
   b.solid(0, 0.9, 5.0, 3.4); b.solid(0, oz, 3.0, 2.6);
   return b.build('Parnell Monument');
-}
-
-// O'Connell Street trees (2006 IAP): ornamental rowans on the islands, kept clear of the monuments; the big
-// Oriental planes along both footpaths. Returns { rowans, planes } as tree spots.
-function oconnellTrees() {
-  const rowans = [], planes = [];
-  const clear = [[CHAIN.oconnell, 6.2], [CHAIN.smithOBrien, 4.2], [CHAIN.gray, 4.4], [CHAIN.larkin, 3.6], [CHAIN.spire, 6.5], [CHAIN.fatherMathew, 4.4], [CHAIN.parnell, 16]];
-  const free = (s) => clear.every(([c, r]) => Math.abs(s - c) > r);
-  for (const isl of ISLANDS) {
-    if (isl.cobbles) continue;
-    let last = -Infinity;
-    for (let s = isl.from + 2.5; s <= isl.to - 2.5; s += 0.5) {
-      if (s - last < 14 || !free(s)) continue;
-      rowans.push({ ...along(s), s: 1.0 }); last = s;
-    }
-  }
-  const gpo = sites.gpo, portico = toWorld(gpo, 0, gpo.d / 2 + 3);
-  const way = world.ways.find((w) => w.type === 'boulevard'), off = way.width / 2 + 1.4;
-  for (const side of [1, -1]) {
-    for (let s = 14; s < LENGTH - 16; s += 13) {
-      const p = along(s, side * off);
-      if ((p.x - portico.x) ** 2 + (p.z - portico.z) ** 2 < 16 ** 2) continue;
-      const r = world.nearestRoad(p.x, p.z);
-      if (r && r.way !== way && r.edgeDist < 1.5) continue; // not in a side street's mouth
-      planes.push({ x: p.x, z: p.z, s: 1.0 });
-    }
-  }
-  return { rowans, planes };
 }
 
 // the Fusiliers' Arch stands in the Green's railings at the Grafton Street corner; local +z faces Grafton Street
@@ -1436,7 +1413,6 @@ Object.assign(M, {
   portlandSmooth: new THREE.MeshStandardMaterial({ color: 0xdcd7ca, roughness: 0.78 }),
   graniteSmooth: new THREE.MeshStandardMaterial({ color: 0x9a978f, roughness: 0.7 }),
   stucco: new THREE.MeshStandardMaterial({ map: stuccoTex, roughness: 0.85 }),
-  castleBrick: new THREE.MeshStandardMaterial({ map: warehouseTex, color: 0xd88a70, roughness: 0.9 }),
   cobble: new THREE.MeshStandardMaterial({ color: 0x8e877b, map: stoneT, roughness: 0.9 }),
   gold: addReflections(new THREE.MeshStandardMaterial({ color: 0xd4a53c, roughness: 0.3, metalness: 1 }), 0.8),
   olympiaRed: new THREE.MeshStandardMaterial({ color: 0x9b1b26, roughness: 0.5 }),
@@ -1478,25 +1454,18 @@ function cityHall(site) {
   return b.build('City Hall');
 }
 
-function dublinCastle(site) {
-  // the Cork Hill gate into the Upper Castle Yard (Justice on top) and the red-brick Georgian range behind it
-  const b = new Builder(site);
-  b.archWall(8, 8.5, 1.6, 4, 6, M.portland);
-  b.box(8.6, 0.8, 2, M.portland, { y: 8.5 });
-  b.figure('justice', 0, 9.3, 0, { h: 2.6, ry: Math.PI, finish: 'darkBronze' }); // Justice turns her back on the city
-  b.box(3.8, 5, 0.1, M.dark, { z: -0.3 });
-  railings(b, -18, -4.4, 0.3); railings(b, 4.4, 18, 0.3);
-  for (const x of [-18, 18]) b.box(1.2, 2.6, 1.2, M.portland, { x });
-  // Upper Yard: red brick, three storeys with a stone cornice, and the Bedford Tower over the far range
-  b.facade(40, 13, 12, M.castleBrick, M.slate, { z: -24 }, 4, 4.3);
-  b.box(40.5, 0.8, 12.5, M.portland, { y: 13, z: -24 });
-  b.facade(7, 18, 7, M.portland, M.lead, { z: -18 });
-  b.cyl(2.4, 2.8, 5, M.portland, { y: 18, z: -18 }, 12);
-  b.dome(2.5, M.copper, { y: 23, z: -18 });
-  b.box(40, 0.05, 20, M.cobble, { y: KERB_H, z: -10 }); // cobbled yard
-  b.solid(-9, 0, 2, 1.8); b.solid(9, 0, 2, 1.8); b.solid(-11, 0.3, 14, 0.4); b.solid(11, 0.3, 14, 0.4);
-  b.solid(0, -24, 40, 12); b.solid(0, -18, 7, 7);
-  return b.build('Dublin Castle');
+// Dublin Castle's colliders and the statue-kit figures on its gates (the model: tools/blender/build_dublincastle.py)
+function dublinCastle(scene) {
+  for (const b of DC_SOLIDS) addBox(b.x, b.z, b.w / 2, b.d / 2, b.rot);
+  const A = extraSites.arcade; addBox(A.x, A.z, A.w / 2 - 1, A.d / 2, 0);
+  addBox(-322, 201.7, 4.6, 0.4, 0); // the Palace Street gate, shut
+  for (const w of [[[-442, 221.5], [-442, 262], [-436, 265.4], [-433.5, 265.5], [-369.5, 340.5]], [[-375.5, 338.5], [-329.5, 315.5], [-318.5, 315.5], [-318.5, 300.5]],
+    [[-436, 216.4], [-442, 221.5]], [[-316.7, 201.7], [-301, 201.7], [-301, 246]], [[-357, 201.5], [-367, 201.5], [-367, 216.8]]]) addPolyline(w.map(([x, z]) => ({ x, z })));
+  // Justice (Cork Hill gate) and Fortitude (Castle Street gate) on their plinths, both facing into the yard (lead,
+  // painted: Van Nost the Younger, 1753); Justice famously turns her back on the city
+  addStatue({ body: 'justice', x: -400.25, z: 217, y: 9.1, rot: 0, height: 2.3, finish: 'darkBronze' });
+  addStatue({ body: 'allegory', x: -417.75, z: 217, y: 9.1, rot: 0, height: 2.3, finish: 'darkBronze' });
+  placeParts(scene, 'dublincastle', sites.dublinCastle, 'Dublin Castle');
 }
 
 function centralBank(site) {
@@ -1780,7 +1749,7 @@ function stephensGreenCentre(site) {
 // Christmas lights strung across Grafton Street, and the wooden planters at its top end
 function graftonDressing() {
   const b = new Builder({ x: 0, z: 0, rot: 0 });
-  const way = world.ways.find((w) => w.pedestrian);
+  const way = world.ways.find((w) => w.pedestrian && w.name === 'Grafton Street');
   const pts = way.pts, half = way.width / 2 + way.pave;
   let acc = 0;
   for (let k = 0; k < pts.length - 1; k++) {
@@ -2139,33 +2108,14 @@ function buildTrees(scene) {
   let pondAt = null;
   for (const pk of parkPolys) {
     if (pk.name === "St Stephen's Green") {
-      const c = sites.stephensGreen;
-      pondAt = { x: c.x + 10, z: c.z - 18 };
+      // the surveyed trees (open lawns where the real ones are), the understorey inside the railings and the lake
+      // shrubberies (greenpark.js); clear of the Fusiliers' Arch
       const arch = fusiliersSite(pk), clearOfArch = (p) => (p.x - arch.x) ** 2 + (p.z - arch.z) ** 2 > 18 * 18;
-      // perimeter belt: two staggered rows of big trees, and a band of shrubs just inside the railings
-      const shrubs = [];
-      for (const [inset, step, jitter, kind] of [[3.4, 3.2, 0.8, 'shrub'], [7, 8, 2, 'tree'], [13, 10, 3, 'tree']]) {
-        const ring = insetPolygon(pk.poly, inset);
-        for (let k = 0; k < ring.length; k++) {
-          const a = ring[k], bb = ring[(k + 1) % ring.length], L = v2.len(v2.sub(bb, a));
-          for (let t = rand() * step; t < L; t += step * (0.8 + rand() * 0.4)) {
-            const q = v2.lerp(a, bb, t / L), p = { x: q.x + (rand() - 0.5) * jitter, z: q.z + (rand() - 0.5) * jitter };
-            if (!clearOfArch(p)) continue;
-            if (kind === 'shrub') shrubs.push({ ...p, rot: rand() * 6.28, s: new THREE.Vector3(2 + rand() * 1.6, 1.6 + rand() * 1.4, 2 + rand() * 1.6), c: Math.floor(rand() * 5) });
-            else spots.push({ ...p, s: 1.15 + rand() * 0.45 });
-          }
-        }
-      }
-      // shrub clumps scattered through the interior lawns
-      const inner = insetPolygon(pk.poly, 20);
-      for (let i = 0; i < 90; i++) {
-        const k = Math.floor(rand() * inner.length), a = inner[k], bb = inner[(k + 1) % inner.length];
-        const q = v2.lerp(v2.lerp(a, bb, rand()), { x: c.x, z: c.z }, rand() * 0.8);
-        if ((q.x - pondAt.x) ** 2 / 500 + (q.z - pondAt.z) ** 2 / 150 < 1.4) continue;
-        shrubs.push({ ...q, rot: rand() * 6.28, s: new THREE.Vector3(1.6 + rand() * 1.5, 1.2 + rand() * 1.2, 1.6 + rand() * 1.5), c: Math.floor(rand() * 5) });
-      }
-      plantShrubs(scene, shrubs);
-      scatter(pk.poly, 110, 18);
+      const pl = greenPlanting(pk, rand, clearOfArch);
+      if (pl) {
+        plantShrubs(scene, pl.shrubs);
+        for (const t of pl.trees) spots.push({ x: t.x, z: t.z, s: t.s / 0.85, species: t.species, tint: t.tint });
+      } else scatter(pk.poly, 110, 18);
     } else if (pk.name === "St Patrick's Park") {
       let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
       for (const p of pk.poly) { x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); z0 = Math.min(z0, p.z); z1 = Math.max(z1, p.z); }
@@ -2198,27 +2148,48 @@ function buildTrees(scene) {
     }
     for (const p of street) { spots.push({ ...p, s: 0.95, street: true }); addBox(p.x, p.z, 0.4, 0.4, 0); }
   }
-  // O'Connell Street: rowans on the islands, Oriental planes along the footpaths
+  // O'Connell Street (src/world/ocfacades.js, from the OSM trees): small rowans in groups on the islands, the big
+  // Oriental planes along the footpaths of the Lower street's south end and the Upper street, young trees in front of
+  // Clerys and the GPO (so their fronts read across the street)
   const oct = oconnellTrees();
   for (const p of oct.planes) { spots.push({ ...p, street: true }); addBox(p.x, p.z, 0.4, 0.4, 0); }
-  for (const p of oct.rowans) addBox(p.x, p.z, 0.25, 0.25, 0);
-  plantTrees(scene, oct.rowans.map((p) => ({ x: p.x, y: 0.16, z: p.z, rot: rand() * 6.28, s: 0.95 + rand() * 0.15 })), { rowan: 1 }, rand);
+  for (const p of [...oct.rowans, ...oct.young]) addBox(p.x, p.z, 0.25, 0.25, 0);
+  plantTrees(scene, [...oct.rowans.map((p) => ({ x: p.x, y: 0.16, z: p.z, rot: rand() * 6.28, s: p.s * (0.92 + rand() * 0.16) })),
+    ...oct.young.map((p) => ({ x: p.x, y: KERB_H, z: p.z, rot: rand() * 6.28, s: p.s * (0.92 + rand() * 0.16) }))], { rowan: 1 }, rand);
   // parks get a mix of species; street trees are London planes
-  const item = (p, k) => ({ x: p.x, y: KERB_H, z: p.z, rot: rand() * 6.28, s: p.s * k * (0.9 + rand() * 0.25) });
+  const item = (p, k) => ({ x: p.x, y: KERB_H, z: p.z, rot: rand() * 6.28, s: p.s * k * (0.9 + rand() * 0.25), species: p.species, tint: p.tint });
   plantTrees(scene, spots.filter((p) => !p.street).map((p) => item(p, 0.85)), { plane: 3, lime: 2, chestnut: 3, birch: 2, young: 1 }, rand);
   plantTrees(scene, spots.filter((p) => p.street).map((p) => item(p, 1.05)), { plane: 1 }, rand);
   return spots.length;
 }
 
-export function buildLandmarks(scene) {
+export function buildLandmarks(scene, { start = null } = {}) {
   const S = sites;
+  const deferred = [];
+  let activeDistrict = 0;
+  // Keep collisions and a cheap silhouette in place. Only distant Blender scenery waits;
+  // models reachable near the start still load during the initial preparation.
+  const hero = (site, task, stadium = false) => {
+    if (!LITE || !start || Math.hypot(site.x - start.x, site.z - start.z) < 850) {
+      task(scene).catch((e) => console.warn('landmark load failed', e));
+      return;
+    }
+    const h = stadium ? 23 : 17;
+    const geometry = stadium ? new THREE.CylinderGeometry(1, 1, 1, 24) : new THREE.BoxGeometry(1, 1, 1);
+    const proxy = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: stadium ? 0x929998 : 0x7a7067, roughness: 0.92 }));
+    proxy.scale.set(stadium ? site.w / 2 : site.w, h, stadium ? site.d / 2 : site.d);
+    proxy.position.set(site.x, h / 2, site.z); proxy.rotation.y = site.rot || 0;
+    proxy.name = `${site.name} loading silhouette`;
+    scene.add(proxy);
+    deferred.push({ site, task, proxy });
+  };
   const groups = [
     spire(S.spire), gpo(S.gpo), oconnellBridge(S.oconnellBridge), trinity(S.trinity),
     customHouse(S.customHouse),
     ...oconnellMonument(), fusiliersArch(S.stephensGreen.park),
     smithOBrien(extraSites.smithOBrien), grayMonument(extraSites.gray), larkinMonument(extraSites.larkin),
     fatherMathewMonument(extraSites.fatherMathew), parnellMonument(extraSites.parnell),
-    cityHall(S.cityHall), dublinCastle(extraSites.castle), centralBank(S.centralBank), olympia(extraSites.olympia),
+    cityHall(S.cityHall), centralBank(S.centralBank), olympia(extraSites.olympia),
     clockCorner(extraSites.clockCorner), collegeGreen({ Builder, M, KERB_H }), ...suffolkStreet({ Builder, M, KERB_H }),
     iveaghPlayCentre(extraSites.iveaghPlay),
     merchantsHall(extraSites.merchantsHall), templeBarSquare(extraSites.tbSquare), templeBarDressing(),
@@ -2242,8 +2213,12 @@ export function buildLandmarks(scene) {
   groups.push(...templeBar.groups);
   const meetingHouse = buildMeetingHouse({ Builder, M });
   groups.push(...meetingHouse.groups);
-  // (the market stalls / furled umbrellas, meetingHouse.dynamic, are not added: with them in the scene the ground
-  // around Eustace Street rendered black - see docs/research/temple-bar-v2.md, Status)
+  groups.push(...meetingHouse.dynamic); // the day market / furled umbrellas: kept out of the batch, swapped at dusk
+  // the Grafton quarter's fronts, pubs and landmarks (src/world/graftonsites.js): the same kit, its own atlas pages
+  const grafton = buildFronts(Builder, GQ_SPECS, gqSites, 'grafton quarter', { scale: 0.75 });
+  groups.push(...grafton.groups);
+  const gqDressing = buildGraftonQuarter(scene); // stalls, buskers' gear, café tables, bikes, Phil Lynott
+  console.log(`grafton quarter: dressing ${gqDressing.tris} tris in ${gqDressing.ms} ms; ${GQ_SPECS.length} fronts, atlas ${grafton.atlas}, ${grafton.ms} ms (paint ${grafton.paintMs})`);
   // the DART line (src/world/railway.js): viaduct, street bridges, track, overhead line, stations; joins the batch
   const railway = buildRailway();
   groups.push(railway.group);
@@ -2256,8 +2231,16 @@ export function buildLandmarks(scene) {
   groups.push(...liffey.groups);
   for (const g of groups) scene.add(g);
   fourCourts(); // its colliders and statues (the hero is placed below)
+  // Dublin Castle, the George's Street Arcade and the Stag's Head mosaic (one Blender hero; the castle's stone and brick
+  // are floodlit through setStoneNight). Solid whether or not it loads; the Upper Yard's gates are bollarded (walkers
+  // only), the Palace Street gate is shut, and the precinct walls run along Ship Street and Stephen Street Upper.
+  dublinCastle(scene);
   // Kildare Street / Merrion Street (Blender hero; its colliders and the Shelbourne's torch-bearers queue first)
   placeKildare(scene, { Builder, M });
+  // St Stephen's Green inside the railings (greenpark.js): paths, the lake and its bridge, fountains, bandstand,
+  // memorials, gates, benches, lamps, ducks, people and the jaunting car; its static parts join the landmark batch
+  const green = buildGreen(scene, { Builder, M, statue: addStatue });
+  if (green) for (const g of green.groups) { scene.add(g); groups.push(g); }
   buildStatues(scene); // the statue-kit figures queued by the builders above (loads statues.glb)
   // Parliament House / Bank of Ireland (Blender hero; the old procedural block if it can't load)
   parliamentColliders();
@@ -2277,16 +2260,18 @@ export function buildLandmarks(scene) {
     for (const [u, col, w] of [[-18, 0xd6e2ff, 7], [-6, 0xffd49a, 6], [4, 0xffd49a, 6], [14, 0xffd49a, 6], [10, 0xc9d8ff, 9]]) {
       waterGlowSources.push({ ...at(u, -20), y: WATER_Y + 0.05, color: col, width: w, length: 55 });
     }
-    placeThreeArena(scene, A.front).then((h) => {
-      if (!h) { scene.add(threeArena(A)); return; }
+    hero(A, (target) => placeThreeArena(target, A.front).then((h) => {
+      if (!h) { target.add(threeArena(A)); return; }
       arenaHero = h; h.setNight(nightLevel);
-    });
+    }));
   }
   // Clerys, Parnell Square (the Rotunda, the Ambassador, the Gate, the Garden of Remembrance) and Busáras: one Blender
   // hero, solid whether or not it loads; the stone is floodlit with the rest, the clock and the offices lit at night
   let northHero = null;
   northCityColliders();
   placeNorthCity(scene).then((h) => { if (h) { northHero = h; h.setNight(nightLevel); } });
+  // O'Connell Street's frontages (the Gresham, the Savoy, the Carlton, Eason's and the rest; src/world/ocfacades.js)
+  const ocStreet = buildOConnellStreet(scene);
   // the Four Courts (Blender hero; floodlit through setStoneNight)
   placeParts(scene, 'fourcourts', S.fourCourts, 'Four Courts');
   // St Patrick's Cathedral (Blender hero) and its park dressing
@@ -2304,7 +2289,7 @@ export function buildLandmarks(scene) {
   // Croke Park (Blender hero with a far LOD): its ground-level outline and outlying solids collide whether or not the
   // model loads; after dark the floodlit stand shows in the canal where it runs out from under the Davin Stand
   let crokeHero = null;
-  placeCrokePark(scene, S.crokePark).then((h) => { if (h) { crokeHero = h; h.setNight(nightLevel); } });
+  hero(S.crokePark, (target) => placeCrokePark(target, S.crokePark).then((h) => { if (h) { crokeHero = h; h.setNight(nightLevel); } }), true);
   addPolyline(S.crokePark.outline, true);
   for (const b of S.crokePark.solids) addBox(b.x, b.z, b.w / 2, b.d / 2, b.rot);
   for (const b of [-90, -58, 58, 88]) {
@@ -2314,10 +2299,14 @@ export function buildLandmarks(scene) {
   // Aviva Stadium (Blender hero with a far LOD). The plinth is solid; the lit bowl throws light on the Dodder at night.
   let avivaHero = null;
   addPolyline(S.aviva.outline, true);
-  placeAviva(scene, S.aviva, { lite: LITE }).then((h) => { if (h) { avivaHero = h; h.setNight(nightLevel); } });
+  hero(S.aviva, (target) => placeAviva(target, S.aviva, { lite: LITE }).then((h) => { if (h) { avivaHero = h; h.setNight(nightLevel); } }), true);
   // Criminal Courts of Justice (Blender hero): its outline collides whether or not the model loads
   let ccjHero = null;
   placeCCJ(scene, S.ccj, S.ccj.outline).then((h) => { if (h) { ccjHero = h; h.setNight(nightLevel); } });
+  // Kilmainham: the Gaol and its Courthouse, the Royal Hospital, its gardens and avenues, the Richmond Tower (Blender
+  // heroes; their footprints and the gaol's wall ring collide whether or not the model loads)
+  let kilmainhamHero = null;
+  placeKilmainham(scene, KH).then((h) => { if (h) { kilmainhamHero = h; h.setNight(nightLevel); } });
   // Barrow Street, the Google campus, Boland's Quay and the DART embankment (one Blender hero, lit offices
   // at night): Google Docks' outline, every building box and the embankment are solid whether or not it loads; the
   // lit towers show in the inner basin after dark
@@ -2342,10 +2331,10 @@ export function buildLandmarks(scene) {
   // LOD; the old procedural block and chimney if it can't load)
   let guinnessHero = null;
   for (const s of [S.guinness, extraSites.gsPower, extraSites.gsTower, extraSites.gs_stack_w, extraSites.gs_stack_e, extraSites.gs_stack_cream, ...S.guinness.tankBanks]) addBox(s.x, s.z, s.w / 2, s.d / 2, s.rot);
-  placeGuinness(scene, S.guinness, { lite: LITE }).then((h) => {
-    if (!h) { scene.add(guinness(S.guinness)); return; }
+  hero(S.guinness, (target) => placeGuinness(target, S.guinness, { lite: LITE }).then((h) => {
+    if (!h) { target.add(guinness(S.guinness)); return; }
     guinnessHero = h; h.setNight(nightLevel);
-  });
+  }));
   for (const [lat, lon] of [[53.33524, -6.22516], [53.33605, -6.22571], [53.3369, -6.22622]]) waterGlowSources.push({ ...project(lat, lon), y: WATER_Y + 0.65, color: 0xffe3b8, width: 6, length: 45 });
   for (const g of grounds) {
     const c = Math.cos(g.rot), s = Math.sin(g.rot), hx = g.w / 2, hz = g.d / 2;
@@ -2354,20 +2343,68 @@ export function buildLandmarks(scene) {
     if (g.lawn) { const k = g.lawn, a = hx - k, bz = hz - k; scene.add(grassPolygon([[-a, -bz], [a, -bz], [a, bz], [-a, bz]].map(([lx, lz]) => ({ x: g.x + lx * c + lz * s, z: g.z - lx * s + lz * c })), lawnMat())); }
   }
 
-  // pond in St Stephen's Green
-  const c = S.stephensGreen;
-  const pond = new THREE.Mesh(new THREE.CircleGeometry(1, 40), M.water);
-  pond.rotation.x = -Math.PI / 2; pond.scale.set(20, 9, 1);
-  pond.position.set(c.x + 10, 0.03, c.z - 18);
-  const rim = new THREE.Mesh(new THREE.RingGeometry(1, 1.06, 40), M.granite);
-  rim.rotation.x = -Math.PI / 2; rim.scale.set(20, 9, 1); rim.position.set(c.x + 10, 0.05, c.z - 18);
-  scene.add(pond, rim);
-
   const trees = buildTrees(scene);
+  let lastUpdate = 0;
   // floating place labels were removed from the 3D view (landmarks are on the map instead)
   const labels = new THREE.Group();
   return {
-    groups, labels, trees, park: phoenixPark, towers, pubs, templeBar,
+    groups, labels, trees, park: phoenixPark, towers, pubs, templeBar, green,
+    get pendingDistricts() { return deferred.length + activeDistrict; },
+    async streamDistricts(renderer, camera, getTarget, getDrive, onReady = () => {}) {
+      while (deferred.length) {
+        // Give active input and rendering a chance between models. Read the car position each
+        // time so a turn, teleport or fast drive changes which district comes next.
+        await new Promise((resolve) => {
+          if (window.requestIdleCallback) requestIdleCallback(resolve, { timeout: 800 });
+          else setTimeout(resolve, 100);
+        });
+        const p = getDrive(), lead = Math.min(400, Math.max(0, p.speed) * 15);
+        const px = p.x + Math.sin(p.heading) * lead, pz = p.z + Math.cos(p.heading) * lead;
+        deferred.sort((a, b) => {
+          const score = (d) => Math.hypot(d.site.x - p.x, d.site.z - p.z) + 0.35 * Math.hypot(d.site.x - px, d.site.z - pz);
+          return score(a) - score(b);
+        });
+        const { site, task, proxy } = deferred.shift();
+        activeDistrict = 1;
+        const stage = new THREE.Group();
+        try {
+          const loadAt = performance.now();
+          await task(stage);
+          const loadedAt = performance.now();
+          if (stage.children.length && renderer.compileAsync) {
+            // Compiling a whole district in one call monopolises the main thread while Three
+            // prepares its materials. Submit one drawable per frame, then await the driver
+            // in parallel before swapping the silhouette for the finished model.
+            const drawables = [];
+            stage.traverse((o) => { if ((o.isMesh || o.isLine || o.isPoints || o.isSprite) && o.material) drawables.push(o); });
+            const compiles = [];
+            let worstSubmit = 0;
+            for (const o of drawables) {
+              // One submission just after a rendered frame. An idle callback with a long
+              // timeout can starve on a busy 30 fps device and delay nearby districts.
+              await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
+              const prev = renderer.getRenderTarget();
+              renderer.setRenderTarget(getTarget());
+              const submitAt = performance.now();
+              try { compiles.push(renderer.compileAsync(o, camera, scene)); }
+              finally { renderer.setRenderTarget(prev); }
+              worstSubmit = Math.max(worstSubmit, performance.now() - submitAt);
+            }
+            await Promise.all(compiles);
+            console.log(`district shader submissions: ${site.name}, ${drawables.length} drawables, worst ${Math.round(worstSubmit)} ms`);
+          }
+          const compiledAt = performance.now();
+          if (stage.children.length) {
+            for (const child of [...stage.children]) scene.add(child);
+            scene.remove(proxy);
+            proxy.geometry.dispose(); proxy.material.dispose();
+            onReady();
+            console.log(`district ready: ${site.name}, model ${Math.round(loadedAt - loadAt)} ms, shaders ${Math.round(compiledAt - loadedAt)} ms`);
+          } else console.warn(`district ${site.name}: keeping silhouette after model load failed`);
+        } catch (e) { console.warn(`district ${site.name} failed to load`, e); }
+        activeDistrict = 0;
+      }
+    },
     setLabels(on) { labels.visible = on; },
     // docklands lighting after dark (0 = day, 1 = night)
     setNight(level) {
@@ -2379,20 +2416,26 @@ export function buildLandmarks(scene) {
       if (arenaHero) arenaHero.setNight(level);
       if (avivaHero) avivaHero.setNight(level);
       if (ccjHero) ccjHero.setNight(level);
+      if (kilmainhamHero) kilmainhamHero.setNight(level);
       if (barrowHero) barrowHero.setNight(level);
       if (gcsHero) gcsHero.setNight(level);
       if (guinnessHero) guinnessHero.setNight(level);
       if (northHero) northHero.setNight(level);
+      ocStreet.setNight(level);
       pubs.setNight(level);
       templeBar.setNight(level);
       meetingHouse.setNight(level);
+      grafton.setNight(level);
       towers.setNight(level);
       setKildareNight(level);
       railway.setNight(level);
       setStoneNight(level);
       if (phoenixPark) phoenixPark.setNight(level);
+      if (green) green.setNight(level);
     },
     update(camera) {
+      const now = performance.now() / 1000, dt = Math.min(0.1, now - (lastUpdate || now)); lastUpdate = now;
+      if (green) green.update(dt, now, camera);
       // hide labels that are far away or behind the camera
       for (const sp of labels.children) {
         const d = camera.position.distanceTo(sp.position);

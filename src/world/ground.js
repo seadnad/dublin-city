@@ -10,6 +10,7 @@ import { parkGrassMaterial } from './park.js';
 import { buildStreets, buildMedian, grassPolygon, greenLand, fieldUniforms, KERB_H } from './roads.js';
 import { buildCanals } from './canals.js';
 import bsLayout from '../data/barrowst.json';
+import { GREEN_NAME, greenGates, lakeOutline } from './greenmap.js';
 
 // Quay edges with bollards instead of railings (the Grand Canal Quay promenade and the inner basin's west side,
 // docs/research/barrow-street.md 3.5; the bollards are placed by barrowst.js). They still stop the car.
@@ -69,7 +70,7 @@ export const dockPolys = world.docks.map((p) => ({ name: p.name, poly: p.ids ? i
 function drawLayout() {
   const c = document.createElement('canvas');
   c.width = CW; c.height = CH;
-  const ctx = c.getContext('2d');
+  const ctx = c.getContext('2d', { willReadFrequently: true });
   ctx.lineJoin = 'round'; ctx.lineCap = 'round';
 
   // base: stone paving / block interiors, with some mottling
@@ -348,7 +349,9 @@ export function buildGround(scene) {
   streets = buildStreets(scene, puddles);
   const groundMaterial = streets.asphaltMat;
   group.add(buildMedian(streets));
-  for (const pk of [...parkPolys, ...campusPolys]) group.add(grassPolygon(pk.poly, streets.grassMat));
+  // (St Stephen's Green's lake is cut out of its lawn: the water sits just below the grass, greenpark.js)
+  const lake = lakeOutline();
+  for (const pk of [...parkPolys, ...campusPolys]) group.add(grassPolygon(pk.poly, streets.grassMat, pk.name === GREEN_NAME && lake ? [lake.outer] : []));
   // Phoenix Park's grass has its own shader (mown verges and lawns, meadow, woodland floor)
   for (const gr of world.greens) group.add(greenLand([gr.poly], gr.name === 'Phoenix Park' ? parkGrassMaterial(streets.grassMat) : streets.grassMat));
 
@@ -571,15 +574,29 @@ function buildRailings(polys) {
   const mat = new THREE.MeshStandardMaterial({ map: railingTexture(), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.45, metalness: 0 }); // painted railings
   const pos = [], uv = [], idx = [];
   let base = 0;
-  for (const { poly } of polys) {
-    const ring = [...poly, poly[0]];
-    addPolyline(ring);
+  for (const { name, poly } of polys) {
+    addPolyline([...poly, poly[0]]); // gate openings still stop the car (greenpark.js stands granite bollards in them)
+    // St Stephen's Green: open the railings at its gates (the piers and gates are greenpark.js's)
+    const gates = name === GREEN_NAME ? greenGates() : [];
+    const ring = [], gap = [];
+    poly.forEach((a, i) => {
+      ring.push(a); gap.push(false);
+      const b = poly[(i + 1) % poly.length], d = v2.sub(b, a), L = v2.len(d);
+      const cuts = gates.filter((g) => g.edge === i).map((g) => v2.dot(v2.sub(g, a), d) / L).sort((x, y) => x - y);
+      for (const t of cuts) {
+        const h = 1.9;
+        if (t - h < 0.5 || t + h > L - 0.5) continue;
+        ring.push(v2.lerp(a, b, (t - h) / L)); gap.push(true); // the segment starting here is open
+        ring.push(v2.lerp(a, b, (t + h) / L)); gap.push(false);
+      }
+    });
+    ring.push(poly[0]); gap.push(false);
     let u = 0;
     ring.forEach((p, i) => {
       if (i) u += v2.len(v2.sub(p, ring[i - 1])) / 0.9;
       pos.push(p.x, KERB_H, p.z, p.x, KERB_H + 1.7, p.z);
       uv.push(u, 0, u, 1);
-      if (i && !openQuay(ring[i - 1], p)) { const k = base + i * 2; idx.push(k - 2, k, k - 1, k, k + 1, k - 1); }
+      if (i && !gap[i - 1] && !openQuay(ring[i - 1], p)) { const k = base + i * 2; idx.push(k - 2, k, k - 1, k, k + 1, k - 1); }
     });
     base += ring.length * 2;
   }

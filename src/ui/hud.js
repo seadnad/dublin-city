@@ -45,6 +45,9 @@ const BLURBS = {
   ccj: 'The courts’ glass drum, at the Parkgate end of the Phoenix Park',
   google: 'Google Docks (the old Montevetro), Gordon House and the skybridge, under the DART',
   bolands: 'The 1830s flour mills, a 1916 garrison, under two new towers on the dock',
+  kilmainhamGaol: 'The grim 1796 gaol where the 1916 leaders were held and shot; chained serpents over the door',
+  royalHospital: 'Robinson’s 1680s old soldiers’ hospital (now IMMA): arcaded quadrangle, copper spire, formal gardens',
+  richmondTower: 'Johnston’s Gothic gate at the end of the lime avenue, moved here from the quays in 1846',
   clerys: 'The 1922 department store facing the GPO: meet under Clerys clock',
   rotunda: 'Cassels’ maternity hospital, the Ambassador’s drum and the Gate at the top of O’Connell Street',
   gardenOfRemembrance: 'The sunken garden and cruciform pool, with Oisín Kelly’s Children of Lir',
@@ -55,6 +58,8 @@ const BLURBS = {
   jeanieJohnston: 'Replica of the 1847 famine ship, moored on Custom House Quay',
   millenniumBridge: 'The 1999 steel footbridge from Temple Bar to Ormond Quay',
   ocaseyBridge: 'The 2005 swing footbridge, balanced on two piers in the river',
+  aras: 'The President’s house: its Ionic portico across the lawn from Chesterfield Avenue',
+  zoo: 'Lakes, islands and the African Plains, since 1831, by the Hollow',
 };
 
 export function createHUD({ sites, actions }) {

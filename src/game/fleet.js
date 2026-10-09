@@ -2,6 +2,7 @@
 // Car bodies are bevelled extrusions of a side profile with wheel arches; a painted atlas supplies windows,
 // pillars, lights, grilles and Irish number plates. The instance colour tints only painted areas (atlas alpha).
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { IS_MOBILE } from '../world/textures.js';
 import { LITE } from '../render/quality.js';
 import { createContactShadows } from '../render/contact.js';
@@ -51,15 +52,21 @@ export const TYPES = {
 TYPES.taxi = { ...TYPES.saloon };
 
 const PLATE_TEXT = ['191-D-2847', '12-D-40318', '221-D-9954', '08-KE-1127', '162-D-4410', '232-D-1789', '10-WW-3321', '201-D-6620'];
+// The placeholder/player car and the traffic fleet use the same designs. Keep their immutable GPU assets
+// shared so swapping to the Blender car does not leave a second 1024 px atlas and geometry resident.
+const atlasCache = new WeakMap();
+const bodyCache = new WeakMap();
+let sharedWheelGeometry, sharedRimTexture;
 
 // ---------------- atlas painting ----------------
 // Layout (1024 x 1024, v up): side view v in [0.5,1], plan (top) view v in [0.25,0.5],
 // front (u<0.5) and back (u>0.5) views in v [0,0.25]. Alpha = paint mask (1 = body colour, tinted per instance).
 export function paintAtlas(t) {
+  if (atlasCache.has(t)) return atlasCache.get(t);
   const S = 1024;
   const mk = () => { const cv = document.createElement('canvas'); cv.width = cv.height = S; return cv; };
   const colC = mk(), mskC = mk(), emiC = mk();
-  const C = colC.getContext('2d'), M = mskC.getContext('2d'), E = emiC.getContext('2d');
+  const C = colC.getContext('2d', { willReadFrequently: true }), M = mskC.getContext('2d', { willReadFrequently: true }), E = emiC.getContext('2d');
   C.fillStyle = '#ffffff'; C.fillRect(0, 0, S, S);
   M.fillStyle = '#ffffff'; M.fillRect(0, 0, S, S);
   E.fillStyle = '#000000'; E.fillRect(0, 0, S, S);
@@ -135,11 +142,14 @@ export function paintAtlas(t) {
   map.minFilter = THREE.LinearMipmapLinearFilter; map.magFilter = THREE.LinearFilter; map.needsUpdate = true;
   const emissiveMap = new THREE.CanvasTexture(shrink(emiC, 256)); // lamp masks only need coarse detail
   emissiveMap.colorSpace = THREE.SRGBColorSpace;
-  return { map, emissiveMap };
+  const atlas = { map, emissiveMap };
+  atlasCache.set(t, atlas);
+  return atlas;
 }
 
 // ---------------- body geometry ----------------
 function bodyGeometry(t) {
+  if (bodyCache.has(t)) return bodyCache.get(t);
   const shape = new THREE.Shape();
   const pts = t.top;
   shape.moveTo(pts[0][0], pts[0][1]);
@@ -181,6 +191,7 @@ function bodyGeometry(t) {
     }
   }
   g.computeVertexNormals();
+  bodyCache.set(t, g);
   return g;
 }
 
@@ -204,6 +215,7 @@ function carMaterial(atlas) {
 
 // ---------------- wheels ----------------
 function wheelGeometry() {
+  if (sharedWheelGeometry) return sharedWheelGeometry;
   const g = new THREE.CylinderGeometry(1, 1, 1, 12, 1);
   g.rotateZ(Math.PI / 2);
   const pos = g.attributes.position, uv = g.attributes.uv, nor = g.attributes.normal;
@@ -211,9 +223,11 @@ function wheelGeometry() {
     if (Math.abs(nor.getX(i)) > 0.9) uv.setXY(i, pos.getZ(i) * 0.5 + 0.5, pos.getY(i) * 0.5 + 0.5);
     else uv.setXY(i, 0.02, 0.02); // tread samples the black tyre
   }
+  sharedWheelGeometry = g;
   return g;
 }
 function rimTexture() {
+  if (sharedRimTexture) return sharedRimTexture;
   const c = document.createElement('canvas');
   c.width = c.height = 128;
   const g = c.getContext('2d');
@@ -224,19 +238,25 @@ function rimTexture() {
   g.fillStyle = '#c4c8cc'; g.beginPath(); g.arc(64, 64, 10, 0, 7); g.fill();
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
+  sharedRimTexture = t;
   return t;
 }
 
-// ---------------- Dublin Bus (Enviro400-style double-decker) ----------------
+// ---------------- Dublin Bus (SG-class Wright Gemini 3-inspired double-decker) ----------------
 const BUS = { L: 10.8, W: 2.55, H: 4.35, r: 0.5, wheels: [-2.6, 3.1] };
 const ROUTES = [['16', 'Airport'], ['46A', 'Dún Laoghaire'], ['39A', 'UCD Belfield'], ['145', 'Heuston Stn'], ['C1', 'Adamstown'], ['G2', 'Spencer Dock']];
 // Canvas regions (y down): nearside [0, 0.3), offside [0.3, 0.6), front / back / roof [0.6, 1.0]
 function busAtlas(route) {
-  const S = 2048, c = document.createElement('canvas');
-  c.width = c.height = S;
+  // Paint in 2048-unit design coordinates, directly into the uploaded textures. Painting six
+  // 2048-square pairs and then shrinking them created a large throwaway canvas workload at boot.
+  const S = 2048, size = LITE ? 512 : 1024, glowSize = 512;
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
   const e = document.createElement('canvas');
-  e.width = e.height = S;
+  e.width = e.height = glowSize;
   const g = c.getContext('2d'), eg = e.getContext('2d');
+  g.scale(size / S, size / S);
+  eg.scale(glowSize / S, glowSize / S);
   eg.fillStyle = '#000'; eg.fillRect(0, 0, S, S);
   const { L, H } = BUS;
   const YEL = '#f2c416', NAVY = '#1c2c66', BLUE = '#3f79c2', GLASS = '#151b21';
@@ -263,8 +283,8 @@ function busAtlas(route) {
       if (z > lower[0] && z < lower[1]) g.fillRect(Xw(z) - 6, Y(2.25), 12, Y(1.4) - Y(2.25));
     }
     if (near) {
-      // passenger doors on the kerb side: ahead of the front axle and in the middle
-      for (const [za, zb] of [[3.75, 5.05], [-0.65, 0.65]]) {
+      // SG-class buses have one passenger entrance beside the driver, ahead of the front axle.
+      for (const [za, zb] of [[3.75, 5.05]]) {
         const z0 = Math.min(Xw(za), Xw(zb)), z1 = Math.max(Xw(za), Xw(zb));
         g.fillStyle = '#2b2f33'; g.fillRect(z0, Y(2.45), z1 - z0, Y(0.32) - Y(2.45));
         g.fillStyle = GLASS; g.fillRect(z0 + 8, Y(2.35), z1 - z0 - 16, Y(0.6) - Y(2.35));
@@ -324,12 +344,14 @@ function busAtlas(route) {
     }
   }
   g.fillStyle = '#e4e3de'; g.fillRect(S * 0.66, S * 0.6, S * 0.34, S * 0.4);
-  const map = new THREE.CanvasTexture(shrink(c, LITE ? 512 : 1024)); map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 8;
-  const emissiveMap = new THREE.CanvasTexture(shrink(e, 512)); emissiveMap.colorSpace = THREE.SRGBColorSpace;
+  // Mirror colour swatch in the otherwise plain roof region of the atlas.
+  g.fillStyle = YEL; g.fillRect(S * 0.94, S * 0.78, S * 0.04, S * 0.08);
+  const map = new THREE.CanvasTexture(c); map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 8;
+  const emissiveMap = new THREE.CanvasTexture(e); emissiveMap.colorSpace = THREE.SRGBColorSpace;
   return { map, emissiveMap };
 }
 
-function busGeometry() {
+export function busGeometry() {
   const { L, W, H } = BUS, r = 0.28;
   // cross-section with rounded roof edges, extruded along the length (+z = front)
   const s = new THREE.Shape();
@@ -338,6 +360,11 @@ function busGeometry() {
   const g = new THREE.ExtrudeGeometry(s, { depth: L, bevelEnabled: true, bevelThickness: 0.12, bevelSize: 0.08, bevelSegments: 2, curveSegments: 5 });
   g.translate(0, 0, -L / 2);
   const pos = g.attributes.position, uv = g.attributes.uv;
+  // The SG's two-storey front leans back above the driver instead of ending in a flat slab.
+  for (let i = 0; i < pos.count; i++) {
+    const y = pos.getY(i), z = pos.getZ(i);
+    if (z > L / 2 - 0.15 && y > 1.25) pos.setZ(i, z - 0.38 * Math.min(1, (y - 1.25) / (H - 1.25)));
+  }
   const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3(), n = new THREE.Vector3(), t = new THREE.Vector3();
   for (let i = 0; i < pos.count; i += 3) {
     a.fromBufferAttribute(pos, i); b.fromBufferAttribute(pos, i + 1); c.fromBufferAttribute(pos, i + 2);
@@ -362,7 +389,19 @@ function busGeometry() {
     }
   }
   g.computeVertexNormals();
-  return g;
+  const parts = [g];
+  const solid = (geometry, u, v) => {
+    const nonIndexed = geometry.index ? geometry.toNonIndexed() : geometry;
+    const uv = nonIndexed.attributes.uv;
+    for (let i = 0; i < uv.count; i++) uv.setXY(i, u, v);
+    parts.push(nonIndexed);
+  };
+  for (const side of [-1, 1]) {
+    const mirror = new THREE.BoxGeometry(0.18, 0.21, 0.28);
+    mirror.translate(side * (W / 2 + 0.16), 2.30, L / 2 - 0.55);
+    solid(mirror, 0.96, 0.18);
+  }
+  return mergeGeometries(parts);
 }
 
 // ---------------- fleet ----------------
@@ -388,9 +427,15 @@ export function createFleet(scene, counts) {
   const busMeshes = [];
   if (counts.bus) {
     const geo = busGeometry();
+    // Extra buses reuse the six route atlases and materials; only their transforms cost more.
+    const routeMaterials = [];
     for (let k = 0; k < counts.bus; k++) {
-      const atlas = busAtlas(ROUTES[k % ROUTES.length]);
-      const mat = addReflections(new THREE.MeshStandardMaterial({ map: atlas.map, emissiveMap: atlas.emissiveMap, emissive: 0xffffff, emissiveIntensity: 1, roughness: 0.38, metalness: 0.15 }), 0.8);
+      const route = k % ROUTES.length;
+      if (!routeMaterials[route]) {
+        const atlas = busAtlas(ROUTES[route]);
+        routeMaterials[route] = addReflections(new THREE.MeshStandardMaterial({ map: atlas.map, emissiveMap: atlas.emissiveMap, emissive: 0xffffff, emissiveIntensity: 1, roughness: 0.38, metalness: 0.15 }), 0.8);
+      }
+      const mat = routeMaterials[route];
       const m = new THREE.Mesh(geo, mat);
       m.castShadow = m.receiveShadow = true;
       scene.add(m);
@@ -497,7 +542,8 @@ export function createFleet(scene, counts) {
     wscale.set(h.kind === 'bus' ? 0.32 : 0.23, h.r, h.r);
     let w = h.wheel0;
     for (const zc of h.wheelBase) for (const s of [-1, 1]) {
-      local.set(s * (h.W / 2 - 0.13), h.r, zc).applyQuaternion(q);
+      // The bus shell is wider than the cars: move its existing instanced wheels out to the body edge.
+      local.set(s * (h.W / 2 + (h.kind === 'bus' ? 0.04 : -0.13)), h.r, zc).applyQuaternion(q);
       wq.copy(q);
       if (zc > 0 && steer) wq.multiply(steerQ.setFromAxisAngle(up, steer));
       wq.multiply(wr);

@@ -114,6 +114,18 @@ function wall(P, W, H, u, seed) {
     // courses every 2 bricks (finer lines alias), tone variation, a little soot towards the top
     for (let y = 0.15; y < H; y += 0.15) P.rect(0, y, W, 0.02, 'rgba(25,12,8,0.22)');
     P.mottle(0, 0, W, H, Math.round(W * H * 5), [shade(base, 1.12), shade(base, 0.86), shade(base, 1.05), shade(base, 0.92)], 0.22, 0.07, seed);
+  } else if (u.wall === 'ashlar' || u.wall === 'rock') {
+    // granite blocks: coursed joints, each block its own tone; rock-faced blocks darker at their edges
+    const ch = u.wall === 'rock' ? 0.5 : 0.55, bl = u.wall === 'rock' ? 0.9 : 1.2;
+    for (let y = 0, r = 0; y < H; y += ch, r++) {
+      for (let x = (r % 2) * bl * -0.5; x < W; x += bl) {
+        const t = hash(x * 3.1 + seed, y * 7.7);
+        P.rect(x, y, bl, ch, shade(base, 0.9 + t * 0.2));
+        if (u.wall === 'rock') { P.rect(x, y + ch - 0.08, bl, 0.08, 'rgba(0,0,0,0.18)'); P.rect(x, y, bl, 0.05, 'rgba(255,255,255,0.08)'); }
+        P.rect(x, y, 0.025, ch, 'rgba(30,30,28,0.3)');
+      }
+      P.rect(0, y, W, 0.025, 'rgba(30,30,28,0.3)');
+    }
   } else {
     P.mottle(0, 0, W, H, Math.round(W * H * 1.5), ['rgba(0,0,0,0.05)', 'rgba(255,255,255,0.05)'], 0.6, 0.4, seed);
     P.grad(0, H * 0.6, W, H * 0.4, ['rgba(0,0,0,0)', 'rgba(40,35,25,0.12)']);
@@ -126,6 +138,23 @@ function upperWindow(P, x, y, w, h, u, fl, lit, warm) {
   const glassDay = ['#1d2429', '#34404a', '#232b31'];
   const glassNight = lit ? (warm ? ['#ffcf8a', '#e99a4a'] : ['#d8e2ff', '#9aaad0']) : null;
   if (u.reveal) P.rect(x - 0.14, y - 0.14, w + 0.28, h + 0.28, u.reveal);
+  if (u.win === 'arch' || u.win === 'pair') {
+    // round-headed sash (or two lights under one arch, a colonnette between), the arch in a contrasting brick
+    const r = w / 2, arc = u.archColor || shade(u.color, 0.75);
+    P.path((m, k) => { const [cx, cy] = m(x + r, y + r); _ctx.moveTo(cx - (r + 0.16) * k, cy); _ctx.arc(cx, cy, (r + 0.16) * k, Math.PI, 0); _ctx.closePath(); }, arc);
+    P.rect(x - 0.1, y + h, w + 0.2, 0.1, u.sill || '#c9c2b2');
+    const lights = u.win === 'pair' ? [[x, w / 2 - 0.05], [x + w / 2 + 0.05, w / 2 - 0.05]] : [[x, w]];
+    for (const [lx, lw] of lights) {
+      const lr = lw / 2;
+      P.path((m, k) => { const [cx, cy] = m(lx + lr, y + r); const [, by] = m(0, y + h); _ctx.moveTo(cx - lr * k, by); _ctx.lineTo(cx - lr * k, cy); _ctx.arc(cx, cy, lr * k, Math.PI, 0); _ctx.lineTo(cx + lr * k, by); _ctx.closePath(); }, frame);
+      P.path((m, k) => { const [cx, cy] = m(lx + lr, y + r); const [, by] = m(0, y + h - 0.06); const q = lr - 0.06; _ctx.moveTo(cx - q * k, by); _ctx.lineTo(cx - q * k, cy); _ctx.arc(cx, cy, q * k, Math.PI, 0); _ctx.lineTo(cx + q * k, by); _ctx.closePath(); },
+        '#28313a', lit ? (warm ? '#f2b56c' : '#b9c6ea') : null);
+      P.rect(lx, y + r + (h - r) * 0.45, lw, 0.05, frame, '#000');
+      if (u.win === 'pair') P.rect(lx + lw / 2 - 0.02, y + r, 0.04, h - r, frame, '#000');
+    }
+    if (u.win === 'pair') P.rect(x + w / 2 - 0.07, y + r * 0.6, 0.14, h - r * 0.6, u.sill || '#c9c2b2');
+    return;
+  }
   if (u.win === 'surround') {
     // white stucco aedicule: pilasters, a sill on consoles, a pediment on the first floor, a cornice above the others
     P.rect(x - 0.22, y - 0.1, w + 0.44, h + 0.3, frame);
@@ -143,7 +172,7 @@ function upperWindow(P, x, y, w, h, u, fl, lit, warm) {
   P.grad(x + f, y + f, w - 2 * f, h - 2 * f, glassDay, glassNight);
   if (!lit && !P.glow) P.rect(x + f, y + f, (w - 2 * f) * 0.3, h - 2 * f, 'rgba(230,225,215,0.18)'); // net curtain
   // glazing bars
-  const bars = u.win === 'georgian' ? [3, 4] : u.win === 'plate' ? [1, 1] : [2, 2];
+  const bars = u.win === 'georgian' ? [3, 4] : u.win === 'plate' ? [1, 1] : u.win === 'tall' ? [1, 2] : [2, 2];
   const [cols, rows] = bars;
   for (let c = 1; c < cols; c++) P.rect(x + (w * c) / cols - 0.02, y, 0.04, h, frame, '#000');
   P.rect(x, y + h * 0.5 - 0.03, w, 0.06, frame, '#000');             // meeting rail
@@ -172,18 +201,41 @@ function paintUpper(P, W, H, u, seg, reversed, seed) {
     const nb = Math.max(1, u.bays);
     for (let i = 0; i <= nb; i++) P.rect(Math.min(W - 0.45, Math.max(0, (W * i) / nb - 0.22)), attic, 0.45, H - attic, u.pilaster);
   }
-  // windows
+  // string courses in a contrasting brick or stone (y: metres above the first floor's foot, h tall)
+  for (const bd of u.bands || []) P.rect(0, H - bd.y - bd.h, W, bd.h, bd.color);
+  // quoins: alternating long and short blocks up both ends
+  if (u.quoins) for (let y = attic, i = 0; y < H - 0.1; y += 0.32, i++) for (const x of [0, W]) { const qw = i % 2 ? 0.5 : 0.8; P.rect(x ? W - qw : 0, y + 0.02, qw, 0.28, u.quoins); }
+  // windows (u.floorWin: a window style per floor, first floor first; 'ribbon' is continuous modern glazing)
   const nb = u.bays || 0;
   for (let fl = 0; fl < floors; fl++) {
+    const uf = u.floorWin ? { ...u, win: u.floorWin[fl] ?? u.win } : u;
     const top = attic + (floors - 1 - fl) * fh; // fl 0 = first floor (lowest)
-    const h = fh * (u.win === 'plate' ? 0.62 : fl === 0 ? 0.62 : fl === floors - 1 ? 0.5 : 0.56);
-    const y = top + fh - h - (u.win === 'plate' ? 0.9 : 0.75);
-    for (let i = 0; i < nb; i++) {
-      if (u.textBay === i) continue;
-      const bw = W / nb, w = u.win === 'plate' ? bw * 0.62 : Math.min(1.25, bw * 0.5), x = bw * i + (bw - w) / 2;
-      const r = hash(seed + fl * 7.1, i * 3.3);
-      upperWindow(P, x, y, w, h, u, fl, r < 0.5, r < 0.4);
+    if (uf.win === 'ribbon') {
+      const y = top + 0.5, h = fh - 1.1;
+      P.rect(0.2, y - 0.06, W - 0.4, h + 0.12, u.frame || '#2a2e31');
+      for (let x = 0.3, i = 0; x < W - 0.4; x += 1.25, i++) {
+        const r = hash(seed + fl * 5.3, i * 1.7), lit = r < 0.55;
+        P.grad(x, y, Math.min(1.15, W - 0.4 - x), h, ['#4a5a66', '#27313a'], lit ? ['#e8eeff', '#b8c4dc'] : null);
+      }
+      continue;
     }
+    const tall = uf.win === 'tall' || uf.win === 'arch' || uf.win === 'pair';
+    const h = fh * (uf.win === 'plate' ? 0.62 : tall ? 0.66 : fl === 0 ? 0.62 : fl === floors - 1 ? 0.5 : 0.56) * (u.winH || 1);
+    const y = top + fh - h - (uf.win === 'plate' ? 0.9 : 0.75);
+    for (let i = 0; i < nb; i++) {
+      if (u.textBay === i || (u.skip || []).includes(i)) continue;
+      const bw = W / nb, w = uf.win === 'plate' ? bw * 0.62 : uf.win === 'pair' ? Math.min(1.9, bw * 0.7) : Math.min(1.25 * (u.winW || 1), bw * 0.5), x = bw * i + (bw - w) / 2;
+      const r = hash(seed + fl * 7.1, i * 3.3);
+      upperWindow(P, x, y, w, h, uf, fl, r < 0.5, r < 0.4);
+    }
+  }
+  // a rose window (u, y: its centre, metres above the first floor's foot; r radius)
+  if (u.rose) {
+    const { r } = u.rose, cx = reversed ? W - u.rose.u : u.rose.u, cy = H - u.rose.y;
+    P.path((m, k) => { const [x, y] = m(cx, cy); _ctx.arc(x, y, (r + 0.35) * k, 0, 7); }, shade(u.color, 1.18));
+    P.path((m, k) => { const [x, y] = m(cx, cy); _ctx.arc(x, y, r * k, 0, 7); }, '#2c3440', 'rgba(255,190,120,0.9)');
+    for (let i = 0; i < 8; i++) P.path((m, k) => { const [x, y] = m(cx, cy); _ctx.moveTo(x, y); _ctx.lineTo(x + Math.cos(i * 0.785) * r * k, y + Math.sin(i * 0.785) * r * k); }, shade(u.color, 1.1), '#000', 0.09);
+    P.path((m, k) => { const [x, y] = m(cx, cy); _ctx.arc(x, y, r * 0.3 * k, 0, 7); }, shade(u.color, 1.1));
   }
   if (u.panel) P.text(u.panel.t, reversed ? W - u.panel.u : u.panel.u, attic + fh * 0.45, 0.45, 'serif', u.panel.color, null);
   const Htop = seg.G + floors * fh + attic; // metres above ground at the face's top
@@ -196,7 +248,8 @@ function paintUpper(P, W, H, u, seg, reversed, seed) {
 }
 
 // ground-floor layout: bay kinds with their x ranges (metres, left to right as seen from the street)
-const WEIGHT = { door: 0.8, win: 1, bigwin: 2.4, board: 1, poster: 1, panelwin: 1.1, archwin: 1, archdoor: 0.85, gwin: 1, gdoor: 1.05, club: 1.3 };
+const WEIGHT = { door: 0.8, win: 1, bigwin: 2.4, board: 1, poster: 1, panelwin: 1.1, archwin: 1, archdoor: 0.85, gwin: 1, gdoor: 1.05, club: 1.3,
+  display: 2, glass: 0.9, cafe: 1.6, gothic: 1, rarch: 1, rdoor: 1.1, entrance: 1.6, portal: 1.2 };
 function shopLayout(shop, W) {
   const pil = 0.34, gap = 0.16, bays = shop.bays;
   const total = bays.reduce((a, t) => a + WEIGHT[t], 0), avail = W - 2 * pil - gap * (bays.length - 1);
@@ -209,7 +262,10 @@ function paintShop(P, W, G, s, layout, reversed) {
   const fT = 0.18, fH = fasciaH(G), fB = fT + fH;
   const lit = 'rgba(255,190,110,1)';
   const paintGlow = rgba(s.paint, s.wash ?? 0.14);
-  if (s.georgian) {
+  if (s.rustic) {
+    wall(P, W, G, { wall: s.rustic, color: s.paint }, 7);
+    if (s.text) P.text(s.text, W / 2, 0.45, 0.42, 'serif', s.letter || '#3a3a36', null, { maxW: W * 0.7, spacing: 0.12 });
+  } else if (s.georgian) {
     // Georgian house ground floor (brick, fanlit doors up steps, sash windows) with a club sign board
     P.rect(0, 0, W, G, s.paint, 'rgba(255,170,90,0.04)');
     for (let y = 0.15; y < G; y += 0.15) P.rect(0, y, W, 0.02, 'rgba(25,12,8,0.22)');
@@ -223,8 +279,7 @@ function paintShop(P, W, G, s, layout, reversed) {
     P.rect(0, 0, W, fT, s.trim);                                                        // cornice
     P.rect(0, fT, W, fH, s.fascia, s.letterGlow || 'rgba(255,215,150,0.14)');         // fascia board
     P.rect(0, fB, W, 0.1, s.trim);
-    P.rect(0, fT + 0.04, W, 0.03, s.outline || shade(s.fascia, 1.35));
-    P.rect(0, fB - 0.07, W, 0.03, s.outline || shade(s.fascia, 1.35));
+    if (!s.modern) { P.rect(0, fT + 0.04, W, 0.03, s.outline || shade(s.fascia, 1.35)); P.rect(0, fB - 0.07, W, 0.03, s.outline || shade(s.fascia, 1.35)); }
     const numW = s.nums ? 0.9 : 0.2;
     const size = fH * (s.font === 'script' ? 0.78 : 0.62) * (s.textScale || 1);
     P.text(s.text, W / 2, fT + fH * 0.53, size, s.font, s.letter, 'rgba(255,232,170,1)', { maxW: W - 2 * numW - 0.4, outline: s.outline, spacing: s.font === 'script' ? 0 : 0.05 });
@@ -236,11 +291,11 @@ function paintShop(P, W, G, s, layout, reversed) {
     // end pilasters with capitals (and carved consoles)
     for (const x of [0, W - 0.34]) {
       P.rect(x, fB, 0.34, G - fB, s.trim);
-      P.rect(x + 0.05, fB + 0.1, 0.24, 0.08, s.outline || s.letter);
+      if (!s.modern) P.rect(x + 0.05, fB + 0.1, 0.24, 0.08, s.outline || s.letter);
       if (s.consoles) P.path((m) => { const [a, b] = m(x, fT), [c, d] = m(x + 0.34, fT), [e, f] = m(x + 0.34, fB + 0.4), [g, h] = m(x, fB + 0.6); _ctx.moveTo(a, b); _ctx.lineTo(c, d); _ctx.lineTo(e, f); _ctx.lineTo(g, h); _ctx.closePath(); }, '#0a0a0a');
     }
   }
-  if (s.georgian) {
+  if (s.georgian && !s.rustic) {
     P.rect(W * 0.18, fT + 0.05, W * 0.64, fH + 0.1, s.fascia, 'rgba(255,140,60,0.2)');
     P.rect(W * 0.18, fT + 0.05, W * 0.64, 0.05, s.letter, 'rgba(255,150,70,0.9)');
     P.text(s.text, W / 2, fT + 0.1 + fH * 0.5, fH * 0.55, s.font, s.letter, 'rgba(255,160,80,1)', { maxW: W * 0.6, spacing: 0.04 });
@@ -248,7 +303,7 @@ function paintShop(P, W, G, s, layout, reversed) {
   const top = fB + 0.12, stall = 0.72;
   for (const b of layout) {
     const x = b.x0, w = b.x1 - b.x0;
-    if (b.i > 0 && !s.georgian) P.rect(x - 0.16, fB, 0.16, G - fB, s.trim);          // mullion pilaster
+    if (b.i > 0 && !s.georgian && !s.rustic) P.rect(x - 0.16, fB, 0.16, G - fB, s.trim);          // mullion pilaster
     const glass = s.glass || (s.frosted ? ['#8d8a7e', '#6d6a60'] : ['#3a2418', '#1c120c']);
     const glow = ['rgba(255,200,120,1)', 'rgba(230,140,60,1)'];
     const frame = s.whiteFrames ? '#f2efe6' : shade(s.paint, 0.75);
@@ -323,6 +378,71 @@ function paintShop(P, W, G, s, layout, reversed) {
         P.rect(x + 0.25, top + 1.3, w - 0.5, G - top - 1.3, '#0c0c0c', 'rgba(255,130,60,0.3)');
         break;
       }
+      case 'display': case 'cafe': case 'glass': {
+        // modern plate glass: a slim frame, the goods (or café tables) lit behind it
+        const f = s.frame || shade(s.paint, 0.7), y0 = top, h = G - top - (b.t === 'glass' ? 0 : 0.35);
+        P.rect(x, y0, w, h, f);
+        const ins = b.t === 'cafe' ? ['#5a3a24', '#2e1d12'] : ['#50565a', '#2a2e31'];
+        const out = b.t === 'cafe' ? ['rgba(255,196,120,1)', 'rgba(230,150,80,1)'] : ['rgba(255,244,222,1)', 'rgba(240,228,205,1)'];
+        P.grad(x + 0.05, y0 + 0.05, w - 0.1, h - 0.1, ins, out);
+        if (!P.glow) P.rect(x + 0.05, y0 + 0.05, w - 0.1, h * 0.35, 'rgba(210,225,235,0.16)');   // sky in the glass
+        if (b.t === 'display') {
+          // goods: mannequins, or shelves of stock, in the shop's colours
+          const cols = s.goods || ['#c23b4a', '#e7ddc8', '#2d3e5c', '#d9a640'];
+          const n = Math.max(2, Math.round(w / 0.7));
+          for (let i = 0; i < n; i++) {
+            const gx = x + 0.2 + ((w - 0.4) * (i + 0.5)) / n, c = cols[i % cols.length];
+            if (s.shelves) { for (let r = 0; r < 3; r++) P.rect(gx - 0.2, y0 + 0.6 + r * 0.55, 0.4, 0.3, cols[(i + r) % cols.length]); }
+            else { P.rect(gx - 0.14, G - 1.95, 0.28, 1.05, c); P.path((m, k) => { const [cx, cy] = m(gx, G - 2.08); _ctx.arc(cx, cy, 0.11 * k, 0, 7); }, '#e8e2d8'); }
+          }
+          P.rect(x + 0.05, G - 0.8, w - 0.1, 0.45, shade(f, 1.2));
+        } else if (b.t === 'cafe') {
+          for (let i = 0; i < Math.max(1, Math.round(w / 1.1)); i++) {
+            const tx = x + 0.55 + i * 1.1;
+            if (tx > x + w - 0.3) break;
+            P.rect(tx - 0.3, G - 1.2, 0.6, 0.05, '#e8e0d0'); P.rect(tx - 0.03, G - 1.15, 0.06, 0.7, '#222');
+            P.rect(tx - 0.5, G - 1.1, 0.12, 0.65, '#3a2a1c'); P.rect(tx + 0.38, G - 1.1, 0.12, 0.65, '#3a2a1c');
+          }
+          P.text(s.cafeText || 'CAFÉ', x + w / 2, y0 + 0.45, 0.28, 'script', '#f3ead8', 'rgba(255,240,210,1)', { maxW: w - 0.3 });
+        } else {
+          P.rect(x + w / 2 - 0.02, y0, 0.04, h, f, '#000');
+          P.rect(x + 0.15, y0 + h * 0.5, w - 0.3, 0.05, '#b8b8b8');
+        }
+        if (b.t !== 'glass') P.rect(x, G - 0.35, w, 0.35, s.stall || shade(s.paint, 0.8));
+        break;
+      }
+      case 'gothic': {
+        // a pointed arch on stone columns, the timber doors under it (the Gaiety's arcade)
+        const cx = x + w / 2, r = w / 2, spring = top + r * 0.9, stone = s.stone || '#d8d0bc';
+        const arch = (q, y1) => (m) => { const [a, bb] = m(x + q, G), [c, d] = m(x + q, spring), [e, g] = m(cx, y1), [h2, i2] = m(x + w - q, spring), [j, l] = m(x + w - q, G); _ctx.moveTo(a, bb); _ctx.lineTo(c, d); _ctx.quadraticCurveTo(c, g, e, g); _ctx.quadraticCurveTo(h2, g, h2, i2); _ctx.lineTo(j, l); _ctx.closePath(); };
+        P.path(arch(0, top), stone);
+        P.path(arch(0.2, top + 0.25), '#2a1712', 'rgba(255,190,110,0.8)');
+        P.rect(x + 0.3, spring + 0.2, w - 0.6, G - spring - 0.2, s.door || '#4a2418', 'rgba(255,170,90,0.12)');
+        for (const t of [0.3, 0.62]) P.grad(x + 0.45, spring + 0.3 + (G - spring) * t * 0.7, w - 0.9, (G - spring) * 0.22, ['#3a2a20', '#1c140e'], ['rgba(255,200,130,1)', 'rgba(230,150,80,1)']);
+        P.rect(cx - 0.02, spring + 0.2, 0.04, G - spring - 0.2, '#1a0e0a');
+        for (const px of [x, x + w - 0.3]) P.rect(px, spring - 0.1, 0.3, G - spring + 0.1, stone);
+        break;
+      }
+      case 'rarch': case 'rdoor': case 'entrance': case 'portal': {
+        // round-arched openings in a stone (or brick) ground floor: windows, a fanlit door, a big lit entrance
+        const door = b.t !== 'rarch', ww = b.t === 'rarch' ? Math.min(w * 0.62, 1.5) : b.t === 'rdoor' ? Math.min(w * 0.6, 1.5) : w * 0.78;
+        const wx = x + (w - ww) / 2, r = ww / 2, yb = door ? G : G - 0.9, cy = Math.max(top + r + 0.1, G - 3.6 - (b.t === 'entrance' || b.t === 'portal' ? 0.6 : 0));
+        const rim = s.stone || shade(s.paint, 1.2);
+        const archP = (rr, fill, glowC) => P.path((m, k) => { const [cx, c2] = m(wx + r, cy); _ctx.moveTo(cx - rr * k, oyOf(m, yb)); _ctx.arc(cx, c2, rr * k, Math.PI, 0); _ctx.lineTo(cx + rr * k, oyOf(m, yb)); _ctx.closePath(); }, fill, glowC);
+        archP(r + 0.2, rim);
+        if (b.t === 'portal') archP(r + 0.1, shade(rim, 0.85));
+        const inner = b.t === 'entrance' ? '#5a3e28' : door ? '#222224' : '#2c3640';
+        const innerGlow = b.t === 'entrance' ? 'rgba(255,210,140,1)' : door ? null : lit;
+        archP(r, inner, innerGlow);
+        if (!door) { P.rect(wx + r - 0.02, cy - r, 0.04, yb - cy + r, '#e8e4da', '#000'); for (let yy = cy; yy < yb; yy += 0.45) P.rect(wx, yy, ww, 0.03, '#e8e4da', '#000'); }
+        if (b.t === 'rdoor' || b.t === 'portal') {
+          P.path((m, k) => { const [cx, c2] = m(wx + r, cy); _ctx.arc(cx, c2, (r - 0.05) * k, Math.PI, 0); _ctx.closePath(); }, '#3a4450', 'rgba(255,200,130,0.9)'); // fanlight
+          P.rect(wx + 0.08, cy + 0.08, ww - 0.16, yb - cy - 0.08, s.door || '#2a2a2c');
+          P.rect(wx + r - 0.02, cy + 0.08, 0.04, yb - cy - 0.08, shade(s.door || '#2a2a2c', 0.6));
+        }
+        if (b.t === 'entrance' && s.entranceText) P.text(s.entranceText, wx + r, cy - r - 0.35, 0.34, 'serif', s.letter || '#f3ead8', 'rgba(255,230,180,1)', { maxW: ww + 0.4 });
+        break;
+      }
       default: break;
     }
   }
@@ -342,8 +462,9 @@ const oyOf = (m, y) => m(0, y)[1];
 function paintAwning(P, style, text) {
   const W = 3, H = 1.6;
   if (style === 'stripes') for (let i = 0; i < 12; i++) P.rect((W * i) / 12, 0, W / 12, H, i % 2 ? '#f4efe6' : '#a3141c', i % 2 ? 'rgba(255,220,180,0.1)' : 'rgba(200,40,40,0.1)');
-  else P.rect(0, 0, W, H, style === 'green' ? '#1f5a3a' : '#141414', 'rgba(255,200,140,0.06)');
-  P.rect(0, H - 0.34, W, 0.34, style === 'stripes' ? '#a3141c' : style === 'green' ? '#174a2f' : '#0e0e0e');
+  const col = style[0] === '#' ? style : style === 'green' ? '#1f5a3a' : '#141414';
+  if (style !== 'stripes') P.rect(0, 0, W, H, col, 'rgba(255,200,140,0.06)');
+  P.rect(0, H - 0.34, W, 0.34, style === 'stripes' ? '#a3141c' : shade(col, 0.82));
   if (text) P.text(text, W / 2, H - 0.17, 0.27, 'script', '#f3efe6', 'rgba(255,240,210,0.6)', { maxW: W - 0.3 });
 }
 
@@ -354,6 +475,11 @@ export function quad(out, bl, br, tr, tl, r) {
   const n = e1.cross(e2).normalize();
   const P = [bl, br, tr, bl, tr, tl], U = [[r.u0, r.v0], [r.u1, r.v0], [r.u1, r.v1], [r.u0, r.v0], [r.u1, r.v1], [r.u0, r.v1]];
   for (let i = 0; i < 6; i++) { out.p.push(...P[i]); out.n.push(n.x, n.y, n.z); out.uv.push(...U[i]); }
+}
+function tri(out, a, b, c, r) {
+  const e1 = new THREE.Vector3(...b).sub(new THREE.Vector3(...a)), e2 = new THREE.Vector3(...c).sub(new THREE.Vector3(...a));
+  const n = e1.cross(e2).normalize();
+  for (const [p, u] of [[a, [r.u0, r.v0]], [b, [r.u1, r.v0]], [c, [(r.u0 + r.u1) / 2, r.v1]]]) { out.p.push(...p); out.n.push(n.x, n.y, n.z); out.uv.push(...u); }
 }
 // a box (centre x, y0 bottom, z; size sx, sy, sz) with every face on one patch
 export function boxPatch(out, x, y0, z, sx, sy, sz, r) {
@@ -390,10 +516,47 @@ export function toGeometry(out) {
 }
 
 // ---------- the kit ----------
-export function buildPubs(Builder) {
-  const t0 = performance.now();
+// Rough atlas area (px) a spec needs, for splitting a long list of fronts over several atlas pages
+function specArea(spec, scale = 1) {
+  let a = 0;
+  const pp = (k) => (k === 'patch' ? PPM[k] : PPM[k] * scale) ** 2;
+  for (const seg of spec.front) {
+    const H = seg.G + seg.floors * seg.fh + (seg.attic ?? 0.8);
+    a += seg.w * seg.G * pp('shop') + seg.w * (H - seg.G) * pp('upper');
+    if (!spec.terrace) a += (spec.d * H + seg.w * H) * pp('plain');
+    for (const g of seg.gables || []) a += g.w * g.h * pp('upper');
+  }
+  if (spec.side) { const s0 = spec.front[0]; a += spec.d * (s0.G * pp('shop') + s0.floors * s0.fh * pp('upper')); }
+  for (const b of spec.blades || []) a += b.w * b.h * pp('shop');
+  if (spec.canopy) a += (spec.canopy.u1 - spec.canopy.u0) * 1.6 * pp('shop');
+  return a * 1.25 + 4000; // packing waste
+}
+
+// The pubs (src/world/pubsites.js) on one atlas page
+export function buildPubs(Builder) { return buildFronts(Builder, PUB_SPECS, pubSites, 'pubs'); }
+
+// Any list of fronts: split over as many atlas pages (one material each) as they need
+// scale: texel density of the faces relative to the pubs (patches stay as they are)
+export function buildFronts(Builder, specs, sites, name = 'fronts', { scale = 1 } = {}) {
+  const t0 = performance.now(), cap = ATLAS * ATLAS * 0.9, pages = [];
+  let cur = [], area = 0;
+  for (const s of specs) {
+    const a = specArea(s, scale);
+    if (cur.length && area + a > cap) { pages.push(cur); cur = []; area = 0; }
+    cur.push(s); area += a;
+  }
+  if (cur.length) pages.push(cur);
+  const built = pages.map((p, i) => buildPage(Builder, p, sites, pages.length > 1 ? `${name} ${i + 1}` : name, scale));
+  return {
+    groups: built.flatMap((b) => b.groups), materials: built.map((b) => b.material), material: built[0] && built[0].material,
+    ms: Math.round(performance.now() - t0), paintMs: built.reduce((s, b) => s + b.paintMs, 0), atlas: built.map((b) => b.atlas).join(' + '),
+    setNight(level) { for (const b of built) b.setNight(level); },
+  };
+}
+
+function buildPage(Builder, specs, sites, name, scale = 1) {
   const jobs = [];
-  const job = (kind, wM, hM, paint) => { const k = PPM[kind]; const j = { k, w: Math.max(4, Math.ceil(wM * k)), h: Math.max(4, Math.ceil(hM * k)), paint }; jobs.push(j); return j; };
+  const job = (kind, wM, hM, paint) => { const k = kind === 'patch' ? PPM[kind] : PPM[kind] * scale; const j = { k, w: Math.max(4, Math.ceil(wM * k)), h: Math.max(4, Math.ceil(hM * k)), paint }; jobs.push(j); return j; };
   // shared colour patches (solid colours for cornices, iron, glass, foliage...)
   const patches = new Map();
   const patch = (day, night = null, draw = null) => {
@@ -410,9 +573,17 @@ export function buildPubs(Builder) {
     for (let i = 0; i < 16; i++) P.rect((i % 4) * 0.125, Math.floor(i / 4) * 0.125, 0.125, 0.125, ['#d63a6a', '#e8547e', '#b8244c', '#4f8c34', '#f3eef2', '#e04040', '#d63a6a', '#c8306a'][(i * 5) % 8]);
   });
   const iron = patch('#141414');
+  const brass = patch('#b08a3c', '#3a2a10');
   const lampGlass = patch('#f4e7c4', '#ffd79a');
   const blueGlass = patch('#3050b8', '#6a8aff');
+  const canopyGlass = patch('#b9c7cc', '#ffe8c0');
+  const slate = patch('#4a4f55');
   const wood = patch('#6b4a2a', null, (P) => { P.rect(0, 0, 0.5, 0.5, '#6b4a2a'); for (let i = 0; i < 5; i++) P.rect(0, i * 0.1 + 0.02, 0.5, 0.015, '#3b2614'); P.rect(0, 0.12, 0.5, 0.03, '#2a2a2a'); P.rect(0, 0.36, 0.5, 0.03, '#2a2a2a'); });
+  const clockFace = patch('#f2eee2', '#fff2d0', (P) => {
+    P.rect(0, 0, 0.5, 0.5, '#1f3a2a'); P.path((m, k) => { const [x, y] = m(0.25, 0.25); _ctx.arc(x, y, 0.22 * k, 0, 7); }, '#f2eee2', '#fff2d0');
+    for (let i = 0; i < 12; i++) P.path((m, k) => { const [x, y] = m(0.25, 0.25); _ctx.moveTo(x + Math.cos(i * 0.5236) * 0.18 * k, y + Math.sin(i * 0.5236) * 0.18 * k); _ctx.lineTo(x + Math.cos(i * 0.5236) * 0.21 * k, y + Math.sin(i * 0.5236) * 0.21 * k); }, '#111', '#000', 0.015);
+    P.path((m, k) => { const [x, y] = m(0.25, 0.25); _ctx.moveTo(x, y); _ctx.lineTo(x, y - 0.15 * k); _ctx.moveTo(x, y); _ctx.lineTo(x + 0.1 * k, y + 0.03 * k); }, '#111', '#000', 0.02);
+  });
   const roof = patch('#3b3e41');
   const awningJobs = {};
   const awningPatch = (style, text) => {
@@ -421,10 +592,10 @@ export function buildPubs(Builder) {
     return awningJobs[key];
   };
 
-  // per pub: face jobs and the geometry that uses them (uv rects resolved after packing)
+  // per front: face jobs and the geometry that uses them (uv rects resolved after packing)
   const pubs = [];
-  for (const spec of PUB_SPECS) {
-    const site = pubSites[spec.key], cs = site.cornerSide;
+  for (const spec of specs) {
+    const site = sites[spec.key], cs = site.cornerSide;
     const revFront = cs === 1, revSide = cs === -1;
     const segs = revFront ? [...spec.front].reverse() : spec.front;
     const pub = { spec, site, faces: [] };
@@ -436,11 +607,15 @@ export function buildPubs(Builder) {
       // painting uses the layout in viewer order; bays keep their spec index for awnings
       const shopJ = job('shop', seg.w, seg.G, (P) => paintShop(P, seg.w, seg.G, seg.shop, layout, revFront));
       const upJ = job('upper', seg.w, H - seg.G, (P) => paintUpper(P, seg.w, H - seg.G, seg.upper, seg, revFront, si * 13 + spec.w));
-      const plainJ = job('plain', spec.d, H, (P) => { wall(P, spec.d, H, { ...seg.upper, wall: seg.upper.wall === 'render' ? 'render' : 'brick', color: shade(seg.upper.color, 0.92) }, si); });
-      const backJ = job('plain', seg.w, H, (P) => { wall(P, seg.w, H, { ...seg.upper, color: shade(seg.upper.color, 0.9) }, si + 5); });
-      pub.faces.push({ seg, x0: x, x1: x + seg.w, H, layout, shopJ, upJ, plainJ, backJ, isCorner: cs !== 0 && (revFront ? si === segs.length - 1 : si === 0) });
+      // party walls and backs: painted, or (terraces, whose neighbours hide them) one flat patch of the wall colour
+      const plainCol = shade(seg.upper.color, 0.9);
+      const plainJ = spec.terrace ? patch(plainCol) : job('plain', spec.d, H, (P) => { wall(P, spec.d, H, { ...seg.upper, wall: seg.upper.wall === 'render' ? 'render' : seg.upper.wall === 'ashlar' || seg.upper.wall === 'rock' ? 'ashlar' : 'brick', color: shade(seg.upper.color, 0.92) }, si); });
+      const backJ = spec.terrace ? plainJ : job('plain', seg.w, H, (P) => { wall(P, seg.w, H, { ...seg.upper, color: plainCol }, si + 5); });
+      const gables = (seg.gables || []).map((g) => ({ g, j: job('upper', g.w, g.h, (P) => paintGable(P, g, seg.upper)) }));
+      pub.faces.push({ seg, x0: x, x1: x + seg.w, H, layout, shopJ, upJ, plainJ, backJ, gables, isCorner: cs !== 0 && (revFront ? si === segs.length - 1 : si === 0) });
       // register the solid-colour patches and blinds the geometry below will sample (all jobs exist before packing)
       patch(seg.shop.trim); patch(seg.upper.cornice || shade(seg.upper.parapet || seg.upper.color, 1.2)); patch(seg.upper.parapet || seg.upper.color);
+      patch(seg.upper.color);
       if (seg.shop.awnings) awningPatch(seg.shop.awning || 'stripes', seg.shop.awningText);
       x += seg.w;
     });
@@ -449,8 +624,18 @@ export function buildPubs(Builder) {
       P.rect(0, 0, bl.w, bl.h, bl.bg, bl.neon ? 'rgba(0,0,0,1)' : bl.lit ? 'rgba(255,230,190,0.55)' : 'rgba(255,200,130,0.12)');
       P.rect(0.03, 0.03, bl.w - 0.06, 0.03, bl.color, bl.neon ? bl.color : null);
       P.rect(0.03, bl.h - 0.06, bl.w - 0.06, 0.03, bl.color, bl.neon ? bl.color : null);
-      lines.forEach((l, i) => P.text(l, bl.w / 2, (bl.h * (i + 0.6)) / (lines.length + 0.2), (bl.h / (lines.length + 0.4)) * 0.78, bl.neon ? 'sans' : 'serif', bl.color, bl.neon ? bl.color : bl.lit ? shade(bl.color, 0.6) : 'rgba(255,225,160,0.8)', { maxW: bl.w - 0.12 }));
+      lines.forEach((l, i) => P.text(l, bl.w / 2, (bl.h * (i + 0.6)) / (lines.length + 0.2), (bl.h / (lines.length + 0.4)) * 0.78, bl.font || (bl.neon ? 'sans' : 'serif'), bl.color, bl.neon ? bl.color : bl.lit ? shade(bl.color, 0.6) : 'rgba(255,225,160,0.8)', { maxW: bl.w - 0.12 }));
     }) }));
+    if (spec.canopy) {
+      const c = spec.canopy, cw = c.u1 - c.u0;
+      pub.canopyJ = job('shop', cw, 1.6, (P) => {
+        // etched glass panels in an iron frame, the name in big letters across them
+        P.rect(0, 0, cw, 1.6, '#c9d3d5', 'rgba(255,236,200,0.5)');
+        for (let x = 0; x <= cw; x += cw / Math.max(1, Math.round(cw / 1.3))) P.rect(Math.min(cw - 0.06, x), 0, 0.06, 1.6, '#3a3f44', '#000');
+        P.rect(0, 0, cw, 0.08, '#3a3f44', '#000'); P.rect(0, 1.52, cw, 0.08, '#3a3f44', '#000');
+        P.text(c.text, cw / 2, 0.82, 1.05, 'serif', c.color || '#f4f1ea', 'rgba(255,250,235,1)', { maxW: cw * 0.8, spacing: 0.35, outline: '#4a4a4a' });
+      });
+    }
     if (spec.side) { patch(spec.side.shop.trim); if (spec.side.shop.awnings) awningPatch(spec.side.shop.awning || 'stripes', spec.side.shop.awningText); }
     if (spec.side && cs) {
       const cseg = pub.faces.find((f) => f.isCorner).seg, D = spec.d;
@@ -467,7 +652,7 @@ export function buildPubs(Builder) {
 
   // pack and paint both atlases
   const used = pack(jobs);
-  if (used > ATLAS) console.warn(`pub atlas overflow: ${used} px > ${ATLAS}`);
+  if (used > ATLAS) console.warn(`${name} atlas overflow: ${used} px > ${ATLAS}`);
   const H = Math.min(ATLAS, 2 ** Math.ceil(Math.log2(Math.max(64, used))));
   const colour = document.createElement('canvas'), glowC = document.createElement('canvas');
   colour.width = ATLAS; colour.height = H; glowC.width = ATLAS * GLOW; glowC.height = H * GLOW;
@@ -497,7 +682,7 @@ export function buildPubs(Builder) {
     return t;
   };
   const mat = new THREE.MeshStandardMaterial({ map: tex(colour, true), emissive: 0xffffff, emissiveMap: tex(glowC, true), emissiveIntensity: 0.04, roughness: 0.72 });
-  mat.name = 'pubs';
+  mat.name = name;
   // the baked street-lamp pools light the fronts after dark, as they do the filler facades (one texture tap)
   mat.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, lampUniforms);
@@ -509,6 +694,8 @@ export function buildPubs(Builder) {
       .replace('#include <aomap_fragment>', `#include <aomap_fragment>
         reflectedLight.directDiffuse += diffuseColor.rgb * lampLight(vPubW.xz + vPubN.xz * 1.8) * exp(-max(vPubW.y - 2.5, 0.0) / 4.5) * 2.0 * (1.0 - abs(vPubN.y));`);
   };
+  // every page compiles to the same program (same defines and chunks)
+  mat.customProgramCacheKey = () => 'dublin-fronts';
 
   // build the geometry
   const groups = [];
@@ -521,20 +708,41 @@ export function buildPubs(Builder) {
       quad(body, [x0, G, zF], [x1, G, zF], [x1, H, zF], [x0, H, zF], uv(f.upJ));
       quad(body, [x0, 0, fz], [x1, 0, fz], [x1, G, fz], [x0, G, fz], uv(f.shopJ));
       quad(body, [x1, 0, -zF], [x0, 0, -zF], [x0, H, -zF], [x1, H, -zF], uv(f.backJ));
-      quad(body, [x0, H, zF], [x1, H, zF], [x1, H, -zF], [x0, H, -zF], uv(roof));
+      if (!seg.roof) quad(body, [x0, H, zF], [x1, H, zF], [x1, H, -zF], [x0, H, -zF], uv(roof));
       // ends: the corner face is painted; other ends are plain party walls
       const cornerEnd = f.isCorner && pub.side ? cs : 0;
       if (cornerEnd !== -1) quad(body, [x0, 0, -zF], [x0, 0, zF], [x0, H, zF], [x0, H, -zF], uv(f.plainJ));
       if (cornerEnd !== 1) quad(body, [x1, 0, zF], [x1, 0, -zF], [x1, H, -zF], [x1, H, zF], uv(f.plainJ));
       // fascia cornice, shop pilasters and a parapet coping for relief
       const trim = patch(seg.shop.trim), fT = G - 0.18, fH = fasciaH(G);
-      if (!seg.shop.georgian) {
+      if (!seg.shop.georgian && !seg.shop.rustic && !seg.shop.flat) {
         boxPatch(body, (x0 + x1) / 2, fT - 0.02, zF + 0.2, x1 - x0 + 0.1, 0.22, 0.36, uv(trim));
         boxPatch(body, (x0 + x1) / 2, G - 0.18 - fH - 0.12, zF + 0.1, x1 - x0, 0.1, 0.16, uv(trim));
         for (const b of [x0 + 0.17, x1 - 0.17]) boxPatch(body, b, 0, zF + 0.1, 0.36, G - 0.18 - fH, 0.18, uv(trim));
       }
+      if (seg.shop.rustic) boxPatch(body, (x0 + x1) / 2, G - 0.05, zF + 0.12, x1 - x0, 0.25, 0.3, uv(patch(seg.upper.cornice || shade(seg.upper.color, 1.15))));
       boxPatch(body, (x0 + x1) / 2, H - (seg.attic ?? 0.8) + 0.02, zF + 0.1, x1 - x0, 0.16, 0.2, uv(patch(seg.upper.cornice || shade(seg.upper.parapet || seg.upper.color, 1.2))));
-      boxPatch(body, (x0 + x1) / 2, H, 0, x1 - x0 + 0.1, 0.12, D + 0.1, uv(patch(seg.upper.parapet || seg.upper.color)));
+      if (!seg.roof) boxPatch(body, (x0 + x1) / 2, H, 0, x1 - x0 + 0.1, 0.12, D + 0.1, uv(patch(seg.upper.parapet || seg.upper.color)));
+      // a slate mansard behind the parapet: its front slope, the flat top and the back and ends
+      if (seg.roof) {
+        const r = seg.roof, zb = -zF, z1 = zF - (r.set ?? 0.3), z2 = z1 - r.h * 0.8, Hr = H + r.h, sl = uv(slate);
+        quad(body, [x0, H, zF], [x1, H, zF], [x1, H, z1], [x0, H, z1], uv(patch(seg.upper.parapet || seg.upper.color)));
+        quad(body, [x0, H, z1], [x1, H, z1], [x1, Hr, z2], [x0, Hr, z2], sl);
+        quad(body, [x0, Hr, z2], [x1, Hr, z2], [x1, Hr, zb], [x0, Hr, zb], sl);
+        quad(body, [x1, H, zb], [x0, H, zb], [x0, Hr, zb], [x1, Hr, zb], sl);
+        quad(body, [x0, H, zb], [x0, H, z1], [x0, Hr, z2], [x0, Hr, zb], sl);
+        quad(body, [x1, H, z1], [x1, H, zb], [x1, Hr, zb], [x1, Hr, z2], sl);
+      }
+      // gables standing up from the eaves (dormers, the Victorian fronts' stepped and pointed gables)
+      for (const { g, j } of f.gables) {
+        const gx = cs === 1 ? x1 - g.u : x0 + g.u, hw = g.w / 2, y0 = H - (g.drop ?? 0), z = zF + 0.02;
+        tri(body, [gx - hw, y0, z], [gx + hw, y0, z], [gx, y0 + g.h, z], uv(j));
+        // its little roof running back into the mansard
+        const back = z - (g.back ?? 3), sl = uv(slate);
+        quad(body, [gx - hw, y0, z], [gx, y0 + g.h, z], [gx, y0 + g.h, back], [gx - hw, y0, back], sl);
+        quad(body, [gx, y0 + g.h, z], [gx + hw, y0, z], [gx + hw, y0, back], [gx, y0 + g.h, back], sl);
+        boxPatch(bits, gx, y0 + g.h - 0.1, z + 0.1, 0.18, 0.7, 0.18, uv(patch(seg.upper.cornice || shade(seg.upper.color, 1.2)))); // finial
+      }
       // awnings over chosen bays
       const aw = seg.shop.awnings || [];
       for (const b of f.layout) {
@@ -550,8 +758,10 @@ export function buildPubs(Builder) {
       quad(body, [x, G, zA], [x, G, zB], [x, H, zB], [x, H, zA], uv(sd.upJ));
       quad(body, [xo, 0, zA], [xo, 0, zB], [xo, G, zB], [xo, G, zA], uv(sd.shopJ));
       const trim = patch(sd.seg.shop.trim), fH = fasciaH(G);
-      boxPatch(body, x + cs * 0.2, G - 0.2, 0, 0.36, 0.22, D, uv(trim));
-      for (const z of [zA - Math.sign(zA) * 0.17, zB - Math.sign(zB) * 0.17]) boxPatch(body, x + cs * 0.1, 0, z, 0.18, G - 0.18 - fH, 0.36, uv(trim));
+      if (!sd.seg.shop.rustic && !sd.seg.shop.georgian) {
+        boxPatch(body, x + cs * 0.2, G - 0.2, 0, 0.36, 0.22, D, uv(trim));
+        for (const z of [zA - Math.sign(zA) * 0.17, zB - Math.sign(zB) * 0.17]) boxPatch(body, x + cs * 0.1, 0, z, 0.18, G - 0.18 - fH, 0.36, uv(trim));
+      }
       const aw = sd.seg.shop.awnings || [];
       for (const b of sd.layout) {
         if (!aw.includes(specIndex(sd.seg.shop, b))) continue;
@@ -585,7 +795,16 @@ export function buildPubs(Builder) {
     if (Lt) {
       const glass = uv(Lt.blue ? blueGlass : lampGlass);
       for (const face of ['front', 'side']) for (const u of Lt[face] || []) {
-        const p = at(face, u, 0.5), w = at(face, u, 0.02), y = G0 + Lt.y;
+        const y = G0 + Lt.y;
+        if (Lt.arm) {
+          // a brass arm reaching out of the wall with a globe in its hand (Neary's)
+          const w = at(face, u, 0.05), p = at(face, u, 0.55);
+          boxPatch(bits, (p.x + w.x) / 2, y - 0.25, (p.z + w.z) / 2, Math.abs(p.x - w.x) + 0.1, 0.1, Math.abs(p.z - w.z) + 0.1, uv(brass));
+          boxPatch(bits, p.x, y - 0.3, p.z, 0.16, 0.2, 0.16, uv(brass));
+          meshPatch(bits, new THREE.IcosahedronGeometry(0.2, 1), p.x, y, p.z, glass);
+          continue;
+        }
+        const p = at(face, u, 0.5), w = at(face, u, 0.02);
         boxPatch(bits, (p.x + w.x) / 2, y + 0.62, (p.z + w.z) / 2, Math.abs(p.x - w.x) + 0.04, 0.04, Math.abs(p.z - w.z) + 0.04, uv(iron));
         boxPatch(bits, p.x, y, p.z, 0.3, 0.46, 0.3, glass);
         boxPatch(bits, p.x, y + 0.46, p.z, 0.36, 0.1, 0.36, uv(iron));
@@ -602,6 +821,51 @@ export function buildPubs(Builder) {
       const p = at(face, u, 0.45);
       meshPatch(bits, new THREE.CylinderGeometry(0.3, 0.3, 0.9, 10), p.x, 0.45, p.z, uv(wood), 1, true);
     }
+    // bracket clocks: a double-faced clock on an iron arm (Bruxelles, the Weir corner)
+    for (const c of spec.clocks || []) {
+      const p = at(c.face || 'front', c.u, 0.75), w = at(c.face || 'front', c.u, 0.05);
+      boxPatch(bits, (p.x + w.x) / 2, c.y + 0.5, (p.z + w.z) / 2, Math.abs(p.x - w.x) + 0.05, 0.06, Math.abs(p.z - w.z) + 0.05, uv(iron));
+      boxPatch(bits, p.x, c.y - 0.4, p.z, p.nz ? 0.16 : 0.8, 0.8, p.nz ? 0.8 : 0.16, uv(clockFace));
+    }
+    // turrets on the corners of the Victorian fronts: a round brick drum and a slate spire
+    for (const t of spec.turrets || []) {
+      const p = at(t.face || 'front', t.u, t.out ?? 0.2), seg = pub.faces[0].seg, Ht = pub.faces[0].H;
+      const y0 = t.y0 ?? seg.G + seg.fh, h = Ht + (t.h ?? 1.5) - y0;
+      meshPatch(bits, new THREE.CylinderGeometry(t.r, t.r, h, 10, 1, true).translate(0, h / 2, 0), p.x, y0, p.z, uv(patch(seg.upper.color)));
+      meshPatch(bits, new THREE.ConeGeometry(t.r * 1.1, t.r * (t.spire ?? 3), 10).translate(0, (t.r * (t.spire ?? 3)) / 2, 0), p.x, y0 + h, p.z, uv(slate));
+      meshPatch(bits, new THREE.CylinderGeometry(t.r * 1.08, t.r * 0.7, 0.5, 10).translate(0, -0.25, 0), p.x, y0, p.z, uv(patch(seg.upper.cornice || shade(seg.upper.color, 1.2))));
+    }
+    // pediments over a breakfront (Powerscourt) or a church's gable
+    for (const pd of spec.pediments || []) {
+      const p = at('front', pd.u, 0), Hp = pub.faces[0].H - (pd.drop ?? 0), c = uv(patch(pd.color || shade(pub.faces[0].seg.upper.color, 1.1)));
+      const hw = pd.w / 2, z0 = zF + 0.15, z1 = zF - 0.6;
+      quad(body, [p.x - hw, Hp, z0], [p.x + hw, Hp, z0], [p.x, Hp + pd.h, z0], [p.x, Hp + pd.h, z0], c);
+      quad(body, [p.x - hw, Hp, z1], [p.x - hw, Hp, z0], [p.x, Hp + pd.h, z0], [p.x, Hp + pd.h, z1], c);
+      quad(body, [p.x + hw, Hp, z0], [p.x + hw, Hp, z1], [p.x, Hp + pd.h, z1], [p.x, Hp + pd.h, z0], c);
+      boxPatch(body, p.x, Hp - 0.2, zF + 0.1, pd.w + 0.3, 0.22, 0.5, c);
+    }
+    // a glazed canopy over the pavement, its etched fascia carrying the name (the Gaiety)
+    if (spec.canopy) {
+      const c = spec.canopy, xa = at('front', c.u0).x, xb = at('front', c.u1).x, x0 = Math.min(xa, xb), x1 = Math.max(xa, xb), out = c.out ?? 2.6;
+      const y = c.y, zo = zF + out, cg = uv(canopyGlass);
+      quad(bits, [x0, y + 1.6, zo], [x1, y + 1.6, zo], [x1, y + 2.2, zF + 0.05], [x0, y + 2.2, zF + 0.05], cg);
+      quad(bits, [x1, y + 1.6, zo], [x0, y + 1.6, zo], [x0, y + 2.2, zF + 0.05], [x1, y + 2.2, zF + 0.05], cg);
+      quad(bits, [x0, y, zo], [x1, y, zo], [x1, y + 1.6, zo], [x0, y + 1.6, zo], uv(pub.canopyJ));
+      quad(bits, [x1, y, zo - 0.04], [x0, y, zo - 0.04], [x0, y + 1.6, zo - 0.04], [x1, y + 1.6, zo - 0.04], uv(pub.canopyJ));
+      quad(bits, [x0, y, zo], [x1, y, zo], [x1, y, zF + 0.05], [x0, y, zF + 0.05], uv(iron));
+      for (let xx = x0 + 0.3; xx < x1; xx += Math.max(2, (x1 - x0) / 6)) {
+        boxPatch(bits, xx, y + 1.2, (zF + zo) / 2, 0.06, 0.06, out, uv(iron));
+        boxPatch(bits, xx, y - 0.5, zF + 0.3, 0.06, 1.8, 0.06, uv(iron));
+      }
+    }
+    // iron railings along the front (the church)
+    if (spec.railings) {
+      const r = spec.railings, zr = zF + (r.out ?? 1.2), xa = at('front', r.u0).x, xb = at('front', r.u1).x, x0 = Math.min(xa, xb), x1 = Math.max(xa, xb);
+      boxPatch(bits, (x0 + x1) / 2, (r.h ?? 1.4) - 0.05, zr, x1 - x0, 0.05, 0.05, uv(iron));
+      boxPatch(bits, (x0 + x1) / 2, 0.15, zr, x1 - x0, 0.05, 0.05, uv(iron));
+      for (let xx = x0; xx <= x1; xx += 0.14) boxPatch(bits, xx, 0, zr, 0.025, (r.h ?? 1.4) + 0.12, 0.025, uv(iron));
+      for (const xx of [x0, x1]) boxPatch(bits, xx, 0, (zF + zr) / 2, 0.04, r.h ?? 1.4, zr - zF, uv(iron));
+    }
     pub.body = body; pub.bits = bits;
   }
   for (const pub of pubs) {
@@ -617,9 +881,25 @@ export function buildPubs(Builder) {
   }
   mat.map.needsUpdate = true; mat.emissiveMap.needsUpdate = true;
   return {
-    groups, material: mat, ms: Math.round(performance.now() - t0), paintMs, atlas: `${ATLAS}x${H}`,
+    groups, material: mat, paintMs, atlas: `${ATLAS}x${H}`,
     setNight(level) { mat.emissiveIntensity = 0.04 + (1.15 - 0.04) * level; },
   };
+}
+
+// a gable face: the wall, a window (or a clock rose), a stone coping up both slopes
+function paintGable(P, g, u) {
+  const W = g.w, H = g.h, col = g.color || u.color;
+  P.rect(0, 0, W, H, col);
+  wall(P, W, H, { ...u, color: col }, W * 7);
+  const cop = u.cornice || shade(col, 1.25);
+  P.path((m) => { const [a, b] = m(0, H), [c, d] = m(W / 2, 0), [e, f] = m(W, H); _ctx.moveTo(a, b); _ctx.lineTo(c, d); _ctx.lineTo(e, f); }, cop, null, 0.35);
+  if (g.rose) {
+    P.path((m, k) => { const [x, y] = m(W / 2, H * 0.52); _ctx.arc(x, y, Math.min(W, H) * 0.2 * k, 0, 7); }, '#e8e0cc', 'rgba(255,220,160,0.6)');
+    P.path((m, k) => { const [x, y] = m(W / 2, H * 0.52); _ctx.arc(x, y, Math.min(W, H) * 0.14 * k, 0, 7); }, '#2c3440');
+  } else if (g.win !== false) {
+    const ww = Math.min(W * 0.34, 1.1), wh = Math.min(H * 0.45, 1.6);
+    upperWindow(P, W / 2 - ww / 2, H - wh - 0.35, ww, wh, { ...u, win: g.win || (u.win === 'pair' ? 'arch' : u.win || 'sash') }, 1, hash(W, H) < 0.5, true);
+  }
 }
 
 // index of a laid-out bay in the spec's bay list (layouts may be reversed for display)

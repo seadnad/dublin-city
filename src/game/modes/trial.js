@@ -6,7 +6,7 @@ import { fmt } from './pursuit.js';
 
 export const ROUTES = [
   { id: 'liffey', name: 'Liffey Loop', blurb: 'Both quays and three bridges', path: ['NQ8', 'NQ9', 'NQ10', 'SQ10', 'SQ9', 'SQ8', 'TBQD', 'TBQC', 'SQ7', 'TBQB', 'TBQA', 'HPS', 'SQ6', 'TBQF', 'SQ5', 'SQ4', 'NQ4', 'NQ5', 'NQ6', 'NQ7', 'NQ8'] },
-  { id: 'georgian', name: 'Georgian Sprint', blurb: 'Nassau St, Merrion Square and the Green', path: ['CG3', 'NS1', 'NS2', 'NS3', 'MSNW', 'MSNE', 'MSSE', 'MSSW', 'MR1', 'SGNE', 'SGSE', 'HC0', 'SGSW', 'SGW', 'SGNW', 'GR2', 'GR1', 'CG3'] },
+  { id: 'georgian', name: 'Georgian Sprint', blurb: 'Nassau St, Merrion Square and the Green', path: ['CG3', 'NS1', 'NS2', 'NS3', 'MSNW', 'MSNE', 'MSSE', 'MSSW', 'MR1', 'SGNE', 'SGSE', 'HC0', 'SGSW', 'SGW', 'SGNW', 'GFCH', 'GR2', 'GFJC', 'GRD', 'GR1', 'CG3'] },
   { id: 'templebar', name: 'Temple Bar & Christ Church', blurb: 'Cobbled lanes, Winetavern St, back along the quays', path: ['WM1', 'FPL', 'FAP', 'FL1', 'TAS', 'TBQ', 'TFO', 'TTL', 'TEU', 'ES1', 'PARL', 'EW1', 'FS2', 'FS1', 'LE1', 'CC4', 'CC3', 'CC2', 'CC1', 'HS1', 'WTB', 'WTC', 'SQ2', 'SQ3', 'SQ4', 'SQ5', 'TBQF', 'SQ6', 'HPS', 'TBQA', 'TBQB', 'SQ7', 'TBQC', 'TBQD', 'SQ8', 'WMS', 'WM1'] },
 ];
 

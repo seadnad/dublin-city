@@ -6,8 +6,12 @@ import { world, v2, offsetPolyline } from '../world/geo.js';
 import { KERB_H } from '../world/roads.js';
 import { rng } from '../world/textures.js';
 import { createContactShadows } from '../render/contact.js';
+import { parkedVehicleGrid, separatePedestrian } from './pedestrian-vehicles.js';
 
 const rand = rng(2024);
+// pedestrian-only walks registered by the world builders before createPeople (greenpark.js: the Green's paths)
+const footLanes = [];
+export function addFootLanes(list) { footLanes.push(...list); }
 // part ids: 0 coat/top, 1 skin, 2 hair, 3 left leg, 4 right leg, 5 left arm, 6 right arm, 7 shoes, 8 coat skirt
 function part(geo, id, pivotY = 0, side = 0) {
   const g = geo.index ? geo.toNonIndexed() : geo;
@@ -49,14 +53,16 @@ const SKIN = ['#f1d3bf', '#e8bfa3', '#d9a888', '#c48e6a', '#a26d4c', '#7a4e36', 
 const HAIR = ['#2a1d14', '#3b2a1c', '#5a3e25', '#8a6a42', '#c49a5a', '#b3542a', '#1b1b1b', '#8e8b86', '#d8d2c6'];
 const UMBRELLAS = ['#141414', '#141414', '#141414', '#1b2744', '#6b1a1a', '#1d4a33', '#d8b43a', '#b23a2a', '#e8e6e0'];
 
-export function createPeople(scene, { count = 240 } = {}) {
-  const contact = createContactShadows(scene, count, { opacity: 0.45, round: true });
-  for (let i = 0; i < count; i++) contact.alloc();
+export function createPeople(scene, { count = 240, fixed = [], parkedVehicles = [] } = {}) {
+  // fixed: people who stay put (busker crowds, café tables, buskers): { x, z, heading, pose: "stand"|"sit"|"busk" }
+  const N = count + fixed.length;
+  const contact = createContactShadows(scene, N, { opacity: 0.45, round: true });
+  for (let i = 0; i < N; i++) contact.alloc();
   const geo = personGeometry();
-  const aTop = new THREE.InstancedBufferAttribute(new Float32Array(count * 3), 3);
-  const aBottom = new THREE.InstancedBufferAttribute(new Float32Array(count * 3), 3);
-  const aLook = new THREE.InstancedBufferAttribute(new Float32Array(count * 4), 4); // skin, hair, coat (0/1), umbrella arm (0/1)
-  const aWalk = new THREE.InstancedBufferAttribute(new Float32Array(count * 2), 2); // phase, amount
+  const aTop = new THREE.InstancedBufferAttribute(new Float32Array(N * 3), 3);
+  const aBottom = new THREE.InstancedBufferAttribute(new Float32Array(N * 3), 3);
+  const aLook = new THREE.InstancedBufferAttribute(new Float32Array(N * 4), 4); // skin, hair, coat (0/1), umbrella arm (0/1)
+  const aWalk = new THREE.InstancedBufferAttribute(new Float32Array(N * 2), 2); // phase, amount
   aWalk.setUsage(THREE.DynamicDrawUsage);
   geo.setAttribute('aTop', aTop); geo.setAttribute('aBottom', aBottom); geo.setAttribute('aLook', aLook); geo.setAttribute('aWalk', aWalk);
   const mat = new THREE.MeshStandardMaterial({ roughness: 0.85 });
@@ -77,10 +83,16 @@ export function createPeople(scene, { count = 240 } = {}) {
         float ph = aWalk.x, amt = aWalk.y;
         float side = aPivot.y, pivot = aPivot.x;
         float swing = 0.0;
+        // amt -1: a busker (the left hand up on the neck, the right strumming); -2: sitting at a café table
+        float busk = step(amt, -0.5) * step(-1.5, amt), sit = step(amt, -1.5);
+        amt = max(amt, 0.0);
         if (pivot > 1.0) swing = -sin(ph + (side > 0.0 ? 0.0 : 3.14159)) * 0.42 * amt;      // arms swing against the legs
         else if (pivot > 0.5) swing = sin(ph + (side > 0.0 ? 0.0 : 3.14159)) * 0.5 * amt;   // legs
         // the umbrella arm is raised and still
         if (aLook.w > 0.5 && pivot > 1.0 && side > 0.0) swing = -1.35;
+        if (busk > 0.5 && pivot > 1.0) swing = side > 0.0 ? -0.75 + sin(ph) * 0.22 : -1.25;
+        if (sit > 0.5 && pivot > 0.5 && pivot < 1.0) swing = -1.45;
+        if (sit > 0.5 && pivot > 1.0) swing = -0.6;
         if (swing != 0.0) {
           float c = cos(swing), s = sin(swing);
           float y = transformed.y - pivot, z = transformed.z;
@@ -88,7 +100,7 @@ export function createPeople(scene, { count = 240 } = {}) {
           transformed.z = y * s + z * c;
         }
         if (aPart > 7.5 && aLook.z < 0.5) transformed *= 0.0; // no coat skirt
-        transformed.y += abs(sin(ph)) * 0.035 * amt;
+        transformed.y += abs(sin(ph)) * 0.035 * amt - sit * 0.45;
         vPcol = aPart < 0.5 || aPart > 7.5 ? aTop : aPart < 1.5 ? skinCol(aLook.x) : aPart < 2.5 ? hairCol(aLook.y)
               : aPart < 4.5 ? aBottom : aPart < 6.5 ? aTop : vec3(0.06);`)
       .replace('#include <beginnormal_vertex>', '#include <beginnormal_vertex>');
@@ -96,7 +108,7 @@ export function createPeople(scene, { count = 240 } = {}) {
       .replace('#include <common>', '#include <common>\nvarying vec3 vPcol;')
       .replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.rgb = vPcol;');
   };
-  const mesh = new THREE.InstancedMesh(geo, mat, count);
+  const mesh = new THREE.InstancedMesh(geo, mat, N);
   mesh.castShadow = true; mesh.receiveShadow = true;
   mesh.frustumCulled = false;
   scene.add(mesh);
@@ -106,7 +118,7 @@ export function createPeople(scene, { count = 240 } = {}) {
     new THREE.ConeGeometry(0.55, 0.28, 8, 1, true).translate(0, 2.08, 0).toNonIndexed(),
     new THREE.CylinderGeometry(0.012, 0.012, 0.75, 4).translate(0, 1.72, 0).toNonIndexed(),
   ]);
-  const umbrellas = new THREE.InstancedMesh(ugeo, new THREE.MeshStandardMaterial({ roughness: 0.35, side: THREE.DoubleSide }), count);
+  const umbrellas = new THREE.InstancedMesh(ugeo, new THREE.MeshStandardMaterial({ roughness: 0.35, side: THREE.DoubleSide }), N);
   umbrellas.castShadow = true; umbrellas.frustumCulled = false;
   scene.add(umbrellas);
 
@@ -114,7 +126,7 @@ export function createPeople(scene, { count = 240 } = {}) {
   const lanes = [];
   for (const way of world.ways) {
     if (way.bridge) continue;
-    const weight = way.pedestrian ? 9 : way.access === 'pedestrian' ? 6 : /Grafton|Henry|Temple Bar|Fleet|Essex|Anglesea|Crown|Eustace|Westmoreland|College Green|Dame/.test(way.name) ? 4
+    const weight = way.pedestrian ? 9 : way.access === 'pedestrian' ? 6 : /Grafton|Henry|Temple Bar|Fleet|Essex|Anglesea|Crown|Eustace|Westmoreland|College Green|Dame|Wicklow|Exchequer|William Street|Clarendon|Drury|Fade|Chatham|King Street South|George's Street/.test(way.name) ? 4
       : way.type === 'boulevard' ? 4 : way.type === 'lane' ? 3 : way.type === 'primary' || way.type === 'quay' ? 1.6 : 1;
     for (const side of [1, -1]) {
       const off = way.type === 'lane' ? way.width / 2 - 0.9 : way.width / 2 + 1.25;
@@ -122,6 +134,8 @@ export function createPeople(scene, { count = 240 } = {}) {
       if (way.pedestrian || way.access === 'pedestrian') lanes.push({ way, side, pts: offsetPolyline(way.pts, side > 0 ? -1.2 : 1.2), weight }); // crowds walk the carriageway too
     }
   }
+  // walks off the street graph (the paths in St Stephen's Green): { pts, ids (one per point, shared where paths meet), weight }
+  for (const w of footLanes) lanes.push({ way: { nodeIds: w.ids, name: w.name || 'path', width: 2 }, side: 1, pts: w.pts, weight: w.weight });
   // lanes near a point, weighted by how busy the street is (refreshed as the player moves)
   let nearby = lanes, nearbyAt = null, nearbyW = 0;
   const segNear = (l, c, r) => l.pts.some((p, i) => i < l.pts.length - 1 && Math.hypot((p.x + l.pts[i + 1].x) / 2 - c.x, (p.z + l.pts[i + 1].z) / 2 - c.z) < r + v2.len(v2.sub(l.pts[i + 1], p)) / 2);
@@ -144,7 +158,7 @@ export function createPeople(scene, { count = 240 } = {}) {
   }
   const clearOf = (id) => {
     const n = world.nodes.get(id);
-    if (n.edges.length < 3) return 0;
+    if (!n || n.edges.length < 3) return 0; // (walks off the street graph have no junction nodes)
     let w = 0; for (const wy of n.ways) w = Math.max(w, wy.width);
     return w / 2 + 3;
   };
@@ -159,6 +173,7 @@ export function createPeople(scene, { count = 240 } = {}) {
   };
 
   const people = [];
+  const parkedGrid = parkedVehicleGrid(parkedVehicles);
   const col = new THREE.Color();
   for (let i = 0; i < count; i++) {
     const p = {
@@ -171,6 +186,24 @@ export function createPeople(scene, { count = 240 } = {}) {
     aLook.array.set([Math.pow(rand(), 1.8), rand() < 0.12 ? 0.7 + rand() * 0.3 : rand() * 0.6, rand() < 0.45 ? 1 : 0, 0], i * 4);
     umbrellas.setColorAt(i, col.set(UMBRELLAS[Math.floor(rand() * UMBRELLAS.length)]));
     people.push(p);
+  }
+  // the ones who stay put: placed once; only the buskers' strumming arm moves (its phase ticks in update)
+  const buskers = [];
+  {
+    const m = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), P = new THREE.Vector3(), S = new THREE.Vector3(), zero = new THREE.Vector3(0, 0, 0);
+    fixed.forEach((f, k) => {
+      const i = count + k, s = 0.92 + rand() * 0.14;
+      col.set(TOPS[Math.floor(rand() * TOPS.length)]).toArray(aTop.array, i * 3);
+      col.set(BOTTOMS[Math.floor(rand() * BOTTOMS.length)]).toArray(aBottom.array, i * 3);
+      aLook.array.set([Math.pow(rand(), 1.8), rand() * 0.7, f.pose === 'sit' ? 0 : rand() < 0.4 ? 1 : 0, 0], i * 4);
+      aWalk.array.set([rand() * 6.28, f.pose === 'busk' ? -1 : f.pose === 'sit' ? -2 : 0], i * 2);
+      const y = f.y ?? KERB_H;
+      q.setFromAxisAngle(up, f.heading);
+      mesh.setMatrixAt(i, m.compose(P.set(f.x, y, f.z), q, S.setScalar(s)));
+      umbrellas.setMatrixAt(i, m.compose(P, q, zero));
+      contact.set(i, f.x, y, f.z, f.heading, 0.75 * s, 0.75 * s);
+      if (f.pose === 'busk') buskers.push(i);
+    });
   }
 
   function place(p, near) {
@@ -213,20 +246,22 @@ export function createPeople(scene, { count = 240 } = {}) {
   }
 
   let raining = false;
+  const playerBody = { pos: null, heading: 0, width: 1.9, length: 4.6 };
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), P = new THREE.Vector3(), S = new THREE.Vector3(), zero = new THREE.Vector3(0, 0, 0);
   let initialised = false, frame = 0;
   return {
     people,
     setRain(on) { raining = on; for (const p of people) aLook.array[p.i * 4 + 3] = on && p.umbrella ? 1 : 0; aLook.needsUpdate = true; },
-    update(dtFrame, focus, car) {
+    update(dtFrame, focus, car, movingVehicles = []) {
       frame++;
       refreshNearby(focus);
-      if (!initialised) { for (const p of people) place(p, { x: focus.x, z: focus.z, min: 0, max: 130 }); initialised = true; }
+      if (!initialised) { for (const p of people) place(p, { x: focus.x, z: focus.z, min: 0, max: 95 }); initialised = true; }
       const cs = car ? Math.abs(car.speed) : 0;
+      if (car) { playerBody.pos = car.pos; playerBody.heading = car.heading; }
       const cfx = car ? Math.sin(car.heading) : 0, cfz = car ? Math.cos(car.heading) : 0;
       for (const p of people) {
         const dxF = p.x - focus.x, dzF = p.z - focus.z, d2 = dxF * dxF + dzF * dzF;
-        if (d2 > 150 * 150) place(p, { x: focus.x, z: focus.z, min: 70, max: 140 });
+        if (d2 > 125 * 125) place(p, { x: focus.x, z: focus.z, min: 55, max: 115 });
         // beyond 45 m nobody can tell a 30 Hz walk from a 60 Hz one: update on alternate frames, double step
         const far = d2 > 45 * 45;
         if (far && ((frame + p.i) & 1)) continue;
@@ -264,6 +299,19 @@ export function createPeople(scene, { count = 240 } = {}) {
             p.dodgeX = cfz * s * 4.5; p.dodgeZ = -cfx * s * 4.5; p.dodge = 0.5; p.pause = 0.8;
           }
         }
+        // Keep walking figures outside vehicle bodies. Broadphase checks are numbers only;
+        // parked cars use a fixed grid, and distant moving traffic is skipped immediately.
+        let blocked = false;
+        for (let pass = 0; pass < 2; pass++) {
+          if (car && !car.airborne) blocked = separatePedestrian(p, playerBody) || blocked;
+          for (const v of movingVehicles) {
+            if (Math.abs(p.x - v.pos.x) > 7 || Math.abs(p.z - v.pos.z) > 7) continue;
+            blocked = separatePedestrian(p, v) || blocked;
+          }
+          for (const v of parkedGrid.near(p.x, p.z)) blocked = separatePedestrian(p, v) || blocked;
+          if (!blocked) break;
+        }
+        if (blocked) { p.dodge = 0; p.pause = Math.max(p.pause, 0.25); moving = 0; }
         p.phase += dt * (moving ? 6.2 * (p.speed / 1.35) * moving : 0);
         p.walk += ((moving ? 1 : 0) - p.walk) * Math.min(1, dt * 6);
         aWalk.array[p.i * 2] = p.phase; aWalk.array[p.i * 2 + 1] = p.walk;
@@ -283,6 +331,7 @@ export function createPeople(scene, { count = 240 } = {}) {
       }
       mesh.instanceMatrix.needsUpdate = true;
       umbrellas.instanceMatrix.needsUpdate = true;
+      for (const i of buskers) aWalk.array[i * 2] += dtFrame * 9; // strumming
       contact.commit();
       aWalk.needsUpdate = true;
     },

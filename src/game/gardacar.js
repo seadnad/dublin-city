@@ -70,8 +70,8 @@ export function gardaMaterials({ colour, props }) {
     glass: addReflections(phys({ color: 0x0c1014, roughness: 0.05, metalness: 0.2, ior: 1.52, specularIntensity: 1 }), 0.95),
     tail_red: addReflections(tail, 0.9),
     tail_reverse: addReflections(reverse, 0.9),
-    // smoked chrome: a bright mirror behind a clear lens just shows the sky as a white blob
-    head_reflector: addReflections(std({ color: 0x5d646c, metalness: 1, roughness: 0.18 }), 0.8),
+    // Light silver reflector keeps the lamp readable without a large dark patch on the white bonnet.
+    head_reflector: addReflections(std({ color: 0xaeb8c0, metalness: 0.55, roughness: 0.28 }), 0.65),
     head_lamp: headLamp,
     head_lens: addReflections(phys({ color: 0xeef3f6, roughness: 0.03, transparent: true, opacity: 0.18, depthWrite: false, clearcoat: 1, clearcoatRoughness: 0.02 }), 0.45),
     indicator: phys({ color: 0xc96a12, emissive: 0xff8a1c, emissiveIntensity: 0.2, roughness: 0.15, clearcoat: 1 }),

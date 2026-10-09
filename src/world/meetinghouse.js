@@ -131,19 +131,20 @@ export function buildMeetingHouse({ Builder, M }) {
   const day = new THREE.Group(), night = new THREE.Group();
   {
     const sq = S.meetingHouse;
-    const canvas = new THREE.MeshStandardMaterial({ color: 0xece8de, roughness: 0.9, side: THREE.DoubleSide });
+    const canvas = new THREE.MeshStandardMaterial({ color: 0xece8de, roughness: 0.9, side: THREE.DoubleSide, emissive: 0x3a362e }); // (sunlit fabric glows through: the underside would read black)
+    const furled = new THREE.MeshStandardMaterial({ color: 0xece8de, roughness: 0.9 });
     const db = new Builder(sq), nb = new Builder(sq);
     for (const [x, z] of [[-3.5, -4], [3.5, -4], [-3.5, 4], [3.5, 4]]) {
       // open: a shallow square canopy (an inverted pyramid of fabric), furled: a slim sleeve at the mast head
       db.add(new THREE.ConeGeometry(4.6, 1.2, 4, 1, true).rotateY(Math.PI / 4), canvas, { x, y: 7.1, z });
-      nb.add(new THREE.CylinderGeometry(0.1, 0.35, 3.2, 8), canvas, { x, y: 4.6, z });
+      nb.add(new THREE.CylinderGeometry(0.1, 0.35, 3.2, 8), furled, { x, y: 4.6, z });
     }
     // the Saturday food market: striped gazebos over trestles of produce
     const stripes = ['#b3232a', '#1f5a3a', '#1b2f6a', '#c98a1a'].map((c) => {
       const cv = document.createElement('canvas'); cv.width = 64; cv.height = 8; const x = cv.getContext('2d');
       for (let i = 0; i < 8; i++) { x.fillStyle = i % 2 ? '#f4efe6' : c; x.fillRect(i * 8, 0, 8, 8); }
       const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
-      return new THREE.MeshStandardMaterial({ map: t, roughness: 0.85, side: THREE.DoubleSide });
+      return new THREE.MeshStandardMaterial({ map: t, roughness: 0.85, side: THREE.DoubleSide, emissive: 0xffffff, emissiveMap: t, emissiveIntensity: 0.18 });
     });
     const produce = ['#d8452e', '#e8b43a', '#5a9a3c', '#8a4a2a', '#e8e0c8', '#b8244c'].map((c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.9 }));
     let k = 0;

@@ -2,12 +2,37 @@
 
 Build notes for the Temple Bar character pass (brief: docs/research/hotspots-green-templebar-dame.md, T1-T9).
 
-## Status (paused)
+## Status (done)
 
-Work was paused by the coordinator (usage limit) before verification finished. No perf numbers, compare sheet or
-mobile / night / aerial checks yet.
+Finished after merging main (Grafton quarter, Dublin Castle / George's St, O'Connell St, Green interior, Luas rebuild,
+district streaming). Compare sheet: `docs/research/temple-bar-v2-compare.png`.
 
-Done (seen working in daytime eye-level screenshots):
+Fixed on the way out:
+- **Meeting House Square market and umbrellas are back on** (`landmarks.js` pushes `meetingHouse.dynamic`; kept out of
+  the static batch, open by day, furled after dark). The black ground did not come back after the merge, and nothing
+  in the market's geometry or materials was bad. The dark look came from two things stacking. The four open canopies
+  (9 m across, `castShadow`) shade nearly the whole square, and the open squares were still in the ground-AO bake, so
+  the paving under the shadow was AO-darkened as if a building stood on it. `main.js` now bakes AO only for reserved
+  rects without `open: true` (Temple Bar Square and Meeting House Square). The canopy fabric also had no light from
+  below, so its underside read black from eye level. The open canopies and striped gazebos get a little emissive
+  (light through sunlit canvas), and the furled umbrellas use a plain material so they don't glow at night.
+
+Checks (after the merge):
+- `footprints.mjs`: 0 footprints on roads. `bridges.mjs`: no bad bridges. No console errors.
+- Day, night and `--mobile` looks along Temple Bar, Merchant's Arch, Meeting House Square, Temple Bar Square and Eustace St.
+- Frame cost at the `areaperf.mjs` temple-bar spot (Temple Lane South looking west, low tier, dpr 1, headless):
+  main 362 calls / 1.12M tris, GPU median 33.7 ms (p10 29.4); branch 401 calls / 1.19M tris, GPU median 31.9 to
+  40.3 ms over three runs (p10 26.9 to 27.6). That is +39 draw calls and +0.07M triangles, and the GPU time is
+  within run-to-run noise.
+
+Left:
+- Merchant's Arch hall reads as dark grey stone; the real one is pale granite with flower boxes over the arch.
+- Night cobbles on Temple Bar are very dark between the pub spills (more lamp-map spots, or a warmer street lamp).
+- Temple Bar Square: the red-brick gabled south block, trees and the crowd are missing.
+- Essex Gate, Exchange St, Crampton Ct and Cow's Lane; the Temple Bar Music Centre on Curved St; murals (T8);
+  sound (T10). Aerial check not done.
+
+Done in the first pass:
 - **Merchant's Arch fix (T1).** The hall's passage was in the east bay (local +x is west for this site), so from the
   quay you looked into a glazed window reflecting the sky. `E` is now derived from the site's rotation, and the rear
   of the passage is an open arch. The Merchant's Arch lane runs straight through it (new node `TBMA`) before turning
@@ -35,15 +60,3 @@ Done (seen working in daytime eye-level screenshots):
 - **`src/world/meetinghouse.js`.** Meeting House Square (flags and the chequer, benches, 4 umbrella masts), The Ark
   (brick front, copper stage curtain), the IFI Georgian doorcase with its blue neon name, and the Gallery of
   Photography. Sites and reservations are in sites.js.
-
-Known breakage / not verified:
-- **The day market and umbrella canopies are switched off.** With those unbatched groups
-  (`meetingHouse.dynamic`) in the scene, the ground around Eustace St and the square rendered pure black. Hiding
-  them fixed it. The suspect is the shadow pass (open cones, `castShadow`). Fix, then re-enable in `landmarks.js`.
-- Meeting House Square has not been rechecked since. Its paving may still look dark: the open squares are still in the
-  ground-AO bake (main.js `bakeGroundAO` uses all `reserved`; filter `!r.open`).
-- Not run: footprints.mjs, bridges.mjs, night, --mobile, aerial, and perf (the facade branch cost and the extra
-  draw calls). No compare sheet (temple-bar-v2-compare.png). Before shots are not kept in the repo.
-
-Left: the market fix; the checks above; Essex Gate, Exchange St, Crampton Ct and Cow's Lane; the Temple Bar Music
-Centre on Curved St; Temple Bar Square's red-brick gabled south block; murals (T8); sound (T10).

@@ -11,7 +11,21 @@
   </head>
   <body>
     <canvas id="scene"></canvas>
-    <div id="loading"><div class="spire"></div><p>Building Dublin&hellip;</p></div>
+    <div id="loading">
+      <div class="loading-art" aria-hidden="true">
+        <div class="loading-sun"></div>
+        <div class="loading-city"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="loading-river"></div>
+        <div class="loading-road"><i></i><i></i><i></i></div>
+      </div>
+      <div class="loading-copy">
+        <span class="loading-kicker">A city in your browser</span>
+        <h1>Dublin <span>Drive</span></h1>
+        <p class="loading-intro">Your streets are taking shape. Your drive starts as soon as the city is ready.</p>
+        <p class="loading-step" role="status" aria-live="polite">Getting the city ready&hellip;</p>
+        <p class="loading-wait">The first visit may take 30 seconds or longer, especially on older devices. Keep this tab open.</p>
+      </div>
+    </div>
     <div id="hud"></div>
     <script type="module" src="./src/boot.js"></script>
   </body>

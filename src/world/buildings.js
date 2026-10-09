@@ -107,8 +107,9 @@ const TB_UPPER = [
 const TB_FRONTS = ['#b3121b', '#7e1e1e', '#1e4d34', '#255e3d', '#1b2745', '#161616', '#1e3fa0', '#3fa6a0', '#e6c84a', '#ede3c4', '#5a1a22', '#b8521c', '#2c4f78', '#6a3b78'].map(hex);
 
 const GEORGIAN_ST = /Merrion|Stephen's Green|Dawson|Kildare|Harcourt|Leeson|Baggot|Clare|Gardiner|Westland|Cuffe|King Street|Church Street|Merrion Row/;
-const TEMPLE_BAR = /Temple Bar|Temple Lane|Fleet|Essex Street|Eustace|Crown Alley|Anglesea|Sycamore|Cope|Fownes|Fishamble|Exchequer|Wicklow/;
-const DOCK_ST = /North Wall|Rogerson|City Quay|Mayor|Commons|Memorial|Lombard|Sandwith|Townsend|Pearse|Store|Amiens|Tara|George's Quay/;
+const TEMPLE_BAR = /Temple Bar|Temple Lane|Fleet|Essex Street|Eustace|Crown Alley|Anglesea|Sycamore|Cope|Fownes|Fishamble|Wicklow/;
+const VICTORIAN_ST = /South Great George's|Exchequer|Dame Lane|Dame Court|Fade Street|Castle Street|Cork Hill|Ship Street|Stephen Street|Golden Lane|Palace Street|Drury/;
+const DOCK_ST =/North Wall|Rogerson|City Quay|Mayor|Commons|Memorial|Lombard|Sandwith|Townsend|Pearse|Store|Amiens|Tara|George's Quay/;
 
 // Docklands: east of the Custom House, from Pearse Street up to Sheriff Street. The northern ring beyond it (North
 // Strand, Ballybough, Clonliffe) is terraced housing, not glass towers.
@@ -140,6 +141,12 @@ const hash01 = (x, z) => { const s = Math.sin(x * 12.9898 + z * 78.233) * 43758.
 // (street fronts two or three). No extra rand() calls: the rest of the city's filler is unchanged.
 const inBrewery = (x, z) => z > -25 && z < 200 && x > -1185 && x < -962 - 0.12 * z;
 const breweryFloors = (x, z) => 2 + ((Math.floor(x * 0.37 + z * 0.23) & 3) === 0 ? 1 : 0);
+// Kilmainham (docs/research/kilmainham.md 5.3): south of the river west of Heuston, Victorian and Edwardian terraces of
+// brick and painted render, two storeys on the side streets and three on the main roads (no front gardens there), so
+// the gaol, the Royal Hospital's roofs and spire and the Richmond Tower stand over them; and Heuston South Quarter's
+// six- to eight-storey offices between the Royal Hospital's gardens and Military Road.
+const inKilmainham = (x, z) => x < -1330 && z > 60;
+const inHSQ = (x, z) => x > -1447 && x < -1392 && z > 105 && z < 205;
 
 function styleFor(x, z, way) {
   const name = way ? way.name : '';
@@ -148,6 +155,9 @@ function styleFor(x, z, way) {
   if (inDocks(x, z) && !GEORGIAN_ST.test(name)) return S.MODERN;
   if (x > 200 && DOCK_ST.test(name)) return rand() < 0.65 ? S.MODERN : S.BRICK;
   if (TEMPLE_BAR.test(name)) return rand() < 0.75 ? S.TEMPLEBAR : S.BRICK;
+  // George's Street and the lanes round the Castle and the markets: Victorian red brick with some render, not
+  // Temple Bar colour (docs/research/hotspots-green-templebar-dame.md 1.3; Exchequer St was painted Temple Bar)
+  if (VICTORIAN_ST.test(name)) return rand() < 0.78 ? S.BRICK : S.STUCCO;
   // Dame Street: Victorian red brick and painted stucco, with the odd colourful front
   if (/Dame|College Green|Lord Edward/.test(name)) { const r = rand(); return r < 0.5 ? S.BRICK : r < 0.85 ? S.STUCCO : S.TEMPLEBAR; }
   if (GEORGIAN_ST.test(name)) return rand() < 0.88 ? S.GEORGIAN : S.BRICK;
@@ -202,15 +212,17 @@ for (const way of ordered) {
       let s = 0;
       while (s < L) {
         const mid = v2.add(a, v2.scale(dir, s));
-        const terrace = isTerrace(way) && !inDocks(mid.x, mid.z);
-        const style = terrace ? (rand() < 0.85 ? S.GEORGIAN : S.STUCCO) : styleFor(mid.x, mid.z, way);
+        const kil = inKilmainham(mid.x, mid.z), hsq = inHSQ(mid.x, mid.z), kilMain = kil && way.width >= 10;
+        const terrace = (isTerrace(way) || kil) && !inDocks(mid.x, mid.z) && !hsq;
+        const style = hsq ? S.MODERN : terrace ? (rand() < 0.85 ? S.GEORGIAN : S.STUCCO) : styleFor(mid.x, mid.z, way);
         const spec = lotSpec(style);
-        if (terrace) Object.assign(spec, { w: 2 * spec.bay + 0.5, d: 9 + rand() * 3, floors: rand() < 0.8 ? 2 : 3, fh: 3.2 });
+        if (terrace) { Object.assign(spec, { w: 2 * spec.bay + 0.5, d: 9 + rand() * 3, floors: rand() < 0.8 ? 2 : 3, fh: 3.2 }); if (kilMain) spec.floors = hash01(mid.x, mid.z) < 0.7 ? 3 : 2; }
+        else if (hsq) spec.floors = 6 + Math.floor(hash01(mid.x, mid.z) * 3);
         else if (nearCroke(mid.x, mid.z)) spec.floors = way.type === 'primary' ? 3 : rand() < 0.8 ? 2 : 3;
         else if (nearParkgate(mid.x, mid.z)) { const c = v2.add(mid, v2.scale(n, 12)); spec.floors = parkgateFloors(c.x, c.z, way.type === 'primary' || way.type === 'quay'); }
         else if (inBrewery(mid.x, mid.z)) spec.floors = breweryFloors(mid.x, mid.z);
         else if (inSilicon(mid.x, mid.z) && style === S.MODERN) spec.floors = Math.min(spec.floors, 8);
-        const garden = terrace ? 2.2 : 0;
+        const garden = terrace && !kilMain ? 2.2 : 0;
         if (s + spec.w > L + 3) { s += 2; continue; }
         let placed = false;
         for (const df of [1, 0.7, 0.5]) {
@@ -234,7 +246,7 @@ for (let z = B.minZ + 10; z < B.maxZ - 10; z += 11) {
     const road = world.nearestRoad(x, z);
     const seg = road ? road.seg : null;
     const rot = seg ? Math.atan2(seg.b.x - seg.a.x, seg.b.z - seg.a.z) : 0;
-    const style = inDocks(x, z) || inSilicon(x, z) ? S.MODERN : rand() < (nearCroke(x, z) ? 0.85 : 0.5) ? S.BRICK : S.STUCCO;
+    const style = inDocks(x, z) || inSilicon(x, z) || inHSQ(x, z) ? S.MODERN : rand() < (nearCroke(x, z) ? 0.85 : 0.5) ? S.BRICK : S.STUCCO;
     for (const size of [14, 10, 7]) {
       const o = { x, z, rot, w: size + rand() * 3, d: size + rand() * 3 };
       if (testOBB(o)) {
@@ -242,6 +254,7 @@ for (let z = B.minZ + 10; z < B.maxZ - 10; z += 11) {
         // block interiors stay lower than the street frontage (keeps Docklands from becoming a wall of towers)
         spec.floors = style === S.MODERN ? 3 + Math.floor(rand() * 4) : nearCroke(x, z) ? 2 : Math.max(3, spec.floors - 1);
         if (road && isTerrace(road.way)) spec.floors = 2; // back returns and mews behind the terraces
+        if (inKilmainham(x, z)) spec.floors = inHSQ(x, z) ? 5 + Math.floor(hash01(x, z) * 3) : 2;
         if (nearParkgate(x, z)) spec.floors = Math.min(spec.floors, parkgateFloors(x, z, false));
         if (inBrewery(x, z)) spec.floors = breweryFloors(x, z) - 1; // brewery sheds and yards
         place(o, style, spec, false);
@@ -288,6 +301,21 @@ export const inTempleBar = (x, z) => x > -420 && x < 10 && z > -10 && z < 170;
 
 // The Temple Bar fronts (street-facing TEMPLEBAR lots) for what hangs off them: signs, flags, baskets (templebar.js)
 export const templeBarFronts = () => lots.filter((L) => L.style === S.TEMPLEBAR && L.frontage).map((L) => ({ ...L, tbGround: TB_GROUND }));
+
+// Round Busáras (Store Street, Amiens Street, Beresford Place) the real neighbours are three- and four-storey Victorian
+// brick and the Store Street Garda station, not glass towers: the Docklands rule was putting 10-15 storey filler
+// between Busáras and Amiens Street that hid it from the east (docs/research/oconnell-street.md 5). Brick, at most
+// five storeys; set after placement from a position hash, so no rand() draw moves the rest of the city.
+{
+  const B = sites.busaras;
+  for (const L of lots) {
+    if (L.style !== S.MODERN || Math.hypot(L.x - B.x, L.z - B.z) > 95) continue;
+    const h = hash01(L.x, L.z), floors = 3 + Math.floor(h * 2.99);
+    Object.assign(L, { style: S.BRICK, fh: 3.5, bay: 2.6, base: BRICKS[Math.floor(h * BRICKS.length)], trim: FASCIA[Math.floor(hash01(L.z, L.x) * FASCIA.length)] });
+    L.h = floors * 3.5 + 0.9;
+    L.nb = Math.max(1, Math.round(L.w / 2.6));
+  }
+}
 
 // ---------- textures ----------
 // Flemish-bond brick, 1.8 m tile. R: brick tone, G: hue variation, B: mortar mask (1 = mortar).
@@ -802,7 +830,7 @@ function buildGeorgianFronts(scene) {
   scene.add(railMesh, pitMesh, stepMesh);
 }
 
-export function buildBuildings(scene) {
+export function buildBuildings(scene, { start = null } = {}) {
   const geo = new THREE.BoxGeometry(1, 1, 1);
   geo.translate(0, 0.5, 0);
   const count = lots.length;
@@ -837,7 +865,7 @@ export function buildBuildings(scene) {
   });
   // One instanced mesh per ~450 m chunk rather than one for the whole city, so the camera and the shadow
   // camera can cull whole districts (the map is ~2.4 km wide and holds >10k buildings).
-  const material = makeMaterial(), CH = 450, buckets = new Map();
+  const material = makeMaterial(), CH = start ? 300 : 450, buckets = new Map();
   lots.forEach((L, i) => {
     const k = `${Math.floor(L.x / CH)},${Math.floor(L.z / CH)}`;
     if (!buckets.has(k)) buckets.set(k, []);
@@ -846,7 +874,7 @@ export function buildBuildings(scene) {
   const mesh = new THREE.Group();
   mesh.name = 'buildings';
   const pick = (src, n, ids) => { const out = new Float32Array(ids.length * n); ids.forEach((i, j) => out.set(src.subarray(i * n, i * n + n), j * n)); return out; };
-  for (const ids of buckets.values()) {
+  const detail = (ids) => {
     const g = geo.clone();
     g.setAttribute('aBase', new THREE.InstancedBufferAttribute(pick(aBase, 3, ids), 3));
     g.setAttribute('aTrim', new THREE.InstancedBufferAttribute(pick(aTrim, 3, ids), 3));
@@ -857,7 +885,24 @@ export function buildBuildings(scene) {
     im.castShadow = im.receiveShadow = true;
     im.computeBoundingSphere();
     im.matrixAutoUpdate = false;
-    mesh.add(im);
+    return im;
+  };
+  // Every remote block has a solid roof-height silhouette until its detailed facade is ready.
+  // This also protects teleports and helicopter views while the queue catches up.
+  const proxyMaterial = start ? new THREE.MeshLambertMaterial({ vertexColors: true }) : null;
+  const pending = [];
+  for (const [key, ids] of buckets) {
+    const [ix, iz] = key.split(',').map(Number);
+    const cx = (ix + 0.5) * CH, cz = (iz + 0.5) * CH;
+    if (!start || Math.hypot(cx - start.x, cz - start.z) < 690) { mesh.add(detail(ids)); continue; }
+    const proxy = new THREE.InstancedMesh(geo, proxyMaterial, ids.length);
+    proxy.instanceMatrix.array.set(pick(mats, 16, ids));
+    proxy.instanceColor = new THREE.InstancedBufferAttribute(pick(aBase, 3, ids), 3);
+    proxy.castShadow = proxy.receiveShadow = true;
+    proxy.computeBoundingSphere();
+    proxy.matrixAutoUpdate = false;
+    mesh.add(proxy);
+    pending.push({ ids, cx, cz, proxy });
   }
   scene.add(mesh);
 
@@ -873,5 +918,48 @@ export function buildBuildings(scene) {
   scene.add(cm, pm);
   buildGeorgianFronts(scene);
 
-  return { mesh, count, frontageCount, lots };
+  let streaming = null;
+  const finish = (job) => {
+    const im = detail(job.ids);
+    mesh.add(im);
+    mesh.remove(job.proxy);
+  };
+  const streamDistricts = (getDrive, onReady = () => {}) => {
+    if (streaming) return streaming;
+    streaming = (async () => {
+      while (pending.length) {
+        // One small upload after a rendered frame; recalculate priority after turns or teleports.
+        await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
+        if (!pending.length) break; // a teleport may have consumed the remaining jobs
+        const p = getDrive(), lead = Math.min(450, Math.max(0, p.speed) * 18);
+        const px = p.x + Math.sin(p.heading) * lead, pz = p.z + Math.cos(p.heading) * lead;
+        pending.sort((a, b) => {
+          const score = (j) => Math.hypot(j.cx - p.x, j.cz - p.z) + 0.4 * Math.hypot(j.cx - px, j.cz - pz);
+          return score(a) - score(b);
+        });
+        const job = pending.shift();
+        finish(job);
+        onReady();
+        // Leave several render opportunities between uploads on slow devices.
+        await new Promise((resolve) => setTimeout(resolve, 220));
+      }
+    })();
+    return streaming;
+  };
+  const warmNear = async (x, z, radius = 650) => {
+    const near = pending.filter((j) => Math.hypot(j.cx - x, j.cz - z) < radius);
+    near.sort((a, b) => Math.hypot(a.cx - x, a.cz - z) - Math.hypot(b.cx - x, b.cz - z));
+    for (const job of near) {
+      await new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
+      // Keep it in the queue until ready, so a second teleport cannot skip it.
+      const i = pending.indexOf(job);
+      if (i < 0) continue;
+      pending.splice(i, 1);
+      finish(job);
+    }
+  };
+  return { mesh, count, frontageCount, lots,
+    get pendingDistricts() { return pending.length; },
+    pendingNear(x, z, radius = 650) { return pending.filter((j) => Math.hypot(j.cx - x, j.cz - z) < radius).length; },
+    streamDistricts, warmNear };
 }
