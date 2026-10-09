@@ -14,7 +14,9 @@ export function createGameUI({ onPursuit, onTrial, onTaxi = () => {}, taxiBest =
   const root = document.getElementById('hud');
   root.insertAdjacentHTML('beforeend', `
     <div class="mission" id="mission" hidden>
-      <div class="m-title"></div><div class="m-big"></div><div class="m-sub"></div>
+      <div class="m-title"></div>
+      <div class="m-score" hidden><i></i><b></b><span></span><em class="m-gain"></em></div>
+      <div class="m-big"></div><div class="m-sub"></div>
       <div class="m-meter" hidden><i></i><span>BUST</span></div>
       <div class="m-arrow" hidden aria-hidden="true"></div>
       <button class="m-quit" aria-label="Quit mode">Quit</button>
@@ -22,9 +24,10 @@ export function createGameUI({ onPursuit, onTrial, onTaxi = () => {}, taxiBest =
     <div class="countdown" id="countdown"></div>
     <div class="say" id="say" hidden></div>
     <div class="panel sheet play" id="play" hidden></div>
-    <div class="results" id="results" hidden></div>`);
+    <div class="results" id="results" hidden></div>
+    <div class="welcome" id="welcome" hidden></div>`);
   const $ = (id) => document.getElementById(id);
-  const mission = $('mission'), cd = $('countdown'), play = $('play'), results = $('results'), sayEl = $('say');
+  const mission = $('mission'), cd = $('countdown'), play = $('play'), results = $('results'), sayEl = $('say'), welcome = $('welcome');
   let sayTimer = 0;
   const q = (el, s) => el.querySelector(s);
   q(mission, '.m-quit').addEventListener('click', () => onFree());
@@ -46,14 +49,58 @@ export function createGameUI({ onPursuit, onTrial, onTaxi = () => {}, taxiBest =
   q(mission, '.m-radio').addEventListener('click', (e) => { e.currentTarget.blur(); onRadio(); });
   const STATUS = { close: 'On them', tail: 'Following', far: 'Far behind', losing: 'Losing them!' };
 
-  function renderPlay() {
+  // the three game cards: what it is, one line on how to play, the record, and a big Start button. Starting a mode
+  // puts the player in the right vehicle (main.js); the garage car is for free roam and the trials.
+  function gameCards() {
     const pb = save.get('pursuit.best', null);
+    const tb = taxiBest();
     const daily = dailyRoute();
-    const routes = [...ROUTES, daily];
+    const di = trialInfo(daily), db = di.best;
+    return `<div class="games">
+      <div class="game pursuit">
+        <div class="g-head"><span class="g-icon" aria-hidden="true">🚓</span><b>Garda Pursuit</b></div>
+        <small>Catch the suspect: ram them, PIT them into a spin, or box them in to arrest.</small>
+        <em>${pb && pb.caught ? `Best: ${pb.caught} caught · ${pb.score} pts` : 'You drive the Garda car'}</em>
+        <div class="g-buttons"><button class="g-start" data-mode="pursuit">Start</button></div>
+      </div>
+      <div class="game taxi">
+        <div class="g-head"><span class="g-icon" aria-hidden="true">🚕</span><b>Dublin Taxi</b></div>
+        <small>Stop beside a waving fare, drive them where they ask. Six-minute shift.</small>
+        <em>${tb ? `Best shift: €${tb.earnings.toFixed(2)} · ${tb.fares} fares` : 'You drive the taxi'}</em>
+        <div class="g-buttons"><button class="g-start" data-mode="taxi">Start</button><button class="g-alt" data-mode="taxi-night" title="Night shift: busy pubs">🌙 Night</button></div>
+      </div>
+      <div class="game trial">
+        <div class="g-head"><span class="g-icon" aria-hidden="true">⏱</span><b>Time Trials</b></div>
+        <small>Drive through the checkpoints against the clock. Today's Daily Route: ${(di.length / 1000).toFixed(1)} km.</small>
+        <em>${db ? `Daily best ${fmt(db.time)}${db.medal ? ` ${MEDAL[db.medal]}` : ''}` : `Gold ${fmt(di.medals.gold)} · your own car`}</em>
+        <div class="g-buttons"><button class="g-start" data-route="${daily.id}">Start</button></div>
+      </div>
+    </div>`;
+  }
+  function startMode(d) {
+    save.set('played', true);
+    document.querySelector('.toolbar .play-btn')?.classList.remove('first');
+    if (d.mode === 'pursuit') onPursuit();
+    else if (d.mode === 'free') onFree();
+    else if (d.mode === 'taxi' || d.mode === 'taxi-night') onTaxi({ night: d.mode === 'taxi-night' });
+    else if (d.route) { const daily = dailyRoute(); onTrial(d.route === daily.id ? daily : ROUTES.find((r) => r.id === d.route)); }
+  }
+  function focusFirst(el) { if (document.documentElement.classList.contains('pad')) q(el, '.g-start')?.focus(); }
+
+  function renderPlay() {
     const car = flying() ? 'heli' : save.get('car', 'garda');
     play.innerHTML = `
       <header><h2>Play</h2><button class="close" aria-label="Close">&times;</button></header>
-      <div class="cars">Your car:
+      ${gameCards()}
+      <h3>More time trials</h3>
+      <div class="routes">
+        ${ROUTES.map((r) => {
+          const b = trialInfo(r).best;
+          return `<button class="route" data-route="${r.id}" title="${r.blurb}">${r.name}${b && b.medal ? ` ${MEDAL[b.medal]}` : ''}<small>${b ? fmt(b.time) : r.blurb}</small></button>`;
+        }).join('')}
+      </div>
+      <h3>Garage · free roam car</h3>
+      <div class="cars">
         ${Object.entries(CARS).map(([k, c]) => `<button data-car="${k}" class="${car === k ? 'on' : ''}" title="${c.name}">${c.label}</button>`).join('')}
         ${HELI_ENABLED ? `<button data-car="heli" class="${car === 'heli' ? 'on' : ''}" title="Garda Air Support Unit helicopter (L)">🚁 Helicopter</button>` : ''}
       </div>
@@ -65,54 +112,83 @@ export function createGameUI({ onPursuit, onTrial, onTaxi = () => {}, taxiBest =
           <span class="paint-name">${cur.label}</span>
         </div>`;
       })() : ''}
+      <button class="free" data-mode="free">Just drive (free roam)</button>
       ${gfx ? `<div class="cars gfx">Graphics:
         ${gfx.modes.map((m) => `<button data-gfx="${m}" class="${gfx.get() === m ? 'on' : ''}">${gfx.names[m]}</button>`).join('')}
       </div>` : ''}`;
-    play.innerHTML += `
-      <button class="card pursuit" data-mode="pursuit">
-        <b>Garda Pursuit</b>
-        <small>A shift of callouts across the city. Respond, then take the suspect down: PIT them into a spin, ram them till the car is wrecked, box them in and hold them for the arrest. <kbd>E</kbd> radios Control for their location.</small>
-        <em>${pb ? `Best: ${pb.caught} caught · ${pb.score} pts` : 'No record yet'}</em>
-      </button>
-      <h3>Dublin Taxi</h3>
-      ${(() => { const tb = taxiBest(); return `
-      <button class="card taxi" data-mode="taxi">
-        <b>🚕 Day shift</b>
-        <small>Six minutes behind the wheel of a Dublin taxi: pick up the waving fares and get them to the landmark or pub they ask for, quick and smooth.</small>
-        <em>${tb ? `Best shift: €${tb.earnings.toFixed(2)} · ${tb.fares} fares` : 'No shift on the books yet'}</em>
-      </button>
-      <button class="card taxi" data-mode="taxi-night">
-        <b>🌙 Night shift</b>
-        <small>Same again after dark, when half the city wants a lift to the pub.</small>
-      </button>`; })()}
-      <h3>Time Trials</h3>
-      ${routes.map((r) => {
-        const info = trialInfo(r);
-        const b = info.best;
-        return `<button class="card trial" data-route="${r.id}">
-          <b>${r.daily ? '📅 ' : ''}${r.name}${b && b.medal ? ` ${MEDAL[b.medal]}` : ''}</b>
-          <small>${r.blurb} · ${(info.length / 1000).toFixed(1)} km (game scale)</small>
-          <em>${b ? `Best ${fmt(b.time)}` : `Gold ${fmt(info.medals.gold)}`}</em>
-        </button>`;
-      }).join('')}
-      <button class="card free" data-mode="free"><b>Free roam</b><small>Just drive.</small></button>`;
     q(play, '.close').onclick = () => { play.hidden = true; };
     play.querySelectorAll('[data-gfx]').forEach((b) => b.addEventListener('click', () => { gfx.set(b.dataset.gfx); renderPlay(); }));
     play.querySelectorAll('[data-paint]').forEach((b) => b.addEventListener('click', () => { onPaint(car, b.dataset.paint); renderPlay(); }));
     play.querySelectorAll('[data-car]').forEach((b) => b.addEventListener('click', () => { onCar(b.dataset.car); if (b.dataset.car !== 'heli') save.set('car', b.dataset.car); renderPlay(); }));
-    play.querySelectorAll('[data-mode], [data-route]').forEach((b) => b.addEventListener('click', () => {
-      play.hidden = true;
-      if (b.dataset.mode === "pursuit") onPursuit();
-      else if (b.dataset.mode === "free") onFree();
-      else if (b.dataset.mode === 'taxi' || b.dataset.mode === 'taxi-night') onTaxi({ night: b.dataset.mode === 'taxi-night' });
-      else onTrial(routes.find((r) => r.id === b.dataset.route));
-    }));
+    play.querySelectorAll('[data-mode], [data-route]').forEach((b) => b.addEventListener('click', () => { play.hidden = true; startMode(b.dataset); }));
   }
 
+  // first visit: a short, skippable welcome once the city has loaded
+  function showWelcome() {
+    welcome.innerHTML = `
+      <div class="w-card" role="dialog" aria-label="Welcome">
+        <h2>Welcome to Dublin Drive</h2>
+        <p>Drive around Dublin — or pick a game:</p>
+        ${gameCards()}
+        <div class="w-foot"><button class="w-skip" data-w="skip">Just drive</button><span>Games are always under <b>▶ Play</b>${matchMedia('(pointer: coarse)').matches ? '' : ' (<kbd>G</kbd>)'}.</span></div>
+      </div>`;
+    welcome.hidden = false;
+    welcome.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+      hideWelcome();
+      if (b.dataset.w !== 'skip') startMode(b.dataset);
+    }));
+    focusFirst(welcome);
+  }
+  function hideWelcome() {
+    if (welcome.hidden) return;
+    save.set('welcomed', true);
+    welcome.hidden = true; welcome.innerHTML = '';
+  }
+
+  // the big shift counter (taxi takings, suspects caught): counts up and pops when it goes up
+  const scoreEl = q(mission, '.m-score'), gainEl = q(scoreEl, '.m-gain');
+  const sc = { shown: 0, target: 0, kind: 'count', raf: 0, from: 0, t0: 0 };
+  const fmtScore = (v) => (sc.kind === 'euro' ? `€${v.toFixed(2)}` : `${Math.round(v)}`);
+  function tickScore() {
+    const k = Math.min(1, (performance.now() - sc.t0) / 700), e = 1 - (1 - k) ** 3;
+    sc.shown = sc.from + (sc.target - sc.from) * e;
+    q(scoreEl, 'b').textContent = fmtScore(sc.shown);
+    sc.raf = k < 1 ? requestAnimationFrame(tickScore) : 0;
+  }
+  function setScore(s) {
+    if (!s) { scoreEl.hidden = true; return; }
+    scoreEl.hidden = false;
+    sc.kind = s.kind || 'count';
+    q(scoreEl, 'i').textContent = s.icon || '';
+    q(scoreEl, 'span').textContent = s.label || '';
+    if (s.value > sc.target + 1e-6) {
+      gainEl.textContent = `+${fmtScore(s.value - sc.target)}`;
+      clearTimeout(sc.gainT); sc.gainT = setTimeout(() => { gainEl.textContent = ''; }, 1400);
+      sc.from = sc.shown; sc.target = s.value; sc.t0 = performance.now();
+      cancelAnimationFrame(sc.raf); sc.raf = requestAnimationFrame(tickScore);
+      scoreEl.classList.remove('pop'); void scoreEl.offsetWidth; scoreEl.classList.add('pop');
+    } else if (s.value !== sc.target) { sc.shown = sc.target = s.value; }
+    if (!sc.raf) q(scoreEl, 'b').textContent = fmtScore(sc.shown);
+  }
   return {
-    togglePlay(force) { const show = force ?? play.hidden; if (show) renderPlay(); play.hidden = !show; results.hidden = true; },
-    get playOpen() { return !play.hidden; },
-    showMission(kind) { mission.hidden = false; mission.className = `mission ${kind}`; q(mission, '.m-meter').hidden = kind !== 'pursuit'; pursuitEl.hidden = kind !== 'pursuit'; results.hidden = true; },
+    togglePlay(force) {
+      hideWelcome();
+      const show = force ?? play.hidden;
+      if (show) { renderPlay(); save.set('played', true); document.querySelector('.toolbar .play-btn')?.classList.remove('first'); }
+      play.hidden = !show; results.hidden = true;
+      if (show) focusFirst(play);
+    },
+    get playOpen() { return !play.hidden || !welcome.hidden; },
+    // first visit only (or forced, for the tests): the welcome card; the Play button pulses until a game is opened
+    welcome(force = false) {
+      if (!save.get('played', false)) document.querySelector('.toolbar .play-btn')?.classList.add('first');
+      if (force || !save.get('welcomed', false)) showWelcome();
+    },
+    get welcomeOpen() { return !welcome.hidden; },
+    showMission(kind) {
+      mission.hidden = false; mission.className = `mission ${kind}`; q(mission, '.m-meter').hidden = kind !== 'pursuit'; pursuitEl.hidden = kind !== 'pursuit'; results.hidden = true;
+      cancelAnimationFrame(sc.raf); sc.raf = 0; sc.shown = sc.target = 0; scoreEl.hidden = true; gainEl.textContent = ''; scoreEl.classList.remove('pop');
+    },
     hideMission() { mission.hidden = true; radioEl.hidden = true; },
     // Garda Pursuit
     onRadio(fn) { onRadio = fn; },
@@ -140,7 +216,9 @@ export function createGameUI({ onPursuit, onTrial, onTaxi = () => {}, taxiBest =
       flashEl.textContent = text; flashEl.classList.remove('show'); void flashEl.offsetWidth; flashEl.classList.add('show');
       clearTimeout(flashTimer); flashTimer = setTimeout(() => flashEl.classList.remove('show'), 900);
     },
-    updateMission({ title, big, sub, meter, warn, arrow }) {
+    score: setScore,
+    updateMission({ title, big, sub, meter, warn, arrow, score }) {
+      setScore(score);
       const ar = q(mission, '.m-arrow');
       ar.hidden = arrow == null;
       if (arrow != null) ar.style.transform = `rotate(${(-arrow * 180) / Math.PI}deg)`;

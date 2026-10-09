@@ -38,6 +38,7 @@ export function createWorldMap({ sites, lots, getLive, onTeleport, onWaypoint })
       <button data-z="me" aria-label="Centre on me" title="Centre on me">&#9678;</button>
       <button data-z="fit" aria-label="Whole city" title="Whole city">&#10530;</button>
     </div>
+    <button class="wm-pins" aria-pressed="true" title="Show or hide the landmark icons"><i aria-hidden="true">S</i><span>Landmarks</span><b></b></button>
     <div class="wm-card" hidden></div>
     <details class="wm-legend" open>
       <summary>Legend</summary>
@@ -61,6 +62,18 @@ export function createWorldMap({ sites, lots, getLive, onTeleport, onWaypoint })
   let W = 0, H = 0, dpr = 1;
   let scale = 1, cx = 0, cz = 0;
   let icons = [], selected = null, waypoint = null, timer = 0;
+  // landmark icons on or off (remembered)
+  let showPins = true;
+  try { showPins = localStorage.getItem('dublin.mapPins') !== 'false'; } catch { /* storage unavailable */ }
+  const pinsBtn = root.querySelector('.wm-pins');
+  const syncPins = () => { pinsBtn.setAttribute('aria-pressed', String(showPins)); pinsBtn.classList.toggle('off', !showPins); pinsBtn.querySelector('b').textContent = showPins ? 'On' : 'Off'; };
+  syncPins();
+  pinsBtn.addEventListener('click', () => {
+    showPins = !showPins; syncPins(); pinsBtn.blur();
+    try { localStorage.setItem('dublin.mapPins', String(showPins)); } catch { /* storage unavailable */ }
+    if (!showPins) showCard(null);
+    draw();
+  });
 
   const toS = (x, z) => [(x - cx) * scale + W / 2, (z - cz) * scale + H / 2];
   const toW = (sx, sy) => ({ x: (sx - W / 2) / scale + cx, z: (sy - H / 2) / scale + cz });
@@ -137,7 +150,7 @@ export function createWorldMap({ sites, lots, getLive, onTeleport, onWaypoint })
       ctx.fillStyle = C.waypoint; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - 7, y - 11); ctx.arc(x, y - 14, 7.5, Math.PI * 0.8, Math.PI * 2.2); ctx.closePath(); ctx.fill();
       ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x, y - 14, 3, 0, 7); ctx.fill();
     }
-    landmarkIcons();
+    if (showPins) landmarkIcons(); else icons = [];
     const [px, py] = toS(live.player.x, live.player.z);
     ctx.save(); ctx.translate(px, py); ctx.rotate(Math.PI - live.player.heading);
     ctx.beginPath(); ctx.moveTo(0, -12); ctx.lineTo(8.5, 9); ctx.lineTo(0, 4.5); ctx.lineTo(-8.5, 9); ctx.closePath();

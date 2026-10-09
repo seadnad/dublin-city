@@ -307,19 +307,21 @@ function applyFlight() {
   flightQ.copy(flight.quat).slerp(camera.quaternion, e);
   camera.quaternion.copy(flightQ);
   camera.fov = flight.fov + (62 - flight.fov) * e; camera.updateProjectionMatrix();
-  if (t >= 1) { flight = null; frozen = false; document.getElementById('hud').classList.remove('intro-hidden'); camera.fov = 62; camera.updateProjectionMatrix(); window.__dublin.ready = true; }
+  if (t >= 1) { flight = null; frozen = false; document.getElementById('hud').classList.remove('intro-hidden'); camera.fov = 62; camera.updateProjectionMatrix(); window.__dublin.ready = true; gameUI.welcome(); }
 }
 const gameUI = createGameUI({
   gfx: { modes: GFX_MODES, names: GFX_NAMES, get: () => gfxMode, set: (m) => applyGfx(m) },
-  onPursuit: () => { trial.stop(); taxi.stop(); pursuit.start(); },
-  onTrial: (r) => { pursuit.stop(); taxi.stop(); exitHeli(); trial.start(r); rig.snap(); },
+  // each game puts the player in its vehicle: the Garda car for a pursuit (either livery), the taxi for a shift (taxi.js
+  // ensureCar), and the garage car (the one picked in Play) for the trials and free roam
+  onPursuit: () => { trial.stop(); taxi.stop(); if (!flying && !/^garda/.test(carMesh.userData.model)) modeCar('garda'); pursuit.start(); },
+  onTrial: (r) => { pursuit.stop(); taxi.stop(); exitHeli(); garageCar(); trial.start(r); rig.snap(); },
   onTaxi: ({ night }) => {
     pursuit.stop(); trial.stop(); taxi.stop(); exitHeli();
     if (night !== mode.evening) { mode.evening = night; applyMode(); }
     taxi.start();
   },
   taxiBest: () => taxi.best(),
-  onFree: () => { pursuit.stop(); trial.stop(); taxi.stop(); hud.toast('Free roam'); },
+  onFree: () => { pursuit.stop(); trial.stop(); taxi.stop(); if (!flying) garageCar(); hud.toast('Free roam'); },
   onCar: (name) => actions.car(name),
   // paint choice for the current car (saved per car; applied now if that car is on the road)
   onPaint: (name, id) => {
@@ -344,7 +346,7 @@ const taxi = createTaxi({
   scene, player: car, ui: gameUI, audio, save,
   setWaypoint: (p) => hud.setWaypoint(p),
   isNight: () => mode.evening,
-  ensureCar: () => { if (carMesh.userData.model !== 'taxi') actions.car('taxi'); },
+  ensureCar: () => { if (carMesh.userData.model !== 'taxi') { exitHeli(); modeCar('taxi'); } },
 });
 for (const m of taxi.meshes) farSkip.add(m); // never baked into the far view
 hud.setBlips(() => [...pursuit.blips(), ...trial.blips(), ...taxi.blips()]);
@@ -395,15 +397,18 @@ async function useCar(name) {
     if (!bars.length) garda = { update() {} };
   }
   carMesh.userData.setLights(atmosphere.state.values.lamps);
-  save.set('car', name);
 }
 const carReady = useCar(save.get('car', 'garda'));
 const CAR_NAMES = Object.fromEntries(Object.entries(CARS).map(([k, c]) => [k, c.name]));
+// the garage car (saved) vs a game's own vehicle (not saved: a taxi shift doesn't change the free roam car)
 actions.car = (name) => {
   if (name === 'heli') { if (HELI_ENABLED) enterHeli(); return; }
   exitHeli();
+  save.set('car', name);
   useCar(name); hud.toast(CAR_NAMES[name] || name);
 };
+function modeCar(name) { useCar(name); hud.toast(CAR_NAMES[name] || name); }
+function garageCar() { const mine = save.get('car', 'garda'); if (CARS[mine] && carMesh.userData.model !== mine) modeCar(mine); }
 loadCar('coupe').then((m) => { suspectModel = m; });
 const treesReady = loadTrees().then((s) => console.log('trees loaded:', s.join(', ')));
 // ---------- Garda Air Support Unit helicopter ----------
@@ -746,7 +751,7 @@ settle(Promise.all([carReady, treesReady]), 8000).then(() => {
   if (LITE) setTimeout(startDistrictStreaming, 2500);
   document.getElementById('loading').classList.add('gone');
   document.getElementById('loading').setAttribute('aria-hidden', 'true');
-  if (!intro) { window.__dublin.ready = true; return; }
+  if (!intro) { window.__dublin.ready = true; gameUI.welcome(); return; }
   // the aerial view pans to the start, then the real camera descends from that pose to the chase view
   intro.progress(1, 'Your drive is ready');
   frozen = true;

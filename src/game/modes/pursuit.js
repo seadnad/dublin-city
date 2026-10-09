@@ -7,7 +7,7 @@ import { Color } from 'three';
 import { world, v2, laneOffset } from '../../world/geo.js';
 import { resolveCircle } from '../collision.js';
 import { TYPES } from '../fleet.js';
-import { pickCallout } from './callouts.js';
+import { pickCallout, hotCallout } from './callouts.js';
 import { makeGardaUnit, makeCones, makeRunner, addHazards, setHazards, makeSmoke } from './pursuitkit.js';
 
 // ---- tuning ----
@@ -351,13 +351,13 @@ export function createPursuit({ scene, makeSuspectMesh, player, traffic, tram, u
   function clearRoadblock() { roadblock = null; if (units) units[2].visible = false; if (cones) cones.visible = false; }
 
   // ---- rounds ----
-  function newCall() {
+  function newCall(hot = false) {
     ensureProps();
     clearRoadblock();
     for (const b of backups) { b.on = false; b.mesh.visible = false; }
     for (const k of Object.keys(meshes)) meshes[k].visible = false;
     runnerMesh.visible = false; runner = null; smoke.hide();
-    const pick = pickCallout(player.pos, lastCallout);
+    const pick = (hot && hotCallout(player.pos, player.heading)) || pickCallout(player.pos, lastCallout);
     callout = lastCallout = pick.callout;
     kind = callout.kind;
     mesh = suspectMesh(kind, callout.color || '#a3121a');
@@ -371,6 +371,7 @@ export function createPursuit({ scene, makeSuspectMesh, player, traffic, tram, u
     roadblockT = TUNE.roadblockEvery * 0.6;
     ui.radio(`Control to all units: ${callout.text}.`, 6500);
     audio.cue('beep');
+    if (pick.hot) spotted(); // the first call of a shift: close by and already running
   }
   function spotted() {
     if (stage !== 'unaware') return;
@@ -405,6 +406,7 @@ export function createPursuit({ scene, makeSuspectMesh, player, traffic, tram, u
       beatResult = { pts };
       ui.banner('SUSPECT DETAINED', `+${pts}${pit ? ` · PIT bonus ${pit}` : ''}${boxed ? ' · boxed in +50' : ''}${foot ? ' · foot chase +50' : ''}${quick ? ` · quick +${quick}` : ''}${roundPenalty ? ` · crashes −${roundPenalty}` : ''} · +${TUNE.arrestBonusTime} s`, 3200);
       audio.cue('bust');
+      if (ui.score) ui.score({ value: caught, icon: '🚔', label: `caught · ${score} pts` }); // the counter pops now, not after the beat
       freeze(true);
     } else {
       lostCount++; clock = Math.max(1, clock - TUNE.lostPenaltyTime);
@@ -480,7 +482,7 @@ export function createPursuit({ scene, makeSuspectMesh, player, traffic, tram, u
       player.siren = true;
       audio.setSiren(true);
       ui.showMission('pursuit');
-      newCall();
+      newCall(!opts.cold); // starts hot (opts.cold: the long-range dispatch, for tests)
     },
     stop() {
       active = false; stage = 'idle';
@@ -603,9 +605,10 @@ export function createPursuit({ scene, makeSuspectMesh, player, traffic, tram, u
       ui.updateMission({
         title: `PURSUIT · CALL ${caught + lostCount + 1}`,
         big: fmt(clock),
-        sub: `${callout.crime} · ${stage === 'unaware' ? 'not yet spotted' : `${Math.round(stage === 'foot' ? Math.sqrt(dist2(runner.pos, player.pos)) : dist)} m`} · ${score} pts`,
+        sub: `${callout.crime} · ${stage === 'unaware' ? 'not yet spotted' : `${Math.round(stage === 'foot' ? Math.sqrt(dist2(runner.pos, player.pos)) : dist)} m`} · arrest = +${TUNE.arrestBonusTime} s`,
         meter: damage,
         warn: clock < 20,
+        score: { value: caught, icon: '🚔', label: `caught · ${score} pts` },
       });
       ui.updatePursuit({
         meterLabel: stage === 'foot' ? 'ON FOOT' : 'DAMAGE',

@@ -53,7 +53,7 @@ export default async function (page, shot) {
   await page.waitForFunction(() => window.__dublin.taxi.state.fares === 1, { timeout: 8000 }).catch(() => {});
   const st2 = await page.evaluate(() => window.__dublin.taxi.state);
   if (st2.fares !== 1 || !(st2.earnings > 0)) return fail(`fare did not complete (${JSON.stringify(st2)})`);
-  await wait(300);
+  await wait(1000); // (the takings counter counts up for 0.7 s)
   const panel2 = await page.$eval('#mission', (e) => e.innerText.replace(/\n/g, ' | '));
   const bye = await page.$eval('#say', (e) => (e.hidden ? '' : e.textContent));
   console.log(`drop-off: €${st2.earnings.toFixed(2)} | "${bye}" | panel: ${panel2}`);

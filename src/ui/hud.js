@@ -96,7 +96,8 @@ export function createHUD({ sites, actions }) {
         <tr><td><kbd>Space</kbd></td><td>Handbrake (drift)</td></tr>
         <tr><td><kbd>C</kbd></td><td>Chase / bonnet camera</td></tr>
         <tr><td><kbd>R</kbd> <kbd>N</kbd></td><td>Rain / night</td></tr>
-        <tr><td><kbd>G</kbd></td><td>Play: Garda Pursuit, Time Trials</td></tr>
+        <tr><td><kbd>G</kbd></td><td>Play: Garda Pursuit, Dublin Taxi, Time Trials (the game puts you in the right car)</td></tr>
+        <tr><td>🚕</td><td>Dublin Taxi: stop right beside the waving fare, drive them to the place they name (follow the arrow and the blue beacon) and stop at the kerb. Quick, smooth runs earn more</td></tr>
         <tr><td><kbd>X</kbd> <kbd>Z</kbd></td><td>Siren and blue lights / siren tone</td></tr>
         <tr><td><kbd>E</kbd></td><td>Garda Pursuit: radio Control for the suspect’s location (a few calls a shift; 🎮 D-pad left, or the 📻 button on a phone). Take them down with a PIT (nudge a rear corner at speed), rams, or by boxing them in and holding them for the arrest</td></tr>
         <tr><td><kbd>M</kbd></td><td>World map (click streets for a waypoint)</td></tr>
@@ -161,9 +162,8 @@ export function createHUD({ sites, actions }) {
   // the layout canvas itself (already capped at 4096 px: a second full-map copy would break iPhone canvas limits)
   const MPP = PPM, mini = layoutCanvas;
   const radiusM = IS_MOBILE ? 150 : 170;
-  const siteList = Object.values(sites);
 
-  function drawMinimap(car, traffic, tram) {
+  function drawMinimap(car, tram) {
     const W = map.width, R = W / 2, k = R / radiusM; // px per metre
     const th = -Math.PI / 2 - Math.atan2(Math.cos(car.heading), Math.sin(car.heading));
     const c = Math.cos(th), s = Math.sin(th);
@@ -181,25 +181,10 @@ export function createHUD({ sites, actions }) {
     mctx.restore();
     mctx.save();
     mctx.beginPath(); mctx.arc(R, R, R - 2 * dpr, 0, Math.PI * 2); mctx.clip();
-    // traffic + tram
-    mctx.fillStyle = '#e8e4da';
-    for (const ai of traffic.list) {
-      const [x, y] = toScreen(ai.pos.x, ai.pos.z);
-      mctx.fillRect(x - 2 * dpr, y - 2 * dpr, 4 * dpr, 4 * dpr);
-    }
-    mctx.fillStyle = '#b07bd6';
-    for (const t of tram.carriages) { const [x, y] = toScreen(t.x, t.z); mctx.beginPath(); mctx.arc(x, y, 3.4 * dpr, 0, 7); mctx.fill(); }
+    // the Luas, faintly (no traffic dots or landmark pins: the radar shows only you, the roads and the objective)
+    mctx.fillStyle = 'rgba(176,123,214,0.55)';
+    for (const t of tram.carriages) { const [x, y] = toScreen(t.x, t.z); mctx.beginPath(); mctx.arc(x, y, 2.6 * dpr, 0, 7); mctx.fill(); }
     mctx.restore();
-    // landmark pins (clamped to the rim when off-map)
-    for (const st of siteList) {
-      let [x, y] = toScreen(st.x, st.z);
-      const dx = x - R, dy = y - R, d = Math.hypot(dx, dy), lim = R - 9 * dpr;
-      const off = d > lim;
-      if (off) { x = R + (dx / d) * lim; y = R + (dy / d) * lim; }
-      mctx.beginPath(); mctx.arc(x, y, (off ? 4 : 5.5) * dpr, 0, 7);
-      mctx.fillStyle = off ? 'rgba(242,182,50,0.8)' : '#f2b632'; mctx.fill();
-      mctx.lineWidth = 1.5 * dpr; mctx.strokeStyle = '#fff'; mctx.stroke();
-    }
     // waypoint (clamped to the rim when off the minimap)
     if (waypoint) {
       let [x, y] = toScreen(waypoint.x, waypoint.z);
@@ -243,7 +228,7 @@ export function createHUD({ sites, actions }) {
     setWaypoint(p) { waypoint = p; if (!p) { wpEl.textContent = ''; wpEl.classList.remove('show'); } },
     isPanelOpen: () => !places.hidden || !help.hidden,
     toggleFps() { fpsEl.hidden = !fpsEl.hidden; },
-    update(dt, { car, traffic, tram }) {
+    update(dt, { car, tram }) {
       const name = car.street ? car.street.name : '';
       if (name !== lastStreet) {
         streetEl.textContent = name; lastStreet = name;
@@ -259,7 +244,7 @@ export function createHUD({ sites, actions }) {
         else { wpEl.textContent = `${waypoint.name} · ${d < 1000 ? Math.round(d / 10) * 10 + ' m' : (d / 1000).toFixed(1) + ' km'}`; wpEl.classList.add('show'); }
       }
       mapT -= dt;
-      if (mapT <= 0) { drawMinimap(car, traffic, tram); mapT = IS_MOBILE ? 1 / 24 : 1 / 45; }
+      if (mapT <= 0) { drawMinimap(car, tram); mapT = IS_MOBILE ? 1 / 24 : 1 / 45; }
       // Luas stop announcement when the player is near a stopped tram
       let stop = '';
       if (tram.currentStop) {

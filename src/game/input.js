@@ -47,7 +47,7 @@ export function readPad() {
 }
 // the menu a controller is steering (the first open one), and its buttons
 function openMenu() {
-  const el = ['#results:not([hidden])', '#play:not([hidden])', '.sheet:not([hidden])', '.worldmap:not([hidden])'].map((s) => document.querySelector(s)).find(Boolean);
+  const el = ['#results:not([hidden])', '#welcome:not([hidden])', '#play:not([hidden])', '.sheet:not([hidden])', '.worldmap:not([hidden])'].map((s) => document.querySelector(s)).find(Boolean);
   return el || null;
 }
 function menuStep(dir) {

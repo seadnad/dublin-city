@@ -72,32 +72,8 @@ const CHAT = [
   "I'd walk, but the shoes are new.",
   'Thanks a million for stopping.',
 ];
-const BYE = {
-  smooth: [
-    'Smooth as a pint settling. Keep the change.',
-    "Lovely driving. Here's a little extra.",
-    'Best spin I\'ve had all week. Mind yourself.',
-    'Fair play to you. Thanks a million.',
-    "Didn't spill a drop. Good luck now.",
-  ],
-  quick: [
-    'That was quick! Made it with time to spare.',
-    'You flew! I owe you one.',
-    "Brilliant, I'll make it after all.",
-  ],
-  plain: [
-    'Grand, thanks. See you again.',
-    "That'll do. Thanks very much.",
-    'Cheers, take it easy.',
-  ],
-  rough: [
-    "Bit bumpy there. I'll need a lie down.",
-    'Jaysus. I\'ll walk next time.',
-    "We got here, I'll give you that.",
-    "My nerves! Here's your fare.",
-    'Is it bumper cars you think we\'re at?',
-  ],
-};
+// on the way out: short and plain (no jokes for now)
+const BYE = ['Thanks, cheers!', 'Lovely, thanks.', "That's me, thanks."];
 const pick = (a) => a[Math.floor(Math.random() * a.length)];
 
 // a road point good for kerbside driving: on a road, not over water, not a lane or a bridge
@@ -172,10 +148,12 @@ export function createTaxi({ scene, player, ui, audio, save, setWaypoint = () =>
   const say = (text, ms = 4200) => ui.say(text, ms);
 
   // a kerbside spot on a footpath 90-380 m from the car (wider if the car is out on the edge of the map)
-  function hailSpot() {
+  // (first: the shift's first fare stands 20-60 m ahead, so the first pickup comes within seconds)
+  function hailSpot(first = false) {
+    const fx = Math.sin(player.heading), fz = Math.cos(player.heading);
     const cand = world.edges.filter((e) => e.car && e.len > 24 && !['lane', 'bridge'].includes(e.way.type) && !e.way.pedestrian);
-    for (const [lo, hi] of [[90, 380], [60, 800], [0, 1e9]]) {
-      const near = cand.filter((e) => { const d = Math.hypot((e.from.x + e.to.x) / 2 - player.pos.x, (e.from.z + e.to.z) / 2 - player.pos.z); return d > lo && d < hi; });
+    for (const [lo, hi, fwd] of [...(first ? [[20, 60, 0.5], [10, 60, 0], [60, 120, 0]] : []), [90, 380], [60, 800], [0, 1e9]]) {
+      const near = cand.filter((e) => { const mx = (e.from.x + e.to.x) / 2 - player.pos.x, mz = (e.from.z + e.to.z) / 2 - player.pos.z, d = Math.hypot(mx, mz); return d > lo && d < hi && (!fwd || (mx * fx + mz * fz) > fwd * d); });
       for (let i = 0; i < 40 && near.length; i++) {
         const e = pick(near), s = 0.3 + Math.random() * 0.4;
         const dir = v2.norm(v2.sub(e.to, e.from)), left = { x: dir.z, z: -dir.x }, c = v2.lerp(e.from, e.to, s);
@@ -207,8 +185,8 @@ export function createTaxi({ scene, player, ui, audio, save, setWaypoint = () =>
     return all[0];
   }
 
-  function newHail() {
-    const h = hailSpot();
+  function newHail(first = false) {
+    const h = hailSpot(first);
     if (!h) { phase = 'cruise'; return; }
     fare = { pick: h, dest: null, dist: 0, t: 0, crashes: 0 };
     phase = 'hail';
@@ -246,8 +224,7 @@ export function createTaxi({ scene, player, ui, audio, save, setWaypoint = () =>
     const tip = f.crashes === 0 ? meter * (quick ? 0.2 : 0.12) : f.crashes === 1 ? meter * 0.04 : 0;
     const total = Math.max(FLAG, meter + bonus - penalty) + tip;
     earnings += total; tips += tip; fares++;
-    const mood = f.crashes >= 2 ? 'rough' : f.crashes === 0 && quick ? (Math.random() < 0.5 ? 'quick' : 'smooth') : f.crashes === 0 ? 'smooth' : 'plain';
-    say(pick(BYE[mood]), 4200);
+    say(pick(BYE), 3000);
     const bits = [`Meter ${euro(meter)}`];
     if (bonus > 0.05) bits.push(`quick +${euro(bonus)}`);
     if (penalty) bits.push(`knocks −${euro(penalty)}`);
@@ -294,7 +271,7 @@ export function createTaxi({ scene, player, ui, audio, save, setWaypoint = () =>
       lastImpact = player.impact || 0; crashCool = 0;
       ui.showMission('taxi');
       say(isNight() ? "Night shift. The pubs are busy: someone's always looking for a lift." : 'Shift on. Six minutes: find a fare, stop beside them, and take them where they want to go.', 5000);
-      newHail();
+      newHail(true);
       api.update(0);
     },
     stop() {
@@ -348,7 +325,8 @@ export function createTaxi({ scene, player, ui, audio, save, setWaypoint = () =>
         }
       } else sub = clock > 0 ? 'Looking for a fare…' : 'Shift over';
       ui.updateMission({
-        title: `DUBLIN TAXI · ${euro(earnings)} · ${fares} fare${fares === 1 ? '' : 's'}`,
+        title: `DUBLIN TAXI · ${fares} fare${fares === 1 ? '' : 's'}`,
+        score: { value: earnings, kind: 'euro', label: 'earned' },
         big: clock > 0 ? fmt(clock).replace(/\.\d+$/, '') : 'LAST FARE',
         warn: clock > 0 && clock < 30,
         sub, arrow,

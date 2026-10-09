@@ -43,3 +43,24 @@ export function pickCallout(player, last = null, rand = Math.random) {
   }
   return fallback;
 }
+
+// The first call of a shift starts hot: a car that won't stop, 110-170 m away (ahead of the player if possible) on
+// whatever street that is, so the chase is on within seconds.
+const HOT = [
+  { kind: 'coupe', crime: 'Failed to stop', color: '#a3121a' },
+  { kind: 'hatch', crime: 'Stolen car', color: '#27618c' },
+  { kind: 'saloon', crime: 'Dangerous driving', color: '#1a1c1e' },
+];
+export function hotCallout(player, heading, rand = Math.random) {
+  const fx = Math.sin(heading), fz = Math.cos(heading);
+  const near = [];
+  for (const e of world.edges) {
+    if (!e.car || e.way.bridge || e.len <= 12 || e.way.type === 'lane' || e.way.pedestrian) continue;
+    const mx = (e.from.x + e.to.x) / 2 - player.x, mz = (e.from.z + e.to.z) / 2 - player.z, d = Math.hypot(mx, mz);
+    if (d > 110 && d < 170) near.push({ e, ahead: (mx * fx + mz * fz) / d });
+  }
+  const ahead = near.filter((c) => c.ahead > 0.3), list = ahead.length ? ahead : near;
+  if (!list.length) return null;
+  const pick = list[Math.floor(rand() * list.length)], h = HOT[Math.floor(rand() * HOT.length)];
+  return { hot: true, edge: pick.e, callout: { ...h, text: `${pick.e.way.name}: a car has failed to stop, just ahead of you`, ways: [pick.e.way.name] } };
+}

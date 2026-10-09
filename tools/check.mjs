@@ -56,8 +56,11 @@ const browser = await puppeteer.launch({
 });
 const page = await browser.newPage();
 // GFX=high/medium/low/saver exercises an explicit profile before quality.js reads localStorage.
+// the first-visit welcome card would sit over every scenario: off unless WELCOME=1 (or a scenario calls gameUI.welcome(true))
+if (!process.env.WELCOME) await page.evaluateOnNewDocument(() => { try { localStorage.setItem('dublin.welcomed', 'true'); } catch {} });
 if (process.env.GFX) await page.evaluateOnNewDocument((mode) => localStorage.setItem('dublin.gfx', JSON.stringify(mode)), process.env.GFX);
-if (mobile) await page.emulate({ viewport: { width: 844, height: 390, deviceScaleFactor: 2, isMobile: true, hasTouch: true, isLandscape: true }, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Mobile' });
+const portrait = args.includes('--portrait'); // with --mobile: a 390 x 844 phone held upright
+if (mobile) await page.emulate({ viewport: { width: portrait ? 390 : 844, height: portrait ? 844 : 390, deviceScaleFactor: 2, isMobile: true, hasTouch: true, isLandscape: !portrait }, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) Mobile' });
 else await page.setViewport({ width: 1280, height: 720 });
 
 const problems = [];
