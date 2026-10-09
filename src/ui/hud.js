@@ -96,7 +96,7 @@ export function createHUD({ sites, actions }) {
         <tr><td><kbd>Space</kbd></td><td>Handbrake (drift)</td></tr>
         <tr><td><kbd>C</kbd></td><td>Chase / bonnet camera</td></tr>
         <tr><td><kbd>R</kbd> <kbd>N</kbd></td><td>Rain / night</td></tr>
-        <tr><td><kbd>G</kbd></td><td>Play: Garda Pursuit, Dublin Taxi, Time Trials (the game puts you in the right car)</td></tr>
+        <tr><td><kbd>G</kbd></td><td>Play: Garda Pursuit, Dublin Taxi, Time Trials and today's dailies (the game puts you in the right car). <kbd>Enter</kbd> on a result: try again</td></tr>
         <tr><td>🚕</td><td>Dublin Taxi: stop right beside the waving fare, drive them to the place they name (follow the arrow and the blue beacon) and stop at the kerb. Quick, smooth runs earn more</td></tr>
         <tr><td><kbd>X</kbd> <kbd>Z</kbd></td><td>Siren and blue lights / siren tone</td></tr>
         <tr><td><kbd>E</kbd></td><td>Garda Pursuit: radio Control for the suspect’s location (a few calls a shift; 🎮 D-pad left, or the 📻 button on a phone). Take them down with a PIT (nudge a rear corner at speed), rams, or by boxing them in and holding them for the arrest</td></tr>

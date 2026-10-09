@@ -80,4 +80,62 @@ export default async function (page, shot) {
   const f = await log('foot arrest');
   console.log('FOOT', f.caught === 1 ? 'ARRESTED' : 'NOT ARRESTED');
   await wait(300); await shot('pursuit2-foot-arrest');
+
+  // ---- Build 2: heat HUD, arrest streak, medals, results, share, retry, Daily Callouts ----
+  const fail = (m) => { console.log(`PURSUIT2 FAIL: ${m}`); process.exitCode = 1; };
+  await wait(3200); // (the arrest beat, then the next call at a higher heat)
+  const heat = await page.$eval('#mission .m-heat', (e) => e.innerText.replace(/\n/g, ' '));
+  console.log('heat HUD:', heat);
+  if (!/HEAT \d · [A-Z]/.test(heat) || !/\+60 s/.test(heat)) fail('heat row missing from the HUD');
+  await shot('pursuit2-heat-hud');
+  await page.evaluate(() => { const p = window.__dublin.pursuit; p.stop(); p.start(); });
+  await wait(500);
+  const pts = [];
+  for (let i = 0; i < 2; i++) {
+    const s0 = (await dbg()).score;
+    await page.evaluate(() => window.__dublin.pursuit._force.arrest()); await wait(100);
+    const s1 = await dbg();
+    pts.push(s1.score - s0);
+    if (i === 1) console.log('arrest banner:', await page.$eval('#p-banner', (e) => e.innerText.replace(/\n/g, ' ')), '| chain', s1.chain);
+    await wait(3000);
+  }
+  console.log('arrest points:', JSON.stringify(pts), 'heat now', (await dbg()).heat);
+  if ((await dbg()).chain !== 2) fail('arrest streak not counted');
+  await page.evaluate(() => window.__dublin.pursuit._force.clock(0)); await wait(300);
+  await page.waitForFunction(() => !document.getElementById('results').hidden, { timeout: 5000 }).catch(() => {});
+  const res = await page.$eval('#results', (e) => (e.hidden ? '' : e.innerText.replace(/\n+/g, ' | ')));
+  const sum = await page.evaluate(() => window.__dublin.gameUI.lastRun), share = await page.evaluate(() => window.__dublin.gameUI.lastShare);
+  console.log('results:', res); console.log('summary:', JSON.stringify(sum)); console.log(`share (${share.length}):`, JSON.stringify(share));
+  if (!/🥉/.test(res) || !/off silver/.test(res) || !/Next target/.test(res)) fail('results: bronze medal / how-close lines');
+  if (!sum || sum.mode !== 'pursuit' || sum.stats.arrests !== 2 || sum.events.stopped !== 2 || sum.log.length !== 2) fail('run summary');
+  if (!share || share.length >= 200 || !/2 arrests/.test(share) || !/🚔🚔/.test(share)) fail('share text');
+  await shot('pursuit2-results');
+  const t0 = Date.now();
+  await page.click('#results [data-r="retry"]');
+  await page.waitForFunction(() => window.__dublin.pursuit.active, { timeout: 1500 }).catch(() => {});
+  console.log('retry (ms):', Date.now() - t0);
+  if (!(await page.evaluate(() => window.__dublin.pursuit.active))) fail('retry did not restart within 1.5 s');
+
+  // Daily Callouts: the same calls on the same streets, twice
+  const DATE = '2026-10-09';
+  const [p1, p2] = await page.evaluate((D) => [window.__dublin.pursuit.previewDaily(D, 3), window.__dublin.pursuit.previewDaily(D, 3)], DATE);
+  console.log('daily plan:', JSON.stringify(p1.calls.map((c) => `${c.crime} @ ${c.way}`)));
+  if (JSON.stringify(p1) !== JSON.stringify(p2)) fail('daily callout plan is not deterministic');
+  const runs = [];
+  for (let r = 0; r < 2; r++) {
+    await page.evaluate((D) => { const p = window.__dublin.pursuit; p.stop(); p.start({ variant: 'daily', date: D }); }, DATE);
+    await wait(300);
+    if (r === 0) await shot('pursuit2-daily-start');
+    for (let i = 0; i < 2; i++) { await page.evaluate(() => window.__dublin.pursuit._force.arrest()); await wait(3000); }
+    runs.push(await page.evaluate(() => window.__dublin.pursuit.callPlanLog));
+  }
+  console.log('daily played:', JSON.stringify(runs[0].map((c) => `${c.crime} @ ${c.way}`)));
+  if (JSON.stringify(runs[0]) !== JSON.stringify(runs[1]) || JSON.stringify(runs[0]) !== JSON.stringify(p1.calls)) fail('daily callouts differ between runs or from the plan');
+  await page.evaluate(() => window.__dublin.pursuit._force.clock(0)); await wait(300);
+  await page.waitForFunction(() => !document.getElementById('results').hidden, { timeout: 5000 }).catch(() => {});
+  const dsum = await page.evaluate(() => window.__dublin.gameUI.lastRun);
+  console.log('daily results:', await page.$eval('#results', (e) => e.innerText.replace(/\n+/g, ' | ')), '| share', JSON.stringify(await page.evaluate(() => window.__dublin.gameUI.lastShare)));
+  if (!dsum || dsum.variant !== 'daily' || dsum.date !== DATE) fail('daily summary');
+  await shot('pursuit2-daily-results');
+  console.log(process.exitCode ? 'PURSUIT2: FAILED' : 'PURSUIT2: OK');
 }

@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { world, v2, laneOffset } from '../../world/geo.js';
 import { fmt } from './pursuit.js';
+import { dateKey, seedOf, makeRand, howClose, medalFor, shareText, emojiRow, runSummary, markDaily, streakText } from './runs.js';
 
 export const ROUTES = [
   { id: 'liffey', name: 'Liffey Loop', blurb: 'Both quays and three bridges', path: ['NQ8', 'NQ9', 'NQ10', 'SQ10', 'SQ9', 'SQ8', 'TBQD', 'TBQC', 'SQ7', 'TBQB', 'TBQA', 'HPS', 'SQ6', 'TBQF', 'SQ5', 'SQ4', 'NQ4', 'NQ5', 'NQ6', 'NQ7', 'NQ8'] },
@@ -12,10 +13,8 @@ export const ROUTES = [
 
 // Daily route: a seeded random drive through the graph, the same for everyone on a given day.
 export function dailyRoute(date = new Date()) {
-  const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-  let seed = 0;
-  for (const ch of key) seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
-  const rand = () => { seed ^= seed << 13; seed >>>= 0; seed ^= seed >> 17; seed ^= seed << 5; seed >>>= 0; return seed / 4294967296; };
+  const key = dateKey(date);
+  const rand = makeRand(seedOf(key));
   const nodes = [...world.nodes.values()].filter((n) => n.edges.some((e) => e.way.type !== 'lane'));
   for (let attempt = 0; attempt < 50; attempt++) {
     let node = nodes[Math.floor(rand() * nodes.length)], prev = null, len = 0;
@@ -27,9 +26,9 @@ export function dailyRoute(date = new Date()) {
       prev = node; node = e.to; len += e.len;
       path.push(node.id); seen.add(node.id);
     }
-    if (len > 900) return { id: `daily-${key}`, name: 'Daily Route', blurb: key, path, daily: true };
+    if (len > 900) return { id: `daily-${key}`, name: 'Daily Route', blurb: key, path, daily: true, date: key };
   }
-  return { ...ROUTES[0], id: `daily-${key}`, name: 'Daily Route', daily: true };
+  return { ...ROUTES[0], id: `daily-${key}`, name: 'Daily Route', daily: true, date: key };
 }
 
 function routeGeometry(route) {
@@ -87,7 +86,7 @@ function placeGate(g, cp, finish) {
   for (const m of g.userData.mats) { m.color?.set(col); if (m.emissive) m.emissive.set(finish ? 0x9adfb8 : 0xff883e); }
 }
 
-export function createTrial({ scene, player, playerMesh, ui, audio, save, freeze }) {
+export function createTrial({ scene, player, playerMesh, ui, audio, save, freeze, snap = () => {} }) {
   const gates = [gateMesh(), gateMesh()];
   gates.forEach((g) => { g.visible = false; scene.add(g); });
   // ghost: a translucent copy of the player's car
@@ -112,11 +111,13 @@ export function createTrial({ scene, player, playerMesh, ui, audio, save, freeze
 
   const api = {
     get active() { return active; },
-    start(r) {
+    // opts.quick: a retry from the results card (a 1.5 s countdown)
+    start(r, opts = {}) {
       route = r; geo = routeGeometry(r);
       best = save.get(`trial.${r.id}`, null);
-      active = true; phase = 'countdown'; countdown = 3.5; lastBeep = 4; t = 0; next = 0; splits = []; rec = []; recT = 0;
+      active = true; phase = 'countdown'; countdown = opts.quick ? 1.5 : 3.5; lastBeep = opts.quick ? 2 : 4; t = 0; next = 0; splits = []; rec = []; recT = 0;
       player.teleport(geo.start.x, geo.start.z, geo.start.heading);
+      snap();
       freeze(true);
       show();
       ghost.visible = !!(best && best.ghost);
@@ -182,20 +183,36 @@ export function createTrial({ scene, player, playerMesh, ui, audio, save, freeze
 
   function finish() {
     const time = t;
-    const medal = time <= geo.medals.gold ? 'gold' : time <= geo.medals.silver ? 'silver' : time <= geo.medals.bronze ? 'bronze' : null;
+    const M = [['bronze', geo.medals.bronze], ['silver', geo.medals.silver], ['gold', geo.medals.gold]];
+    const medal = medalFor(time, M, false);
     const record = !best || time < best.time;
     if (record) save.set(`trial.${route.id}`, { time, splits, medal, ghost: rec.length < 6000 ? rec : null });
     audio.cue('finish');
     const r = route;
     api.stop();
+    const st = r.daily ? markDaily(save, r.date) : null;
+    const close = howClose({ value: time, best: best ? best.time : null, medals: M, higher: false, gap: (d) => `${d.toFixed(2)} s`, show: fmt });
+    // splits against the best run: green faster, red slower, white with nothing to compare (at most 10 squares)
+    const marks = splits.map((s, i) => (!best || best.splits[i] === undefined ? '⬜' : s <= best.splits[i] ? '🟩' : '🟥'));
+    const step = Math.max(1, Math.ceil(marks.length / 10));
+    const row = marks.filter((_, i) => (i + 1) % step === 0 || i === marks.length - 1);
+    // run summary (shape documented in runs.js); log: the checkpoint split times (s)
+    const summary = runSummary({
+      mode: 'trial', variant: r.daily ? 'daily' : r.id, date: r.daily ? r.date : null, seed: r.daily ? seedOf(r.date) : null,
+      duration: time, score: time, scoreKind: 'time', medal,
+      stats: { route: r.id, length: Math.round(geo.length), checkpoints: geo.cps.length },
+      events: { checkpoints: splits.length },
+      log: splits.map((s) => Math.round(s * 100) / 100),
+    });
     ui.showResults({
       title: `${r.name}: ${fmt(time)}`,
       medal,
-      lines: [
-        record ? (best ? `New best! ${(best.time - time).toFixed(2)} s faster` : 'First time set!') : `Best: ${fmt(best.time)} (+${(time - best.time).toFixed(2)} s)`,
-        `Gold ${fmt(geo.medals.gold)}  ·  Silver ${fmt(geo.medals.silver)}  ·  Bronze ${fmt(geo.medals.bronze)}`,
-      ],
-      retry: () => api.start(r),
+      daily: r.daily ? ['Daily Route', streakText(st)].filter(Boolean).join(' · ') : null,
+      lines: [`Gold ${fmt(geo.medals.gold)}  ·  Silver ${fmt(geo.medals.silver)}  ·  Bronze ${fmt(geo.medals.bronze)}`],
+      close: close.lines, target: close.target,
+      share: shareText({ icon: '⏱', title: r.name, date: r.daily ? r.date : null, score: fmt(time), extra: `${(geo.length / 1000).toFixed(1)} km`, medal, row: emojiRow(row, 10) }),
+      summary,
+      retry: () => api.start(r, { quick: true }),
     });
   }
   return api;

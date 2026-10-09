@@ -25,8 +25,20 @@ export default async function (page, shot) {
   console.log('play button pulsing:', pulsing);
   await shot('play-button');
 
-  // the Play menu
+  // the Play menu, with bests saved before Build 2 (same keys) and a streak from yesterday
+  await page.evaluate(() => {
+    const d = new Date(); d.setDate(d.getDate() - 1);
+    const y = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    localStorage.setItem('dublin.daily.streak', JSON.stringify({ last: y, n: 3, best: 3 }));
+    localStorage.setItem('dublin.pursuit.best', JSON.stringify({ caught: 3, score: 812 }));
+    localStorage.setItem('dublin.taxi.best', JSON.stringify({ earnings: 64.5, fares: 4, tips: 6.1, night: false }));
+  });
   await page.evaluate(() => window.__dublin.gameUI.togglePlay(true)); await wait(500);
+  const menu = await page.$eval('#play', (e) => e.innerText.replace(/\n+/g, ' | '));
+  console.log('menu:', menu.slice(0, 400));
+  if (!/3-day streak/.test(menu)) fail('streak not on the Play menu');
+  if (!/3 caught · 812 pts/.test(menu) || !/€64\.50/.test(menu)) fail('old saved bests not shown');
+  if ((await page.$$('#play .dailies [data-daily], #play .dailies [data-route]')).length !== 3) fail('dailies strip needs three buttons');
   await shot('play-menu');
   await page.$eval('#play', (e) => { e.scrollTop = e.scrollHeight; }); await wait(200);
   await shot('play-menu-garage');

@@ -454,3 +454,61 @@ kbd { display: inline-block; min-width: 1.5em; padding: 1px 5px; border-radius: 
   .p-radio { top: 330px; max-width: calc(100vw - 32px); }
   .toast { white-space: normal; width: max-content; max-width: calc(100vw - 24px); text-align: center; border-radius: 14px; }
 }
+
+/* ---------- one more go: dailies strip, fixed taxi shifts, results how-close lines and share, pursuit heat ---------- */
+.dailies { margin: 0 0 10px; padding: 10px 12px; border-radius: 12px; background: linear-gradient(135deg, rgba(22,155,98,0.22), rgba(255,136,62,0.16)); border: 1px solid rgba(255,255,255,0.16); }
+.dailies .d-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-bottom: 8px; font-size: 13px; }
+.dailies .d-head b { font-size: 15px; }
+.dailies .d-head span { opacity: 0.85; }
+.dailies .d-head .d-streak { margin-left: auto; font-weight: 700; opacity: 1; }
+.dailies .d-streak.on { color: #ffb27a; }
+.dailies .d-buttons { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.dailies .d-buttons button { min-height: 44px; padding: 6px 8px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.25); background: rgba(10,18,30,0.55); color: var(--ink); font: 700 14px system-ui, sans-serif; cursor: pointer; touch-action: manipulation; }
+.dailies .d-buttons button:hover, .dailies .d-buttons button:focus-visible { background: rgba(22,155,98,0.45); outline: 2px solid #fff; outline-offset: 1px; }
+.dailies .d-buttons small { display: block; font-size: 11px; font-weight: 600; opacity: 0.8; margin-top: 2px; }
+.dailies.compact { margin: 10px 0 0; padding: 8px 10px; }
+.dailies.compact .d-head { margin-bottom: 6px; }
+.dailies.compact .d-buttons small { display: none; }
+.game .g-more { display: flex; align-items: center; gap: 6px; font-size: 12px; opacity: 0.9; }
+.game .g-more button { padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.08); color: var(--ink); font: 700 12px system-ui, sans-serif; cursor: pointer; }
+.game .g-more button:focus-visible { outline: 2px solid #fff; }
+.results .r-card { width: min(480px, calc(100vw - 32px)); }
+.results .r-buttons button { padding: 9px 12px; }
+.results .r-daily { font-weight: 700; color: #ffb27a; opacity: 1; }
+.results .r-close { margin: 10px 0 0; padding: 8px 10px; border-radius: 10px; background: rgba(255,255,255,0.06); }
+.results .r-close p { margin: 2px 0; font-size: 14px; }
+.results .r-close p:first-child { font-weight: 700; }
+.results .r-target { margin-top: 8px; font-weight: 800; color: #5dff9e; opacity: 1; }
+.results kbd { margin-left: 4px; padding: 0 4px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.45); font: 600 10px system-ui, sans-serif; opacity: 0.85; }
+.results button:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+.results button[data-r="share"] { background: #2f6bff; border-color: #2f6bff; }
+.results .r-sharetext { display: block; width: 100%; margin-top: 10px; padding: 6px 8px; box-sizing: border-box; resize: none; border-radius: 8px; border: 1px solid rgba(255,255,255,0.25); background: rgba(0,0,0,0.3); color: var(--ink); font: 12px/1.4 system-ui, sans-serif; }
+.results .r-sharetext[hidden] { display: none; }
+.mission .m-heat { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 4px 0 2px; font-size: 11px; }
+.mission .m-heat .h-pips { display: inline-flex; gap: 2px; }
+.mission .m-heat .h-pips i { width: 9px; height: 12px; border-radius: 2px; background: rgba(255,255,255,0.18); }
+.mission .m-heat .h-pips i.on { background: linear-gradient(#ffd23c, #ff5a14); }
+.mission .m-heat[data-heat="4"] .h-pips i.on, .mission .m-heat[data-heat="5"] .h-pips i.on { background: linear-gradient(#ff8a5a, #e0102a); }
+.mission .m-heat b { font-weight: 800; letter-spacing: 0.08em; color: #ffb27a; }
+.mission .m-heat em { font-style: normal; font-weight: 700; color: #5dff9e; }
+@media (max-width: 560px) {
+  .dailies .d-buttons { gap: 6px; }
+  .dailies .d-buttons button { font-size: 12px; padding: 6px 4px; }
+  .dailies .d-head .d-streak { margin-left: 0; }
+  .game { grid-template-areas: 'head btn' 'text btn' 'em btn' 'more more'; }
+  .game .g-more { grid-area: more; margin-top: 4px; }
+}
+@media (max-height: 450px) {
+  .results { overflow: auto; }
+  .results .r-card { padding: 10px 14px 12px; margin: 8px 0; }
+  .results .r-medal { font-size: 36px; }
+  .results h2 { margin: 2px 0 4px; font-size: 18px; }
+  .results p, .results .r-close p { font-size: 12px; margin: 1px 0; }
+  .results .r-close { margin-top: 4px; padding: 4px 8px; }
+  .results .r-buttons { margin-top: 8px; }
+  .mission .m-heat { margin: 2px 0 0; font-size: 10px; clear: both; }
+  .dailies { padding: 6px 8px; margin-bottom: 8px; }
+  .dailies .d-head { margin-bottom: 4px; }
+  .dailies .d-buttons button { min-height: 36px; padding: 4px 6px; }
+  .dailies .d-buttons small { display: none; }
+}

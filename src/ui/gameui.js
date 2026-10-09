@@ -3,12 +3,12 @@ import { HELI_ENABLED } from '../game/heli.js';
 import { ROUTES, dailyRoute } from '../game/modes/trial.js';
 import { fmt } from '../game/modes/pursuit.js';
 import { CARS, paintFor } from '../game/carlist.js';
+import { MEDAL, dateKey, shortDate, streak } from '../game/modes/runs.js';
 
 export const save = {
   get(k, d) { try { const v = localStorage.getItem(`dublin.${k}`); return v ? JSON.parse(v) : d; } catch { return d; } },
   set(k, v) { try { localStorage.setItem(`dublin.${k}`, JSON.stringify(v)); } catch { /* storage unavailable */ } },
 };
-const MEDAL = { gold: '🥇', silver: '🥈', bronze: '🥉' };
 
 export function createGameUI({ onPursuit, onTrial, onTaxi = () => {}, taxiBest = () => null, onFree, onCar, onPaint = () => {}, trialInfo, toast, gfx, flying = () => false }) {
   const root = document.getElementById('hud');
@@ -44,6 +44,8 @@ export function createGameUI({ onPursuit, onTrial, onTaxi = () => {}, taxiBest =
     <div class="p-radio" id="p-radio" hidden><b>CONTROL</b><span></span></div>
     <div class="p-banner" id="p-banner" hidden><h2></h2><p></p></div>
     <div class="p-flash" id="p-flash"></div>`);
+  // the heat row (Garda Pursuit): tier pips and name, what an arrest buys, the arrest streak multiplier
+  q(mission, '.m-pursuit').insertAdjacentHTML('afterbegin', '<div class="m-heat"><span class="h-pips"></span><b></b><em></em></div>');
   const pursuitEl = q(mission, '.m-pursuit'), radioEl = $('p-radio'), bannerEl = $('p-banner'), flashEl = $('p-flash');
   let onRadio = () => {}, radioTimer = 0, bannerTimer = 0, flashTimer = 0;
   q(mission, '.m-radio').addEventListener('click', (e) => { e.currentTarget.blur(); onRadio(); });
@@ -53,21 +55,22 @@ export function createGameUI({ onPursuit, onTrial, onTaxi = () => {}, taxiBest =
   // puts the player in the right vehicle (main.js); the garage car is for free roam and the trials.
   function gameCards() {
     const pb = save.get('pursuit.best', null);
-    const tb = taxiBest();
+    const tb = taxiBest('casual'), t6 = taxiBest('shift6');
     const daily = dailyRoute();
     const di = trialInfo(daily), db = di.best;
     return `<div class="games">
       <div class="game pursuit">
         <div class="g-head"><span class="g-icon" aria-hidden="true">🚓</span><b>Garda Pursuit</b></div>
         <small>Catch the suspect: ram them, PIT them into a spin, or box them in to arrest.</small>
-        <em>${pb && pb.caught ? `Best: ${pb.caught} caught · ${pb.score} pts` : 'You drive the Garda car'}</em>
+        <em>${pb && pb.caught ? `Best: ${pb.caught} caught · ${pb.score} pts` : 'Medals at 2, 4 and 6 arrests'}</em>
         <div class="g-buttons"><button class="g-start" data-mode="pursuit">Start</button></div>
       </div>
       <div class="game taxi">
         <div class="g-head"><span class="g-icon" aria-hidden="true">🚕</span><b>Dublin Taxi</b></div>
-        <small>Stop beside a waving fare, drive them where they ask. Six-minute shift.</small>
-        <em>${tb ? `Best shift: €${tb.earnings.toFixed(2)} · ${tb.fares} fares` : 'You drive the taxi'}</em>
+        <small>Stop beside a waving fare, drive them where they ask. Each fare buys time.</small>
+        <em>${tb ? `Best: €${tb.earnings.toFixed(2)} · ${tb.fares} fares` : t6 ? `Best 6-min shift: €${t6.earnings.toFixed(2)}` : 'You drive the taxi'}</em>
         <div class="g-buttons"><button class="g-start" data-mode="taxi">Start</button><button class="g-alt" data-mode="taxi-night" title="Night shift: busy pubs">🌙 Night</button></div>
+        <div class="g-more">Fixed shift: <button data-mode="taxi6" title="Six minutes: how much can you earn?">6 min</button><button data-mode="taxi15" title="Fifteen minutes: how much can you earn?">15 min</button></div>
       </div>
       <div class="game trial">
         <div class="g-head"><span class="g-icon" aria-hidden="true">⏱</span><b>Time Trials</b></div>
@@ -77,12 +80,31 @@ export function createGameUI({ onPursuit, onTrial, onTaxi = () => {}, taxiBest =
       </div>
     </div>`;
   }
+  // today's dailies: the same fares, callouts and route for everyone today, and the streak
+  function dailies(compact = false) {
+    const today = dateKey(), st = streak(save, today);
+    const td = save.get('taxi.daily', null), pd = save.get('pursuit.daily', null);
+    const tdb = td && td.date === today && td.best, pdb = pd && pd.date === today && pd.best;
+    const route = dailyRoute(), rb = trialInfo(route).best;
+    const head = st.n ? `🔥 ${st.n}-day streak${st.today ? '' : ': play a daily to keep it'}` : 'Play one each day to build a streak 🔥';
+    return `<div class="dailies${compact ? ' compact' : ''}">
+      <div class="d-head"><b>Today's dailies</b><span>${shortDate(today)} · same for everyone</span><span class="d-streak${st.n ? ' on' : ''}">${head}</span></div>
+      <div class="d-buttons">
+        <button data-daily="taxi">🚕 Daily Shift<small>${tdb ? `✓ €${tdb.earnings.toFixed(2)}` : '6 min · same fares'}</small></button>
+        <button data-daily="pursuit">🚓 Daily Callouts<small>${pdb ? `✓ ${pdb.caught} caught` : 'same calls'}</small></button>
+        <button data-route="${route.id}">⏱ Daily Route<small>${rb ? `✓ ${fmt(rb.time)}` : `${(trialInfo(route).length / 1000).toFixed(1)} km`}</small></button>
+      </div>
+    </div>`;
+  }
   function startMode(d) {
     save.set('played', true);
     document.querySelector('.toolbar .play-btn')?.classList.remove('first');
     if (d.mode === 'pursuit') onPursuit();
     else if (d.mode === 'free') onFree();
-    else if (d.mode === 'taxi' || d.mode === 'taxi-night') onTaxi({ night: d.mode === 'taxi-night' });
+    else if (d.mode === 'taxi' || d.mode === 'taxi-night') onTaxi({ night: d.mode === 'taxi-night', variant: 'casual' });
+    else if (d.mode === 'taxi6' || d.mode === 'taxi15') onTaxi({ variant: d.mode === 'taxi6' ? 'shift6' : 'shift15' });
+    else if (d.daily === 'taxi') onTaxi({ variant: 'daily' });
+    else if (d.daily === 'pursuit') onPursuit({ variant: 'daily' });
     else if (d.route) { const daily = dailyRoute(); onTrial(d.route === daily.id ? daily : ROUTES.find((r) => r.id === d.route)); }
   }
   function focusFirst(el) { if (document.documentElement.classList.contains('pad')) q(el, '.g-start')?.focus(); }
@@ -91,6 +113,7 @@ export function createGameUI({ onPursuit, onTrial, onTaxi = () => {}, taxiBest =
     const car = flying() ? 'heli' : save.get('car', 'garda');
     play.innerHTML = `
       <header><h2>Play</h2><button class="close" aria-label="Close">&times;</button></header>
+      ${dailies()}
       ${gameCards()}
       <h3>More time trials</h3>
       <div class="routes">
@@ -120,7 +143,7 @@ export function createGameUI({ onPursuit, onTrial, onTaxi = () => {}, taxiBest =
     play.querySelectorAll('[data-gfx]').forEach((b) => b.addEventListener('click', () => { gfx.set(b.dataset.gfx); renderPlay(); }));
     play.querySelectorAll('[data-paint]').forEach((b) => b.addEventListener('click', () => { onPaint(car, b.dataset.paint); renderPlay(); }));
     play.querySelectorAll('[data-car]').forEach((b) => b.addEventListener('click', () => { onCar(b.dataset.car); if (b.dataset.car !== 'heli') save.set('car', b.dataset.car); renderPlay(); }));
-    play.querySelectorAll('[data-mode], [data-route]').forEach((b) => b.addEventListener('click', () => { play.hidden = true; startMode(b.dataset); }));
+    play.querySelectorAll('[data-mode], [data-route], [data-daily]').forEach((b) => b.addEventListener('click', () => { play.hidden = true; startMode(b.dataset); }));
   }
 
   // first visit: a short, skippable welcome once the city has loaded
@@ -130,6 +153,7 @@ export function createGameUI({ onPursuit, onTrial, onTaxi = () => {}, taxiBest =
         <h2>Welcome to Dublin Drive</h2>
         <p>Drive around Dublin — or pick a game:</p>
         ${gameCards()}
+        ${dailies(true)}
         <div class="w-foot"><button class="w-skip" data-w="skip">Just drive</button><span>Games are always under <b>▶ Play</b>${matchMedia('(pointer: coarse)').matches ? '' : ' (<kbd>G</kbd>)'}.</span></div>
       </div>`;
     welcome.hidden = false;
@@ -169,6 +193,24 @@ export function createGameUI({ onPursuit, onTrial, onTaxi = () => {}, taxiBest =
       scoreEl.classList.remove('pop'); void scoreEl.offsetWidth; scoreEl.classList.add('pop');
     } else if (s.value !== sc.target) { sc.shown = sc.target = s.value; }
     if (!sc.raf) q(scoreEl, 'b').textContent = fmtScore(sc.shown);
+  }
+  // results state, the Enter key for retry, and sharing (the Web Share sheet on phones, the clipboard elsewhere,
+  // and the text shown to copy by hand if neither works)
+  let lastRun = null, lastShare = '', retryFn = null;
+  const coarse = matchMedia('(pointer: coarse)').matches;
+  window.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' || e.repeat || results.hidden || !retryFn) return;
+    const f = document.activeElement;
+    if (f && f.tagName === 'BUTTON' && results.contains(f) && f.dataset.r !== 'retry') return; // (Enter on another button presses that one)
+    e.preventDefault(); retryFn();
+  });
+  async function shareRun(text, box) {
+    const showText = (msg) => { box.value = text; box.hidden = false; box.select(); if (msg) toast(msg, 2500); };
+    if (coarse && navigator.share) {
+      try { await navigator.share({ text }); return; } catch (e) { if (e && e.name === 'AbortError') return; }
+    }
+    try { await navigator.clipboard.writeText(text); toast('Result copied: paste it anywhere', 2200); showText(); return; } catch { /* no clipboard access */ }
+    showText('Copy the text below to share');
   }
   return {
     togglePlay(force) {
@@ -217,8 +259,15 @@ export function createGameUI({ onPursuit, onTrial, onTaxi = () => {}, taxiBest =
       clearTimeout(flashTimer); flashTimer = setTimeout(() => flashEl.classList.remove('show'), 900);
     },
     score: setScore,
-    updateMission({ title, big, sub, meter, warn, arrow, score }) {
+    updateMission({ title, big, sub, meter, warn, arrow, score, heat }) {
       setScore(score);
+      if (heat) {
+        const h = q(pursuitEl, '.m-heat');
+        h.dataset.heat = heat.n;
+        q(h, '.h-pips').innerHTML = Array.from({ length: heat.of }, (_, i) => `<i class="${i < heat.n ? 'on' : ''}"></i>`).join('');
+        q(h, 'b').textContent = `HEAT ${heat.n} · ${heat.name.toUpperCase()}`;
+        q(h, 'em').textContent = `Arrest +${heat.bonus} s${heat.mult > 1 ? ` · streak ×${heat.mult}` : ''}`;
+      }
       const ar = q(mission, '.m-arrow');
       ar.hidden = arrow == null;
       if (arrow != null) ar.style.transform = `rotate(${(-arrow * 180) / Math.PI}deg)`;
@@ -238,19 +287,36 @@ export function createGameUI({ onPursuit, onTrial, onTaxi = () => {}, taxiBest =
       sayTimer = setTimeout(() => { sayEl.hidden = true; }, ms);
     },
     countdown(text) { cd.textContent = text || ''; cd.classList.toggle('show', !!text); },
-    showResults({ title, lines, medal, retry }) {
+    // the results card: title, medal, lines, the how-close lines and next target, and one-tap retry (Enter / A),
+    // share, the Play menu and free roam. summary: the run summary (runs.js), kept for the leaderboard build and
+    // announced as a 'dublin:run' window event (nothing is sent anywhere)
+    showResults({ title, lines = [], medal, retry, close = [], target = '', share = '', daily = null, summary = null }) {
+      lastRun = summary; lastShare = share;
+      clearTimeout(bannerTimer); bannerEl.hidden = true; // (a heat banner from the last call would sit over the card)
+      if (summary) try { window.dispatchEvent(new CustomEvent('dublin:run', { detail: summary })); } catch { /* old browsers */ }
+      const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
       results.innerHTML = `
         <div class="r-card">
           ${medal ? `<div class="r-medal">${MEDAL[medal]}</div>` : ''}
-          <h2>${title}</h2>
-          ${lines.map((l) => `<p>${l}</p>`).join('')}
-          <div class="r-buttons"><button data-r="retry">Try again</button><button data-r="menu">Play menu</button><button data-r="free">Free roam</button></div>
+          <h2>${esc(title)}</h2>
+          ${daily ? `<p class="r-daily">${esc(daily)}</p>` : ''}
+          ${lines.map((l) => `<p>${esc(l)}</p>`).join('')}
+          ${close.length ? `<div class="r-close">${close.map((l) => `<p>${esc(l)}</p>`).join('')}</div>` : ''}
+          ${target ? `<p class="r-target">${esc(target)}</p>` : ''}
+          <div class="r-buttons"><button data-r="retry">↻ Try again${coarse ? '' : ' <kbd>Enter</kbd>'}</button>${share ? '<button data-r="share">Share</button>' : ''}<button data-r="menu">Play menu</button><button data-r="free">Free roam</button></div>
+          <textarea class="r-sharetext" readonly hidden rows="3"></textarea>
         </div>`;
       results.hidden = false;
-      results.querySelector('[data-r="retry"]').onclick = () => { results.hidden = true; retry(); };
-      results.querySelector('[data-r="menu"]').onclick = () => { results.hidden = true; renderPlay(); play.hidden = false; };
+      retryFn = () => { if (results.hidden) return; results.hidden = true; retry(); };
+      results.querySelector('[data-r="retry"]').onclick = retryFn;
+      results.querySelector('[data-r="menu"]').onclick = () => { results.hidden = true; renderPlay(); play.hidden = false; focusFirst(play); };
       results.querySelector('[data-r="free"]').onclick = () => { results.hidden = true; onFree(); };
+      const sb = results.querySelector('[data-r="share"]');
+      if (sb) sb.onclick = () => shareRun(share, results.querySelector('.r-sharetext'));
+      if (document.documentElement.classList.contains('pad')) results.querySelector('[data-r="retry"]').focus();
     },
+    get lastRun() { return lastRun; },
+    get lastShare() { return lastShare; },
     get resultsOpen() { return !results.hidden; },
     toast,
   };

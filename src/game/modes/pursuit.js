@@ -7,7 +7,8 @@ import { Color } from 'three';
 import { world, v2, laneOffset } from '../../world/geo.js';
 import { resolveCircle } from '../collision.js';
 import { TYPES } from '../fleet.js';
-import { pickCallout, hotCallout } from './callouts.js';
+import { pickCallout, hotCallout, calloutPlan } from './callouts.js';
+import { dateKey, howClose, medalFor, shareText, emojiRow, runSummary, markDaily, streakText } from './runs.js';
 import { makeGardaUnit, makeCones, makeRunner, addHazards, setHazards, makeSmoke } from './pursuitkit.js';
 
 // ---- tuning ----
@@ -32,7 +33,16 @@ export const TUNE = {
   // backup Garda cars by round (index = rounds won so far, last value repeats); roadblocks from round roadblockFrom
   backups: [0, 1, 1, 2], roadblockFrom: 1, roadblockEvery: 26, roadblockLife: 40,
   crashPenalty: 25, crashImpact: 9,
+  // arrest streak: back-to-back arrests without losing a suspect multiply the points (index = arrests in the chain - 1)
+  streakMult: [1, 1.25, 1.5, 2],
+  // medals: arrests in a shift (bronze, silver, gold); the Daily Callouts shift ends after rankedCap seconds at most
+  medals: [2, 4, 6], rankedCap: 600,
 };
+// heat: the named escalation tiers (level 0 = Heat 1); suspects get quicker and cleverer, backup and roadblocks join
+export const HEAT = ['Petty', 'Joyrider', 'Getaway', 'Gang', 'Most Wanted'];
+const HEAT_NOTE = ['', 'Roadblocks go up', 'Quicker suspects, more backup', 'They know the back lanes', 'Everything they have'];
+export const heatOf = (level) => Math.min(HEAT.length - 1, level);
+export const heatName = (level) => `Heat ${heatOf(level) + 1} — ${HEAT[heatOf(level)]}`;
 
 const leftOf = (d) => ({ x: d.z, z: -d.x });
 const tint = new Color();
@@ -172,7 +182,7 @@ class Driver {
   get fwd() { return { x: Math.sin(this.heading), z: Math.cos(this.heading) }; }
 }
 
-export function createPursuit({ scene, makeSuspectMesh, player, traffic, tram, ui, audio, save, freeze = () => {} }) {
+export function createPursuit({ scene, makeSuspectMesh, player, traffic, tram, ui, audio, save, freeze = () => {}, snap = () => {} }) {
   let active = false, time = 0;
   // shift
   let clock = 0, level = 0, caught = 0, score = 0, charges = 0, lostCount = 0, startLevel = 0;
@@ -182,6 +192,9 @@ export function createPursuit({ scene, makeSuspectMesh, player, traffic, tram, u
   let damage = 0, arrestT = 0, footT = 0, lostT = 0, pits = 0, roundT = 0, roundPenalty = 0, ranAway = false;
   let ping = 0, lastSeen = null, contactCD = 0, crashCD = 0, beatT = 0, beatWin = false, beatResult = null;
   let roadblockT = 0, roadblock = null;
+  // the shift's variant ('free' | 'daily'), the daily's date and seeded call plan; the arrest streak; run counters
+  let variant = 'free', date = null, plan = null, opts0 = {}, chain = 0, bestChain = 0, maxLevel = 0, heatShown = 0;
+  let ev = null, callLog = [], planLog = [];
   const meshes = {}, backups = [], obstacles = [], extras = [];
   let units = null, cones = null, runnerMesh = null, smoke = null;
 
@@ -357,8 +370,9 @@ export function createPursuit({ scene, makeSuspectMesh, player, traffic, tram, u
     for (const b of backups) { b.on = false; b.mesh.visible = false; }
     for (const k of Object.keys(meshes)) meshes[k].visible = false;
     runnerMesh.visible = false; runner = null; smoke.hide();
-    const pick = (hot && hotCallout(player.pos, player.heading)) || pickCallout(player.pos, lastCallout);
+    const pick = plan ? plan.next() : (hot && hotCallout(player.pos, player.heading)) || pickCallout(player.pos, lastCallout);
     callout = lastCallout = pick.callout;
+    planLog.push({ crime: callout.crime, way: pick.edge.way.name, edge: [pick.edge.from.id, pick.edge.to.id], hot: !!pick.hot });
     kind = callout.kind;
     mesh = suspectMesh(kind, callout.color || '#a3121a');
     mesh.visible = true;
@@ -372,6 +386,8 @@ export function createPursuit({ scene, makeSuspectMesh, player, traffic, tram, u
     ui.radio(`Control to all units: ${callout.text}.`, 6500);
     audio.cue('beep');
     if (pick.hot) spotted(); // the first call of a shift: close by and already running
+    // a new heat tier: a banner as the call comes in
+    if (heatOf(level) > heatShown) { heatShown = heatOf(level); ui.banner(heatName(level).toUpperCase(), HEAT_NOTE[heatShown], 2800); }
   }
   function spotted() {
     if (stage !== 'unaware') return;
@@ -400,33 +416,63 @@ export function createPursuit({ scene, makeSuspectMesh, player, traffic, tram, u
       caught++; level++;
       const base = 150 + (level - 1) * 25, quick = Math.max(0, Math.round(120 - roundT));
       const pit = pits ? TUNE.pitBonus : 0, foot = how === 'foot' ? 50 : 0, boxed = how === 'boxed' ? 50 : 0;
-      const pts = Math.max(0, base + quick + pit + foot + boxed - roundPenalty);
+      chain++; bestChain = Math.max(bestChain, chain); maxLevel = Math.max(maxLevel, level);
+      const mult = TUNE.streakMult[Math.min(chain, TUNE.streakMult.length) - 1];
+      const pts = Math.round(Math.max(0, base + quick + pit + foot + boxed - roundPenalty) * mult);
       score += pts; clock += TUNE.arrestBonusTime;
+      ev[how === 'foot' ? 'foot' : how === 'boxed' ? 'boxed' : 'stopped']++;
+      callLog.push([callLog.length + 1, callout.crime, 1, pts, Math.round(roundT)]);
       charges = Math.min(TUNE.pingCharges, charges + 1);
       beatResult = { pts };
-      ui.banner('SUSPECT DETAINED', `+${pts}${pit ? ` · PIT bonus ${pit}` : ''}${boxed ? ' · boxed in +50' : ''}${foot ? ' · foot chase +50' : ''}${quick ? ` · quick +${quick}` : ''}${roundPenalty ? ` · crashes −${roundPenalty}` : ''} · +${TUNE.arrestBonusTime} s`, 3200);
+      ui.banner('SUSPECT DETAINED', `+${pts}${pit ? ` · PIT bonus ${pit}` : ''}${boxed ? ' · boxed in +50' : ''}${foot ? ' · foot chase +50' : ''}${quick ? ` · quick +${quick}` : ''}${roundPenalty ? ` · crashes −${roundPenalty}` : ''}${mult > 1 ? ` · streak ×${mult}` : ''} · +${TUNE.arrestBonusTime} s`, 3200);
       audio.cue('bust');
       if (ui.score) ui.score({ value: caught, icon: '🚔', label: `caught · ${score} pts` }); // the counter pops now, not after the beat
       freeze(true);
     } else {
       lostCount++; clock = Math.max(1, clock - TUNE.lostPenaltyTime);
-      ui.banner('LOST THEM', `Control: all units stand down. −${TUNE.lostPenaltyTime} s`, 2600);
+      callLog.push([callLog.length + 1, callout.crime, 0, 0, Math.round(roundT)]);
+      ui.banner('LOST THEM', `Control: all units stand down. −${TUNE.lostPenaltyTime} s${chain > 1 ? ' · arrest streak broken' : ''}`, 2600);
+      chain = 0;
       audio.cue('fail');
     }
     for (const b of backups) b.on = false;
     clearRoadblock();
     ui.updatePursuit({ meterLabel: 'DAMAGE', prompt: won ? 'Suspect detained' : 'Lost them', status: won ? 'close' : 'losing', urgent: false, radio: charges, lost: 1 });
   }
+  // the run summary (shape in runs.js); log rows: [call number, crime, arrested 0/1, points, seconds]
+  function summary(medal) {
+    return runSummary({
+      mode: 'pursuit', variant, date, seed: plan ? plan.seed : null, duration: time, score, scoreKind: 'points', medal,
+      stats: { arrests: caught, lost: lostCount, heat: heatOf(maxLevel) + 1, bestStreak: bestChain },
+      events: { ...ev }, log: callLog.slice(),
+    });
+  }
   function endShift() {
-    const best = save.get('pursuit.best', { caught: 0, score: 0 });
-    const record = caught > best.caught || (caught === best.caught && score > best.score);
-    if (record) save.set('pursuit.best', { caught, score });
+    // bests: free play keeps 'pursuit.best' ({ caught, score }); the daily's is per date ({ date, best, first, runs })
+    const daily = variant === 'daily';
+    const d = daily ? save.get('pursuit.daily', null) : null, today = daily ? (d && d.date === date ? d : { date, best: null, first: null, runs: 0 }) : null;
+    const best = daily ? today.best : save.get('pursuit.best', null);
+    const record = !best || caught > best.caught || (caught === best.caught && score > best.score);
+    if (daily) { today.runs++; if (!today.first) today.first = { caught, score }; if (record) today.best = { caught, score }; save.set('pursuit.daily', today); }
+    else if (record) save.set('pursuit.best', { caught, score });
+    const M = [['bronze', TUNE.medals[0]], ['silver', TUNE.medals[1]], ['gold', TUNE.medals[2]]];
+    const medal = medalFor(caught, M);
+    const st = daily ? markDaily(save, date) : null;
+    const arrests = (n) => `${n} arrest${n === 1 ? '' : 's'}`;
+    const close = howClose({ value: caught, best: best ? best.caught : null, medals: M, gap: arrests, show: arrests });
+    if (best && caught === best.caught) close.lines[0] = score > best.score ? `New best! ${score - best.score} pts up on ${best.score}` : score === best.score ? `Level with your best (${best.score} pts)` : `${best.score - score} pts off your best (${arrests(best.caught)} · ${best.score} pts)`;
+    const sum = summary(medal);
     audio.cue(caught ? 'finish' : 'fail');
     api.stop();
     ui.showResults({
-      title: caught ? `Shift over: ${caught} arrest${caught > 1 ? 's' : ''}` : 'Shift over: they all got away',
-      lines: [`Shift total ${score} pts${lostCount ? ` · ${lostCount} lost` : ''}`, record ? 'New personal best!' : `Best: ${best.caught} caught · ${best.score} pts`],
-      retry: () => api.start(),
+      title: caught ? `Shift over: ${arrests(caught)}` : 'Shift over: they all got away',
+      medal,
+      daily: daily ? ['Daily Callouts', streakText(st)].filter(Boolean).join(' · ') : null,
+      lines: [`${score} pts${lostCount ? ` · ${lostCount} lost` : ''} · reached ${heatName(maxLevel)}${bestChain > 1 ? ` · best streak ${bestChain}` : ''}`],
+      close: close.lines, target: close.target,
+      share: shareText({ icon: '🚓', title: daily ? 'Daily Callouts' : 'Garda Pursuit', date, score: arrests(caught), extra: `${score} pts`, medal, row: emojiRow(callLog.map((c) => (c[2] ? '🚔' : '💨'))) }),
+      summary: sum,
+      retry: () => api.start(opts0),
     });
   }
 
@@ -449,7 +495,7 @@ export function createPursuit({ scene, makeSuspectMesh, player, traffic, tram, u
       suspect.kick(torque * (3.4 + Math.random() * 1.4), sv.x * 0.75 + nx * 3, sv.z * 0.75 + nz * 3, TUNE.pitSpin);
       suspect.stall = TUNE.pitStall - Math.min(1.2, level * 0.2);
       damage = Math.min(1, damage + TUNE.pitDamage);
-      pits++;
+      pits++; ev.pits++;
       ui.flash('PIT!');
       audio.cue('checkpoint');
       return;
@@ -457,7 +503,7 @@ export function createPursuit({ scene, makeSuspectMesh, player, traffic, tram, u
     if (push > TUNE.ramMin) {
       damage = Math.min(1, damage + (push - TUNE.ramMin) * TUNE.ramDamage);
       suspect.speed *= 0.7;
-      if (push > TUNE.ramStun) { suspect.stall = Math.max(suspect.stall, 0.5); ui.flash('RAM!'); }
+      if (push > TUNE.ramStun) { suspect.stall = Math.max(suspect.stall, 0.5); ui.flash('RAM!'); ev.rams++; }
     }
   }
 
@@ -476,9 +522,17 @@ export function createPursuit({ scene, makeSuspectMesh, player, traffic, tram, u
     get active() { return active; },
     get extras() { return extras; },
     TUNE,
+    // opts.variant: 'free' (default) | 'daily' (opts.date: its date key, default today); opts.level: start heat (tests)
     start(opts = {}) {
+      opts0 = opts;
+      variant = opts.variant === 'daily' ? 'daily' : 'free';
+      date = variant === 'daily' ? dateKey(opts.date || new Date()) : null;
+      plan = date ? calloutPlan(date) : null;
+      if (plan) { player.teleport(plan.start.x, plan.start.z, plan.start.heading); snap(); }
       active = true; startLevel = opts.level || 0; level = startLevel; caught = 0; score = 0; lostCount = 0;
       clock = TUNE.shiftTime; charges = TUNE.pingCharges; time = 0;
+      chain = 0; bestChain = 0; maxLevel = level; heatShown = heatOf(level); callLog = []; planLog = []; lastCallout = null;
+      ev = { pits: 0, rams: 0, boxed: 0, foot: 0, stopped: 0, crashes: 0, radio: 0 };
       player.siren = true;
       audio.setSiren(true);
       ui.showMission('pursuit');
@@ -501,7 +555,7 @@ export function createPursuit({ scene, makeSuspectMesh, player, traffic, tram, u
     radio() {
       if (!active || !suspect || stage === 'beat') return;
       if (charges <= 0) { ui.radio('Control: no units free to help, you\'re on your own.', 2500); return; }
-      charges--; ping = TUNE.pingTime;
+      charges--; ping = TUNE.pingTime; ev.radio++;
       const who = stage === 'foot' ? runner : suspect;
       ui.radio(`Control: suspect ${stage === 'foot' ? 'on foot' : 'sighted'} on ${who.edge.way.name}. (${charges} call${charges === 1 ? '' : 's'} left)`, 3500);
       audio.cue('beep');
@@ -517,12 +571,13 @@ export function createPursuit({ scene, makeSuspectMesh, player, traffic, tram, u
         return;
       }
       clock -= dt; roundT += dt;
+      if (variant === 'daily' && time >= TUNE.rankedCap) clock = 0; // the daily shift is capped (comparable scores)
       if (clock <= 0) { clock = 0; endShift(); return; }
       const dist = Math.sqrt(dist2(suspect.pos, player.pos));
 
       // crash penalty: a hard hit on anything but the suspect
       if (player.impact > TUNE.crashImpact && crashCD <= 0 && contactCD < 0.2) {
-        crashCD = 1.5; roundPenalty += TUNE.crashPenalty; ui.flash(`Crash −${TUNE.crashPenalty}`);
+        crashCD = 1.5; roundPenalty += TUNE.crashPenalty; ev.crashes++; ui.flash(`Crash −${TUNE.crashPenalty}`);
       }
       if (stage === 'unaware' && dist < (player.siren ? TUNE.spotSiren : TUNE.spotQuiet)) spotted();
 
@@ -603,9 +658,11 @@ export function createPursuit({ scene, makeSuspectMesh, player, traffic, tram, u
       if (roadblock) extras.push({ pos: roadblock.pos, length: 4.6 });
 
       ui.updateMission({
-        title: `PURSUIT · CALL ${caught + lostCount + 1}`,
+        title: `${variant === 'daily' ? 'DAILY CALLOUTS' : 'PURSUIT'} · CALL ${caught + lostCount + 1}`,
         big: fmt(clock),
-        sub: `${callout.crime} · ${stage === 'unaware' ? 'not yet spotted' : `${Math.round(stage === 'foot' ? Math.sqrt(dist2(runner.pos, player.pos)) : dist)} m`} · arrest = +${TUNE.arrestBonusTime} s`,
+        sub: `${callout.crime} · ${stage === 'unaware' ? 'not yet spotted' : `${Math.round(stage === 'foot' ? Math.sqrt(dist2(runner.pos, player.pos)) : dist)} m`}`,
+        // the heat row: tier, the time an arrest buys, and the multiplier the next arrest would get
+        heat: { n: heatOf(level) + 1, of: HEAT.length, name: HEAT[heatOf(level)], bonus: TUNE.arrestBonusTime, mult: TUNE.streakMult[Math.min(chain + 1, TUNE.streakMult.length) - 1], chain },
         meter: damage,
         warn: clock < 20,
         score: { value: caught, icon: '🚔', label: `caught · ${score} pts` },
@@ -647,14 +704,25 @@ export function createPursuit({ scene, makeSuspectMesh, player, traffic, tram, u
       return out;
     },
     cinematic,
+    // the first n calls of a date's Daily Callouts: [{ crime, way, edge: [from, to] node ids, hot }] (tests / previews)
+    previewDaily(d = dateKey(), n = 3) {
+      const p = calloutPlan(dateKey(d)), out = [];
+      for (let i = 0; i < n; i++) { const c = p.next(); if (!c) break; out.push({ crime: c.callout.crime, way: c.edge.way.name, edge: [c.edge.from.id, c.edge.to.id], hot: !!c.hot }); }
+      return { start: { x: +p.start.x.toFixed(2), z: +p.start.z.toFixed(2) }, calls: out };
+    },
+    // the current shift's calls so far, as previewDaily lists them
+    get callPlanLog() { return planLog.slice(); },
     // for the test scenarios
     debug() {
-      return { stage, level, caught, score, clock, damage, arrestT, pits, charges, callout: callout && callout.text, kind,
+      return { variant, date, heat: heatOf(level) + 1, chain, calls: callLog.slice(), stage, level, caught, score, clock, damage, arrestT, pits, charges, callout: callout && callout.text, kind,
         suspect: suspect && { x: suspect.pos.x, z: suspect.pos.z, heading: suspect.heading, speed: suspect.speed, spin: suspect.spin, stall: suspect.stall },
         runner: runner && { x: runner.pos.x, z: runner.pos.z },
         backups: backups.filter((b) => b.on).map((b) => ({ x: b.d.pos.x, z: b.d.pos.z })), roadblock: roadblock && { ...roadblock.pos } };
     },
-    _force: { spotted: () => spotted(), roadblock: () => placeRoadblock(), backup: (i) => spawnBackup(i), bail: () => bail() },
+    _force: { spotted: () => spotted(), roadblock: () => placeRoadblock(), backup: (i) => spawnBackup(i), bail: () => bail(),
+      arrest: () => { if (suspect && stage !== 'beat') { if (stage === 'unaware') spotted(); endRound(true, 'stop'); } },
+      lose: () => { if (suspect && stage !== 'beat') endRound(false); },
+      clock: (v) => { clock = v; } },
   };
   return api;
 }

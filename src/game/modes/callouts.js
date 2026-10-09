@@ -1,6 +1,7 @@
 // Garda Pursuit dispatch calls: a crime, a real street to start on (the suspect spawns on one of `ways`), and the
 // vehicle. pickCallout() chooses one whose street is a good distance from the player, so chases cross the map.
 import { world } from '../../world/geo.js';
+import { seedOf, makeRand, seededStart } from './runs.js';
 
 export const CALLOUTS = [
   { text: 'Shoplifter fled Grafton Street into a waiting car on Dawson Street, heading for the Green', ways: ['Dawson Street', 'Nassau Street'], kind: 'hatch', color: '#27618c', crime: 'Shoplifting' },
@@ -34,7 +35,8 @@ const distTo = (e, p) => Math.hypot((e.from.x + e.to.x) / 2 - p.x, (e.from.z + e
 
 // A callout and a start edge 350-1100 m from the player (not the previous call); the furthest-fitting fallback.
 export function pickCallout(player, last = null, rand = Math.random) {
-  const order = CALLOUTS.filter((c) => c !== last && startEdges.get(c).length).sort(() => rand() - 0.5);
+  const order = CALLOUTS.filter((c) => c !== last && startEdges.get(c).length);
+  for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; } // (Fisher-Yates)
   let fallback = null, fd = -1;
   for (const c of order) {
     const edges = startEdges.get(c).filter((e) => { const d = distTo(e, player); return d > 350 && d < 1100; });
@@ -63,4 +65,23 @@ export function hotCallout(player, heading, rand = Math.random) {
   if (!list.length) return null;
   const pick = list[Math.floor(rand() * list.length)], h = HOT[Math.floor(rand() * HOT.length)];
   return { hot: true, edge: pick.e, callout: { ...h, text: `${pick.e.way.name}: a car has failed to stop, just ahead of you`, ways: [pick.e.way.name] } };
+}
+
+// Daily Callouts: the same calls, on the same streets, in the same order for everyone on a given day. A seeded start
+// spot, a hot first call from there, then each call placed 350-1100 m from the previous call's street (never from
+// wherever the player has chased the last suspect to), all drawn from the date's seed.
+export function calloutPlan(date) {
+  const seed = seedOf(`pursuit:${date}`), rand = makeRand(seed);
+  const start = seededStart(rand);
+  let from = start, last = null, n = 0;
+  return {
+    seed, start,
+    next() {
+      const p = (n === 0 && hotCallout(from, from.heading, rand)) || pickCallout(from, last, rand);
+      if (!p) return null;
+      n++; last = p.hot ? null : p.callout;
+      from = { x: (p.edge.from.x + p.edge.to.x) / 2, z: (p.edge.from.z + p.edge.to.z) / 2 };
+      return p;
+    },
+  };
 }

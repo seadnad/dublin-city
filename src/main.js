@@ -313,14 +313,15 @@ const gameUI = createGameUI({
   gfx: { modes: GFX_MODES, names: GFX_NAMES, get: () => gfxMode, set: (m) => applyGfx(m) },
   // each game puts the player in its vehicle: the Garda car for a pursuit (either livery), the taxi for a shift (taxi.js
   // ensureCar), and the garage car (the one picked in Play) for the trials and free roam
-  onPursuit: () => { trial.stop(); taxi.stop(); if (!flying && !/^garda/.test(carMesh.userData.model)) modeCar('garda'); pursuit.start(); },
+  onPursuit: (opts = {}) => { trial.stop(); taxi.stop(); if (opts.variant === 'daily') exitHeli(); /* (the daily starts at its own spot, on the road) */ if (!flying && !/^garda/.test(carMesh.userData.model)) modeCar('garda'); pursuit.start(opts); },
   onTrial: (r) => { pursuit.stop(); taxi.stop(); exitHeli(); garageCar(); trial.start(r); rig.snap(); },
-  onTaxi: ({ night }) => {
+  // variant: 'casual' | 'shift6' | 'shift15' | 'daily' (taxi.js VARIANTS); night: switch the lighting (casual only)
+  onTaxi: ({ night, variant = 'casual' } = {}) => {
     pursuit.stop(); trial.stop(); taxi.stop(); exitHeli();
-    if (night !== mode.evening) { mode.evening = night; applyMode(); }
-    taxi.start();
+    if (typeof night === 'boolean' && night !== mode.evening) { mode.evening = night; applyMode(); }
+    taxi.start({ variant });
   },
-  taxiBest: () => taxi.best(),
+  taxiBest: (v) => taxi.best(v),
   onFree: () => { pursuit.stop(); trial.stop(); taxi.stop(); if (!flying) garageCar(); hud.toast('Free roam'); },
   onCar: (name) => actions.car(name),
   // paint choice for the current car (saved per car; applied now if that car is on the road)
@@ -334,19 +335,20 @@ const gameUI = createGameUI({
   toast: (m, ms) => hud.toast(m, ms),
 });
 const pursuit = createPursuit({
-  scene, player: car, traffic, tram, ui: gameUI, audio, save, freeze: (f) => { frozen = f; },
+  scene, player: car, traffic, tram, ui: gameUI, audio, save, freeze: (f) => { frozen = f; }, snap: () => rig.snap(),
   // one mesh per suspect vehicle kind, kept and reused by the pursuit: the loaded coupe model itself, or a fleet body
   makeSuspectMesh: (kind) => (kind === 'coupe' && suspectModel) || makePlayerCar(kind === 'coupe' ? 'hatch' : kind, 0xa3121a),
 });
 traffic.setExtras(pursuit.extras);
 gameUI.onRadio(() => pursuit.radio());
 onKey('e', () => pursuit.radio());
-const trial = createTrial({ scene, player: car, playerMesh: carMesh, ui: gameUI, audio, save, freeze: (f) => { frozen = f; } });
+const trial = createTrial({ scene, player: car, playerMesh: carMesh, ui: gameUI, audio, save, freeze: (f) => { frozen = f; }, snap: () => rig.snap() });
 const taxi = createTaxi({
   scene, player: car, ui: gameUI, audio, save,
   setWaypoint: (p) => hud.setWaypoint(p),
   isNight: () => mode.evening,
   ensureCar: () => { if (carMesh.userData.model !== 'taxi') { exitHeli(); modeCar('taxi'); } },
+  snap: () => rig.snap(),
 });
 for (const m of taxi.meshes) farSkip.add(m); // never baked into the far view
 hud.setBlips(() => [...pursuit.blips(), ...trial.blips(), ...taxi.blips()]);
