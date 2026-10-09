@@ -101,13 +101,16 @@ class AICar {
     this.ignoreOthers = Math.max(0, this.ignoreOthers - dt);
     if (this.stunned > 0) { this.stunned -= dt; want = 0; }
     // a Garda car coming up behind with the siren on: ease over to the kerb and slow down
+    // (and for the pursuit's backup Garda cars: ctx.extras)
     const pl = ctx.player;
     let yielding = false;
-    if (pl && pl.siren) {
-      const rx = pl.pos.x - this.pos.x, rz = pl.pos.z - this.pos.z;
+    const yieldTo = (p) => {
+      const rx = p.pos.x - this.pos.x, rz = p.pos.z - this.pos.z;
       const behind = -(rx * fx + rz * fz), lat = Math.abs(rx * fz - rz * fx);
-      yielding = behind > 0 && behind < 45 && lat < 6;
-    }
+      return behind > 0 && behind < 45 && lat < 6;
+    };
+    if (pl && pl.siren) yielding = yieldTo(pl);
+    if (!yielding) for (const o of ctx.extras) if (o.siren && yieldTo(o)) { yielding = true; break; }
     this.pull = (this.pull || 0) + ((yielding ? 1.6 : 0) - (this.pull || 0)) * Math.min(1, dt * 1.5);
     if (yielding) want = Math.min(want, 3);
 
@@ -208,6 +211,8 @@ export function createTraffic(scene, { cars = 16, buses = 4, taxis = 4, parked =
   let player = null, tram = null, signals = null;
   const ctx = {
     fleet,
+    // other moving things not to drive into, and sirens to pull over for (Garda Pursuit): { pos, length, siren }
+    extras: [],
     get player() { return player; },
     get signals() { return signals; },
     // distance to the nearest thing in our lane ahead (Infinity if clear)
@@ -224,6 +229,7 @@ export function createTraffic(scene, { cars = 16, buses = 4, taxis = 4, parked =
       if (player && !player.airborne) test(player.pos.x, player.pos.z, 2.2, true); // not while the player is flying
       if (!me.ignoreOthers) for (const o of list) if (o !== me) test(o.pos.x, o.pos.z, o.length / 2, false);
       if (tram) for (const c of tram.carriages) test(c.x, c.z, 6, false);
+      for (const o of ctx.extras) test(o.pos.x, o.pos.z, o.length / 2, false);
       return res;
     },
   };
@@ -243,6 +249,8 @@ export function createTraffic(scene, { cars = 16, buses = 4, taxis = 4, parked =
     setPlayer(p) { player = p; },
     setTram(t) { tram = t; },
     setSignals(s) { signals = s; },
+    // the pursuit's suspect, backup cars and roadblock (an array it keeps up to date; empty when idle)
+    setExtras(list) { ctx.extras = list; },
     fleet,
     parkedCount: spots.length,
     pedestrianParked,

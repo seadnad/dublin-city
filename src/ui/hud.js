@@ -98,6 +98,7 @@ export function createHUD({ sites, actions }) {
         <tr><td><kbd>R</kbd> <kbd>N</kbd></td><td>Rain / night</td></tr>
         <tr><td><kbd>G</kbd></td><td>Play: Garda Pursuit, Time Trials</td></tr>
         <tr><td><kbd>X</kbd> <kbd>Z</kbd></td><td>Siren and blue lights / siren tone</td></tr>
+        <tr><td><kbd>E</kbd></td><td>Garda Pursuit: radio Control for the suspect’s location (a few calls a shift; 🎮 D-pad left, or the 📻 button on a phone). Take them down with a PIT (nudge a rear corner at speed), rams, or by boxing them in and holding them for the arrest</td></tr>
         <tr><td><kbd>M</kbd></td><td>World map (click streets for a waypoint)</td></tr>
         <tr><td><kbd>T</kbd> <kbd>1</kbd>&ndash;<kbd>9</kbd></td><td>Landmark list / teleport</td></tr>
         <tr><td><kbd>P</kbd></td><td>Photo mode: drag to orbit, scroll to zoom, right-drag to pan, WASD to move, Space to snap</td></tr>
