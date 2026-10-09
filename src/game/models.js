@@ -20,12 +20,46 @@ function load(file) {
 }
 
 const GARDA_VARIANTS = { garda: 'standard', garda_rp: 'roadsPolicing' };
-const WHEEL_R = { hatch: 0.34, coupe: 0.35, gt: 0.324 }; // tyre radius, for the wheel spin
+const WHEEL_R = { hatch: 0.34, taxi: 0.34, coupe: 0.35, gt: 0.324 }; // tyre radius, for the wheel spin
+
+// The Dublin taxi roof sign: yellow with the blue chequer top and bottom, TAXI on the front and back and TACSAÍ
+// beneath (the bilingual sign), lit after dark. Sits on the roof's highest point near the middle of the car.
+function taxiSign(group) {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 64;
+  const g = c.getContext('2d');
+  for (let i = 0; i < 32; i++) { g.fillStyle = i % 2 ? '#1b3f94' : '#f6c615'; g.fillRect(i * 8, 0, 8, 8); g.fillStyle = i % 2 ? '#f6c615' : '#1b3f94'; g.fillRect(i * 8, 56, 8, 8); }
+  g.fillStyle = '#f6c615'; g.fillRect(0, 8, 256, 48);
+  g.fillStyle = '#1b3f94'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = 'bold 30px Arial'; g.fillText('TAXI', 128, 27);
+  g.font = 'bold 13px Arial'; g.fillText('TACSAÍ', 128, 48);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
+  const face = new THREE.MeshStandardMaterial({ map: tex, emissiveMap: tex, emissive: 0xffffff, emissiveIntensity: 0.25, roughness: 0.4 });
+  const side = new THREE.MeshStandardMaterial({ color: 0xf6c615, emissive: 0xf6c615, emissiveIntensity: 0.1, roughness: 0.4 });
+  // roof height: the highest body vertex within 0.35 m of the centreline over the middle third of the car
+  group.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(group), v = new THREE.Vector3();
+  const zMid = (box.min.z + box.max.z) / 2, half = (box.max.z - box.min.z) / 6;
+  let top = -Infinity, zTop = zMid;
+  group.traverse((o) => {
+    if (!o.isMesh || o.material.transparent) return;
+    const p = o.geometry.attributes.position;
+    for (let i = 0; i < p.count; i++) {
+      v.fromBufferAttribute(p, i).applyMatrix4(o.matrixWorld);
+      if (Math.abs(v.x) < 0.35 && Math.abs(v.z - zMid) < half && v.y > top) { top = v.y; zTop = v.z; }
+    }
+  });
+  if (!isFinite(top)) top = box.max.y;
+  const sign = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.2, 0.2).translate(0, 0.1, 0), [side, side, side, side, face, face]);
+  sign.position.set(0, top - 0.01, zTop - 0.05);
+  sign.castShadow = true;
+  group.add(sign);
+  return (level) => { face.emissiveIntensity = 0.25 + level * 1.6; side.emissiveIntensity = 0.1 + level * 0.8; };
+}
 
 // Returns a ready-to-use car group, or null if the model can't be loaded.
 export async function loadCar(name) {
   const variant = GARDA_VARIANTS[name];
-  const file = variant ? 'garda' : name;
+  const file = variant ? 'garda' : name === 'taxi' ? 'hatch' : name;
   let gltf;
   try { gltf = await load(file); } catch (e) { console.warn(`model ${file} failed to load`, e); return null; }
   const src = gltf.scene.clone(true);
@@ -93,6 +127,7 @@ export async function loadCar(name) {
     merged.renderOrder = mat.transparent ? 2 : 0;
     src.add(merged);
   }
+  const signLights = name === 'taxi' ? taxiSign(group) : null;
   let spin = 0, lights = 0, braking = false;
   const q = new THREE.Quaternion(), qs = new THREE.Quaternion(), X = new THREE.Vector3(1, 0, 0), Y = new THREE.Vector3(0, 1, 0);
   const r = WHEEL_R[name] ?? (variant ? 0.325 : 0.33);
@@ -120,6 +155,7 @@ export async function loadCar(name) {
     setLights(level) {
       if (garda) { garda.controls.setLights(level); return; }
       lights = level; lamps();
+      if (signLights) signLights(level);
     },
     // body colour, for the cars that offer a choice: { color, metal } (see carlist.js)
     setPaint(p) {

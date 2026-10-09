@@ -254,7 +254,7 @@ export function createHUD({ sites, actions }) {
       if (altEl.textContent !== alt) { altEl.textContent = alt; altEl.hidden = !alt; }
       if (waypoint) {
         const d = Math.hypot(waypoint.x - car.pos.x, waypoint.z - car.pos.z);
-        if (d < 18) { toast(`Arrived: ${waypoint.name}`, 2500); this.setWaypoint(null); actions.waypointReached && actions.waypointReached(); }
+        if (d < 18 && !waypoint.sticky) { toast(`Arrived: ${waypoint.name}`, 2500); this.setWaypoint(null); actions.waypointReached && actions.waypointReached(); }
         else { wpEl.textContent = `${waypoint.name} · ${d < 1000 ? Math.round(d / 10) * 10 + ' m' : (d / 1000).toFixed(1) + ' km'}`; wpEl.classList.add('show'); }
       }
       mapT -= dt;

@@ -175,6 +175,17 @@ kbd { display: inline-block; min-width: 1.5em; padding: 1px 5px; border-radius: 
 .mission { position: absolute; left: max(16px, env(safe-area-inset-left)); top: max(14px, env(safe-area-inset-top)); min-width: 220px; padding: 10px 14px 12px; background: rgba(12,20,40,0.82); border: 1px solid rgba(255,255,255,0.15); border-left: 4px solid #2f6bff; border-radius: 10px; pointer-events: auto; }
 .mission[hidden] { display: none; }
 .mission.trial { border-left-color: #ff883e; }
+.mission.taxi { border-left-color: #f6c615; padding-right: 64px; }
+.mission.taxi .m-big { font-size: 28px; }
+.mission.taxi .m-sub { white-space: pre-line; }
+.mission .m-arrow { position: absolute; right: 12px; bottom: 12px; width: 40px; height: 40px; border-radius: 50%; background: rgba(246,198,21,0.16); border: 2px solid #f6c615; }
+.mission .m-arrow[hidden] { display: none; }
+.mission .m-arrow::before { content: ''; position: absolute; left: 50%; top: 5px; margin-left: -8px; border: 8px solid transparent; border-bottom: 18px solid #f6c615; border-top: 0; }
+.say { position: absolute; left: 50%; top: max(124px, calc(env(safe-area-inset-top) + 110px)); transform: translateX(-50%); max-width: min(460px, calc(100vw - 32px)); padding: 10px 16px; background: #fffdf4; color: #1b1b1b; border-radius: 16px; font: 600 15px/1.35 system-ui, sans-serif; box-shadow: 0 6px 20px rgba(0,0,0,0.35); pointer-events: none; text-align: center; }
+.say[hidden] { display: none; }
+.say::after { content: ''; position: absolute; left: 28px; bottom: -9px; border: 10px solid transparent; border-top-color: #fffdf4; border-bottom: 0; }
+.say.pop { animation: say-pop 0.22s ease-out; }
+@keyframes say-pop { from { transform: translateX(-50%) scale(0.85); opacity: 0; } to { transform: translateX(-50%) scale(1); opacity: 1; } }
 .mission .m-title { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; opacity: 0.8; }
 .mission .m-big { font: 700 34px/1.1 ui-monospace, 'Cascadia Mono', Consolas, monospace; font-variant-numeric: tabular-nums; }
 .mission .m-big.warn { color: #ff5a4a; animation: blink 0.6s steps(2) infinite; }
@@ -192,6 +203,7 @@ kbd { display: inline-block; min-width: 1.5em; padding: 1px 5px; border-radius: 
 .play .card { display: block; width: 100%; text-align: left; margin: 6px 0; padding: 10px 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: var(--ink); cursor: pointer; font-family: inherit; }
 .play .card:hover, .play .card:focus-visible { background: rgba(255,136,62,0.25); outline: none; }
 .play .card.pursuit { border-left: 4px solid #2f6bff; }
+.play .card.taxi { border-left: 4px solid #f6c615; }
 .play .card b { display: block; font-size: 15px; }
 .play .card small { display: block; font-size: 12px; opacity: 0.8; margin-top: 3px; line-height: 1.35; }
 .play .card em { display: block; font-style: normal; font-size: 12px; font-weight: 600; color: #ffb27a; margin-top: 4px; }
@@ -207,6 +219,11 @@ kbd { display: inline-block; min-width: 1.5em; padding: 1px 5px; border-radius: 
 @media (pointer: coarse), (max-width: 760px) {
   .mission { top: 140px; min-width: 170px; padding: 8px 10px; }
   .mission .m-big { font-size: 26px; }
+  .mission.taxi .m-big { font-size: 22px; }
+  .mission .m-sub { font-size: 12px; }
+  .say { top: max(66px, calc(env(safe-area-inset-top) + 52px)); left: auto; right: max(16px, env(safe-area-inset-right)); transform: none; font-size: 13px; padding: 8px 12px; max-width: min(340px, calc(100vw - 32px)); }
+  .say.pop { animation: none; }
+  #hud:has(.mission.taxi:not([hidden])) .waypoint { display: none; }
   .countdown { font-size: 80px; }
 }
 .play .cars { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 13px; margin-bottom: 6px; }

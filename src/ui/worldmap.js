@@ -45,7 +45,7 @@ export function createWorldMap({ sites, lots, getLive, onTeleport, onWaypoint })
         <li><i class="lg-you"></i>You</li>
         <li><i class="lg-icon">S</i>Landmark (tap for name)</li>
         <li><i class="lg-way"></i>Waypoint (tap a street)</li>
-        <li><i class="lg-blip"></i>Mission target</li>
+        <li><i class="lg-blip"></i>Mission target (taxi: fare, drop-off)</li>
         <li><i class="lg-line lg-main"></i>Main road</li>
         <li><i class="lg-line lg-luas"></i>Luas Red Line</li>
         <li><i class="lg-line lg-luas lg-luas-green"></i>Luas Green Line</li>
