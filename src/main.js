@@ -27,6 +27,7 @@ import { createWorldMap } from './ui/worldmap.js';
 import { createGameUI, save } from './ui/gameui.js';
 import { createPursuit } from './game/modes/pursuit.js';
 import { createTrial } from './game/modes/trial.js';
+import { createTaxi } from './game/modes/taxi.js';
 import { addGardaKit } from './game/garda.js';
 import { loadCar } from './game/models.js';
 import { CARS, paintFor } from './game/carlist.js';
@@ -281,7 +282,7 @@ const worldMap = createWorldMap({
   getLive: () => ({
     player: { x: car.pos.x, z: car.pos.z, heading: car.heading },
     traffic: traffic.list.map((a) => a.pos),
-    blips: [...pursuit.blips(), ...trial.blips()],
+    blips: [...pursuit.blips(), ...trial.blips(), ...taxi.blips()],
     tram: tram.carriages,
   }),
   onTeleport: (k) => teleportTo(k),
@@ -308,9 +309,15 @@ function applyFlight() {
 }
 const gameUI = createGameUI({
   gfx: { modes: GFX_MODES, names: GFX_NAMES, get: () => gfxMode, set: (m) => applyGfx(m) },
-  onPursuit: () => { trial.stop(); pursuit.start(); },
-  onTrial: (r) => { pursuit.stop(); exitHeli(); trial.start(r); rig.snap(); },
-  onFree: () => { pursuit.stop(); trial.stop(); hud.toast('Free roam'); },
+  onPursuit: () => { trial.stop(); taxi.stop(); pursuit.start(); },
+  onTrial: (r) => { pursuit.stop(); taxi.stop(); exitHeli(); trial.start(r); rig.snap(); },
+  onTaxi: ({ night }) => {
+    pursuit.stop(); trial.stop(); taxi.stop(); exitHeli();
+    if (night !== mode.evening) { mode.evening = night; applyMode(); }
+    taxi.start();
+  },
+  taxiBest: () => taxi.best(),
+  onFree: () => { pursuit.stop(); trial.stop(); taxi.stop(); hud.toast('Free roam'); },
   onCar: (name) => actions.car(name),
   // paint choice for the current car (saved per car; applied now if that car is on the road)
   onPaint: (name, id) => {
@@ -332,7 +339,14 @@ const pursuit = createPursuit({
   },
 });
 const trial = createTrial({ scene, player: car, playerMesh: carMesh, ui: gameUI, audio, save, freeze: (f) => { frozen = f; } });
-hud.setBlips(() => [...pursuit.blips(), ...trial.blips()]);
+const taxi = createTaxi({
+  scene, player: car, ui: gameUI, audio, save,
+  setWaypoint: (p) => hud.setWaypoint(p),
+  isNight: () => mode.evening,
+  ensureCar: () => { if (carMesh.userData.model !== 'taxi') actions.car('taxi'); },
+});
+for (const m of taxi.meshes) farSkip.add(m); // never baked into the far view
+hud.setBlips(() => [...pursuit.blips(), ...trial.blips(), ...taxi.blips()]);
 
 // ---------- Blender hero cars: swap in when loaded ----------
 let suspectModel = null;
@@ -418,6 +432,7 @@ function setCarBodyVisible(v) { for (const c of carMesh.children) if (!c.isLight
 async function enterHeli() {
   if (flying || heliBusy) return;
   heliBusy = true;
+  if (taxi.active) taxi.stop(); // (before the height-field capture: no beacon or passenger in it)
   // The helicopter's height field is captured once from visible buildings. Finish any
   // queued models first so a late roof cannot appear above that collision surface.
   if (LITE && (landmarks.pendingDistricts || buildings.pendingDistricts || staticDistricts?.pendingDistricts)) { hud.toast('Preparing the city for flight', 3500); await startDistrictStreaming(); }
@@ -583,6 +598,7 @@ function frame() {
   }
   pursuit.update(dt);
   trial.update(dt);
+  taxi.update(dt);
   garda.update(time, car.siren && !flying);
   if (flying && car.siren) { car.siren = false; audio.setSiren(false); } // no siren in the air (a pursuit switches it on)
   // brake lamps while slowing under braking, reversing lamps when backing up
@@ -747,7 +763,7 @@ window.__dublin = {
   ready: false, // set once shaders are compiled and the first frame has drawn
   heli, heliState: () => ({ flying, x: +heli.pos.x.toFixed(1), y: +heli.pos.y.toFixed(1), z: +heli.pos.z.toFixed(1), alt: +heli.alt.toFixed(1), speed: +heli.speed.toFixed(1), heading: +heli.heading.toFixed(2), rpm: +heli.rpm.toFixed(2), landed: heli.landed, floor: +heli.floor.toFixed(1), hm: heightField ? { W: heightField.W, H: heightField.H, cell: +heightField.cell.toFixed(2), ms: heightField.ms } : null, shadowExt: atmosphere.shadowExtent, far: Math.round(camera.far), fog: +scene.fog.density.toFixed(5) }),
   groundAt: (x, z) => groundAt(x, z), heliTune, heliEnv,
-  THREE, scene, camera, world, carMesh: () => carMesh, renderer, pipeline, groundAOUniforms, atmosphere, car, input, rig, traffic, tram, dart, people, pursuit, trial, gameUI, buildings, landmarks, get staticDistricts() { return staticDistricts; }, sites, teleportTo, actions, mode, audio,
+  THREE, scene, camera, world, carMesh: () => carMesh, renderer, pipeline, groundAOUniforms, atmosphere, car, input, rig, traffic, tram, dart, people, pursuit, trial, taxi, gameUI, buildings, landmarks, get staticDistricts() { return staticDistricts; }, sites, teleportTo, actions, mode, audio,
   gfx: () => ({ mode: gfxMode, tier: pipeline.quality, dpr, maxDpr, lite: LITE, fpsCap }),
   lockQuality(q, d) { userQuality = true; dpr = d; renderer.setPixelRatio(d); pipeline.setQuality(q); pipeline.setMood(mode); slowTime = fastTime = 0; lastSwitch = time + 1e9; },
   profile() { const o = {}; for (const k of Object.keys(prof)) if (k !== 'n') o[k] = +(prof[k] / Math.max(1, prof.n)).toFixed(2); for (const k of Object.keys(prof)) prof[k] = 0; return o; },

@@ -9,19 +9,22 @@ export const save = {
 };
 const MEDAL = { gold: '🥇', silver: '🥈', bronze: '🥉' };
 
-export function createGameUI({ onPursuit, onTrial, onFree, onCar, onPaint = () => {}, trialInfo, toast, gfx, flying = () => false }) {
+export function createGameUI({ onPursuit, onTrial, onTaxi = () => {}, taxiBest = () => null, onFree, onCar, onPaint = () => {}, trialInfo, toast, gfx, flying = () => false }) {
   const root = document.getElementById('hud');
   root.insertAdjacentHTML('beforeend', `
     <div class="mission" id="mission" hidden>
       <div class="m-title"></div><div class="m-big"></div><div class="m-sub"></div>
       <div class="m-meter" hidden><i></i><span>BUST</span></div>
+      <div class="m-arrow" hidden aria-hidden="true"></div>
       <button class="m-quit" aria-label="Quit mode">Quit</button>
     </div>
     <div class="countdown" id="countdown"></div>
+    <div class="say" id="say" hidden></div>
     <div class="panel sheet play" id="play" hidden></div>
     <div class="results" id="results" hidden></div>`);
   const $ = (id) => document.getElementById(id);
-  const mission = $('mission'), cd = $('countdown'), play = $('play'), results = $('results');
+  const mission = $('mission'), cd = $('countdown'), play = $('play'), results = $('results'), sayEl = $('say');
+  let sayTimer = 0;
   const q = (el, s) => el.querySelector(s);
   q(mission, '.m-quit').addEventListener('click', () => onFree());
 
@@ -53,6 +56,17 @@ export function createGameUI({ onPursuit, onTrial, onFree, onCar, onPaint = () =
         <small>A suspect is on the run: catch the red blip before the clock runs out. Stay close or ram them to fill the bust meter.</small>
         <em>${pb ? `Best: ${pb.caught} caught · ${pb.score} pts` : 'No record yet'}</em>
       </button>
+      <h3>Dublin Taxi</h3>
+      ${(() => { const tb = taxiBest(); return `
+      <button class="card taxi" data-mode="taxi">
+        <b>🚕 Day shift</b>
+        <small>Six minutes behind the wheel of a Dublin taxi: pick up the waving fares and get them to the landmark or pub they ask for, quick and smooth.</small>
+        <em>${tb ? `Best shift: €${tb.earnings.toFixed(2)} · ${tb.fares} fares` : 'No shift on the books yet'}</em>
+      </button>
+      <button class="card taxi" data-mode="taxi-night">
+        <b>🌙 Night shift</b>
+        <small>Same again after dark, when half the city wants a lift to the pub.</small>
+      </button>`; })()}
       <h3>Time Trials</h3>
       ${routes.map((r) => {
         const info = trialInfo(r);
@@ -72,6 +86,7 @@ export function createGameUI({ onPursuit, onTrial, onFree, onCar, onPaint = () =
       play.hidden = true;
       if (b.dataset.mode === "pursuit") onPursuit();
       else if (b.dataset.mode === "free") onFree();
+      else if (b.dataset.mode === 'taxi' || b.dataset.mode === 'taxi-night') onTaxi({ night: b.dataset.mode === 'taxi-night' });
       else onTrial(routes.find((r) => r.id === b.dataset.route));
     }));
   }
@@ -81,12 +96,24 @@ export function createGameUI({ onPursuit, onTrial, onFree, onCar, onPaint = () =
     get playOpen() { return !play.hidden; },
     showMission(kind) { mission.hidden = false; mission.className = `mission ${kind}`; q(mission, '.m-meter').hidden = kind !== 'pursuit'; results.hidden = true; },
     hideMission() { mission.hidden = true; },
-    updateMission({ title, big, sub, meter, warn }) {
+    updateMission({ title, big, sub, meter, warn, arrow }) {
+      const ar = q(mission, '.m-arrow');
+      ar.hidden = arrow == null;
+      if (arrow != null) ar.style.transform = `rotate(${(-arrow * 180) / Math.PI}deg)`;
       q(mission, '.m-title').textContent = title;
       q(mission, '.m-big').textContent = big;
       q(mission, '.m-big').classList.toggle('warn', !!warn);
       q(mission, '.m-sub').textContent = sub;
       if (meter !== undefined) q(mission, '.m-meter i').style.width = `${Math.min(100, meter * 100)}%`;
+    },
+    // a passenger's speech bubble (null hides it)
+    say(text, ms = 4000) {
+      clearTimeout(sayTimer);
+      sayEl.hidden = !text;
+      if (!text) return;
+      sayEl.textContent = text;
+      sayEl.classList.remove('pop'); void sayEl.offsetWidth; sayEl.classList.add('pop');
+      sayTimer = setTimeout(() => { sayEl.hidden = true; }, ms);
     },
     countdown(text) { cd.textContent = text || ''; cd.classList.toggle('show', !!text); },
     showResults({ title, lines, medal, retry }) {
