@@ -87,7 +87,7 @@ export function createHUD({ sites, actions }) {
     </div>
     <div class="panel sheet help" id="help" hidden>
       <header><h2>Dublin Drive</h2><button class="close" data-a="help" aria-label="Close">&times;</button></header>
-      <p class="lede">A compressed central Dublin: the quays, O’Connell Street, College Green, Temple Bar and St Stephen’s Green. Traffic drives on the <b>left</b>.</p>
+      <p class="lede">Dublin inside the canal ring, half scale: the quays, O’Connell Street, Grafton Street, Temple Bar, the Phoenix Park, Croke Park and the Aviva. Traffic drives on the <b>left</b>.</p>
       <table>
         <tr><td><kbd>W</kbd> <kbd>&uarr;</kbd></td><td>Accelerate</td></tr>
         <tr><td><kbd>S</kbd> <kbd>&darr;</kbd></td><td>Brake / reverse</td></tr>
@@ -107,6 +107,7 @@ export function createHUD({ sites, actions }) {
         <tr><td><kbd>V</kbd> <kbd>F</kbd></td><td>Sound / frame rate</td></tr>
       </table>
       <p class="touch-note">On a phone: steer with the left pad, pedals on the right, <b>HB</b> is the handbrake. Flying: tilt with the stick on the left; climb, descend and turn on the right.</p>
+      <p class="fan-note">An unofficial fan project, made for fun. Not affiliated with or endorsed by An Garda Síochána, Dublin City Council, Transport for Ireland, or any business shown; names and liveries appear only to make the city recognisable. Map data © OpenStreetMap contributors (ODbL).</p>
     </div>
     <div class="toast" id="toast"></div>
     <div class="fps" id="fps" hidden></div>

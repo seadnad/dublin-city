@@ -95,6 +95,7 @@ kbd { display: inline-block; min-width: 1.5em; padding: 1px 5px; border-radius: 
 .help td { padding: 5px 0; border-top: 1px solid rgba(255,255,255,0.08); vertical-align: middle; }
 .help td:first-child { white-space: nowrap; padding-right: 12px; }
 .help .touch-note { font-size: 12px; opacity: 0.75; margin: 10px 0 0; }
+.help .fan-note { font-size: 11px; opacity: 0.6; margin: 10px 0 0; line-height: 1.4; }
 
 .toast { position: absolute; top: 76px; left: 50%; transform: translate(-50%, -6px); padding: 7px 14px; border-radius: 999px; background: rgba(18,26,24,0.85); font-size: 13px; opacity: 0; transition: opacity 0.25s, transform 0.25s; white-space: nowrap; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
