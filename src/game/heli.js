@@ -5,6 +5,9 @@
 // gentle, altitude is capped at MAX_ALT, and it settles onto its skids on anything flat (roofs included). The city
 // is a height field (heightmap.js): the rotor disc is kept clear of anything taller than the skids, sliding along
 // walls rather than crashing.
+// Switched off for now: the city isn't built to be seen from the air (the detail runs out). Set true to bring it back
+// (the Play menu entry, the L key / D-pad right and the Help rows all follow this).
+export const HELI_ENABLED = false;
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';

@@ -43,7 +43,7 @@ import { bakeGroundAO, groundAOUniforms } from './render/groundao.js';
 import { bakeLampLight, lampUniforms } from './render/lamplight.js';
 import { reserved as landmarkFootprints } from './world/sites.js';
 import { KERB_H } from './world/roads.js';
-import { Heli, loadHeli, MAX_ALT } from './game/heli.js';
+import { Heli, loadHeli, MAX_ALT, HELI_ENABLED } from './game/heli.js';
 import { captureHeightmap } from './game/heightmap.js';
 
 const canvas = document.getElementById('scene');
@@ -387,7 +387,7 @@ async function useCar(name) {
 const carReady = useCar(save.get('car', 'garda'));
 const CAR_NAMES = Object.fromEntries(Object.entries(CARS).map(([k, c]) => [k, c.name]));
 actions.car = (name) => {
-  if (name === 'heli') { enterHeli(); return; }
+  if (name === 'heli') { if (HELI_ENABLED) enterHeli(); return; }
   exitHeli();
   useCar(name); hud.toast(CAR_NAMES[name] || name);
 };
@@ -473,7 +473,7 @@ function exitHeli() {
   heliVis.aimBeam(false);
 }
 actions.heli = () => { if (flying) { exitHeli(); hud.toast(CAR_NAMES[save.get('car', 'garda')] || 'Car'); } else enterHeli(); };
-onKey('l', actions.heli);
+if (HELI_ENABLED) onKey('l', actions.heli);
 const beamTarget = new THREE.Vector3(), beamFrom = new THREE.Vector3();
 // the searchlight: ahead and below the nose, or on the suspect during a pursuit; marched along the height field
 function updateHeliBeam() {
