@@ -25,6 +25,23 @@ export function createGameUI({ onPursuit, onTrial, onFree, onCar, onPaint = () =
   const q = (el, s) => el.querySelector(s);
   q(mission, '.m-quit').addEventListener('click', () => onFree());
 
+  // Garda Pursuit extras: the takedown prompt, the distance chip, the radio call-in button (touch), the Control
+  // radio banner, the big result banner and quick impact flashes
+  mission.insertAdjacentHTML('beforeend', `
+    <div class="m-pursuit" hidden>
+      <div class="m-status"><i></i><span></span></div>
+      <div class="m-prompt"></div>
+      <button class="m-radio" aria-label="Radio Control for the suspect's location">📻 Radio <kbd>E</kbd> <b></b></button>
+    </div>`);
+  root.insertAdjacentHTML('beforeend', `
+    <div class="p-radio" id="p-radio" hidden><b>CONTROL</b><span></span></div>
+    <div class="p-banner" id="p-banner" hidden><h2></h2><p></p></div>
+    <div class="p-flash" id="p-flash"></div>`);
+  const pursuitEl = q(mission, '.m-pursuit'), radioEl = $('p-radio'), bannerEl = $('p-banner'), flashEl = $('p-flash');
+  let onRadio = () => {}, radioTimer = 0, bannerTimer = 0, flashTimer = 0;
+  q(mission, '.m-radio').addEventListener('click', (e) => { e.currentTarget.blur(); onRadio(); });
+  const STATUS = { close: 'On them', tail: 'Following', far: 'Far behind', losing: 'Losing them!' };
+
   function renderPlay() {
     const pb = save.get('pursuit.best', null);
     const daily = dailyRoute();
@@ -50,7 +67,7 @@ export function createGameUI({ onPursuit, onTrial, onFree, onCar, onPaint = () =
     play.innerHTML += `
       <button class="card pursuit" data-mode="pursuit">
         <b>Garda Pursuit</b>
-        <small>A suspect is on the run: catch the red blip before the clock runs out. Stay close or ram them to fill the bust meter.</small>
+        <small>A shift of callouts across the city. Respond, then take the suspect down: PIT them into a spin, ram them till the car is wrecked, box them in and hold them for the arrest. <kbd>E</kbd> radios Control for their location.</small>
         <em>${pb ? `Best: ${pb.caught} caught · ${pb.score} pts` : 'No record yet'}</em>
       </button>
       <h3>Time Trials</h3>
@@ -79,8 +96,34 @@ export function createGameUI({ onPursuit, onTrial, onFree, onCar, onPaint = () =
   return {
     togglePlay(force) { const show = force ?? play.hidden; if (show) renderPlay(); play.hidden = !show; results.hidden = true; },
     get playOpen() { return !play.hidden; },
-    showMission(kind) { mission.hidden = false; mission.className = `mission ${kind}`; q(mission, '.m-meter').hidden = kind !== 'pursuit'; results.hidden = true; },
-    hideMission() { mission.hidden = true; },
+    showMission(kind) { mission.hidden = false; mission.className = `mission ${kind}`; q(mission, '.m-meter').hidden = kind !== 'pursuit'; pursuitEl.hidden = kind !== 'pursuit'; results.hidden = true; },
+    hideMission() { mission.hidden = true; radioEl.hidden = true; },
+    // Garda Pursuit
+    onRadio(fn) { onRadio = fn; },
+    updatePursuit({ meterLabel, prompt, status, urgent, radio, lost }) {
+      q(mission, '.m-meter span').textContent = meterLabel;
+      const p = q(pursuitEl, '.m-prompt');
+      p.textContent = prompt; p.classList.toggle('urgent', !!urgent);
+      const st = q(pursuitEl, '.m-status');
+      st.className = `m-status ${status}`;
+      q(st, 'span').textContent = STATUS[status] || '';
+      q(st, 'i').style.width = `${status === 'losing' ? Math.round((1 - lost) * 100) : { close: 100, tail: 66, far: 33 }[status]}%`;
+      const rb = q(pursuitEl, '.m-radio');
+      q(rb, 'b').textContent = `×${radio}`; rb.disabled = radio <= 0;
+    },
+    radio(text, ms = 3500) {
+      q(radioEl, 'span').textContent = text; radioEl.hidden = false;
+      radioEl.classList.remove('in'); void radioEl.offsetWidth; radioEl.classList.add('in');
+      clearTimeout(radioTimer); radioTimer = setTimeout(() => { radioEl.hidden = true; }, ms);
+    },
+    banner(title, sub, ms = 3000) {
+      q(bannerEl, 'h2').textContent = title; q(bannerEl, 'p').textContent = sub; bannerEl.hidden = false;
+      clearTimeout(bannerTimer); bannerTimer = setTimeout(() => { bannerEl.hidden = true; }, ms);
+    },
+    flash(text) {
+      flashEl.textContent = text; flashEl.classList.remove('show'); void flashEl.offsetWidth; flashEl.classList.add('show');
+      clearTimeout(flashTimer); flashTimer = setTimeout(() => flashEl.classList.remove('show'), 900);
+    },
     updateMission({ title, big, sub, meter, warn }) {
       q(mission, '.m-title').textContent = title;
       q(mission, '.m-big').textContent = big;

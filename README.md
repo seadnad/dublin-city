@@ -8,6 +8,7 @@ A browser driving game set in a stylised, compressed central Dublin. Three.js (W
 | --- | --- |
 | `G` | Play menu: Garda Pursuit, Time Trials, choose your car |
 | `X` | Siren and blue lights (traffic pulls over) |
+| `E` | Garda Pursuit: radio Control for the suspect's location (3 calls a shift, one back per arrest; controller D-pad left; the 📻 button on a phone) |
 | `W` / `↑` | Accelerate |
 | `S` / `↓` | Brake, then reverse |
 | `A` `D` / `←` `→` | Steer |
@@ -46,7 +47,12 @@ Traffic drives on the **left**.
 
 ## Game modes
 
-- **Garda Pursuit**: a suspect (the red blip on the minimap and map) flees through the city, choosing escape routes away from you and overtaking traffic. Stay close or ram them to fill the bust meter before the clock runs out. Each catch adds 40 seconds and the next suspect is faster. Your best is saved.
+- **Garda Pursuit**: a shift of callouts. Control radios a crime on a real street ("Joyrider doing laps of Merrion Square", "Stolen car spotted on the North Wall Quay", ...) and the suspect starts there, a few hundred metres off. They drive normally until they see or hear you (switch the siren off with `X` to creep closer), then run: main roads, the quays, the canal and Chesterfield Avenue, the odd cut through a lane, round traffic, roadblocks and trams. Take them down:
+  - **PIT**: nudge a rear corner while running alongside at speed and they spin out and stall (bonus points).
+  - **Rams** damage their car (smoke, slower, wobbly); a wrecked car means they run **on foot**: stop beside them to arrest.
+  - **Arrest**: when they're stopped and you're close and slow, hold them for the countdown; boxed in (you in front, backup or a roadblock) it's quicker. Left unboxed, they rev away when the stall wears off.
+  - The red blip shows only when they're in sight, for a few seconds after a callout, or after a radio call (`E`); otherwise a grey "last seen" mark. Too far for too long and you've **lost them** (time penalty). Hard crashes cost points.
+  - Later calls: quicker, cleverer suspects, backup Garda cars that try to box them in, and roadblocks (a Garda car and cones) ahead of them. Each arrest adds a minute to the shift; your best shift is saved.
 - **Time Trials**: checkpoint routes (Liffey Loop, Georgian Sprint, Temple Bar & Christ Church), plus a **Daily Route** generated from the date, so everyone gets the same one each day. There's a countdown, split times against your best, bronze, silver and gold medals, and a ghost car of your best run to race.
 
 ## Cars and trees (Blender)

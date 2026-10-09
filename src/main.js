@@ -323,14 +323,13 @@ const gameUI = createGameUI({
   toast: (m, ms) => hud.toast(m, ms),
 });
 const pursuit = createPursuit({
-  scene, player: car, traffic, ui: gameUI, audio, save,
-  makeSuspectMesh: () => {
-    // one suspect at a time, so the loaded model itself is used (pursuit keeps and reuses this mesh)
-    const m = suspectModel || makePlayerCar('hatch', 0xa3121a);
-    m.rotation.order = 'YXZ';
-    return m;
-  },
+  scene, player: car, traffic, tram, ui: gameUI, audio, save, freeze: (f) => { frozen = f; },
+  // one mesh per suspect vehicle kind, kept and reused by the pursuit: the loaded coupe model itself, or a fleet body
+  makeSuspectMesh: (kind) => (kind === 'coupe' && suspectModel) || makePlayerCar(kind === 'coupe' ? 'hatch' : kind, 0xa3121a),
 });
+traffic.setExtras(pursuit.extras);
+gameUI.onRadio(() => pursuit.radio());
+onKey('e', () => pursuit.radio());
 const trial = createTrial({ scene, player: car, playerMesh: carMesh, ui: gameUI, audio, save, freeze: (f) => { frozen = f; } });
 hud.setBlips(() => [...pursuit.blips(), ...trial.blips()]);
 
@@ -528,7 +527,7 @@ function updateView() {
 onKey('g', actions.play);
 onKey('x', () => {
   if (flying) { const on = beamPref === null ? !(mode.evening || mode.rain) : !beamPref; beamPref = on; hud.toast(on ? 'Searchlight on' : 'Searchlight off'); return; }
-  if (pursuit.active) return; car.siren = !car.siren; audio.setSiren(car.siren); hud.toast(car.siren ? 'Siren on' : 'Siren off'); });
+  car.siren = !car.siren; /* (in a pursuit too: a silent approach gets closer before the suspect runs) */ audio.setSiren(car.siren); hud.toast(car.siren ? 'Siren on' : 'Siren off'); });
 // audio: siren tone (auto / wail / yelp / hi-lo)
 onKey('z', () => { const m = audio.cycleSirenTone(); hud.toast(`Siren tone: ${{ auto: 'auto (wail / yelp)', wail: 'wail', yelp: 'yelp', hilo: 'hi-lo' }[m]}`); });
 onKey('h', () => hud.togglePanel('help'));
@@ -615,6 +614,7 @@ function frame() {
   if (photo.active) photo.update(Math.min(rawDt, 0.1));
   else if (flying) rig.updateHeli(dt, heli, groundAt);
   else rig.update(dt, car, carMesh);
+  if (!photo.active && pursuit.cinematic(camera)) rig.snap(); // the arrest camera beat
   if (flying) updateHeliBeam();
   updateView();
   if (flight) applyFlight();

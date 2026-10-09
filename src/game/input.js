@@ -32,7 +32,7 @@ export function onKey(key, fn) { actions.set(key.toLowerCase(), fn); }
 // View / Share map, Menu / Options play menu, D-pad up rain, D-pad down places, D-pad right helicopter / car, right stick click photo mode. In a menu the D-pad (or left stick)
 // moves between buttons, A / Cross presses, B / Circle closes.
 // Flying: left stick tilts (forward / back / bank), right stick yaws, RT climbs, LT descends.
-const PAD_ACTIONS = { 11: 'p', 3: 'x', 2: 'c', 4: 'z', 5: 'n', 8: 'm', 9: 'g', 12: 'r', 13: 't', 15: 'l' };
+const PAD_ACTIONS = { 11: 'p', 3: 'x', 2: 'c', 4: 'z', 5: 'n', 8: 'm', 9: 'g', 12: 'r', 13: 't', 14: 'e', 15: 'l' }; // (D-pad left: radio Control in a Garda Pursuit)
 const padPrev = [];
 export const pad = { connected: false, name: '' };
 let padSeen = false;

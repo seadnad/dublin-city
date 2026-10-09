@@ -290,3 +290,39 @@ kbd { display: inline-block; min-width: 1.5em; padding: 1px 5px; border-radius: 
 @media (max-height: 420px) { .touch .stick { width: 128px; height: 128px; } .touch .stick i { width: 50px; height: 50px; } }
 /* altitude readout while flying */
 .speedo .alt { font-size: 15px; font-weight: 700; opacity: 0.9; margin-left: 6px; font-variant-numeric: tabular-nums; }
+/* Garda Pursuit: takedown prompt, distance chip, radio call-in, Control banner, result banner, impact flash */
+.m-pursuit[hidden] { display: none; }
+.mission .m-status { position: relative; height: 16px; margin-top: 6px; border-radius: 8px; background: rgba(255,255,255,0.1); overflow: hidden; }
+.mission .m-status i { position: absolute; inset: 0 auto 0 0; background: #2f9b62; transition: width 0.3s; }
+.mission .m-status.tail i { background: #c9a227; }
+.mission .m-status.far i { background: #c96a27; }
+.mission .m-status.losing i { background: #e0352b; animation: blink 0.6s steps(2) infinite; }
+.mission .m-status span { position: relative; display: block; text-align: center; font-size: 10px; font-weight: 800; letter-spacing: 0.12em; line-height: 16px; text-transform: uppercase; }
+.mission .m-prompt { margin-top: 6px; font-size: 14px; font-weight: 700; color: #ffd23c; max-width: 260px; }
+.mission .m-prompt.urgent { color: #fff; font-size: 18px; }
+.mission .m-radio { margin-top: 8px; min-height: 36px; padding: 4px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.35); background: rgba(47,107,255,0.35); color: var(--ink, #fff); font: 600 13px system-ui, sans-serif; cursor: pointer; touch-action: manipulation; }
+.mission .m-radio:disabled { opacity: 0.4; cursor: default; }
+.mission .m-radio kbd { font-size: 10px; opacity: 0.8; }
+.p-radio { position: absolute; top: 112px; left: 50%; transform: translateX(-50%); width: max-content; max-width: min(560px, calc(100vw - 32px)); padding: 8px 14px; border-radius: 8px; background: rgba(10,16,30,0.9); border: 1px solid rgba(120,160,255,0.45); font: 14px/1.35 ui-monospace, 'Cascadia Mono', Consolas, monospace; color: #dfe8ff; display: flex; gap: 10px; align-items: baseline; pointer-events: none; }
+.p-radio[hidden] { display: none; }
+.p-radio b { color: #7fb0ff; letter-spacing: 0.12em; font-size: 11px; flex: none; }
+.p-radio.in { animation: radio-in 0.25s ease-out; }
+@keyframes radio-in { from { opacity: 0; transform: translate(-50%, -8px); } to { opacity: 1; transform: translateX(-50%); } }
+.p-banner { position: absolute; left: 50%; top: 30%; transform: translate(-50%, -50%); width: max-content; text-align: center; max-width: calc(100vw - 32px); pointer-events: none; }
+.p-banner[hidden] { display: none; }
+.p-banner h2 { margin: 0; font: 900 clamp(30px, 7vw, 64px)/1 system-ui, sans-serif; letter-spacing: 0.04em; color: #fff; text-shadow: 0 4px 24px rgba(0,0,0,0.6), 0 0 2px #2f6bff; }
+.p-banner p { margin: 8px 0 0; font-size: 15px; font-weight: 600; text-shadow: 0 2px 10px rgba(0,0,0,0.7); }
+.p-flash { position: absolute; left: 50%; top: 44%; transform: translate(-50%, -50%) scale(0.8); font: 900 44px/1 system-ui, sans-serif; color: #ffd23c; text-shadow: 0 3px 18px rgba(0,0,0,0.6); opacity: 0; pointer-events: none; white-space: nowrap; }
+.p-flash.show { animation: pflash 0.9s ease-out; }
+@keyframes pflash { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.6); } 15% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } 100% { opacity: 0; transform: translate(-50%, -60%) scale(1); } }
+@media (pointer: coarse), (max-width: 760px) {
+  .p-radio { top: 62px; max-width: min(520px, calc(100vw - 300px)); font-size: 12px; padding: 6px 10px; }
+  .mission .m-prompt { font-size: 12px; max-width: 200px; margin-top: 4px; }
+  .mission .m-prompt.urgent { font-size: 15px; }
+  .mission .m-status { height: 13px; margin-top: 4px; }
+  .mission .m-status span { line-height: 13px; font-size: 9px; }
+  .mission .m-meter { margin-top: 5px; }
+  /* the radio button sits beside the panel, clear of the steering pad */
+  .mission .m-radio { position: absolute; left: calc(100% + 8px); bottom: 0; margin: 0; min-height: 44px; white-space: nowrap; }
+  .mission .m-radio kbd { display: none; }
+}
